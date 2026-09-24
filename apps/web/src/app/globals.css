@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f7f7f8;
+  --foreground: #0c0c0f;
+  --card: #ffffff;
+  --card-foreground: #0c0c0f;
+  --popover: #ffffff;
+  --muted: #f1f1f3;
+  --muted-foreground: #6b6b76;
+  --border: #e6e6ea;
+  --input: #e2e2e7;
+  --ring: #6d5dfc;
+  --primary: #0c0c0f;
+  --primary-foreground: #ffffff;
+  --accent: #6d5dfc;
+  --accent-soft: #efedff;
+  --accent-foreground: #ffffff;
+  --gold: #c8962d;
+  --gold-soft: #fbf3e2;
+  --success: #12a150;
+  --success-soft: #e7f7ee;
+  --warning: #d98a06;
+  --warning-soft: #fdf3e1;
+  --danger: #e5484d;
+  --danger-soft: #fdeced;
+  --info: #0b84e5;
+  --info-soft: #e6f3fd;
+  --sidebar: #0b0b0e;
+  --sidebar-foreground: #a1a1aa;
+  --sidebar-active: #1c1c22;
+  --sidebar-border: #1f1f25;
+  --chart-1: #6d5dfc;
+  --chart-2: #22b8a7;
+  --chart-3: #f2a93b;
+  --chart-4: #ec6a8c;
+  --chart-5: #8b8b97;
+  --shadow-card: 0 1px 2px rgba(16, 16, 24, 0.04), 0 1px 1px rgba(16, 16, 24, 0.03);
+  --shadow-pop: 0 12px 40px -12px rgba(16, 16, 24, 0.25);
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #f4f4f6;
+  --card: #111114;
+  --card-foreground: #f4f4f6;
+  --popover: #141418;
+  --muted: #19191e;
+  --muted-foreground: #8e8e99;
+  --border: #232329;
+  --input: #2a2a31;
+  --ring: #8b7dff;
+  --primary: #f4f4f6;
+  --primary-foreground: #0c0c0f;
+  --accent: #8b7dff;
+  --accent-soft: #1d1a33;
+  --accent-foreground: #ffffff;
+  --gold: #e0b24f;
+  --gold-soft: #2a2213;
+  --success: #3ccf7e;
+  --success-soft: #11251a;
+  --warning: #f5a524;
+  --warning-soft: #2a1f0c;
+  --danger: #ff6369;
+  --danger-soft: #2c1214;
+  --info: #3ba0f5;
+  --info-soft: #0e1f2e;
+  --sidebar: #060608;
+  --sidebar-foreground: #8e8e99;
+  --sidebar-active: #17171c;
+  --sidebar-border: #18181d;
+  --chart-5: #5d5d68;
+  --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.02);
+  --shadow-pop: 0 16px 48px -12px rgba(0, 0, 0, 0.7);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+}
+
+* {
+  border-color: var(--border);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted-foreground) 25%, transparent);
+  border-radius: 999px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.bg-grid {
+  background-image: linear-gradient(to right, color-mix(in srgb, var(--border) 60%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--border) 60%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.glow-accent {
+  background: radial-gradient(600px circle at 0% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%),
+    radial-gradient(500px circle at 100% 0%, color-mix(in srgb, var(--gold) 12%, transparent), transparent 55%);
+}
