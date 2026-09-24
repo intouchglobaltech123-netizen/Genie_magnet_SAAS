@@ -24,11 +24,9 @@ import { cn } from "@/lib/utils";
 export function Topbar() {
   const router = useRouter();
   const { role, setRole, activity, reset } = useDemo();
-  const [dark, setDark] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
 
   useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
@@ -40,8 +38,7 @@ export function Topbar() {
   }, []);
 
   const toggleTheme = () => {
-    const next = !dark;
-    setDark(next);
+    const next = !document.documentElement.classList.contains("dark");
     document.documentElement.classList.toggle("dark", next);
     try {
       localStorage.setItem("gm-theme", next ? "dark" : "light");
@@ -69,7 +66,8 @@ export function Topbar() {
 
       <div className="ml-auto flex items-center gap-1.5">
         <Button variant="ghost" size="icon-sm" onClick={toggleTheme} aria-label="Toggle theme">
-          {dark ? <Sun /> : <Moon />}
+          <Sun className="hidden dark:block" />
+          <Moon className="dark:hidden" />
         </Button>
 
         <Popover>
