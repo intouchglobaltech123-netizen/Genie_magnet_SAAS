@@ -57,7 +57,7 @@ const raw: [number, string, string][] = [
   [39, "Scenario Planner", "What-if: clients, price, hiring, outsourcing"],
   [40, "Meetings & Reviews", "Daily · 7-day · 14-day · 45-day reviews"],
   [41, "Decisions & Commitments", "Owner + due date → tasks, carried forward"],
-  [42, "Peer Feedback", "45-day structured feedback, controlled release"],
+  [42, "Round Table (Peer Feedback)", "45-day team feedback circle with timed rounds and controlled release"],
   [43, "Dashboards", "Founder, manager, editor, finance, HR views"],
   [44, "Alerts & Risk", "Exceptions: overdue, payment, leave, capacity"],
   [45, "AI Assistant", "Recommendations with human approval"],

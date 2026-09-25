@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowLeft, CalendarClock, Check, ChevronLeft, ChevronRight, FilePenLine, History, Lock, MapPin, ShieldCheck, UserCheck } from "lucide-react";
+import { UsersRound } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -121,7 +122,16 @@ function Workspace({ meeting }: { meeting: Meeting }) {
               </div>
             </div>
           </div>
-          <div className="flex shrink-0 gap-2">{locked ? <CorrectionButton meeting={meeting} /> : <LockButton meeting={meeting} />}</div>
+          <div className="flex shrink-0 gap-2">
+            {meeting.cadence === "strategic" && (
+              <Button variant={locked ? "outline" : "accent"} asChild>
+                <Link href={meeting.id === "rv-s6" ? "/round-table/rt-6" : "/round-table/rt-7"}>
+                  <UsersRound /> {locked ? "Round Table results" : "Start Round Table"}
+                </Link>
+              </Button>
+            )}
+            {locked ? <CorrectionButton meeting={meeting} /> : <LockButton meeting={meeting} />}
+          </div>
         </div>
       </div>
 

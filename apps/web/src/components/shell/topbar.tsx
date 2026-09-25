@@ -18,6 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CommandMenu } from "@/components/shell/command-menu";
 import { roleLabels } from "@/lib/nav";
 import { useDemo } from "@/lib/store";
+import { useRT } from "@/features/round-table/store";
 import type { Role } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -129,6 +130,7 @@ export function Topbar() {
             <DropdownMenuItem
               onSelect={() => {
                 reset();
+                useRT.getState().resetAll();
                 toast("Demo data reset", { description: "All changes made during the demo were cleared." });
               }}
             >

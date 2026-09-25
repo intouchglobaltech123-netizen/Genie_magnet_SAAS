@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarPlus, LayoutGrid, Sun, CalendarRange } from "lucide-react";
+import Link from "next/link";
+import { CalendarPlus, LayoutGrid, Sun, CalendarRange, UsersRound } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,16 @@ export function ReviewsHub() {
         title="Reviews & Meetings"
         description="Strategic, Tactical and Operational reviews on a fixed rhythm — every meeting ends in owned commitments, and every record is locked once closed."
         className="mb-0"
-        actions={<ScheduleButton />}
+        actions={
+          <>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/round-table">
+                <UsersRound /> Round Table
+              </Link>
+            </Button>
+            <ScheduleButton />
+          </>
+        }
       />
       <Tabs defaultValue="overview">
         <TabsList className="scrollbar-thin max-w-full justify-start overflow-x-auto">

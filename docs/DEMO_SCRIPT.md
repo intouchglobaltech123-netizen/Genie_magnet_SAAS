@@ -22,6 +22,7 @@ Before the meeting:
 | 10 | **True Costing** `/costing` | Cost waterfall for a video; ₹2L camera → ₹150/hr example | "True cost and margin per video." |
 | 11 | **Daily Data Sheet** `/daily-sheet` | Editor / SMM / Tech / HR sheets, counters, GM → HR sign-off, team overview | "Replaces the daily paper data sheets." |
 | 12 | **Goals** `/goals` & **Reviews** `/reviews/rv-s7` | Goal tree + 45-day strategic review workspace (BT/BD, numbers, decisions → commitments, lock) | "Placeholder of your review system — we'll adapt it to your exact method." |
+| 12b | **Round Table** `/round-table/rt-7` (or *Start Round Table* in the 45-day review) | Lobby fills up → **Start** → answer the 3 questions for your own round → set **Demo speed 10×** → buzzer + next person → **Manager review** (author names visible, hide the flagged comment on Surya) → **Release** → **My feedback**: anonymous answers, "You said" vs team, themes, commit to one improvement | "Everyone reviews everyone in timed rounds; the team sees feedback anonymously, only after the manager releases it." |
 | 13 | **Financial Planner** `/planner` | Way To Fortune: setup, daily log, reports, money diagnostic → profile score | "Your WTF tool, built in, private per person." |
 | 14 | **Module Map** `/modules` | Walk the 47 modules; mark **Approve / Change needed / Remove** live with Janarthanan; **Export** copies the feedback | "Tell us what to change." |
 

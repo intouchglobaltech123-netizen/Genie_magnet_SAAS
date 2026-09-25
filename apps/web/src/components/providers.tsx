@@ -4,10 +4,12 @@ import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useDemo } from "@/lib/store";
+import { useRT } from "@/features/round-table/store";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     useDemo.persist.rehydrate();
+    useRT.persist.rehydrate();
   }, []);
 
   return (

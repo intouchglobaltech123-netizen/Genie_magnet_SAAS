@@ -131,7 +131,7 @@ export const navSections: NavSection[] = [
       { title: "Decisions & Commitments", href: "/commitments", icon: Briefcase, depth: "preview", moduleNo: 41, summary: "Owner + due date → tasks; carried forward", roles: ALL_INTERNAL },
       { title: "Business Diagnostic", href: "/m/diagnostic", icon: ScanSearch, depth: "planned", moduleNo: 38, summary: "Internal diagnosis & founder-dependency index", roles: ["founder"] },
       { title: "Scenario Planner", href: "/m/scenarios", icon: Sparkles, depth: "planned", moduleNo: 39, summary: "What-if: clients, price, hiring, outsourcing", roles: ["founder"] },
-      { title: "Peer Feedback", href: "/m/peer-feedback", icon: Activity, depth: "planned", moduleNo: 42, summary: "45-day structured feedback, controlled release", roles: ALL_INTERNAL },
+      { title: "Round Table", href: "/round-table", icon: Activity, depth: "demo", moduleNo: 42, summary: "45-day team feedback circle: timed rounds, anonymous results", roles: ALL_INTERNAL },
     ],
   },
   {
