@@ -123,7 +123,7 @@ export function VideoCostTable() {
             <TH>Format</TH>
             <TH>Stage</TH>
             <HeadTip className="text-right" label="Standard" tip="Planned cost: planned edit minutes + standard director/camera minutes for the format, standard kit hours, overhead on planned hours and shoot travel budget." />
-            <HeadTip className="text-right" label="Actual" tip="Logged minutes × hourly cost + kit hours × depreciation/hr + labour hrs × ₹120 overhead + actual travel share + rework." />
+            <HeadTip className="text-right" label="Actual" tip="Logged minutes × hourly cost + kit hours × depreciation/hr + labour hrs × ₹80 overhead + actual travel share + rework." />
             <HeadTip className="text-right" label="Variance" tip="Actual − Standard. Shown once a video reaches client review; before that it is work-in-progress." />
             <HeadTip className="text-right" label="Revenue share" tip="Package monthly fee ÷ Σ(units × format weight) × this video's weight. Weights: Reel/Explainer 1 · Ad/Testimonial 1.5 · Long-form 3 · Static post 0.15 · Story 0.05." />
             <HeadTip className="pr-5 text-right" label="Margin" tip="(Revenue share − true cost) ÷ revenue share. For WIP videos the higher of actual-to-date and standard is used (projected)." />

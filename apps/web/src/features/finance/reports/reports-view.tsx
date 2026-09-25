@@ -83,7 +83,7 @@ export function ReportsView() {
           tone={profit / revenue >= BUSINESS_ASPIRATION.netMarginGoal ? "success" : "gold"}
           hint={`${pct(profit / (revenue || 1), 1)} margin · goal ${pct(BUSINESS_ASPIRATION.netMarginGoal)}`}
         />
-        <StatCard label="Closing cash" value={inrCompact(closing)} icon={Landmark} tone="info" hint={`End of ${months.at(-1)} · HDFC + ICICI`} />
+        <StatCard label="Closing cash" value={inrCompact(closing)} icon={Landmark} tone="info" hint={`End of ${months.at(-1)} · HDFC current a/c`} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
@@ -438,8 +438,8 @@ function PeriodLockCard() {
   const [confirm, setConfirm] = useState<string | null>(null);
   const openMonth = monthlyFinance.find((m) => m.actualRevenue !== null && !locks[m.month]);
   const checklist = [
-    { label: "All September invoices issued (GM/26-27/046–055)", ok: true },
-    { label: "Bank reconciled — HDFC & ICICI up to 24 Sep", ok: true },
+    { label: "All September invoices issued (GM/26-27/053–061)", ok: true },
+    { label: "Bank reconciled — HDFC current a/c up to 24 Sep", ok: true },
     { label: "6 expense requests still pending approval", ok: false },
     { label: "Payroll & freelancer payouts posted", ok: true },
   ];

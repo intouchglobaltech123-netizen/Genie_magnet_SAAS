@@ -61,7 +61,7 @@ export function RevenueTypesCard({ months }: { months: string[] }) {
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <p className="mt-2 text-[11.5px] text-muted-foreground">Sep is month-to-date (period open). Invoiced tracks earned because retainers bill monthly; collected lags invoiced by ~2–3 weeks.</p>
+        <p className="mt-2 text-[11.5px] text-muted-foreground">Sep is month-to-date (period open). Kaveri & Sri Lakshmi are invoiced and paid at the end of the previous month, so Sep collections look light and Oct advances already sit in Sep invoicing.</p>
       </CardContent>
     </Card>
   );

@@ -93,7 +93,7 @@ export function RecruitmentView() {
                 city: roleId === "r-editor" ? "Namakkal" : "Erode",
                 source: "Employee referral",
                 experience: roleId === "r-editor" ? "1 yr" : "2 yrs · FMCG",
-                expectedCtc: roleId === "r-editor" ? 22000 : 25000,
+                expectedCtc: roleId === "r-editor" ? 15000 : 15000,
                 stage: "Lead",
                 appliedOn: "2026-09-25",
                 highlight: "Just added via referral form",

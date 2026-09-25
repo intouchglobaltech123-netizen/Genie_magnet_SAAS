@@ -129,7 +129,7 @@ function AllocationFlow({ factor }: { factor: number }) {
         ))}
         <div className="flex items-start gap-2 rounded-xl bg-muted/60 p-3 text-[12px] text-muted-foreground">
           <ArrowRight className="mt-0.5 size-3.5 shrink-0" />
-          No double counting: Janarthanan&apos;s and Ashwin&apos;s hours logged directly on a video are charged as labour; only their unlogged share sits in the Management pool.
+          No double counting: founder remuneration is excluded, and Ashwin&apos;s hours logged directly on a video are charged as labour — only his unlogged share sits in the Management pool.
         </div>
       </CardContent>
     </Card>

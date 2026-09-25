@@ -130,7 +130,7 @@ export function ScenarioPreview() {
   const baseCost = 191000;
   const perClient = 52000;
   const rev = (baseRev + clients * perClient) * (1 + price / 100);
-  const editorCost = hire ? 38000 : 0;
+  const editorCost = hire ? 18000 : 0;
   const outsourceCost = (clients * perClient * 0.22 + baseRev * 0.05) * (outsource / 100) * 2.2;
   const cost = baseCost + clients * perClient * 0.42 + editorCost + outsourceCost;
   const margin = rev - cost;

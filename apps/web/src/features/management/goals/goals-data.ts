@@ -3,7 +3,7 @@
 // once the founder walks us through his exact S.M.A.R.T. / STOP / BT-BD system.
 
 import { TODAY } from "@/lib/mock/core";
-import { BUSINESS_ASPIRATION, ytd } from "@/lib/mock/finance";
+import { BUSINESS_ASPIRATION, monthlyFinance, ytd } from "@/lib/mock/finance";
 import { inrCompact } from "@/lib/utils";
 
 const L = 100_000;
@@ -177,8 +177,9 @@ export function goalStatus(g: Pick<Goal, "baseline" | "target" | "actual" | "exp
 // ───────────────────────────── Business Aspiration ─────────────────────────────
 
 export const ASPIRATION = (() => {
-  const q1Actual = 24.6 * L;
-  const q2Actual = 27.2 * L; // Jul 9.1 + Aug 9.4 + Sep MTD 8.7
+  const sumMonths = (ms: string[]) => monthlyFinance.filter((x) => ms.includes(x.month)).reduce((s, x) => s + (x.actualRevenue ?? 0), 0);
+  const q1Actual = sumMonths(["Apr", "May", "Jun"]);
+  const q2Actual = sumMonths(["Jul", "Aug", "Sep"]); // Sep is month-to-date
   const quarters = BUSINESS_ASPIRATION.quarters.map((q) => {
     if (q.q === "Q1") return { ...q, actual: q1Actual, state: "done" as const };
     if (q.q === "Q2") return { ...q, actual: q2Actual, state: "in-progress" as const };
@@ -205,11 +206,11 @@ export const GOALS: Goal[] = [
     id: REV,
     parentId: null,
     level: "company",
-    title: "Business Aspiration — ₹1.2 Cr revenue in FY 2026-27",
+    title: "Business Aspiration — ₹60L revenue in FY 2026-27",
     department: "Company",
     type: "financial",
     ownerIds: ["p-jana"],
-    metric: "Invoiced revenue (FY to date)",
+    metric: "Earned revenue (FY to date)",
     unit: "inr",
     baseline: 0,
     target: BUSINESS_ASPIRATION.revenueGoal,
@@ -218,17 +219,17 @@ export const GOALS: Goal[] = [
     startDate: "2026-04-01",
     dueDate: "2027-03-31",
     cadence: "strategic",
-    source: { kind: "linked", label: "Billing · Invoiced revenue", syncedAt: "2026-09-25T09:10" },
+    source: { kind: "linked", label: "Finance · Earned revenue", syncedAt: "2026-09-25T09:10" },
     smart: {
-      specific: "Grow Genie Magnet's invoiced revenue to ₹1.2 Cr in FY 2026-27 through retainers, one-off brand films and partner work.",
-      measurable: "Sum of invoiced revenue (ex-GST) from Billing, tracked monthly against the quarterly break-up Q1 ₹25L · Q2 ₹28L · Q3 ₹32L · Q4 ₹35L.",
-      achievable: "FY 2025-26 closed at ₹82.2L. 46% growth needs ~8 new retainers plus 80% renewal of the existing book — in line with last year's pipeline.",
+      specific: "Grow Genie Magnet's revenue to ₹60L in FY 2026-27 — roughly double today's ₹2.68L/month retainer run-rate — through new retainers, add-ons and one-off projects.",
+      measurable: "Earned revenue (ex-GST) from the monthly P&L, tracked against the quarterly break-up Q1 ₹8.5L · Q2 ₹10.5L · Q3 ₹17L · Q4 ₹24L.",
+      achievable: "FY 2025-26 closed at ₹17.4L with 2–3 clients; the book is now 5 retainers. Keeping ~84% of the existing ₹36L book and adding 6 new retainers (~₹5L/yr each) gets there — H2 must average ~₹7L/month.",
       relevant: "Funds the second edit bay, a full-time sales executive and the move to a bigger Appakudal studio.",
       timeBound: "1 Apr 2026 – 31 Mar 2027. Reviewed every 45 days in the Strategic STOP review.",
     },
     checkIns: [
-      { id: "ci-1", date: "2026-09-02", by: "p-jana", kind: "breakthrough", note: "August closed at ₹9.4L — exactly on plan. Two brand-film one-offs from Erode textile clients landed.", value: 43.1 * L },
-      { id: "ci-2", date: "2026-08-14", by: "p-jana", kind: "breakdown", note: "Q1 missed by ₹40K — Apr retainer for a Salem jeweller slipped to May. Tighter start-date clauses in agreements from now.", value: 33.7 * L },
+      { id: "ci-1", date: "2026-09-02", by: "p-jana", kind: "breakthrough", note: "July closed at ₹3.31L — on plan, helped by the Urban Nest drone add-on. Nirmala Cooking Academy signed for Oct.", value: 11.18 * L },
+      { id: "ci-2", date: "2026-08-14", by: "p-jana", kind: "breakdown", note: "Q1 missed by ₹63K — BrightPath started mid-May, not April. Tighter start-date clauses in agreements from now.", value: 7.87 * L },
     ],
     audit: [],
   },
@@ -236,28 +237,28 @@ export const GOALS: Goal[] = [
     id: MARGIN,
     parentId: null,
     level: "company",
-    title: "20% net margin on FY revenue",
+    title: "15% net margin on FY revenue",
     department: "Company",
     type: "financial",
     ownerIds: ["p-jana", "p-ashwin"],
     metric: "Net margin (FY to date)",
     unit: "pct",
-    baseline: 16.2,
-    target: 20,
+    baseline: 3.2,
+    target: 15,
     actual: Number((ytd.margin * 100).toFixed(1)),
     startDate: "2026-04-01",
     dueDate: "2027-03-31",
     cadence: "strategic",
     source: { kind: "linked", label: "Finance · P&L (revenue − expense)", syncedAt: "2026-09-25T09:10" },
     smart: {
-      specific: "Lift net margin from 16.2% (FY 2025-26) to 20% by cutting rework, collecting faster and keeping payroll clean.",
+      specific: "Lift net margin (before founder remuneration) from 3.2% (FY 2025-26) to 15% by filling team capacity, cutting rework and pricing long-form correctly.",
       measurable: "(Revenue − all expenses incl. overhead pools) ÷ revenue, from the monthly P&L.",
-      achievable: "QC first-pass and edit-time improvements alone are worth ~2 points; DSO reduction removes interest on the working-capital OD.",
+      achievable: "Payroll is mostly fixed — every new retainer lands at ~60% contribution. Rework and freelancer overflow are worth ~2 points.",
       relevant: "Margin, not just revenue, decides whether we can hire ahead of demand.",
       timeBound: "Measured monthly, final on 31 Mar 2027.",
     },
     checkIns: [
-      { id: "ci-3", date: "2026-09-10", by: "p-ashwin", kind: "update", note: "Aug margin 19.1%. Freelancer spend down after Surya took over reel batches.", value: 18.2 },
+      { id: "ci-3", date: "2026-09-10", by: "p-ashwin", kind: "update", note: "Aug margin 5.9%. Freelancer spend up in the Navaratri rush — Surya to take over reel batches.", value: 6.3 },
     ],
     audit: [],
   },
@@ -267,29 +268,29 @@ export const GOALS: Goal[] = [
     id: "g-sales-clients",
     parentId: REV,
     level: "department",
-    title: "Sign 8 new retainer clients",
+    title: "Sign 6 new retainer clients",
     department: "Sales",
     type: "financial",
     ownerIds: ["p-priya"],
     metric: "New retainers signed",
     unit: "count",
     baseline: 0,
-    target: 8,
-    actual: 4,
+    target: 6,
+    actual: 3,
     startDate: "2026-04-01",
     dueDate: "2027-03-31",
     cadence: "tactical",
     source: { kind: "linked", label: "CRM · Won deals", syncedAt: "2026-09-25T08:45" },
     smart: {
-      specific: "Close 8 new monthly retainers (min. ₹40K/month) with Tamil Nadu SMEs — textiles, jewellery, healthcare, education.",
+      specific: "Close 6 new monthly retainers (min. ₹35K/month) with Tamil Nadu SMEs — textiles, jewellery, healthcare, education.",
       measurable: "Count of deals marked Won in CRM with a signed agreement.",
-      achievable: "28% win rate on ~29 proposals, based on FY 2025-26 history.",
+      achievable: "28% win rate on ~22 proposals, based on FY 2025-26 history. BrightPath, Urban Nest and Nirmala already signed.",
       relevant: "Retainers are ~70% of revenue and smooth the production load.",
       timeBound: "By 31 Mar 2027; 2 per quarter.",
     },
     checkIns: [
-      { id: "ci-4", date: "2026-09-18", by: "p-priya", kind: "breakthrough", note: "Signed Sri Annapoorna Sweets (Coimbatore) — ₹55K/month, 12 months.", value: 4 },
-      { id: "ci-5", date: "2026-08-21", by: "p-priya", kind: "breakdown", note: "Lost Kongu Motors to a Chennai agency on price. Need a lighter ‘starter’ retainer tier.", value: 3 },
+      { id: "ci-4", date: "2026-09-18", by: "p-priya", kind: "breakthrough", note: "Signed Nirmala Cooking Academy (Chennai) — ₹40K/month personal branding, starts 1 Oct.", value: 3 },
+      { id: "ci-5", date: "2026-08-21", by: "p-priya", kind: "breakdown", note: "Lost FitZone Gyms to a cheaper freelancer. Need a lighter ‘starter’ retainer tier.", value: 2 },
     ],
     audit: [],
   },
@@ -297,27 +298,27 @@ export const GOALS: Goal[] = [
     id: "g-sales-revenue",
     parentId: REV,
     level: "department",
-    title: "₹60L new annualised revenue",
+    title: "₹30L new annualised revenue",
     department: "Sales",
     type: "financial",
     ownerIds: ["p-priya"],
     metric: "Annualised value of new deals",
     unit: "inr",
     baseline: 0,
-    target: 60 * L,
-    actual: 25.2 * L,
+    target: 30 * L,
+    actual: 13.2 * L,
     startDate: "2026-04-01",
     dueDate: "2027-03-31",
     cadence: "tactical",
     source: { kind: "linked", label: "CRM · Won deals (ACV)", syncedAt: "2026-09-25T08:45" },
     smart: {
-      specific: "Add ₹60L of annualised contract value from new clients.",
+      specific: "Add ₹30L of annualised contract value from new clients.",
       measurable: "Sum of 12-month value of Won deals in CRM.",
-      achievable: "8 deals × ₹7.5L average — see Revenue breakdown.",
-      relevant: "New sales must cover the gap after renewals and churn to reach ₹1.2 Cr.",
+      achievable: "6 deals × ₹5L average (~₹42K/month) — see Revenue breakdown.",
+      relevant: "New sales must cover the gap after renewals and churn to reach ₹60L.",
       timeBound: "By 31 Mar 2027.",
     },
-    checkIns: [{ id: "ci-6", date: "2026-09-18", by: "p-priya", kind: "update", note: "4 deals, average ₹6.3L — below the ₹7.5L plan. Pushing 6-video packages.", value: 25.2 * L }],
+    checkIns: [{ id: "ci-6", date: "2026-09-18", by: "p-priya", kind: "update", note: "3 deals (BrightPath ₹3.6L, Urban Nest ₹4.8L, Nirmala ₹4.8L), average ₹4.4L — below the ₹5L plan. Pushing 6-video packages.", value: 13.2 * L }],
     audit: [],
   },
 
@@ -326,27 +327,27 @@ export const GOALS: Goal[] = [
     id: "g-mkt-leads",
     parentId: REV,
     level: "department",
-    title: "240 marketing-qualified leads",
+    title: "165 marketing-qualified leads",
     department: "Marketing",
     type: "functional",
     ownerIds: ["p-priya", "p-meena"],
     metric: "MQLs created",
     unit: "count",
     baseline: 0,
-    target: 240,
-    actual: 118,
+    target: 165,
+    actual: 71,
     startDate: "2026-04-01",
     dueDate: "2027-03-31",
     cadence: "tactical",
     source: { kind: "linked", label: "CRM · Qualified leads", syncedAt: "2026-09-25T08:45" },
     smart: {
-      specific: "Generate 240 MQLs from Meta ads, Instagram organic, referrals and Jana's coaching network.",
+      specific: "Generate 165 MQLs from Meta ads, Instagram organic, referrals and Jana's coaching network.",
       measurable: "Leads tagged MQL in CRM (budget ≥ ₹30K/month, decision-maker reached).",
-      achievable: "~20/month at ₹450 cost per lead — ₹9K/month ad spend.",
-      relevant: "Feeds the 64 sales-qualified conversations needed for 8 wins.",
+      achievable: "~14/month at ₹450 cost per lead — ~₹6K/month ad spend.",
+      relevant: "Feeds the 49 sales-qualified conversations needed for 6 wins.",
       timeBound: "By 31 Mar 2027, reviewed every 14 days.",
     },
-    checkIns: [{ id: "ci-7", date: "2026-09-12", by: "p-meena", kind: "breakthrough", note: "‘Behind the reel’ carousel series pulled 23 MQLs in August — best month so far.", value: 104 }],
+    checkIns: [{ id: "ci-7", date: "2026-09-12", by: "p-meena", kind: "breakthrough", note: "‘Behind the reel’ carousel series pulled 16 MQLs in August — best month so far.", value: 62 }],
     audit: [],
   },
 
@@ -477,7 +478,7 @@ export const GOALS: Goal[] = [
     unit: "days",
     baseline: 46,
     target: 30,
-    actual: 37,
+    actual: 42,
     startDate: "2026-04-01",
     dueDate: "2027-03-31",
     cadence: "tactical",
@@ -486,10 +487,10 @@ export const GOALS: Goal[] = [
       specific: "Bring average collection period down from 46 to 30 days.",
       measurable: "DSO = receivables ÷ revenue × days, from Billing.",
       achievable: "UPI/NEFT links on invoices and reminders at day 7/21/28.",
-      relevant: "Every 10 days of DSO ≈ ₹3L of cash tied up.",
+      relevant: "Every 10 days of DSO ≈ ₹1L of cash tied up — at today's margin, that is more than a month's profit.",
       timeBound: "≤ 30 days by 31 Mar 2027.",
     },
-    checkIns: [{ id: "ci-12", date: "2026-09-15", by: "p-ashwin", kind: "breakthrough", note: "Auto-reminders live — 6 invoices paid within a week of the day-21 nudge.", value: 38 }],
+    checkIns: [{ id: "ci-12", date: "2026-09-15", by: "p-ashwin", kind: "breakthrough", note: "Auto-reminders live — 6 invoices paid within a week of the day-21 nudge — Urban Nest and Nova still dragging DSO up.", value: 43 }],
     audit: [],
   },
 
@@ -693,24 +694,24 @@ export const GOALS: Goal[] = [
     id: "i-priya-proposals",
     parentId: "g-sales-clients",
     level: "individual",
-    title: "Send 29 proposals this FY",
+    title: "Send 22 proposals this FY",
     department: "Sales",
     type: "functional",
     ownerIds: ["p-priya"],
     metric: "Proposals sent",
     unit: "count",
     baseline: 0,
-    target: 29,
-    actual: 12,
+    target: 22,
+    actual: 9,
     startDate: "2026-04-01",
     dueDate: "2027-03-31",
     cadence: "tactical",
     source: { kind: "linked", label: "CRM · Proposals sent", syncedAt: "2026-09-25T08:45" },
     smart: {
-      specific: "Send 29 tailored proposals to sales-qualified leads.",
+      specific: "Send 22 tailored proposals to sales-qualified leads.",
       measurable: "Proposal documents sent from CRM.",
-      achievable: "~2.5 a month; proposal templates by industry.",
-      relevant: "At a 28% win rate, 29 proposals → 8 wins.",
+      achievable: "~2 a month; proposal templates by industry.",
+      relevant: "At a 28% win rate, 22 proposals → 6 wins.",
       timeBound: "By 31 Mar 2027.",
     },
     checkIns: [],
@@ -802,11 +803,11 @@ export const GOALS: Goal[] = [
 // ───────────────────────────── Revenue breakdown defaults (history) ─────────────────────────────
 
 export const FUNNEL_HISTORY = {
-  revenueTarget: BUSINESS_ASPIRATION.revenueGoal, // ₹1.2 Cr
-  baseBook: 80 * L, // annualised value of existing retainers at 1 Apr
-  retention: 0.8, // share of base book renewed
-  churn: 0.05, // mid-year churn / downgrades on base book
-  avgDeal: 7.5 * L, // annualised retainer value of a new client
+  revenueTarget: BUSINESS_ASPIRATION.revenueGoal, // ₹60L
+  baseBook: 36 * L, // existing book, annualised: 5 retainers ₹32.2L + add-ons & re-bills ~₹3.8L
+  retention: 0.89, // share of base book renewed
+  churn: 0.05, // mid-year churn / downgrades on base book (Urban Nest risk)
+  avgDeal: 5 * L, // annualised retainer value of a new client (~₹42K/month)
   winRate: 0.28,
   proposalRate: 0.45, // sales-qualified → proposal
   qualRate: 0.3, // lead (MQL) → sales-qualified
@@ -815,10 +816,10 @@ export const FUNNEL_HISTORY = {
 };
 
 export const CAPACITY_HISTORY = {
-  editors: 3,
+  editors: 2, // Divya + Surya (freelancers absorb overflow)
   productiveHrs: 150, // per editor per month
-  hrsPerVideo: 5.5,
-  currentLoad: 58, // videos / month now
+  hrsPerVideo: 7.5, // blended: reels ~5h, long-form ~16h
+  currentLoad: 41, // video units / month promised across the 5 retainers
   unitsPerClient: 5, // videos / month per new retainer
 };
 

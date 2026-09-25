@@ -152,5 +152,5 @@ export function compositeFor(personId: string): number | null {
   return otherComposites[personId]?.score ?? null;
 }
 
-export const INCENTIVE_POOL = 60000;
+export const INCENTIVE_POOL = 15000;
 export const INCENTIVE_MIN_SCORE = 70;

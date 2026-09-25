@@ -45,8 +45,8 @@ interface SliderDef {
 }
 
 const REVENUE_SLIDERS: SliderDef[] = [
-  { key: "revenueTarget", label: "FY revenue target", min: 80 * L, max: 200 * L, step: 5 * L, fmt: inrCompact, historyLabel: "Business Aspiration" },
-  { key: "baseBook", label: "Existing retainer book (annualised)", min: 40 * L, max: 120 * L, step: L, fmt: inrCompact },
+  { key: "revenueTarget", label: "FY revenue target", min: 30 * L, max: 120 * L, step: 2.5 * L, fmt: inrCompact, historyLabel: "Business Aspiration" },
+  { key: "baseBook", label: "Existing book incl. add-ons (annualised)", min: 20 * L, max: 60 * L, step: L, fmt: inrCompact },
   { key: "retention", label: "Renewal retention", min: 0.5, max: 1, step: 0.01, fmt: pctFmt },
   { key: "churn", label: "Mid-year churn / downgrades", min: 0, max: 0.2, step: 0.01, fmt: pctFmt },
 ];

@@ -215,7 +215,7 @@ export const seedCommitments: Commitment[] = [
   { id: "cm-502", text: "Daily data sheet adoption — 100% of team for 30 days", ownerId: "p-harini", due: "2026-08-20", sourceMeetingId: "rv-s5", reviewInMeetingId: "rv-s6", status: "done", carried: 0, mark: "BT", markNote: "96% compliance; 2 misses on leave days", createdAt: "2026-07-12" },
   { id: "cm-503", text: "Collect Urban Nest dues before next shoot", ownerId: "p-ashwin", due: "2026-08-15", sourceMeetingId: "rv-s5", reviewInMeetingId: "rv-s6", status: "done", carried: 0, mark: "BD", markNote: "Client promised payment by 10 Sep — carried forward to Strategic #7 with a pause-work condition", createdAt: "2026-07-12" },
   { id: "cm-504", text: "Hire Reels editor", ownerId: "p-harini", due: "2026-08-20", sourceMeetingId: "rv-s5", reviewInMeetingId: "rv-s6", status: "done", carried: 0, mark: "BD", markNote: "2 candidates failed the test edit — carried forward to Strategic #7", createdAt: "2026-07-12" },
-  { id: "cm-505", text: "Raise Kaveri retainer to ₹85K with 2 ad creatives", ownerId: "p-jana", due: "2026-08-01", sourceMeetingId: "rv-s5", reviewInMeetingId: "rv-s6", status: "done", carried: 0, mark: "BT", markNote: "Signed 30 Jul", createdAt: "2026-07-12" },
+  { id: "cm-505", text: "Sell Sri Lakshmi a Navaratri add-on shoot (₹28K)", ownerId: "p-jana", due: "2026-08-01", sourceMeetingId: "rv-s5", reviewInMeetingId: "rv-s6", status: "done", carried: 0, mark: "BT", markNote: "Signed 30 Jul · invoiced 5 Aug (GM/26-27/046)", createdAt: "2026-07-12" },
 ];
 
 // ───────────────────────────── Numbers snapshot ─────────────────────────────
@@ -232,25 +232,25 @@ export interface SnapshotMetric {
 }
 
 export const snapshotS7: SnapshotMetric[] = [
-  { key: "rev", label: "Revenue vs Business Aspiration", value: "₹51.8L", target: "₹53.0L goal YTD", progress: 98, tone: "warning", detail: "Q1 ₹24.6L of ₹25L · Q2 ₹27.2L of ₹28L (Sep MTD)", source: "Billing · invoiced revenue" },
-  { key: "col", label: "Collections & DSO", value: "38 days", target: "≤ 30 days", progress: 72, tone: "warning", detail: "₹2.96L outstanding · Urban Nest ₹1.2L 32 days overdue", source: "Billing · receipts" },
-  { key: "otd", label: "Delivery on-time", value: "87%", target: "95%", progress: 87, tone: "warning", detail: "58 of 67 videos on time in last 45 days · 4 client-caused delays", source: "Production · due vs approved dates" },
+  { key: "rev", label: "Revenue vs Business Aspiration", value: "₹17.2L", target: "₹19.0L goal YTD", progress: 90, tone: "warning", detail: "Q1 ₹7.9L of ₹8.5L · Q2 ₹9.3L of ₹10.5L (Sep MTD) · FY goal ₹60L needs ₹5.5L/month from Oct", source: "Finance · earned revenue" },
+  { key: "col", label: "Collections & DSO", value: "42 days", target: "≤ 30 days", progress: 70, tone: "danger", detail: "₹2.31L overdue · Urban Nest ₹1.2L 32 days · Nova ₹96K", source: "Billing · receipts" },
+  { key: "otd", label: "Delivery on-time", value: "87%", target: "95%", progress: 87, tone: "warning", detail: "52 of 60 videos on time in last 45 days · 4 client-caused delays", source: "Production · due vs approved dates" },
   { key: "qc", label: "QC first-pass", value: "81%", target: "≥ 85%", progress: 81, tone: "warning", detail: "Up from 74% after QC checklist v2 · top fail: audio levels", source: "Internal QC" },
   { key: "cap", label: "Capacity & utilisation", value: "92%", target: "80–90%", progress: 92, tone: "danger", detail: "Divya 108% · Surya 86% · freelancers absorbing 22% of edits", source: "Time tracking" },
   { key: "risk", label: "Client risks", value: "2 at risk", tone: "danger", detail: "Urban Nest (D · payment) · Nova Dental (C · slow approvals)", source: "Client health" },
   { key: "sop", label: "SOP failures", value: "5", target: "≤ 3", tone: "warning", detail: "VP backup late ×2 · kit item missed ×1 · spelling in export ×2", source: "SOPs & checklists" },
-  { key: "margin", label: "Profitability", value: "24%", target: "≥ 30% contribution", progress: 80, tone: "accent", detail: "Best: Nova explainers 36% · Weakest: Sri Lakshmi reels (rework)", source: "True costing" },
+  { key: "margin", label: "Profitability", value: "6.3% net", target: "≥ 15% net", progress: 42, tone: "danger", detail: "Contribution 32% before fixed costs (founder pay excluded) · weakest: Sri Lakshmi reels (rework), BrightPath ads", source: "Finance P&L · True costing" },
 ];
 
 export const snapshotS6: SnapshotMetric[] = [
-  { key: "rev", label: "Revenue vs Business Aspiration", value: "₹33.7L", target: "₹34.0L goal YTD", progress: 99, tone: "success", detail: "Q1 ₹24.6L of ₹25L · Jul ₹9.1L of ₹9.0L", source: "Billing · invoiced revenue" },
-  { key: "col", label: "Collections & DSO", value: "41 days", target: "≤ 30 days", progress: 68, tone: "danger", detail: "₹3.4L outstanding · Urban Nest first reminder sent", source: "Billing · receipts" },
+  { key: "rev", label: "Revenue vs Business Aspiration", value: "₹11.2L", target: "₹11.8L goal YTD", progress: 95, tone: "warning", detail: "Q1 ₹7.9L of ₹8.5L · Jul ₹3.3L of ₹3.3L", source: "Finance · earned revenue" },
+  { key: "col", label: "Collections & DSO", value: "44 days", target: "≤ 30 days", progress: 66, tone: "danger", detail: "₹1.9L outstanding · Urban Nest first reminder sent", source: "Billing · receipts" },
   { key: "otd", label: "Delivery on-time", value: "84%", target: "95%", progress: 84, tone: "warning", detail: "51 of 61 videos on time", source: "Production" },
   { key: "qc", label: "QC first-pass", value: "74%", target: "≥ 85%", progress: 74, tone: "danger", detail: "Spelling and captions the biggest misses", source: "Internal QC" },
   { key: "cap", label: "Capacity & utilisation", value: "89%", target: "80–90%", progress: 89, tone: "warning", detail: "Divya 104% · freelancers 18% of edits", source: "Time tracking" },
   { key: "risk", label: "Client risks", value: "1 at risk", tone: "warning", detail: "Urban Nest (payment delays)", source: "Client health" },
   { key: "sop", label: "SOP failures", value: "8", target: "≤ 3", tone: "danger", detail: "Kit missed ×3 · VP late ×3 · wrong logo ×2", source: "SOPs & checklists" },
-  { key: "margin", label: "Profitability", value: "22%", target: "≥ 30% contribution", progress: 73, tone: "warning", detail: "Long-form under-priced across 3 clients", source: "True costing" },
+  { key: "margin", label: "Profitability", value: "6.7% net", target: "≥ 15% net", progress: 45, tone: "danger", detail: "Long-form under-priced across 3 clients · freelancer spend up in festive rush", source: "Finance P&L · True costing" },
 ];
 
 // ───────────────────────────── Strategic content ─────────────────────────────
@@ -306,12 +306,12 @@ export const recognitionSeed: Record<string, Recognition[]> = {
 
 export const creationSeed: Record<string, CreationGoal[]> = {
   "rv-s7": [
-    { id: "cg-1", title: "Sign 2 new retainers worth ₹1.2L/month combined", ownerId: "p-jana", measure: "Signed agreements", due: "2026-11-24", type: "financial" },
+    { id: "cg-1", title: "Sign 2 new retainers worth ₹80K/month combined", ownerId: "p-jana", measure: "Signed agreements", due: "2026-11-24", type: "financial" },
     { id: "cg-2", title: "DSO down to 30 days", ownerId: "p-ashwin", measure: "Billing · DSO", due: "2026-11-24", type: "financial" },
     { id: "cg-3", title: "QC first-pass ≥ 85% for 4 consecutive weeks", ownerId: "p-karthik", measure: "Internal QC", due: "2026-11-24", type: "operational" },
   ],
   "rv-s6": [
-    { id: "cg-61", title: "Q2 revenue ₹28L", ownerId: "p-jana", measure: "Invoiced revenue", due: "2026-09-30", type: "financial" },
+    { id: "cg-61", title: "Q2 revenue ₹10.5L", ownerId: "p-jana", measure: "Invoiced revenue", due: "2026-09-30", type: "financial" },
     { id: "cg-62", title: "QC checklist v2 live", ownerId: "p-karthik", measure: "SOP published + used on 100% videos", due: "2026-09-10", type: "operational" },
   ],
 };
@@ -319,8 +319,8 @@ export const creationSeed: Record<string, CreationGoal[]> = {
 export const notesSeed: Record<string, Record<number, string>> = {
   "rv-s6": {
     0: "Urban Nest and editor hiring carried forward for the second time — Janarthanan asked for weekly updates in the Monday review.",
-    1: "Revenue on track; collections the real problem. DSO 41 days.",
-    4: "Next 45 days: finish Q2 at ₹28L, fix QC first-pass, get Urban Nest to pay or pause.",
+    1: "Revenue 5% behind goal; collections the real problem. DSO 44 days, margin under 7%.",
+    4: "Next 45 days: finish Q2 at ₹10.5L, fix QC first-pass, get Urban Nest to pay or pause.",
   },
 };
 
@@ -358,17 +358,17 @@ export const weeklyTemplate = [
   {
     title: "Numbers",
     items: [
-      { label: "Revenue invoiced (week)", value: "₹2.1L", sub: "Goal ₹2.3L", tone: "warning" as const },
-      { label: "Collections (week)", value: "₹1.48L", sub: "4 receipts", tone: "success" as const },
-      { label: "New qualified leads", value: "11", sub: "Goal 14", tone: "warning" as const },
-      { label: "Proposals sent", value: "3", sub: "₹2.95L annual value", tone: "accent" as const },
+      { label: "Revenue earned (week)", value: "₹68K", sub: "Goal ₹86K", tone: "warning" as const },
+      { label: "Collections (week)", value: "₹31.8K", sub: "4 receipts incl. Nirmala advance", tone: "warning" as const },
+      { label: "New qualified leads", value: "3", sub: "Goal 4", tone: "warning" as const },
+      { label: "Proposals sent", value: "2", sub: "₹1.2L/month if both close", tone: "accent" as const },
     ],
   },
   {
     title: "Delivery",
     items: [
-      { label: "Videos delivered", value: "14", sub: "of 16 due", tone: "success" as const },
-      { label: "On-time", value: "88%", sub: "Goal 95%", tone: "warning" as const },
+      { label: "Videos delivered", value: "9", sub: "of 11 due", tone: "warning" as const },
+      { label: "On-time", value: "82%", sub: "Goal 95%", tone: "warning" as const },
       { label: "QC first-pass", value: "83%", sub: "Goal 85%", tone: "warning" as const },
       { label: "Agency corrections", value: "2", sub: "Rework ₹1,380", tone: "danger" as const },
     ],
@@ -379,7 +379,7 @@ export const weeklyTemplate = [
       { label: "Health changes", value: "Nova ↓ 64", sub: "Slow approvals", tone: "danger" as const },
       { label: "Renewals due (60 days)", value: "1", sub: "Sri Lakshmi · 31 Oct", tone: "accent" as const },
       { label: "Out-of-scope CRs", value: "1", sub: "₹18,000 awaiting client", tone: "info" as const },
-      { label: "Overdue invoices", value: "2", sub: "₹1.68L", tone: "danger" as const },
+      { label: "Overdue invoices", value: "3", sub: "₹2.31L incl. GST", tone: "danger" as const },
     ],
   },
 ];

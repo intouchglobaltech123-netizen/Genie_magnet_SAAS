@@ -3,7 +3,7 @@
 // True cost = Labour + Equipment + Shared overhead + Travel & consumables + Rework
 //   Labour     = Σ (minutes ÷ 60 × person hourly cost)        — editor, director, camera, freelancers
 //   Equipment  = Σ (equipment hours × per-hour depreciation)   — (purchase − residual) ÷ life ÷ productive hrs/yr
-//   Overhead   = direct labour hours × overhead rate            — pools ÷ direct labour hours (₹120/hr)
+//   Overhead   = direct labour hours × overhead rate            — pools ÷ direct labour hours (₹80/hr)
 //   Travel     = shoot travel & consumables ÷ videos in that shoot
 //   Rework     = agency-correction minutes × editor rate        — free corrections, measured as cost
 // Revenue share = agreement monthly fee × (format weight ÷ Σ unit weights in the package)
@@ -269,7 +269,7 @@ export function marginTone(p: number): "success" | "warning" | "danger" {
 // ───────────────────────────── Rate card history ─────────────────────────────
 
 export const rateCards = [
-  { version: "v3", effectiveFrom: "2026-07-01", effectiveTo: null as string | null, change: "Editor rates revised after Q1 appraisal (Divya ₹430 → ₹460/hr); overhead rate ₹112 → ₹120/hr", by: "Finance Desk", status: "current" as const },
+  { version: "v3", effectiveFrom: "2026-07-01", effectiveTo: null as string | null, change: "Editor rates revised after Q1 appraisal (Divya ₹430 → ₹460/hr); overhead rate ₹74 → ₹80/hr", by: "Finance Desk", status: "current" as const },
   { version: "v2", effectiveFrom: "2026-04-01", effectiveTo: "2026-06-30", change: "FY 2026-27 opening rates; camera GM-CAM-01 added at ₹150/hr", by: "Finance Desk", status: "locked" as const },
   { version: "v1", effectiveFrom: "2025-04-01", effectiveTo: "2026-03-31", change: "FY 2025-26 rates", by: "Janarthanan", status: "locked" as const },
 ];

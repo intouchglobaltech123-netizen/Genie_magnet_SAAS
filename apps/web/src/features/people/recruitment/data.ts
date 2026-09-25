@@ -54,7 +54,7 @@ export const roles: RoleDoc[] = [
     department: "Post-Production",
     openings: 1,
     hiringManager: "Karthik Subramanian",
-    budget: "₹25,000 – ₹35,000 / month",
+    budget: "₹15,000 – ₹21,000 / month",
     postedOn: "2026-09-02",
     definition:
       "Responsible for turning raw footage into on-brand, client-approved videos within the agreed turnaround, while passing internal QC first time.",
@@ -86,7 +86,7 @@ export const roles: RoleDoc[] = [
     department: "Sales & Marketing",
     openings: 1,
     hiringManager: "Priya Venkatesh",
-    budget: "₹22,000 – ₹30,000 / month + incentive",
+    budget: "₹13,000 – ₹18,000 / month + incentive",
     postedOn: "2026-09-10",
     definition: "Responsible for closing orders at customer end",
     deliverables: ["Inquiry generation", "Sales & service", "Product development & marketing"],
@@ -150,22 +150,22 @@ const sc = (p: [number, number, number, number, number], task: number, remarks: 
 
 export const seedCandidates: Candidate[] = [
   // Video Editor
-  { id: "c-01", roleId: "r-editor", name: "Aravind Shankar", city: "Coimbatore", source: "Naukri", experience: "3 yrs", currentCtc: 26000, expectedCtc: 32000, stage: "Approval", appliedOn: "2026-09-04", highlight: "Ex-Sun Music promo editor; strong colour", scorecard: sc([5, 4, 4, 4, 5], 9, "Excellent pacing on the test reel. Culture fit strong. Recommend hire.") },
-  { id: "c-02", roleId: "r-editor", name: "Kavya Ramesh", city: "Tiruppur", source: "Instagram campaign", experience: "1.5 yrs", currentCtc: 18000, expectedCtc: 24000, stage: "Scorecard", appliedOn: "2026-09-06", highlight: "Reels-first portfolio, 40k IG following", scorecard: sc([4, 3, 4, 4, 4], 7, "Great instincts for hooks; needs colour/sound depth.", false) },
-  { id: "c-03", roleId: "r-editor", name: "Pradeep Murugan", city: "Erode", source: "Employee referral", experience: "2 yrs", currentCtc: 20000, expectedCtc: 27000, stage: "Interview", appliedOn: "2026-09-08", highlight: "Referred by Divya Lakshmi" },
-  { id: "c-04", roleId: "r-editor", name: "Nithya Sundaram", city: "Salem", source: "Campus — PSG", experience: "Fresher", expectedCtc: 18000, stage: "Screening", appliedOn: "2026-09-15", highlight: "B.Sc Visual Comm, PSG CAS — short film award" },
-  { id: "c-05", roleId: "r-editor", name: "Harish Kannan", city: "Coimbatore", source: "LinkedIn", experience: "4 yrs", currentCtc: 32000, expectedCtc: 40000, stage: "Screening", appliedOn: "2026-09-12", highlight: "Corporate films; above budget" },
-  { id: "c-06", roleId: "r-editor", name: "Yamini Senthil", city: "Gobichettipalayam", source: "Train-to-hire", experience: "6-week bootcamp", expectedCtc: 16000, stage: "Lead", appliedOn: "2026-09-20", highlight: "Top of Genie Magnet editing bootcamp batch 2" },
-  { id: "c-07", roleId: "r-editor", name: "Dinesh Rajkumar", city: "Bhavani", source: "Campus — Kumaraguru", experience: "Fresher", expectedCtc: 17000, stage: "Lead", appliedOn: "2026-09-22", highlight: "KCT media club lead editor" },
-  { id: "c-08", roleId: "r-editor", name: "Sanjay Balan", city: "Pollachi", source: "Naukri", experience: "2.5 yrs", currentCtc: 22000, expectedCtc: 30000, stage: "Rejected", appliedOn: "2026-09-03", highlight: "Test task missed deadline by 2 days", scorecard: sc([3, 3, 2, 3, 2], 4, "Could not meet test deadline; low ownership signals.") },
+  { id: "c-01", roleId: "r-editor", name: "Aravind Shankar", city: "Coimbatore", source: "Naukri", experience: "3 yrs", currentCtc: 15500, expectedCtc: 19000, stage: "Approval", appliedOn: "2026-09-04", highlight: "Ex-Sun Music promo editor; strong colour", scorecard: sc([5, 4, 4, 4, 5], 9, "Excellent pacing on the test reel. Culture fit strong. Recommend hire.") },
+  { id: "c-02", roleId: "r-editor", name: "Kavya Ramesh", city: "Tiruppur", source: "Instagram campaign", experience: "1.5 yrs", currentCtc: 11000, expectedCtc: 14500, stage: "Scorecard", appliedOn: "2026-09-06", highlight: "Reels-first portfolio, 40k IG following", scorecard: sc([4, 3, 4, 4, 4], 7, "Great instincts for hooks; needs colour/sound depth.", false) },
+  { id: "c-03", roleId: "r-editor", name: "Pradeep Murugan", city: "Erode", source: "Employee referral", experience: "2 yrs", currentCtc: 12000, expectedCtc: 16000, stage: "Interview", appliedOn: "2026-09-08", highlight: "Referred by Divya Lakshmi" },
+  { id: "c-04", roleId: "r-editor", name: "Nithya Sundaram", city: "Salem", source: "Campus — PSG", experience: "Fresher", expectedCtc: 11000, stage: "Screening", appliedOn: "2026-09-15", highlight: "B.Sc Visual Comm, PSG CAS — short film award" },
+  { id: "c-05", roleId: "r-editor", name: "Harish Kannan", city: "Coimbatore", source: "LinkedIn", experience: "4 yrs", currentCtc: 19000, expectedCtc: 24000, stage: "Screening", appliedOn: "2026-09-12", highlight: "Corporate films; above budget" },
+  { id: "c-06", roleId: "r-editor", name: "Yamini Senthil", city: "Gobichettipalayam", source: "Train-to-hire", experience: "6-week bootcamp", expectedCtc: 9500, stage: "Lead", appliedOn: "2026-09-20", highlight: "Top of Genie Magnet editing bootcamp batch 2" },
+  { id: "c-07", roleId: "r-editor", name: "Dinesh Rajkumar", city: "Bhavani", source: "Campus — Kumaraguru", experience: "Fresher", expectedCtc: 10000, stage: "Lead", appliedOn: "2026-09-22", highlight: "KCT media club lead editor" },
+  { id: "c-08", roleId: "r-editor", name: "Sanjay Balan", city: "Pollachi", source: "Naukri", experience: "2.5 yrs", currentCtc: 13000, expectedCtc: 18000, stage: "Rejected", appliedOn: "2026-09-03", highlight: "Test task missed deadline by 2 days", scorecard: sc([3, 3, 2, 3, 2], 4, "Could not meet test deadline; low ownership signals.") },
   // Sales Executive
-  { id: "c-11", roleId: "r-sales", name: "Lokesh Rajendran", city: "Erode", source: "Employee referral", experience: "3 yrs · textiles B2B", currentCtc: 24000, expectedCtc: 30000, stage: "Offer", appliedOn: "2026-09-11", highlight: "Referred by Priya; knows 60+ Erode textile owners", scorecard: sc([4, 4, 5, 4, 5], 8, "Closed a mock deal convincingly. Founder approved on 22 Sep.") },
-  { id: "c-12", roleId: "r-sales", name: "Swetha Paramasivam", city: "Coimbatore", source: "LinkedIn", experience: "2 yrs · ed-tech inside sales", currentCtc: 23000, expectedCtc: 28000, stage: "Interview", appliedOn: "2026-09-13", highlight: "Consistently 120% of quota at previous role" },
-  { id: "c-13", roleId: "r-sales", name: "Madhan Gopal", city: "Tiruppur", source: "HR consultant", experience: "5 yrs · print media ads", currentCtc: 30000, expectedCtc: 36000, stage: "Scorecard", appliedOn: "2026-09-12", highlight: "Strong network; salary above band", scorecard: sc([4, 4, 3, 3, 3], 6, "Knows the market well; motivation seems money-only.", false) },
-  { id: "c-14", roleId: "r-sales", name: "Revathi Arumugam", city: "Appakudal", source: "Instagram campaign", experience: "1 yr · retail", currentCtc: 15000, expectedCtc: 22000, stage: "Screening", appliedOn: "2026-09-18", highlight: "Local — 10 min from office" },
-  { id: "c-15", roleId: "r-sales", name: "Vishnu Prasath", city: "Salem", source: "Naukri", experience: "2 yrs · insurance", currentCtc: 19000, expectedCtc: 25000, stage: "Lead", appliedOn: "2026-09-21", highlight: "Field sales; two-wheeler, travel ready" },
-  { id: "c-16", roleId: "r-sales", name: "Janani Elango", city: "Erode", source: "Campus — Kumaraguru", experience: "MBA fresher", expectedCtc: 22000, stage: "Lead", appliedOn: "2026-09-23", highlight: "MBA Marketing, KCT Business School" },
-  { id: "c-17", roleId: "r-sales", name: "Barath Chandran", city: "Coimbatore", source: "LinkedIn", experience: "4 yrs · real-estate", currentCtc: 28000, expectedCtc: 34000, stage: "Rejected", appliedOn: "2026-09-10", highlight: "Declined field travel requirement" },
+  { id: "c-11", roleId: "r-sales", name: "Lokesh Rajendran", city: "Erode", source: "Employee referral", experience: "3 yrs · textiles B2B", currentCtc: 14500, expectedCtc: 18000, stage: "Offer", appliedOn: "2026-09-11", highlight: "Referred by Priya; knows 60+ Erode textile owners", scorecard: sc([4, 4, 5, 4, 5], 8, "Closed a mock deal convincingly. Founder approved on 22 Sep.") },
+  { id: "c-12", roleId: "r-sales", name: "Swetha Paramasivam", city: "Coimbatore", source: "LinkedIn", experience: "2 yrs · ed-tech inside sales", currentCtc: 14000, expectedCtc: 17000, stage: "Interview", appliedOn: "2026-09-13", highlight: "Consistently 120% of quota at previous role" },
+  { id: "c-13", roleId: "r-sales", name: "Madhan Gopal", city: "Tiruppur", source: "HR consultant", experience: "5 yrs · print media ads", currentCtc: 18000, expectedCtc: 21500, stage: "Scorecard", appliedOn: "2026-09-12", highlight: "Strong network; salary above band", scorecard: sc([4, 4, 3, 3, 3], 6, "Knows the market well; motivation seems money-only.", false) },
+  { id: "c-14", roleId: "r-sales", name: "Revathi Arumugam", city: "Appakudal", source: "Instagram campaign", experience: "1 yr · retail", currentCtc: 9000, expectedCtc: 13000, stage: "Screening", appliedOn: "2026-09-18", highlight: "Local — 10 min from office" },
+  { id: "c-15", roleId: "r-sales", name: "Vishnu Prasath", city: "Salem", source: "Naukri", experience: "2 yrs · insurance", currentCtc: 11500, expectedCtc: 15000, stage: "Lead", appliedOn: "2026-09-21", highlight: "Field sales; two-wheeler, travel ready" },
+  { id: "c-16", roleId: "r-sales", name: "Janani Elango", city: "Erode", source: "Campus — Kumaraguru", experience: "MBA fresher", expectedCtc: 13000, stage: "Lead", appliedOn: "2026-09-23", highlight: "MBA Marketing, KCT Business School" },
+  { id: "c-17", roleId: "r-sales", name: "Barath Chandran", city: "Coimbatore", source: "LinkedIn", experience: "4 yrs · real-estate", currentCtc: 17000, expectedCtc: 20500, stage: "Rejected", appliedOn: "2026-09-10", highlight: "Declined field travel requirement" },
 ];
 
 export const sourceTone: Record<Source, "accent" | "info" | "gold" | "success" | "neutral" | "warning"> = {
