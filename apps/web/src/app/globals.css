@@ -2,138 +2,223 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/*
+ * Agency OS design tokens
+ * ─────────────────────────────────────────────────────────────
+ * Palette: Royal Blue #112250 · Sapphire #3C507D · Quicksand #E0C58F
+ *          Swan Wing #F5F0E9 · Shellstone #D8CBC2
+ * Visual ratio ≈ 60% light neutrals · 20–25% Royal · 10% Sapphire/Shellstone · ≤5% gold.
+ *
+ * Every token is a CSS variable (emitted by @theme) and a Tailwind utility
+ * (bg-primary, text-text-muted, border-border …). Dark mode overrides the same
+ * variables under `.dark`. Pages must never hard-code colours.
+ */
+@theme static {
+  /* Brand */
+  --color-primary: #112250;
+  --color-primary-hover: #1c3068;
+  --color-primary-active: #0b1838;
+  --color-primary-foreground: #f8f5f0;
+  --color-primary-soft: #e8ebf3;
+  --color-secondary: #3c507d;
+  --color-secondary-hover: #33456c;
+  --color-secondary-foreground: #f8f5f0;
+  --color-secondary-soft: #e4e8f1;
+  --color-accent: #e0c58f; /* Quicksand — fills, borders, indicators only */
+  --color-accent-strong: #86672b; /* Quicksand-derived, readable as text/icons on light */
+  --color-accent-soft: #f6eedd;
+  --color-accent-foreground: #112250;
+
+  /* Surfaces */
+  --color-background: #f5f0e9;
+  --color-surface: #ffffff;
+  --color-surface-secondary: #faf7f2;
+  --color-card: #ffffff;
+  --color-card-foreground: #1a2238;
+  --color-popover: #ffffff;
+  --color-muted: #efe9e1;
+  --color-shellstone: #d8cbc2;
+
+  /* Borders */
+  --color-border: #e3d9cf;
+  --color-border-subtle: #ede6de;
+  --color-border-strong: #d8cbc2;
+  --color-input: #d8cbc2;
+  --color-ring: #112250;
+
+  /* Text */
+  --color-text-primary: #1a2238;
+  --color-text-secondary: #3d4560;
+  --color-text-muted: #6b6760;
+  --color-foreground: #1a2238;
+  --color-muted-foreground: #6b6760;
+
+  /* Functional (muted, accessible) */
+  --color-success: #2e7d57;
+  --color-success-soft: #e5f1ea;
+  --color-warning: #a3670f;
+  --color-warning-soft: #faefda;
+  --color-danger: #b23f39;
+  --color-danger-soft: #f8e4e2;
+  --color-info: #2b679b;
+  --color-info-soft: #e2edf6;
+
+  /* Sidebar */
+  --color-sidebar: #112250;
+  --color-sidebar-foreground: #c9cfdd;
+  --color-sidebar-active: #3c507d;
+  --color-sidebar-hover: #1b2e5e;
+  --color-sidebar-border: #1f3160;
+  --color-sidebar-muted: #8793b0;
+
+  /* Charts: Royal dominant, Sapphire secondary, one gold accent series */
+  --color-chart-1: #112250;
+  --color-chart-2: #3c507d;
+  --color-chart-3: #c9a660;
+  --color-chart-4: #7d93c0;
+  --color-chart-5: #a99b8f;
+  --color-chart-grid: #ebe4db;
+
+  /* Typography — one family, three sizes */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --text-heading: 24px;
+  --text-heading--line-height: 32px;
+  --text-heading--letter-spacing: -0.015em;
+  --text-subheading: 16px;
+  --text-subheading--line-height: 24px;
+  --text-subheading--letter-spacing: -0.005em;
+  --text-body: 13px;
+  --text-body--line-height: 20px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-2xl: 12px;
+
+  /* Elevation — borders first, shadows barely there */
+  --shadow-sm: 0 1px 2px rgba(17, 34, 80, 0.05);
+  --shadow-md: 0 4px 12px -4px rgba(17, 34, 80, 0.1);
+  --shadow-lg: 0 16px 40px -12px rgba(17, 34, 80, 0.22);
+  --shadow-card: 0 1px 2px rgba(17, 34, 80, 0.04);
+  --shadow-pop: 0 16px 40px -12px rgba(17, 34, 80, 0.22);
+}
+
 :root {
-  --background: #f7f7f8;
-  --foreground: #0c0c0f;
-  --card: #ffffff;
-  --card-foreground: #0c0c0f;
-  --popover: #ffffff;
-  --muted: #f1f1f3;
-  --muted-foreground: #6b6b76;
-  --border: #e6e6ea;
-  --input: #e2e2e7;
-  --ring: #6d5dfc;
-  --primary: #0c0c0f;
-  --primary-foreground: #ffffff;
-  --accent: #6d5dfc;
-  --accent-soft: #efedff;
-  --accent-foreground: #ffffff;
-  --gold: #c8962d;
-  --gold-soft: #fbf3e2;
-  --success: #12a150;
-  --success-soft: #e7f7ee;
-  --warning: #d98a06;
-  --warning-soft: #fdf3e1;
-  --danger: #e5484d;
-  --danger-soft: #fdeced;
-  --info: #0b84e5;
-  --info-soft: #e6f3fd;
-  --sidebar: #0b0b0e;
-  --sidebar-foreground: #a1a1aa;
-  --sidebar-active: #1c1c22;
-  --sidebar-border: #1f1f25;
-  --chart-1: #6d5dfc;
-  --chart-2: #22b8a7;
-  --chart-3: #f2a93b;
-  --chart-4: #ec6a8c;
-  --chart-5: #8b8b97;
-  --shadow-card: 0 1px 2px rgba(16, 16, 24, 0.04), 0 1px 1px rgba(16, 16, 24, 0.03);
-  --shadow-pop: 0 12px 40px -12px rgba(16, 16, 24, 0.25);
+  /* Spacing scale (4px grid) */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Font-size scale (aliases of the three type sizes) */
+  --font-size-xs: var(--text-body);
+  --font-size-sm: var(--text-body);
+  --font-size-md: var(--text-body);
+  --font-size-lg: var(--text-subheading);
+  --font-size-xl: var(--text-subheading);
+  --font-size-2xl: var(--text-heading);
 }
 
 .dark {
-  --background: #09090b;
-  --foreground: #f4f4f6;
-  --card: #111114;
-  --card-foreground: #f4f4f6;
-  --popover: #141418;
-  --muted: #19191e;
-  --muted-foreground: #8e8e99;
-  --border: #232329;
-  --input: #2a2a31;
-  --ring: #8b7dff;
-  --primary: #f4f4f6;
-  --primary-foreground: #0c0c0f;
-  --accent: #8b7dff;
-  --accent-soft: #1d1a33;
-  --accent-foreground: #ffffff;
-  --gold: #e0b24f;
-  --gold-soft: #2a2213;
-  --success: #3ccf7e;
-  --success-soft: #11251a;
-  --warning: #f5a524;
-  --warning-soft: #2a1f0c;
-  --danger: #ff6369;
-  --danger-soft: #2c1214;
-  --info: #3ba0f5;
-  --info-soft: #0e1f2e;
-  --sidebar: #060608;
-  --sidebar-foreground: #8e8e99;
-  --sidebar-active: #17171c;
-  --sidebar-border: #18181d;
-  --chart-5: #5d5d68;
+  --color-primary: #4a64a6;
+  --color-primary-hover: #5a74b6;
+  --color-primary-active: #3d5591;
+  --color-primary-foreground: #ffffff;
+  --color-primary-soft: #1a2647;
+  --color-secondary: #3c507d;
+  --color-secondary-hover: #4a5f8f;
+  --color-secondary-soft: #1c2745;
+  --color-accent: #e0c58f;
+  --color-accent-strong: #e0c58f;
+  --color-accent-soft: #2b2617;
+  --color-accent-foreground: #112250;
+
+  --color-background: #0a1024;
+  --color-surface: #0f1832;
+  --color-surface-secondary: #131d3a;
+  --color-card: #0f1832;
+  --color-card-foreground: #ece7df;
+  --color-popover: #121c38;
+  --color-muted: #16213f;
+  --color-shellstone: #3a4262;
+
+  --color-border: #222e52;
+  --color-border-subtle: #1a2545;
+  --color-border-strong: #2d3a62;
+  --color-input: #2d3a62;
+  --color-ring: #8aa0d8;
+
+  --color-text-primary: #ece7df;
+  --color-text-secondary: #c3c8d6;
+  --color-text-muted: #98a0b6;
+  --color-foreground: #ece7df;
+  --color-muted-foreground: #98a0b6;
+
+  --color-success: #5cbf8c;
+  --color-success-soft: #122a20;
+  --color-warning: #e0a94a;
+  --color-warning-soft: #2b2112;
+  --color-danger: #e6766f;
+  --color-danger-soft: #2e1618;
+  --color-info: #6aa8dc;
+  --color-info-soft: #112437;
+
+  --color-sidebar: #070c1d;
+  --color-sidebar-foreground: #aeb6cc;
+  --color-sidebar-active: #1d2a52;
+  --color-sidebar-hover: #121b38;
+  --color-sidebar-border: #141d3a;
+
+  --color-chart-1: #8aa0d8;
+  --color-chart-2: #4a64a6;
+  --color-chart-3: #e0c58f;
+  --color-chart-4: #6b7fa8;
+  --color-chart-5: #7c7466;
+  --color-chart-grid: #1c2747;
+
   --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.02);
   --shadow-pop: 0 16px 48px -12px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 16px 48px -12px rgba(0, 0, 0, 0.7);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-accent: var(--accent);
-  --color-accent-soft: var(--accent-soft);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-gold: var(--gold);
-  --color-gold-soft: var(--gold-soft);
-  --color-success: var(--success);
-  --color-success-soft: var(--success-soft);
-  --color-warning: var(--warning);
-  --color-warning-soft: var(--warning-soft);
-  --color-danger: var(--danger);
-  --color-danger-soft: var(--danger-soft);
-  --color-info: var(--info);
-  --color-info-soft: var(--info-soft);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-active: var(--sidebar-active);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --shadow-card: var(--shadow-card);
-  --shadow-pop: var(--shadow-pop);
-  --radius-xl: 14px;
-  --radius-2xl: 18px;
-}
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
 
-* {
-  border-color: var(--border);
-}
+  html,
+  body {
+    background: var(--color-background);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+  }
 
-html,
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-  font-feature-settings: "cv11", "ss01";
-  -webkit-font-smoothing: antialiased;
-}
+  h1,
+  h2,
+  h3 {
+    color: var(--color-text-primary);
+  }
 
-::selection {
-  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 45%, transparent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  /* Components that draw their own focus ring opt out with outline-none. */
+  .focus-visible\:outline-none:focus-visible {
+    outline: none;
+  }
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -141,7 +226,7 @@ body {
   height: 8px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--muted-foreground) 25%, transparent);
+  background: color-mix(in srgb, var(--color-text-muted) 28%, transparent);
   border-radius: 999px;
 }
 .scrollbar-thin::-webkit-scrollbar-track {
@@ -153,12 +238,36 @@ body {
 }
 
 .bg-grid {
-  background-image: linear-gradient(to right, color-mix(in srgb, var(--border) 60%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--border) 60%, transparent) 1px, transparent 1px);
+  background-image: linear-gradient(to right, color-mix(in srgb, var(--color-border) 60%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--color-border) 60%, transparent) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
+/* A restrained highlight surface for hero cards — a hairline of gold, no glow. */
 .glow-accent {
-  background: radial-gradient(600px circle at 0% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%),
-    radial-gradient(500px circle at 100% 0%, color-mix(in srgb, var(--gold) 12%, transparent), transparent 55%);
+  background: linear-gradient(180deg, var(--color-surface-secondary), var(--color-surface));
+  box-shadow: inset 0 2px 0 0 var(--color-accent);
+}
+
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+.animate-skeleton {
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+@media print {
+  aside,
+  header {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
 }
