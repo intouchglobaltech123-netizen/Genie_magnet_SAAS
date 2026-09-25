@@ -2,10 +2,17 @@
   "name": "genie-magnet-agency-os",
   "private": true,
   "version": "0.1.0",
-  "workspaces": ["apps/*", "packages/*"],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "npm run dev -w web",
     "build": "npm run build -w web",
-    "lint": "npm run lint -w web"
+    "lint": "npm run lint -w web",
+    "start": "npm run start -w web"
+  },
+  "engines": {
+    "node": ">=20.9 <23"
   }
 }

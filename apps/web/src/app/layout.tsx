@@ -7,6 +7,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Agency OS",
   description: "Genie Magnet Agency OS — interactive product demo",
+  // Private client demo: keep it out of search engines.
+  robots: { index: false, follow: false },
 };
 
 const themeScript = `try{var t=localStorage.getItem('gm-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}`;

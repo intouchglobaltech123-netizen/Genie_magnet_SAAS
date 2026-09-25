@@ -16,7 +16,9 @@ export default function LoginPage() {
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("jana@geniemagnet.in");
+  const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [codeError, setCodeError] = useState("");
 
   return (
     <div className="grid grid-cols-1 min-h-screen bg-background lg:grid-cols-[1.05fr_1fr]">
@@ -59,27 +61,48 @@ export default function LoginPage() {
 
           <form
             className="mt-8 space-y-4"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               if (!email.includes("@")) {
                 setError("Enter a valid work email address.");
                 return;
               }
               setError("");
+              setCodeError("");
               setBusy(true);
-              setTimeout(() => router.push("/"), 600);
+              // The hosted demo is protected by a shared access code (DEMO_PASSCODE); locally any code works.
+              const res = await fetch("/api/access", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code }),
+              }).catch(() => null);
+              if (!res?.ok) {
+                setBusy(false);
+                setCodeError(res?.status === 401 ? "That access code is not correct." : "Could not sign in. Please try again.");
+                return;
+              }
+              const next = new URLSearchParams(window.location.search).get("next");
+              router.push(next && next.startsWith("/") && !next.startsWith("//") ? next : "/");
             }}
           >
             <Field label="Work email" required error={error}>
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!error} autoComplete="username" />
             </Field>
-            <Field label="Password" required>
+            <Field label="Access code" required error={codeError} hint="Use the demo access code shared with you.">
               <div className="relative">
-                <Input type={show ? "text" : "password"} defaultValue="demo-password" autoComplete="current-password" className="pr-10" />
+                <Input
+                  type={show ? "text" : "password"}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  aria-invalid={!!codeError}
+                  aria-label="Access code"
+                  autoComplete="current-password"
+                  className="pr-10"
+                />
                 <button
                   type="button"
                   onClick={() => setShow((s) => !s)}
-                  aria-label={show ? "Hide password" : "Show password"}
+                  aria-label={show ? "Hide access code" : "Show access code"}
                   className="absolute right-2 top-1/2 inline-flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-text-muted hover:bg-muted hover:text-primary"
                 >
                   {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, ChevronDown, ChevronRight, LogOut, Menu, Moon, RotateCcw, Search, Sun } from "lucide-react";
+import { Bell, ChevronDown, ChevronRight, CircleHelp, LogOut, Menu, MessageSquareText, Moon, RotateCcw, Search, Sun } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CommandMenu } from "@/components/shell/command-menu";
+import { OPEN_WELCOME_EVENT } from "@/features/feedback/welcome-dialog";
 import { useRT } from "@/features/round-table/store";
 import { navSections, roleLabels } from "@/lib/nav";
 import { useDemo } from "@/lib/store";
@@ -171,6 +172,13 @@ export function Topbar() {
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => router.push("/feedback")}>
+              <MessageSquareText /> Feedback inbox
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => window.dispatchEvent(new Event(OPEN_WELCOME_EVENT))}>
+              <CircleHelp /> Demo guide
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem
               onSelect={() => {
                 reset();
@@ -180,7 +188,12 @@ export function Topbar() {
             >
               <RotateCcw /> Reset demo data
             </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => router.push("/login")}>
+            <DropdownMenuItem
+              onSelect={async () => {
+                await fetch("/api/access", { method: "DELETE" }).catch(() => undefined);
+                router.push("/login");
+              }}
+            >
               <LogOut /> Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

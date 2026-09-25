@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local feedback store (hosted demo uses FEEDBACK_DIR on a volume)
+/.data/

@@ -5,6 +5,8 @@ import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useDemo } from "@/lib/store";
 import { useRT } from "@/features/round-table/store";
+import { FeedbackButton } from "@/features/feedback/feedback-button";
+import { WelcomeDialog } from "@/features/feedback/welcome-dialog";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -15,6 +17,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <TooltipProvider>
       {children}
+      <FeedbackButton />
+      <WelcomeDialog />
       <Toaster
         position="bottom-right"
         toastOptions={{
