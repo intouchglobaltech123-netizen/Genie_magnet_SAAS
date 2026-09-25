@@ -66,7 +66,7 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
   return (
     <Card className="overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-border px-5 py-3">
-        <div className="text-[13px] text-muted-foreground">
+        <div className="text-body text-muted-foreground">
           Company <span className="text-muted-foreground/50">→</span> Department <span className="text-muted-foreground/50">→</span> Individual
           <span className="ml-2 tabular">· {rows.length} shown</span>
         </div>
@@ -85,7 +85,7 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
 
       <div className="overflow-x-auto scrollbar-thin">
         <div className="min-w-[980px]">
-          <div className="grid grid-cols-[minmax(0,1fr)_84px_170px_170px_104px_96px] items-center gap-4 border-b border-border bg-muted/40 px-5 py-2 text-[11.5px] font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="grid grid-cols-[minmax(0,1fr)_84px_170px_170px_104px_96px] items-center gap-4 border-b border-border bg-muted/40 px-5 py-2 text-body font-medium uppercase tracking-wide text-muted-foreground">
             <span>Goal</span>
             <span>Owner</span>
             <span>Actual / target</span>
@@ -94,7 +94,7 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
             <span className="text-right">Due</span>
           </div>
 
-          {rows.length === 0 && <div className="px-5 py-12 text-center text-[13px] text-muted-foreground">No goals match these filters.</div>}
+          {rows.length === 0 && <div className="px-5 py-12 text-center text-body text-muted-foreground">No goals match these filters.</div>}
 
           {rows.map(({ goal: g, depth, guides, isLast, hasChildren, dim }) => {
             const st = goalStatus(g);
@@ -109,7 +109,7 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
                 onKeyDown={(e) => e.key === "Enter" && setOpen(g.id)}
                 className={cn(
                   "group grid cursor-pointer grid-cols-[minmax(0,1fr)_84px_170px_170px_104px_96px] items-stretch gap-4 border-b border-border px-5 transition-colors last:border-b-0 hover:bg-muted/50",
-                  g.level === "company" && "bg-accent-soft/25",
+                  g.level === "company" && "bg-primary-soft/25",
                   dim && "opacity-55",
                 )}
               >
@@ -147,7 +147,7 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
                     <div className="min-w-0">
                       <div
                         className={cn(
-                          "truncate text-[13.5px] group-hover:text-accent",
+                          "truncate text-body group-hover:text-primary",
                           g.level === "company" ? "font-semibold" : g.level === "department" ? "font-medium" : "",
                         )}
                       >
@@ -159,7 +159,7 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
                         <Tooltip
                           content={g.source.kind === "linked" ? "Actual pulled from connected records" : `Manual override: ${g.source.reason ?? ""}`}
                         >
-                          <span className="inline-flex items-center gap-1 text-[11.5px] text-muted-foreground">
+                          <span className="inline-flex items-center gap-1 text-body text-muted-foreground">
                             {g.source.kind === "linked" ? <Link2 className="size-3" /> : <PenLine className="size-3 text-warning" />}
                             {g.source.kind === "linked" ? g.source.label : "Manual"}
                           </span>
@@ -173,12 +173,12 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
                   <OwnerAvatars ids={g.ownerIds} />
                 </div>
 
-                <div className="flex flex-col justify-center text-[13px] tabular">
+                <div className="flex flex-col justify-center text-body tabular">
                   <span>
                     <span className="font-semibold">{fmtValue(g.actual, g.unit)}</span>
                     <span className="text-muted-foreground"> / {fmtValue(g.target, g.unit)}</span>
                   </span>
-                  <span className="truncate text-[11.5px] text-muted-foreground">{g.metric}</span>
+                  <span className="truncate text-body text-muted-foreground">{g.metric}</span>
                 </div>
 
                 <div className="flex items-center">
@@ -189,9 +189,9 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
                   <StatusBadge status={st} />
                 </div>
 
-                <div className="flex flex-col items-end justify-center text-[12.5px] tabular">
+                <div className="flex flex-col items-end justify-center text-body tabular">
                   <span>{fmtDate(g.dueDate, { day: "numeric", month: "short", year: "2-digit" })}</span>
-                  <span className={cn("text-[11.5px]", left < 30 ? "text-warning" : "text-muted-foreground")}>{left} days left</span>
+                  <span className={cn("text-body", left < 30 ? "text-warning" : "text-muted-foreground")}>{left} days left</span>
                 </div>
               </div>
             );

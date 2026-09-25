@@ -60,14 +60,14 @@ export function QcQueue() {
       </div>
 
       <section>
-        <h2 className="mb-3 flex items-center gap-2 text-[13px] font-semibold">
-          Queue <span className="rounded-md bg-muted px-1.5 text-[11px] font-medium tabular text-muted-foreground">{queue.length}</span>
+        <h2 className="mb-3 flex items-center gap-2 text-body font-semibold">
+          Queue <span className="rounded-md bg-muted px-1.5 text-body font-medium tabular text-muted-foreground">{queue.length}</span>
         </h2>
         {!queue.length && (
           <Card className="flex flex-col items-center gap-2 py-12 text-center">
             <CheckCheck className="size-6 text-success" />
             <div className="font-semibold">QC queue is clear</div>
-            <p className="text-[13px] text-muted-foreground">Videos appear here when an editor completes all 9 edit steps.</p>
+            <p className="text-body text-muted-foreground">Videos appear here when an editor completes all 9 edit steps.</p>
           </Card>
         )}
         <div className="space-y-2.5">
@@ -79,7 +79,7 @@ export function QcQueue() {
 
       {held.length > 0 && (
         <section className="mt-8">
-          <h2 className="mb-3 text-[13px] font-semibold text-danger">Held with failed checks</h2>
+          <h2 className="mb-3 text-body font-semibold text-danger">Held with failed checks</h2>
           <div className="space-y-2.5">
             {held.map((v) => (
               <QueueRow key={v.id} v={v} open={open === v.id} onToggle={() => setOpen(open === v.id ? null : v.id)} />
@@ -89,14 +89,14 @@ export function QcQueue() {
       )}
 
       <section className="mt-8">
-        <h2 className="mb-3 text-[13px] font-semibold">Recently passed</h2>
+        <h2 className="mb-3 text-body font-semibold">Recently passed</h2>
         <Card className="divide-y divide-border">
           {passed.map((v) => (
             <Link key={v.id} href={`/production/${v.id}`} className="flex items-center gap-4 px-5 py-3 transition hover:bg-muted/40">
               <CheckCheck className="size-4 shrink-0 text-success" />
-              <span className="w-28 shrink-0 font-mono text-[12px] text-muted-foreground">{v.code}</span>
-              <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium">{v.title}</span>
-              <span className="hidden text-[12px] text-muted-foreground md:inline">QC by Karthik S.</span>
+              <span className="w-28 shrink-0 font-mono text-body text-muted-foreground">{v.code}</span>
+              <span className="min-w-0 flex-1 truncate text-body font-medium">{v.title}</span>
+              <span className="hidden text-body text-muted-foreground md:inline">QC by Karthik S.</span>
               <StageBadge stage={v.stage} />
               <ArrowUpRight className="size-4 text-muted-foreground" />
             </Link>
@@ -129,11 +129,11 @@ function QueueRow({ v, open, onToggle }: { v: Video; open: boolean; onToggle: ()
   };
 
   return (
-    <Card className={cn("overflow-hidden transition", open && "ring-1 ring-accent/30", q.fail > 0 && "border-danger/30")}>
+    <Card className={cn("overflow-hidden transition", open && "ring-1 ring-primary/30", q.fail > 0 && "border-danger/30")}>
       <button type="button" onClick={onToggle} className="flex w-full cursor-pointer items-center gap-4 px-5 py-3.5 text-left transition hover:bg-muted/30">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[11.5px] font-medium text-muted-foreground">{v.code}</span>
+            <span className="font-mono text-body font-medium text-muted-foreground">{v.code}</span>
             <UrgencyIcon urgency={v.urgency} />
             {q.fail > 0 && (
               <Badge tone="danger">
@@ -141,11 +141,11 @@ function QueueRow({ v, open, onToggle }: { v: Video; open: boolean; onToggle: ()
               </Badge>
             )}
           </div>
-          <div className="mt-0.5 truncate text-[14px] font-medium">{v.title}</div>
+          <div className="mt-0.5 truncate text-body font-medium">{v.title}</div>
           <ClientChip clientId={v.clientId} className="mt-0.5" />
         </div>
         <div className="hidden w-44 md:block">
-          <div className="mb-1 flex justify-between text-[11px] text-muted-foreground">
+          <div className="mb-1 flex justify-between text-body text-muted-foreground">
             <span className="tabular">
               {q.pass}/{QC_CHECKS.length} passed
             </span>
@@ -153,7 +153,7 @@ function QueueRow({ v, open, onToggle }: { v: Video; open: boolean; onToggle: ()
           </div>
           <Progress value={(q.pass / QC_CHECKS.length) * 100} tone={q.fail ? "danger" : allPass ? "success" : "gold"} />
         </div>
-        <div className="hidden items-center gap-2 text-[12.5px] lg:flex">
+        <div className="hidden items-center gap-2 text-body lg:flex">
           <Avatar name={editor.name} size="sm" />
           <span className="w-24 truncate">{editor.name}</span>
         </div>
@@ -183,7 +183,7 @@ function QueueRow({ v, open, onToggle }: { v: Video; open: boolean; onToggle: ()
                 )}
               </div>
               {q.fail > 0 && v.stage === "Internal QC" && (
-                <p className="mt-2 text-right text-[12px] text-danger">Mandatory check failed — stage held until the corrective task is closed and re-checked.</p>
+                <p className="mt-2 text-right text-body text-danger">Mandatory check failed — stage held until the corrective task is closed and re-checked.</p>
               )}
             </div>
           </motion.div>

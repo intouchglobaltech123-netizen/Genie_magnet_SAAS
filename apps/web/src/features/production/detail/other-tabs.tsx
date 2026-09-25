@@ -24,10 +24,10 @@ export function BriefTab({ v }: { v: Video }) {
       <div className="space-y-4">
         <Card>
           <CardContent className="pt-5">
-            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center gap-2 text-body font-semibold uppercase tracking-wider text-muted-foreground">
               <Quote className="size-3.5" /> Hook · first 3 seconds
             </div>
-            <p className="mt-2 text-[20px] font-semibold leading-snug tracking-tight">{b.hook}</p>
+            <p className="mt-2 text-heading font-semibold leading-snug tracking-tight">{b.hook}</p>
           </CardContent>
         </Card>
         <Card>
@@ -44,12 +44,12 @@ export function BriefTab({ v }: { v: Video }) {
             <ol className="relative space-y-0 border-l border-border pl-5">
               {b.script.map((s) => (
                 <li key={s.t} className="relative pb-4 last:pb-0">
-                  <span className="absolute -left-[25px] top-1 size-2 rounded-full bg-accent ring-4 ring-card" />
+                  <span className="absolute -left-[25px] top-1 size-2 rounded-full bg-primary ring-4 ring-card" />
                   <div className="flex items-baseline gap-3">
-                    <span className="font-mono text-[11.5px] text-muted-foreground">{s.t}</span>
-                    <span className="text-[13.5px] font-medium">{s.line}</span>
+                    <span className="font-mono text-body text-muted-foreground">{s.t}</span>
+                    <span className="text-body font-medium">{s.line}</span>
                   </div>
-                  <div className="mt-0.5 pl-[52px] text-[12px] text-muted-foreground">
+                  <div className="mt-0.5 pl-[52px] text-body text-muted-foreground">
                     <Camera className="mr-1 inline size-3 -translate-y-px" />
                     {s.shot}
                   </div>
@@ -64,7 +64,7 @@ export function BriefTab({ v }: { v: Video }) {
           <CardHeader>
             <CardTitle>Brief</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-[13px]">
+          <CardContent className="space-y-3 text-body">
             {[
               ["Objective", b.objective],
               ["Audience", b.audience],
@@ -73,7 +73,7 @@ export function BriefTab({ v }: { v: Video }) {
               ["Deliverable", `${v.format} · ${v.aspect} · ${v.platform.join(", ")}`],
             ].map(([k, val]) => (
               <div key={k}>
-                <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
+                <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
                 <div className="mt-0.5 leading-relaxed">{val}</div>
               </div>
             ))}
@@ -89,7 +89,7 @@ export function BriefTab({ v }: { v: Video }) {
                 key={r.label}
                 type="button"
                 onClick={() => toast(`Opening ${r.label}`, { description: `${r.kind} link (demo)` })}
-                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg border border-border px-3 py-2 text-left text-[13px] transition hover:bg-muted"
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg border border-border px-3 py-2 text-left text-body transition hover:bg-muted"
               >
                 <FileText className="size-4 text-muted-foreground" />
                 <span className="flex-1 truncate">{r.label}</span>
@@ -121,7 +121,7 @@ export function ShootTab({ v }: { v: Video }) {
             <Camera className="size-5 text-muted-foreground" />
           </div>
           <div className="font-semibold">Not assigned to a shoot yet</div>
-          <p className="max-w-sm text-[13px] text-muted-foreground">Once the script is approved, add this video to a shoot batch so it gets a clip range and VP tracking.</p>
+          <p className="max-w-sm text-body text-muted-foreground">Once the script is approved, add this video to a shoot batch so it gets a clip range and VP tracking.</p>
           <Button variant="outline" size="sm" asChild>
             <Link href="/shoots">
               <Camera /> Open shoot schedule
@@ -156,30 +156,30 @@ export function ShootTab({ v }: { v: Video }) {
             </Link>
           </Button>
         </CardHeader>
-        <CardContent className="space-y-3 text-[13px]">
+        <CardContent className="space-y-3 text-body">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Shooting date</div>
+              <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Shooting date</div>
               <div className="mt-0.5">{fmt(shoot.date, "EEE, d MMM yyyy")} · {shoot.callTime}</div>
             </div>
             <div>
-              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Location</div>
+              <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Location</div>
               <div className="mt-0.5 flex items-start gap-1">
                 <MapPin className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
                 {shoot.location}
               </div>
             </div>
             <div>
-              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Camera man</div>
+              <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Camera man</div>
               <div className="mt-0.5">{personById(shoot.cameraId).name}</div>
             </div>
             <div>
-              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Content director</div>
+              <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Content director</div>
               <div className="mt-0.5">{personById(shoot.directorId).name}</div>
             </div>
           </div>
           <div>
-            <div className="mb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Clip numbers</div>
+            <div className="mb-1 text-body font-medium uppercase tracking-wider text-muted-foreground">Clip numbers</div>
             <Input
               value={v.clipNo}
               onChange={(e) => updateVideo(v.id, { clipNo: e.target.value })}
@@ -187,7 +187,7 @@ export function ShootTab({ v }: { v: Video }) {
               className="font-mono"
             />
           </div>
-          {shoot.notes && <div className="rounded-lg bg-muted px-3 py-2 text-[12.5px] text-muted-foreground">Note: {shoot.notes}</div>}
+          {shoot.notes && <div className="rounded-lg bg-muted px-3 py-2 text-body text-muted-foreground">Note: {shoot.notes}</div>}
         </CardContent>
       </Card>
 
@@ -217,8 +217,8 @@ export function ShootTab({ v }: { v: Video }) {
                     <Icon className="size-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-medium">{s.label}</div>
-                    <div className="text-[11.5px] text-muted-foreground">{s.detail}</div>
+                    <div className="text-body font-medium">{s.label}</div>
+                    <div className="text-body text-muted-foreground">{s.detail}</div>
                   </div>
                   {v.videoProtection && <CheckCircle2 className="size-4 text-success" />}
                 </li>
@@ -226,13 +226,13 @@ export function ShootTab({ v }: { v: Video }) {
             })}
           </ul>
           {verified && v.videoProtection ? (
-            <div className="mt-3 flex items-center gap-2 rounded-lg bg-success-soft px-3 py-2 text-[12.5px] text-success">
+            <div className="mt-3 flex items-center gap-2 rounded-lg bg-success-soft px-3 py-2 text-body text-success">
               <ShieldCheck className="size-4" />
               Card-to-NAS copy verified by {verified.by} · {format(parseISO(verified.at), "d MMM, HH:mm")}
             </div>
           ) : (
             <div className="mt-3 space-y-2">
-              <div className="rounded-lg bg-warning-soft px-3 py-2 text-[12.5px] text-warning">
+              <div className="rounded-lg bg-warning-soft px-3 py-2 text-body text-warning">
                 Naveen Raj is on sick leave (25–26 Sep). Surya Prakash is the designated backup verifier.
               </div>
               <Button
@@ -258,7 +258,7 @@ export function ShootTab({ v }: { v: Video }) {
 
 // ─────────────────────────── True cost ───────────────────────────
 
-const lineColors = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--info)", "var(--chart-5)"];
+const lineColors = ["var(--color-chart-1)", "var(--color-chart-2)", "var(--color-chart-3)", "var(--color-chart-4)", "var(--color-info)", "var(--color-chart-5)"];
 
 export function CostTab({ v }: { v: Video }) {
   const c = costBreakdown(v);
@@ -283,15 +283,15 @@ export function CostTab({ v }: { v: Video }) {
               <div key={l.label} className="flex items-center gap-3 py-2.5">
                 <span className="size-2.5 shrink-0 rounded-sm" style={{ backgroundColor: lineColors[i] }} />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-medium">{l.label}</div>
-                  <div className="text-[11.5px] text-muted-foreground">{l.detail}</div>
+                  <div className="text-body font-medium">{l.label}</div>
+                  <div className="text-body text-muted-foreground">{l.detail}</div>
                 </div>
-                <div className="text-[13px] font-medium tabular">{inr(l.value)}</div>
+                <div className="text-body font-medium tabular">{inr(l.value)}</div>
               </div>
             ))}
             <div className="flex items-center justify-between pt-3">
-              <span className="text-[13px] font-semibold">Total cost to deliver</span>
-              <span className="text-[18px] font-semibold tabular tracking-tight">{inr(c.total)}</span>
+              <span className="text-body font-semibold">Total cost to deliver</span>
+              <span className="text-subheading font-semibold tabular tracking-tight">{inr(c.total)}</span>
             </div>
           </div>
         </CardContent>
@@ -300,14 +300,14 @@ export function CostTab({ v }: { v: Video }) {
         <Card>
           <CardContent className="space-y-4 pt-5">
             <div>
-              <div className="text-[12px] text-muted-foreground">Revenue per deliverable</div>
-              <div className="text-[22px] font-semibold tabular tracking-tight">{inr(c.revenue)}</div>
-              <div className="text-[11.5px] text-muted-foreground">Monthly fee ÷ units in the package</div>
+              <div className="text-body text-muted-foreground">Revenue per deliverable</div>
+              <div className="text-heading font-semibold tabular tracking-tight">{inr(c.revenue)}</div>
+              <div className="text-body text-muted-foreground">Monthly fee ÷ units in the package</div>
             </div>
             <div>
-              <div className="text-[12px] text-muted-foreground">Contribution margin</div>
-              <div className={cn("text-[22px] font-semibold tabular tracking-tight", c.margin < 0 ? "text-danger" : "text-success")}>
-                {inr(c.margin)} <span className="text-[14px]">({(marginPct * 100).toFixed(0)}%)</span>
+              <div className="text-body text-muted-foreground">Contribution margin</div>
+              <div className={cn("text-heading font-semibold tabular tracking-tight", c.margin < 0 ? "text-danger" : "text-success")}>
+                {inr(c.margin)} <span className="text-body">({(marginPct * 100).toFixed(0)}%)</span>
               </div>
             </div>
           </CardContent>
@@ -319,10 +319,10 @@ export function CostTab({ v }: { v: Video }) {
           <CardContent className="space-y-3">
             {[
               ["Planned", v.plannedMinutes, c.editPlanned, "bg-muted-foreground/40"],
-              ["Actual", v.loggedMinutes, c.editActual, v.loggedMinutes > v.plannedMinutes ? "bg-danger" : "bg-accent"],
+              ["Actual", v.loggedMinutes, c.editActual, v.loggedMinutes > v.plannedMinutes ? "bg-danger" : "bg-primary"],
             ].map(([label, mins, cost, cls]) => (
               <div key={label as string}>
-                <div className="mb-1 flex justify-between text-[12px]">
+                <div className="mb-1 flex justify-between text-body">
                   <span className="text-muted-foreground">
                     {label as string} · {hoursLabel(mins as number)}
                   </span>

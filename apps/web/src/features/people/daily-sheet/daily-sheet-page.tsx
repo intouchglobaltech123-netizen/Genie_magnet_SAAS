@@ -61,8 +61,8 @@ export function DailySheetPage() {
           Paper → digital
         </Badge>
         {perks.map((p) => (
-          <span key={p.text} className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[12.5px] text-muted-foreground">
-            <p.icon className="size-3.5 text-accent" />
+          <span key={p.text} className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-body text-muted-foreground">
+            <p.icon className="size-3.5 text-primary" />
             {p.text}
           </span>
         ))}

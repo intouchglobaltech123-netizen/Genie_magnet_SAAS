@@ -27,17 +27,17 @@ export function WeeklyTab() {
           <Card key={w.label} className={cn("p-4", w.spend === 0 && "opacity-60")}>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-[13px] font-semibold">{w.label}</div>
-                <div className="text-[11.5px] text-muted-foreground">{w.period}</div>
+                <div className="text-body font-semibold">{w.label}</div>
+                <div className="text-body text-muted-foreground">{w.period}</div>
               </div>
               {best && best.label === w.label && <Badge tone="success">Best week</Badge>}
             </div>
             <div className="mt-3 flex items-baseline gap-1.5">
-              <span className="text-[22px] font-semibold tabular">{w.leakScore}%</span>
-              <span className="text-[12px] text-muted-foreground">leakage score</span>
+              <span className="text-heading font-semibold tabular">{w.leakScore}%</span>
+              <span className="text-body text-muted-foreground">leakage score</span>
             </div>
             <Progress value={w.leakScore} tone={w.leakScore > 40 ? "danger" : w.leakScore > 20 ? "warning" : "success"} className="mt-2" />
-            <div className="mt-3 grid grid-cols-2 gap-2 text-[12px]">
+            <div className="mt-3 grid grid-cols-2 gap-2 text-body">
               <div>
                 <div className="text-muted-foreground">Spent</div>
                 <div className="font-medium tabular">{inr(w.spend)}</div>
@@ -76,13 +76,13 @@ export function WeeklyTab() {
                 <TR key={w.label}>
                   <TD>
                     <div className="font-medium">{w.label}</div>
-                    <div className="text-[11.5px] text-muted-foreground">{w.period}</div>
+                    <div className="text-body text-muted-foreground">{w.period}</div>
                   </TD>
                   <TD className="text-right tabular">{inr(w.spend)}</TD>
                   <TD className="text-right font-medium text-danger tabular">{inr(w.leak)}</TD>
                   <TD className="text-right tabular">{inrCompact(w.opp)}</TD>
                   <TD className="text-right tabular">{w.leakScore}%</TD>
-                  <TD className="text-[12.5px]">{w.topEmotion ?? "—"}</TD>
+                  <TD className="text-body">{w.topEmotion ?? "—"}</TD>
                   <TD className="text-right tabular">{w.mood ?? "—"}</TD>
                 </TR>
               ))}
@@ -100,12 +100,12 @@ export function WeeklyTab() {
             <div className="h-60">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chart} barGap={4}>
-                  <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+                  <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
                   <XAxis dataKey="name" {...axisProps} />
                   <YAxis {...axisProps} width={48} tickFormatter={(v) => inrCompact(v)} />
-                  <Tooltip {...tooltipStyle} cursor={{ fill: "var(--muted)" }} formatter={(v) => inr(Number(v))} />
-                  <Bar dataKey="Spend" fill="var(--chart-5)" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                  <Bar dataKey="Leakage" fill="var(--chart-4)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                  <Tooltip {...tooltipStyle} cursor={{ fill: "var(--color-muted)" }} formatter={(v) => inr(Number(v))} />
+                  <Bar dataKey="Spend" fill="var(--color-chart-5)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                  <Bar dataKey="Leakage" fill="var(--color-chart-4)" radius={[4, 4, 0, 0]} maxBarSize={28} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -135,33 +135,33 @@ export function MonthlyTab() {
     <div className="space-y-5">
       {/* Headline */}
       <Card className="overflow-hidden">
-        <div className="grid gap-6 bg-[radial-gradient(600px_circle_at_0%_0%,color-mix(in_srgb,var(--danger)_12%,transparent),transparent_60%)] p-6 lg:grid-cols-[1.2fr_1fr]">
+        <div className="grid gap-6 bg-[radial-gradient(600px_circle_at_0%_0%,color-mix(in_srgb,var(--color-danger)_12%,transparent),transparent_60%)] p-6 lg:grid-cols-[1.2fr_1fr]">
           <div>
-            <div className="flex items-center gap-2 text-[13px] font-medium text-danger">
+            <div className="flex items-center gap-2 text-body font-medium text-danger">
               <Flame className="size-4" /> This month&apos;s leakage
             </div>
             <div className="mt-2 flex flex-wrap items-baseline gap-x-3">
-              <span className="text-[40px] font-semibold leading-none tracking-tight tabular">{inr(r.leak)}</span>
-              <span className="text-[14px] text-muted-foreground">{(r.leakScore * 100).toFixed(1)}% of {inr(r.total)} spent</span>
+              <span className="text-heading font-semibold leading-none tracking-tight tabular">{inr(r.leak)}</span>
+              <span className="text-body text-muted-foreground">{(r.leakScore * 100).toFixed(1)}% of {inr(r.total)} spent</span>
             </div>
-            <p className="mt-3 max-w-lg text-[14px] text-muted-foreground">
+            <p className="mt-3 max-w-lg text-body text-muted-foreground">
               If {setup.name || "you"} invested this leakage every month at 12% for 15 years, it would grow to{" "}
               <span className="font-semibold text-foreground">{inr(r.fv15)}</span>.
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-card/80 p-5">
-            <div className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">The retirement freedom calculation</div>
+            <div className="text-body font-semibold uppercase tracking-wider text-muted-foreground">The retirement freedom calculation</div>
             <div className="mt-3 grid grid-cols-2 gap-4">
               <div>
-                <div className="text-[12px] text-muted-foreground">Stop leakage → retire at</div>
-                <div className="text-[28px] font-semibold text-success tabular">{Number.isFinite(r.retireAgeLeakStopped) ? r.retireAgeLeakStopped.toFixed(1) : "—"}</div>
+                <div className="text-body text-muted-foreground">Stop leakage → retire at</div>
+                <div className="text-heading font-semibold text-success tabular">{Number.isFinite(r.retireAgeLeakStopped) ? r.retireAgeLeakStopped.toFixed(1) : "—"}</div>
               </div>
               <div>
-                <div className="text-[12px] text-muted-foreground">Keep leaking → retire at</div>
-                <div className="text-[28px] font-semibold tabular">{Number.isFinite(r.retireAgeWithLeak) ? r.retireAgeWithLeak.toFixed(1) : "—"}</div>
+                <div className="text-body text-muted-foreground">Keep leaking → retire at</div>
+                <div className="text-heading font-semibold tabular">{Number.isFinite(r.retireAgeWithLeak) ? r.retireAgeWithLeak.toFixed(1) : "—"}</div>
               </div>
             </div>
-            <div className="mt-3 rounded-xl bg-danger-soft px-3 py-2 text-[13px] text-danger">
+            <div className="mt-3 rounded-xl bg-danger-soft px-3 py-2 text-body text-danger">
               <span className="font-semibold">{years(r.yearsLost)}</span> of freedom lost to leakage
             </div>
           </div>
@@ -197,15 +197,15 @@ export function MonthlyTab() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <div className="text-[11px] text-muted-foreground">Spent</div>
-                <div className="text-[17px] font-semibold tabular">{inrCompact(r.total)}</div>
+                <div className="text-body text-muted-foreground">Spent</div>
+                <div className="text-subheading font-semibold tabular">{inrCompact(r.total)}</div>
               </div>
             </div>
             <div className="mt-3 space-y-2">
               {(["Need", "Want", "Craving"] as const).map((k) => {
                 const v = k === "Need" ? r.needs : k === "Want" ? r.wants : r.cravings;
                 return (
-                  <div key={k} className="flex items-center justify-between text-[13px]">
+                  <div key={k} className="flex items-center justify-between text-body">
                     <span className="inline-flex items-center gap-2">
                       <span className="size-2 rounded-full" style={{ background: kindMeta[k].color }} />
                       {k}s
@@ -228,10 +228,10 @@ export function MonthlyTab() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {emotions.length === 0 && <div className="py-10 text-center text-sm text-muted-foreground">No entries yet</div>}
+            {emotions.length === 0 && <div className="py-10 text-center text-body text-muted-foreground">No entries yet</div>}
             {emotions.map((e) => (
               <div key={e.emotion}>
-                <div className="flex items-center justify-between text-[12.5px]">
+                <div className="flex items-center justify-between text-body">
                   <span>
                     {e.emotion} <span className="text-muted-foreground">· {e.count}×</span>
                   </span>
@@ -241,8 +241,8 @@ export function MonthlyTab() {
                   </span>
                 </div>
                 <div className="relative mt-1 h-2 overflow-hidden rounded-full bg-muted">
-                  <div className="absolute inset-y-0 left-0 rounded-full bg-[var(--chart-5)]/60" style={{ width: `${(e.spent / maxEmotion) * 100}%` }} />
-                  <div className="absolute inset-y-0 left-0 rounded-full bg-[var(--chart-4)]" style={{ width: `${(e.leak / maxEmotion) * 100}%` }} />
+                  <div className="absolute inset-y-0 left-0 rounded-full bg-[var(--color-chart-5)]/60" style={{ width: `${(e.spent / maxEmotion) * 100}%` }} />
+                  <div className="absolute inset-y-0 left-0 rounded-full bg-[var(--color-chart-4)]" style={{ width: `${(e.leak / maxEmotion) * 100}%` }} />
                 </div>
               </div>
             ))}
@@ -262,9 +262,9 @@ export function MonthlyTab() {
                 <BarChart data={leakTypes} layout="vertical" margin={{ left: 8, right: 12 }}>
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="type" {...axisProps} width={92} />
-                  <Tooltip {...tooltipStyle} cursor={{ fill: "var(--muted)" }} formatter={(v, n) => [inr(Number(v)), n === "leak" ? "Leakage" : "Spent"]} />
-                  <Bar dataKey="spent" fill="var(--chart-5)" radius={[0, 4, 4, 0]} barSize={8} />
-                  <Bar dataKey="leak" fill="var(--chart-4)" radius={[0, 4, 4, 0]} barSize={8} />
+                  <Tooltip {...tooltipStyle} cursor={{ fill: "var(--color-muted)" }} formatter={(v, n) => [inr(Number(v)), n === "leak" ? "Leakage" : "Spent"]} />
+                  <Bar dataKey="spent" fill="var(--color-chart-5)" radius={[0, 4, 4, 0]} barSize={8} />
+                  <Bar dataKey="leak" fill="var(--color-chart-4)" radius={[0, 4, 4, 0]} barSize={8} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -292,7 +292,7 @@ export function MonthlyTab() {
               ["Annual expense at retirement", inr(r.setup.annualAtRetirement)],
               ["Corpus required (25× annual expense)", inr(r.setup.corpus)],
             ].map(([k, v]) => (
-              <div key={k} className="flex items-center justify-between gap-3 px-4 py-2.5 text-[13px]">
+              <div key={k} className="flex items-center justify-between gap-3 px-4 py-2.5 text-body">
                 <span className="text-muted-foreground">{k}</span>
                 <span className="font-medium tabular">{v}</span>
               </div>
@@ -302,7 +302,7 @@ export function MonthlyTab() {
             <div>
               <SectionLabel>Your current monthly SIP / investment</SectionLabel>
               <div className="relative max-w-60">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-body text-muted-foreground">₹</span>
                 <Input
                   className="pl-7 tabular"
                   value={setup.monthlySip.toLocaleString("en-IN")}
@@ -312,15 +312,15 @@ export function MonthlyTab() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-xl border border-border p-4">
-                <div className="text-[12px] text-muted-foreground">Years to corpus — without stopping leakage</div>
-                <div className="mt-1 text-[22px] font-semibold tabular">{years(r.yearsWithLeak, 2)}</div>
+                <div className="text-body text-muted-foreground">Years to corpus — without stopping leakage</div>
+                <div className="mt-1 text-heading font-semibold tabular">{years(r.yearsWithLeak, 2)}</div>
               </div>
               <div className="rounded-xl border border-success/30 bg-success-soft p-4">
-                <div className="text-[12px] text-success">Years to corpus — leakage stopped & invested</div>
-                <div className="mt-1 text-[22px] font-semibold text-success tabular">{years(r.yearsLeakStopped, 2)}</div>
+                <div className="text-body text-success">Years to corpus — leakage stopped & invested</div>
+                <div className="mt-1 text-heading font-semibold text-success tabular">{years(r.yearsLeakStopped, 2)}</div>
               </div>
             </div>
-            <p className="text-[12.5px] text-muted-foreground">
+            <p className="text-body text-muted-foreground">
               Change the SIP to see the freedom gap move. Ages use your current age ({setup.age}) plus the years needed to reach {inrCompact(r.setup.corpus)}.
             </p>
           </div>

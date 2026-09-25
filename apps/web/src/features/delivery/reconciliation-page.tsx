@@ -121,20 +121,20 @@ export function ReconciliationPage() {
                   <TR key={c.id}>
                     <TD className="pl-5">
                       <div className="font-medium">{client.name}</div>
-                      <div className="text-[12px] text-muted-foreground">{ag.packageName}</div>
+                      <div className="text-body text-muted-foreground">{ag.packageName}</div>
                     </TD>
                     <TD className="text-right tabular">{c.promised}</TD>
                     <TD className="text-right tabular">
                       <span className={cn(short > 0 && !projected && "font-semibold text-warning")}>{c.delivered}</span>
-                      {c.inProgress > 0 && <div className="text-[11px] text-muted-foreground">+{c.inProgress} in progress</div>}
+                      {c.inProgress > 0 && <div className="text-body text-muted-foreground">+{c.inProgress} in progress</div>}
                     </TD>
                     <TD className="min-w-[220px]">
                       {short === 0 ? (
-                        <span className="inline-flex items-center gap-1 text-[12.5px] text-success">
+                        <span className="inline-flex items-center gap-1 text-body text-success">
                           <CheckCircle2 className="size-3.5" /> Fully delivered
                         </span>
                       ) : projected ? (
-                        <span className="text-[12.5px] text-muted-foreground">{short} open · decide at close</span>
+                        <span className="text-body text-muted-foreground">{short} open · decide at close</span>
                       ) : c.status === "reconciling" ? (
                         <div className="space-y-1">
                           <Select
@@ -145,18 +145,18 @@ export function ReconciliationPage() {
                             }}
                             options={decisionOptions(c)}
                             placeholder={`Decide ${short} unit shortfall…`}
-                            className="h-8 text-[12.5px]"
+                            className="h-8 text-body"
                           />
                           {note && (
                             <Tooltip content={note.reason}>
-                              <span className="inline-flex cursor-help items-center gap-1 text-[11px] text-muted-foreground">
+                              <span className="inline-flex cursor-help items-center gap-1 text-body text-muted-foreground">
                                 <AlertTriangle className="size-3 text-warning" /> {note.cause === "client" ? "Client-caused" : "Agency-caused"} · why?
                               </span>
                             </Tooltip>
                           )}
                         </div>
                       ) : (
-                        <span className="text-[12.5px] text-muted-foreground">
+                        <span className="text-body text-muted-foreground">
                           {decisions[c.id] ? decisionOptions(c).find((o) => o.value === decisions[c.id])?.label : `${short} carried forward (logged)`}
                         </span>
                       )}
@@ -168,7 +168,7 @@ export function ReconciliationPage() {
                         <div className="h-1.5 w-14 overflow-hidden rounded-full bg-muted">
                           <div className={cn("h-full rounded-full", m < 0.2 ? "bg-danger" : m < 0.35 ? "bg-warning" : "bg-success")} style={{ width: `${Math.max(0, m) * 100}%` }} />
                         </div>
-                        <span className={cn("text-[12.5px] tabular", m < 0.2 && "text-danger")}>{pct(m)}</span>
+                        <span className={cn("text-body tabular", m < 0.2 && "text-danger")}>{pct(m)}</span>
                       </div>
                     </TD>
                     <TD>
@@ -215,8 +215,8 @@ export function ReconciliationPage() {
             {rules.map((r) => (
               <div key={r.id} className="flex gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-medium">{r.label}</div>
-                  <div className="text-[12px] text-muted-foreground">{r.desc}</div>
+                  <div className="text-body font-medium">{r.label}</div>
+                  <div className="text-body text-muted-foreground">{r.desc}</div>
                 </div>
                 <Switch
                   checked={r.enabled}
@@ -228,7 +228,7 @@ export function ReconciliationPage() {
                 />
               </div>
             ))}
-            <div className="flex gap-2 rounded-xl bg-accent-soft p-3 text-[12.5px] text-accent">
+            <div className="flex gap-2 rounded-xl bg-primary-soft p-3 text-body text-primary">
               <ShieldCheck className="mt-0.5 size-4 shrink-0" />
               No silent carry-forward. Every unit that moves between cycles has an owner, a reason and a timestamp.
             </div>
@@ -256,26 +256,26 @@ export function ReconciliationPage() {
             <DialogBody className="space-y-4">
               <div className="grid grid-cols-3 gap-2 rounded-xl border border-border p-3 text-center">
                 <div>
-                  <div className="text-[11px] text-muted-foreground">Delivered</div>
-                  <div className="text-[17px] font-semibold tabular">
+                  <div className="text-body text-muted-foreground">Delivered</div>
+                  <div className="text-subheading font-semibold tabular">
                     {closing.delivered}/{closing.promised}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-muted-foreground">Revenue</div>
-                  <div className="text-[17px] font-semibold tabular">{inr(closing.revenue)}</div>
+                  <div className="text-body text-muted-foreground">Revenue</div>
+                  <div className="text-subheading font-semibold tabular">{inr(closing.revenue)}</div>
                 </div>
                 <div>
-                  <div className="text-[11px] text-muted-foreground">Margin</div>
-                  <div className="text-[17px] font-semibold tabular">{pct((closing.revenue - closing.cost) / closing.revenue)}</div>
+                  <div className="text-body text-muted-foreground">Margin</div>
+                  <div className="text-subheading font-semibold tabular">{pct((closing.revenue - closing.cost) / closing.revenue)}</div>
                 </div>
               </div>
               {decisions[closing.id] && (
-                <p className="text-[13px]">
+                <p className="text-body">
                   Shortfall decision: <span className="font-medium">{decisionOptions(closing).find((o) => o.value === decisions[closing.id])?.label}</span>
                 </p>
               )}
-              <div className="space-y-1.5 rounded-xl bg-muted p-3.5 text-[12.5px] text-muted-foreground">
+              <div className="space-y-1.5 rounded-xl bg-muted p-3.5 text-body text-muted-foreground">
                 <p className="flex gap-2">
                   <Lock className="mt-0.5 size-3.5 shrink-0" /> Delivered units, revenue, cost and margin for this period are frozen.
                 </p>
@@ -283,7 +283,7 @@ export function ReconciliationPage() {
                   Closed periods are never silently recalculated. Late timesheets, expenses or credit notes post as dated adjustments in the next open period — with who and why.
                 </p>
               </div>
-              <label className="flex cursor-pointer items-center gap-2.5 text-[13px]">
+              <label className="flex cursor-pointer items-center gap-2.5 text-body">
                 <Checkbox checked={ack} onCheckedChange={(v) => setAck(v === true)} />I understand this period will be locked
               </label>
             </DialogBody>

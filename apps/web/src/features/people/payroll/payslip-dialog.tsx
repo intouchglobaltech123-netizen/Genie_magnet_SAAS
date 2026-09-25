@@ -62,8 +62,8 @@ function Payslip({ row, released, blurred }: { row: PayrollRow; released: boolea
   return (
     <div>
       <div className="px-6 pt-6 pr-12">
-        <DialogTitle className="text-base">Payslip preview</DialogTitle>
-        <p className="text-[13px] text-muted-foreground">
+        <DialogTitle className="text-body">Payslip preview</DialogTitle>
+        <p className="text-body text-muted-foreground">
           {row.person.name} · {PAY_PERIOD.label}
           {released ? (
             <Badge tone="success" dot className="ml-2">
@@ -81,22 +81,22 @@ function Payslip({ row, released, blurred }: { row: PayrollRow; released: boolea
       <div className="m-6 rounded-xl border border-border bg-card">
         <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
           <div className="flex items-center gap-3">
-            <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+            <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary text-body font-bold text-primary-foreground">
               GM
             </span>
             <div>
-              <div className="text-[15px] font-semibold tracking-tight">Genie Magnet</div>
-              <div className="text-[12px] text-muted-foreground">Appakudal, Erode District, Tamil Nadu 638315</div>
+              <div className="text-subheading font-semibold tracking-tight">Genie Magnet</div>
+              <div className="text-body text-muted-foreground">Appakudal, Erode District, Tamil Nadu 638315</div>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Payslip for the month</div>
-            <div className="text-[15px] font-semibold">{PAY_PERIOD.label}</div>
-            <div className="text-[12px] text-muted-foreground">Pay date: {fmtDate(PAY_PERIOD.payDate, { day: "2-digit", month: "short", year: "numeric" })}</div>
+            <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Payslip for the month</div>
+            <div className="text-subheading font-semibold">{PAY_PERIOD.label}</div>
+            <div className="text-body text-muted-foreground">Pay date: {fmtDate(PAY_PERIOD.payDate, { day: "2-digit", month: "short", year: "numeric" })}</div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-x-8 gap-y-2 px-6 py-4 text-[13px] sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-2 px-6 py-4 text-body sm:grid-cols-2">
           {details.map(([k, v]) => (
             <div key={k} className="flex justify-between gap-3 border-b border-dashed border-border pb-1.5">
               <span className="text-muted-foreground">{k}</span>
@@ -106,9 +106,9 @@ function Payslip({ row, released, blurred }: { row: PayrollRow; released: boolea
         </div>
 
         <div className="px-6 pb-4">
-          <table className="w-full border border-border text-[13px]">
+          <table className="w-full border border-border text-body">
             <thead>
-              <tr className="bg-muted/60 text-[11px] uppercase tracking-wider text-muted-foreground">
+              <tr className="bg-muted/60 text-body uppercase tracking-wider text-muted-foreground">
                 <th className="px-3 py-2 text-left font-medium">Earnings</th>
                 <th className="border-r border-border px-3 py-2 text-right font-medium">Amount</th>
                 <th className="px-3 py-2 text-left font-medium">Deductions</th>
@@ -138,17 +138,17 @@ function Payslip({ row, released, blurred }: { row: PayrollRow; released: boolea
           </table>
         </div>
 
-        <div className="mx-6 mb-5 flex flex-col gap-1 rounded-lg bg-accent-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-6 mb-5 flex flex-col gap-1 rounded-lg bg-primary-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <div className="text-[11px] font-medium uppercase tracking-wider text-accent">Net pay</div>
-            <div className={cn("text-[13px] text-foreground", blurred && "blur-sm select-none")}>{rupeesInWords(row.net)}</div>
+            <div className="text-body font-medium uppercase tracking-wider text-primary">Net pay</div>
+            <div className={cn("text-body text-foreground", blurred && "blur-sm select-none")}>{rupeesInWords(row.net)}</div>
           </div>
-          <div className={cn("text-[22px] font-semibold tracking-tight text-foreground tabular", blurred && "blur-sm select-none")}>
+          <div className={cn("text-heading font-semibold tracking-tight text-foreground tabular", blurred && "blur-sm select-none")}>
             {inr(row.net)}
           </div>
         </div>
 
-        <div className="border-t border-border px-6 py-3 text-center text-[11.5px] text-muted-foreground">
+        <div className="border-t border-border px-6 py-3 text-center text-body text-muted-foreground">
           This is a system-generated payslip and does not require a signature. · Employer PF of {inr(row.employerPf)} is part of CTC.
         </div>
       </div>

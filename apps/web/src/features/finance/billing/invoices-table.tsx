@@ -65,12 +65,12 @@ export function InvoicesTable({
               key={f.key}
               onClick={() => setFilter(f.key)}
               className={cn(
-                "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-[12.5px] font-medium transition",
+                "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-body font-medium transition",
                 filter === f.key ? "border-foreground bg-foreground text-background" : "border-border bg-card text-muted-foreground hover:text-foreground",
               )}
             >
               {f.label}
-              <span className={cn("tabular text-[11px]", filter === f.key ? "opacity-70" : "text-muted-foreground/70")}>{counts[f.key] ?? 0}</span>
+              <span className={cn("tabular text-body", filter === f.key ? "opacity-70" : "text-muted-foreground/70")}>{counts[f.key] ?? 0}</span>
             </button>
           ))}
         </div>
@@ -100,42 +100,42 @@ export function InvoicesTable({
               <TR
                 key={i.id}
                 onClick={() => onOpen(i)}
-                className={cn("cursor-pointer", critical && "bg-danger-soft/70 hover:bg-danger-soft", i.status === "draft" && "bg-accent-soft/40")}
+                className={cn("cursor-pointer", critical && "bg-danger-soft/70 hover:bg-danger-soft", i.status === "draft" && "bg-primary-soft/40")}
               >
                 <TD className={cn("pl-5", critical && "border-l-2 border-l-danger")}>
-                  <div className="font-mono text-[12.5px] font-medium">{i.number}</div>
-                  <div className="text-[11.5px] text-muted-foreground">{fmtDate(i.issueDate)}</div>
+                  <div className="font-mono text-body font-medium">{i.number}</div>
+                  <div className="text-body text-muted-foreground">{fmtDate(i.issueDate)}</div>
                 </TD>
                 <TD className="max-w-[260px]">
                   <div className="truncate font-medium">{i.partyName}</div>
-                  <div className="truncate text-[11.5px] text-muted-foreground">
+                  <div className="truncate text-body text-muted-foreground">
                     {i.period} · {i.description}
                   </div>
                 </TD>
                 <TD className="text-right tabular">{inr(i.taxable)}</TD>
                 <TD className="text-right">
                   <div className="tabular">{inr(i.gst)}</div>
-                  <div className="text-[10.5px] text-muted-foreground">
+                  <div className="text-body text-muted-foreground">
                     {i.interState ? "IGST 18%" : "CGST 9% + SGST 9%"}
                   </div>
                 </TD>
                 <TD className="text-right font-medium tabular">{inr(i.total)}</TD>
                 <TD>
                   <div className="tabular">{fmtDate(i.dueDate)}</div>
-                  {i.daysOverdue > 0 && <div className="text-[11.5px] font-medium text-danger">{i.daysOverdue}d overdue</div>}
+                  {i.daysOverdue > 0 && <div className="text-body font-medium text-danger">{i.daysOverdue}d overdue</div>}
                 </TD>
                 <TD>
                   <div className="flex flex-col items-start gap-1">
                     <Badge tone={statusMeta[i.status].tone} dot>
                       {statusMeta[i.status].label}
                     </Badge>
-                    {i.status === "overdue" && i.received > 0 && <span className="text-[10.5px] text-muted-foreground">part-paid</span>}
+                    {i.status === "overdue" && i.received > 0 && <span className="text-body text-muted-foreground">part-paid</span>}
                   </div>
                 </TD>
                 <TD className={cn("text-right font-medium tabular", i.balance > 0 ? (i.daysOverdue > 0 ? "text-danger" : "text-foreground") : "text-muted-foreground")}>
                   {i.balance > 0 ? inr(i.balance) : "—"}
                   {i.reminders > 0 && i.balance > 0 && (
-                    <div className="text-[10.5px] font-normal text-muted-foreground">
+                    <div className="text-body font-normal text-muted-foreground">
                       {i.reminders} reminder{i.reminders > 1 ? "s" : ""}
                     </div>
                   )}
@@ -184,7 +184,7 @@ export function InvoicesTable({
           )}
         </TBody>
       </Table>
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-5 py-3 text-[12.5px] text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-5 py-3 text-body text-muted-foreground">
         <span>
           Showing {visible.length} of {rows.length} · taxable <span className="font-medium text-foreground tabular">{inr(totals.taxable)}</span> · billed{" "}
           <span className="font-medium text-foreground tabular">{inr(totals.total)}</span> · open{" "}

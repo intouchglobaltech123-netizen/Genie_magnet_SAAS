@@ -17,7 +17,7 @@ export function DaySummary({ sheet }: { sheet: DaySheet | undefined }) {
   const over = s.total > SHIFT_MINUTES;
   const R = 44;
   const C = 2 * Math.PI * R;
-  const ringTone = over ? "var(--warning)" : ratio >= 0.94 ? "var(--success)" : "var(--accent)";
+  const ringTone = over ? "var(--color-warning)" : ratio >= 0.94 ? "var(--color-success)" : "var(--color-primary)";
 
   return (
     <Card>
@@ -31,7 +31,7 @@ export function DaySummary({ sheet }: { sheet: DaySheet | undefined }) {
         <div className="flex items-center gap-5">
           <div className="relative size-[108px] shrink-0">
             <svg viewBox="0 0 108 108" className="size-full -rotate-90">
-              <circle cx="54" cy="54" r={R} fill="none" stroke="var(--muted)" strokeWidth="9" />
+              <circle cx="54" cy="54" r={R} fill="none" stroke="var(--color-muted)" strokeWidth="9" />
               <circle
                 cx="54"
                 cy="54"
@@ -46,8 +46,8 @@ export function DaySummary({ sheet }: { sheet: DaySheet | undefined }) {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-[20px] font-semibold tracking-tight tabular">{hoursLabel(s.total)}</span>
-              <span className="text-[11px] text-muted-foreground">of 8h shift</span>
+              <span className="text-heading font-semibold tracking-tight tabular">{hoursLabel(s.total)}</span>
+              <span className="text-body text-muted-foreground">of 8h shift</span>
             </div>
           </div>
           <div className="grid flex-1 grid-cols-2 gap-x-3 gap-y-3">
@@ -63,7 +63,7 @@ export function DaySummary({ sheet }: { sheet: DaySheet | undefined }) {
         </div>
 
         <div>
-          <div className="mb-1.5 flex items-center justify-between text-[12px]">
+          <div className="mb-1.5 flex items-center justify-between text-body">
             <span className="font-medium">Productive vs non-productive</span>
             <span className="text-muted-foreground tabular">
               {s.total ? Math.round((s.productive / s.total) * 100) : 0}% productive
@@ -73,7 +73,7 @@ export function DaySummary({ sheet }: { sheet: DaySheet | undefined }) {
             <div className="h-full bg-success transition-all duration-500" style={{ width: `${s.total ? (s.productive / s.total) * 100 : 0}%` }} />
             <div className="h-full bg-chart-4/70 transition-all duration-500" style={{ width: `${s.total ? (s.nonProductive / s.total) * 100 : 0}%` }} />
           </div>
-          <div className="mt-1.5 flex justify-between text-[11.5px] text-muted-foreground tabular">
+          <div className="mt-1.5 flex justify-between text-body text-muted-foreground tabular">
             <span className="inline-flex items-center gap-1">
               <span className="size-1.5 rounded-full bg-success" /> {hoursLabel(s.productive)}
             </span>
@@ -84,7 +84,7 @@ export function DaySummary({ sheet }: { sheet: DaySheet | undefined }) {
         </div>
 
         <div>
-          <div className="mb-1.5 text-[12px] font-medium">Day timeline</div>
+          <div className="mb-1.5 text-body font-medium">Day timeline</div>
           <div className="relative h-7 overflow-hidden rounded-lg bg-muted">
             {(sheet?.rows ?? []).map((r, i) => {
               const a = toMin(r.start);
@@ -105,7 +105,7 @@ export function DaySummary({ sheet }: { sheet: DaySheet | undefined }) {
               );
             })}
           </div>
-          <div className="mt-1 flex justify-between text-[10.5px] text-muted-foreground tabular">
+          <div className="mt-1 flex justify-between text-body text-muted-foreground tabular">
             <span>9 AM</span>
             <span>11</span>
             <span>1 PM</span>
@@ -122,8 +122,8 @@ export function DaySummary({ sheet }: { sheet: DaySheet | undefined }) {
 function Mini({ label, value, cls }: { label: string; value: React.ReactNode; cls?: string }) {
   return (
     <div>
-      <div className="text-[11.5px] text-muted-foreground">{label}</div>
-      <div className={cn("text-[18px] font-semibold leading-tight tracking-tight tabular", cls)}>{value}</div>
+      <div className="text-body text-muted-foreground">{label}</div>
+      <div className={cn("text-subheading font-semibold leading-tight tracking-tight tabular", cls)}>{value}</div>
     </div>
   );
 }

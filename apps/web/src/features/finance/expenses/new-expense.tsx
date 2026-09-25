@@ -127,7 +127,7 @@ function NewExpenseForm({ onDone }: { onDone: () => void }) {
             />
           </Field>
           <div className="flex items-end">
-            <label className="flex h-9 cursor-pointer items-center gap-2 text-[13px]">
+            <label className="flex h-9 cursor-pointer items-center gap-2 text-body">
               <Checkbox checked={gstBill} onCheckedChange={(v) => setGstBill(v === true)} />
               GST tax invoice {gstBill && <span className="text-muted-foreground tabular">· GST {inr(gst)}</span>}
             </label>
@@ -135,7 +135,7 @@ function NewExpenseForm({ onDone }: { onDone: () => void }) {
         </div>
         <div className="flex items-center gap-3 rounded-xl border border-dashed border-border p-3">
           <ReceiptTile expense={{ vendor: vendor || "?", amount: amt, category, receipt }} />
-          <div className="min-w-0 flex-1 text-[13px]">
+          <div className="min-w-0 flex-1 text-body">
             {receipt ? (
               <span className="inline-flex items-center gap-1.5 text-success">
                 <CheckCircle2 className="size-4" /> bill_{vendor.split(" ")[0]?.toLowerCase() || "receipt"}_25sep.jpg attached

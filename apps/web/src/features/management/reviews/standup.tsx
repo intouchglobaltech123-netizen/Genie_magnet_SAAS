@@ -31,8 +31,8 @@ export function DailyStandup() {
                 <Sun className="size-5" />
               </span>
               <div>
-                <div className="text-[15px] font-semibold">Operational stand-up · Fri 25 Sep</div>
-                <div className="text-[12.5px] text-muted-foreground">9:30 – 9:45 AM · facilitated by Ashwin · focus: Clarity</div>
+                <div className="text-subheading font-semibold">Operational stand-up · Fri 25 Sep</div>
+                <div className="text-body text-muted-foreground">9:30 – 9:45 AM · facilitated by Ashwin · focus: Clarity</div>
               </div>
             </div>
             <Button
@@ -50,13 +50,13 @@ export function DailyStandup() {
           </div>
           <div className="mt-4 flex items-center gap-3">
             <Progress value={(submitted / standups.length) * 100} tone="info" className="flex-1" />
-            <span className="text-[12.5px] text-muted-foreground tabular">
+            <span className="text-body text-muted-foreground tabular">
               {submitted}/{standups.length} submitted
             </span>
           </div>
         </Card>
         <Card className="p-5">
-          <div className="flex items-center gap-2 text-[13.5px] font-semibold">
+          <div className="flex items-center gap-2 text-body font-semibold">
             <AlertOctagon className="size-4 text-danger" /> Blockers ({blockers.length})
           </div>
           <ul className="mt-3 space-y-2.5">
@@ -64,7 +64,7 @@ export function DailyStandup() {
               const p = personById(b.personId);
               const done = converted.includes(b.personId);
               return (
-                <li key={b.personId} className="flex items-start gap-2 text-[12.5px]">
+                <li key={b.personId} className="flex items-start gap-2 text-body">
                   <Avatar name={p.name} size="xs" className="mt-0.5" />
                   <div className="min-w-0 flex-1">
                     <span className="font-medium">{p.name.split(" ")[0]}:</span> <span className="text-muted-foreground">{b.blockers}</span>
@@ -117,7 +117,7 @@ function StandupCard({ entry }: { entry: StandupEntry }) {
         <div className="flex items-center gap-2.5">
           <Avatar name={p.name} size="md" />
           <div>
-            <CardTitle className="text-[14px]">{p.name}</CardTitle>
+            <CardTitle className="text-body">{p.name}</CardTitle>
             <CardDescription className="mt-0">{p.role}</CardDescription>
           </div>
         </div>
@@ -131,13 +131,13 @@ function StandupCard({ entry }: { entry: StandupEntry }) {
           <Badge tone="outline">Pending</Badge>
         )}
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-2.5 text-[12.5px]">
+      <CardContent className="flex flex-1 flex-col gap-2.5 text-body">
         {editing ? (
           <>
             {(["yesterday", "today", "blockers"] as const).map((k) => (
               <div key={k}>
-                <div className="mb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{k === "yesterday" ? "Yesterday — done" : k === "today" ? "Today — plan" : "Blockers"}</div>
-                <Textarea value={draft[k]} onChange={(e) => setDraft({ ...draft, [k]: e.target.value })} className="min-h-14 text-[12.5px]" />
+                <div className="mb-1 text-body font-medium uppercase tracking-wider text-muted-foreground">{k === "yesterday" ? "Yesterday — done" : k === "today" ? "Today — plan" : "Blockers"}</div>
+                <Textarea value={draft[k]} onChange={(e) => setDraft({ ...draft, [k]: e.target.value })} className="min-h-14 text-body" />
               </div>
             ))}
             <div className="mt-auto flex justify-end gap-2 pt-1">
@@ -184,7 +184,7 @@ function StandupCard({ entry }: { entry: StandupEntry }) {
 function Line({ label, text, danger }: { label: string; text: string; danger?: boolean }) {
   return (
     <div className="grid grid-cols-[70px_1fr] gap-2">
-      <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="text-body font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
       <span className={cn(danger ? "text-danger" : "text-foreground/90", text === "None" && "text-muted-foreground")}>{text}</span>
     </div>
   );

@@ -86,7 +86,7 @@ export function RejectDialog({ expense, onOpenChange }: { expense: Expense | nul
                     key={r}
                     onClick={() => setReason(r)}
                     className={cn(
-                      "cursor-pointer rounded-full border px-2.5 py-1 text-xs transition",
+                      "cursor-pointer rounded-full border px-2.5 py-1 text-body transition",
                       reason === r ? "border-danger bg-danger-soft text-danger" : "border-border text-muted-foreground hover:text-foreground",
                     )}
                   >
@@ -132,7 +132,7 @@ export function ExpenseSheet({ expense, onOpenChange, onReject }: { expense: Exp
             <DialogBody className="space-y-5">
               <ReceiptPreview expense={expense} />
 
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl border border-border p-4 text-[13px]">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl border border-border p-4 text-body">
                 <Info2 label="Description" className="col-span-2">
                   {expense.description}
                 </Info2>
@@ -174,17 +174,17 @@ export function ExpenseSheet({ expense, onOpenChange, onReject }: { expense: Exp
               </div>
 
               <div>
-                <div className="mb-2 text-[13px] font-semibold">Policy checks</div>
+                <div className="mb-2 text-body font-semibold">Policy checks</div>
                 <ul className="divide-y divide-border rounded-xl border border-border">
                   {policyChecks(expense, personById(expense.approverId).name).map((c) => (
-                    <li key={c.label} className="flex items-start gap-2.5 px-3.5 py-2.5 text-[13px]">
+                    <li key={c.label} className="flex items-start gap-2.5 px-3.5 py-2.5 text-body">
                       {c.state === "pass" && <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />}
                       {c.state === "fail" && <XCircle className="mt-0.5 size-4 shrink-0 text-danger" />}
                       {c.state === "waiting" && <Clock className="mt-0.5 size-4 shrink-0 text-warning" />}
                       {c.state === "info" && <Info className="mt-0.5 size-4 shrink-0 text-info" />}
                       <div className="min-w-0 flex-1">
                         <div>{c.label}</div>
-                        {c.detail && <div className="text-xs text-muted-foreground">{c.detail}</div>}
+                        {c.detail && <div className="text-body text-muted-foreground">{c.detail}</div>}
                       </div>
                     </li>
                   ))}
@@ -192,18 +192,18 @@ export function ExpenseSheet({ expense, onOpenChange, onReject }: { expense: Exp
               </div>
 
               <div>
-                <div className="mb-2 text-[13px] font-semibold">Timeline</div>
+                <div className="mb-2 text-body font-semibold">Timeline</div>
                 <ol className="relative space-y-3 border-l border-border pl-5">
                   {expense.timeline.map((t, idx) => (
-                    <li key={idx} className="relative text-[13px]">
+                    <li key={idx} className="relative text-body">
                       <span
                         className={cn(
                           "absolute -left-[25px] top-1 size-2.5 rounded-full ring-4 ring-popover",
-                          t.tone === "success" ? "bg-success" : t.tone === "danger" ? "bg-danger" : t.tone === "warning" ? "bg-warning" : t.tone === "accent" ? "bg-accent" : "bg-chart-5",
+                          t.tone === "success" ? "bg-success" : t.tone === "danger" ? "bg-danger" : t.tone === "warning" ? "bg-warning" : t.tone === "accent" ? "bg-primary" : "bg-chart-5",
                         )}
                       />
                       <div>{t.text}</div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-body text-muted-foreground">
                         {new Date(t.at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}
                       </div>
                     </li>
@@ -228,7 +228,7 @@ export function ExpenseSheet({ expense, onOpenChange, onReject }: { expense: Exp
                 </Button>
               )}
               {(expense.approval === "rejected" || expense.paymentStatus !== "unpaid") && expense.approval !== "pending" && (
-                <span className="mr-auto inline-flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                <span className="mr-auto inline-flex items-center gap-1.5 text-body text-muted-foreground">
                   <AlertCircle className="size-4" /> {expense.approval === "rejected" ? "Closed — requester can resubmit" : "Settled — no action needed"}
                 </span>
               )}
@@ -243,7 +243,7 @@ export function ExpenseSheet({ expense, onOpenChange, onReject }: { expense: Exp
 function Info2({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={cn("min-w-0", className)}>
-      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-body text-muted-foreground">{label}</div>
       <div className="mt-0.5">{children}</div>
     </div>
   );

@@ -65,11 +65,11 @@ function Pill({ ev, onClick, compact }: { ev: CalEvent; onClick: () => void; com
     <button
       onClick={onClick}
       className={cn(
-        "flex w-full cursor-pointer items-center gap-1 truncate rounded-md px-1.5 text-left text-[11.5px] font-medium transition hover:brightness-95",
+        "flex w-full cursor-pointer items-center gap-1 truncate rounded-md px-1.5 text-left text-body font-medium transition hover:brightness-95",
         compact ? "h-5" : "h-6",
         ev.status === "pending" && "border border-dashed",
       )}
-      style={{ background: tint(c, 16), color: "var(--foreground)", borderColor: c }}
+      style={{ background: tint(c, 16), color: "var(--color-foreground)", borderColor: c }}
       title={ev.title}
     >
       <span className="size-1.5 shrink-0 rounded-full" style={{ background: c }} />
@@ -133,8 +133,8 @@ export function CalendarView() {
               <ChevronRight />
             </Button>
           </div>
-          <h2 className="min-w-44 text-[15px] font-semibold tracking-tight">{rangeLabel}</h2>
-          <div className="inline-flex rounded-lg bg-muted p-0.5 text-[13px]">
+          <h2 className="min-w-44 text-subheading font-semibold tracking-tight">{rangeLabel}</h2>
+          <div className="inline-flex rounded-lg bg-muted p-0.5 text-body">
             {(["week", "month"] as const).map((v) => (
               <button
                 key={v}
@@ -152,11 +152,11 @@ export function CalendarView() {
               key={t}
               onClick={() => setEnabled((e) => ({ ...e, [t]: !e[t] }))}
               className={cn(
-                "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium transition",
+                "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-body font-medium transition",
                 enabled[t] ? "border-border bg-card text-foreground" : "border-dashed border-border text-muted-foreground opacity-60",
               )}
             >
-              <span className="size-2 rounded-full" style={{ background: enabled[t] ? typeMeta[t].color : "var(--muted-foreground)" }} />
+              <span className="size-2 rounded-full" style={{ background: enabled[t] ? typeMeta[t].color : "var(--color-muted-foreground)" }} />
               {typeMeta[t].label}
               <span className="tabular text-muted-foreground">{counts[t]}</span>
             </button>
@@ -178,11 +178,11 @@ export function CalendarView() {
                   const today = iso(d) === TODAY;
                   return (
                     <div key={iso(d)} className={cn("border-l border-border px-2 py-2 text-center", d.getDay() === 0 && "bg-muted/50")}>
-                      <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{format(d, "EEE")}</div>
+                      <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">{format(d, "EEE")}</div>
                       <div
                         className={cn(
-                          "tabular mx-auto mt-0.5 inline-flex size-7 items-center justify-center rounded-full text-[15px] font-semibold",
-                          today && "bg-accent text-accent-foreground",
+                          "tabular mx-auto mt-0.5 inline-flex size-7 items-center justify-center rounded-full text-subheading font-semibold",
+                          today && "bg-primary text-primary-foreground",
                         )}
                       >
                         {format(d, "d")}
@@ -193,7 +193,7 @@ export function CalendarView() {
               </div>
               {/* All-day row */}
               <div className="grid grid-cols-[64px_repeat(7,1fr)] border-b border-border">
-                <div className="px-2 py-2 text-right text-[10.5px] uppercase tracking-wider text-muted-foreground">All day</div>
+                <div className="px-2 py-2 text-right text-body uppercase tracking-wider text-muted-foreground">All day</div>
                 {weekDays.map((d) => {
                   const list = (byDate.get(iso(d)) ?? []).filter((e) => !e.start);
                   return (
@@ -209,7 +209,7 @@ export function CalendarView() {
               <div className="grid grid-cols-[64px_repeat(7,1fr)]">
                 <div className="relative" style={{ height: (END_H - START_H) * HOUR_PX }}>
                   {Array.from({ length: END_H - START_H }, (_, i) => (
-                    <div key={i} className="tabular absolute right-2 -translate-y-1/2 text-[10.5px] text-muted-foreground" style={{ top: i * HOUR_PX }}>
+                    <div key={i} className="tabular absolute right-2 -translate-y-1/2 text-body text-muted-foreground" style={{ top: i * HOUR_PX }}>
                       {i === 0 ? "" : to12(`${START_H + i}:00`).replace(":00", "")}
                     </div>
                   ))}
@@ -220,7 +220,7 @@ export function CalendarView() {
                   return (
                     <div
                       key={iso(d)}
-                      className={cn("relative border-l border-border", d.getDay() === 0 && "bg-muted/50", isToday && "bg-accent-soft/40")}
+                      className={cn("relative border-l border-border", d.getDay() === 0 && "bg-muted/50", isToday && "bg-primary-soft/40")}
                       style={{ height: (END_H - START_H) * HOUR_PX }}
                     >
                       {Array.from({ length: END_H - START_H }, (_, i) => (
@@ -243,7 +243,7 @@ export function CalendarView() {
                           <button
                             key={ev.id}
                             onClick={() => setSelected(ev)}
-                            className="absolute z-10 cursor-pointer overflow-hidden rounded-md border-l-[3px] px-1.5 py-0.5 text-left text-[11.5px] leading-tight transition hover:z-30 hover:shadow-pop"
+                            className="absolute z-10 cursor-pointer overflow-hidden rounded-md border-l-[3px] px-1.5 py-0.5 text-left text-body leading-tight transition hover:z-30 hover:shadow-pop"
                             style={{
                               top: top + 1,
                               height,
@@ -258,12 +258,12 @@ export function CalendarView() {
                               <span className="truncate">{ev.title}</span>
                             </div>
                             {height > 34 && (
-                              <div className="tabular truncate text-[10.5px] text-muted-foreground">
+                              <div className="tabular truncate text-body text-muted-foreground">
                                 {early ? `Call ${to12(ev.start!)}` : to12(ev.start!)} – {to12(ev.end!)}
                               </div>
                             )}
                             {height > 60 && ev.location && (
-                              <div className="flex items-center gap-0.5 truncate text-[10.5px] text-muted-foreground">
+                              <div className="flex items-center gap-0.5 truncate text-body text-muted-foreground">
                                 <MapPin className="size-2.5 shrink-0" />
                                 <span className="truncate">{ev.location}</span>
                               </div>
@@ -284,7 +284,7 @@ export function CalendarView() {
             <div className="min-w-[760px]">
               <div className="grid grid-cols-7 border-b border-border">
                 {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                  <div key={d} className="px-2 py-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                  <div key={d} className="px-2 py-2 text-body font-medium uppercase tracking-wider text-muted-foreground">
                     {d}
                   </div>
                 ))}
@@ -312,9 +312,9 @@ export function CalendarView() {
                       <div className="flex justify-end">
                         <span
                           className={cn(
-                            "tabular inline-flex size-6 items-center justify-center rounded-full text-[12px] font-medium",
+                            "tabular inline-flex size-6 items-center justify-center rounded-full text-body font-medium",
                             !inMonth && "text-muted-foreground/60",
-                            isToday && "bg-accent text-accent-foreground",
+                            isToday && "bg-primary text-primary-foreground",
                           )}
                         >
                           {format(d, "d")}
@@ -326,10 +326,10 @@ export function CalendarView() {
                       {more > 0 && (
                         <Popover>
                           <PopoverTrigger asChild>
-                            <button className="cursor-pointer px-1.5 text-[11.5px] font-medium text-muted-foreground hover:text-foreground">+{more} more</button>
+                            <button className="cursor-pointer px-1.5 text-body font-medium text-muted-foreground hover:text-foreground">+{more} more</button>
                           </PopoverTrigger>
                           <PopoverContent className="w-64 space-y-1">
-                            <div className="mb-1 text-[12px] font-semibold">{format(d, "EEEE, d MMM")}</div>
+                            <div className="mb-1 text-body font-semibold">{format(d, "EEEE, d MMM")}</div>
                             {list.map((e) => (
                               <Pill key={e.id} ev={e} onClick={() => setSelected(e)} />
                             ))}
@@ -342,7 +342,7 @@ export function CalendarView() {
               </div>
             </div>
           </div>
-          <div className="border-t border-border px-4 py-2 text-[12px] text-muted-foreground">
+          <div className="border-t border-border px-4 py-2 text-body text-muted-foreground">
             Daily standups (9:30 AM, Mon–Sat) are hidden in month view — switch to Week to see them.
           </div>
         </Card>

@@ -20,7 +20,7 @@ export function Tooltip({
         <TP.Content
           side={side}
           sideOffset={6}
-          className="z-50 max-w-64 rounded-md bg-primary px-2 py-1 text-xs text-primary-foreground shadow-pop"
+          className="z-50 max-w-64 rounded-md bg-primary px-2 py-1 text-body text-primary-foreground shadow-pop"
         >
           {content}
         </TP.Content>

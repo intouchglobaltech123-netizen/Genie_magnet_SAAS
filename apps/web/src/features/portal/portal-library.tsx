@@ -24,8 +24,8 @@ export function PortalLibrary() {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-[28px] font-semibold tracking-tight">Library</h1>
-          <p className="mt-1 text-[14px] text-muted-foreground">Every approved video, the exact version you approved, and where it went live.</p>
+          <h1 className="text-heading font-semibold tracking-tight">Library</h1>
+          <p className="mt-1 text-body text-muted-foreground">Every approved video, the exact version you approved, and where it went live.</p>
         </div>
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList>
@@ -37,7 +37,7 @@ export function PortalLibrary() {
       </div>
 
       {shown.length === 0 ? (
-        <Card className="p-10 text-center text-[13px] text-muted-foreground">Nothing here yet.</Card>
+        <Card className="p-10 text-center text-body text-muted-foreground">Nothing here yet.</Card>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((v) => {
@@ -50,7 +50,7 @@ export function PortalLibrary() {
                 <div className="space-y-3 p-4">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-[11.5px] text-muted-foreground">{v.code}</span>
+                      <span className="font-mono text-body text-muted-foreground">{v.code}</span>
                       {v.stage === "Published" ? (
                         <Badge tone="success" dot>
                           Live
@@ -61,8 +61,8 @@ export function PortalLibrary() {
                         </Badge>
                       )}
                     </div>
-                    <div className="mt-1 text-[14.5px] font-semibold leading-snug">{v.title}</div>
-                    <div className="mt-1 text-[12px] text-muted-foreground">
+                    <div className="mt-1 text-body font-semibold leading-snug">{v.title}</div>
+                    <div className="mt-1 text-body text-muted-foreground">
                       {ver?.label} approved · {ver?.duration} · {v.platform.join(", ")}
                     </div>
                   </div>

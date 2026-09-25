@@ -32,15 +32,15 @@ export const sourceTone: Record<Lead["source"], BadgeTone> = {
 export function ScoreRing({ score, size = 30 }: { score: number; size?: number }) {
   const r = 12;
   const c = 2 * Math.PI * r;
-  const color = score >= 80 ? "var(--success)" : score >= 60 ? "var(--accent)" : score >= 45 ? "var(--warning)" : "var(--danger)";
+  const color = score >= 80 ? "var(--color-success)" : score >= 60 ? "var(--color-primary)" : score >= 45 ? "var(--color-warning)" : "var(--color-danger)";
   return (
     <Tooltip content={`Qualification score ${score}/100`}>
       <span className="relative inline-flex shrink-0 items-center justify-center" style={{ width: size, height: size }}>
         <svg viewBox="0 0 30 30" className="absolute inset-0 -rotate-90" width={size} height={size}>
-          <circle cx="15" cy="15" r={r} fill="none" stroke="var(--muted)" strokeWidth="3" />
+          <circle cx="15" cy="15" r={r} fill="none" stroke="var(--color-muted)" strokeWidth="3" />
           <circle cx="15" cy="15" r={r} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(score / 100) * c} ${c}`} />
         </svg>
-        <span className="text-[10px] font-semibold tabular">{score}</span>
+        <span className="text-body font-semibold tabular">{score}</span>
       </span>
     </Tooltip>
   );
@@ -73,12 +73,12 @@ export function LeadCard({
         e.dataTransfer.effectAllowed = "move";
       }}
       onClick={onOpen}
-      className="group cursor-grab rounded-xl border border-border bg-card p-3 shadow-card transition hover:border-accent/40 hover:shadow-pop active:cursor-grabbing"
+      className="group cursor-grab rounded-xl border border-border bg-card p-3 shadow-card transition hover:border-primary/40 hover:shadow-pop active:cursor-grabbing"
     >
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[13px] font-semibold">{lead.company}</div>
-          <div className="truncate text-[12px] text-muted-foreground">{lead.name}</div>
+          <div className="truncate text-body font-semibold">{lead.company}</div>
+          <div className="truncate text-body text-muted-foreground">{lead.name}</div>
         </div>
         <ScoreRing score={lead.score} />
         <DropdownMenu>
@@ -107,7 +107,7 @@ export function LeadCard({
 
       <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
         <Badge tone={sourceTone[lead.source]}>{lead.source}</Badge>
-        <span className="truncate text-[11.5px] text-muted-foreground">{lead.service}</span>
+        <span className="truncate text-body text-muted-foreground">{lead.service}</span>
       </div>
       {discountPending && (
         <div className="mt-2">
@@ -118,15 +118,15 @@ export function LeadCard({
       )}
 
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-border pt-2.5">
-        <span className="text-[13px] font-semibold tabular">
+        <span className="text-body font-semibold tabular">
           {inrCompact(lead.value)}
-          <span className="text-[11px] font-normal text-muted-foreground">/mo</span>
+          <span className="text-body font-normal text-muted-foreground">/mo</span>
         </span>
         <div className="flex items-center gap-2">
           {fu !== "none" && (
             <span
               className={cn(
-                "inline-flex items-center gap-1 text-[11.5px] tabular",
+                "inline-flex items-center gap-1 text-body tabular",
                 fu === "overdue" || fu === "today" ? "font-medium text-danger" : "text-muted-foreground",
               )}
             >

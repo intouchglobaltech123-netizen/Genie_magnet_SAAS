@@ -68,7 +68,7 @@ export function BillingView() {
             <TabsTrigger value="invoices">Invoices</TabsTrigger>
             <TabsTrigger value="aging">Aging</TabsTrigger>
             <TabsTrigger value="advances">
-              Advances {unadjustedAdv > 0 && <Badge tone="accent" className="px-1.5 py-0 text-[10.5px]">{inrCompact(unadjustedAdv)}</Badge>}
+              Advances {unadjustedAdv > 0 && <Badge tone="accent" className="px-1.5 py-0 text-body">{inrCompact(unadjustedAdv)}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="credit">Credit notes</TabsTrigger>
           </TabsList>
@@ -105,7 +105,7 @@ export function BillingView() {
 
 function AgingMini({ invoices }: { invoices: InvoiceView[] }) {
   return (
-    <div className="flex items-center gap-3 text-[11.5px] text-muted-foreground">
+    <div className="flex items-center gap-3 text-body text-muted-foreground">
       <span className="shrink-0">Aging</span>
       <div className="flex-1">
         <AgingBar invoices={invoices} barOnly />
@@ -132,7 +132,7 @@ function UrbanNestCallout({
     return (
       <Card className="flex items-center gap-3 border-success/30 bg-success-soft p-4">
         <CheckCircle2 className="size-5 text-success" />
-        <div className="text-[13.5px]">
+        <div className="text-body">
           <span className="font-semibold">Urban Nest Realty cleared GM/26-27/041.</span>{" "}
           <span className="text-muted-foreground">Category can be reviewed from Dangerous → Convincing at the next client review.</span>
         </div>
@@ -149,14 +149,14 @@ function UrbanNestCallout({
           </span>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[15px] font-semibold">
+              <span className="text-subheading font-semibold">
                 Urban Nest {inrCompact(inv.balance)} overdue · {inv.daysOverdue} days · {inv.reminders} reminders sent · category Dangerous
               </span>
               <Badge tone="danger" dot>
                 Collection risk
               </Badge>
             </div>
-            <p className="mt-1 text-[13px] text-muted-foreground">
+            <p className="mt-1 text-body text-muted-foreground">
               <button className="cursor-pointer font-mono text-foreground underline-offset-2 hover:underline" onClick={() => onOpen(inv)}>
                 {inv.number}
               </button>{" "}

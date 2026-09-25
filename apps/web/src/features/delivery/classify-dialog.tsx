@@ -110,26 +110,26 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           {video && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-medium">2 · Client comment</span>
-                <span className="text-[12px] text-muted-foreground">
+                <span className="text-body font-medium">2 · Client comment</span>
+                <span className="text-body text-muted-foreground">
                   {clientById(video.clientId).name} · {video.stage}
                 </span>
               </div>
               <div className="max-h-44 space-y-1.5 overflow-y-auto scrollbar-thin">
-                {comments.length === 0 && <p className="text-[12.5px] text-muted-foreground">No comments yet — type the feedback below.</p>}
+                {comments.length === 0 && <p className="text-body text-muted-foreground">No comments yet — type the feedback below.</p>}
                 {comments.map((c) => (
                   <button
                     key={c.id}
                     onClick={() => pickComment(c.id)}
                     className={cn(
-                      "flex w-full cursor-pointer gap-2 rounded-lg border p-2.5 text-left text-[12.5px] transition",
-                      c.id === commentId ? "border-accent bg-accent-soft" : "border-border hover:bg-muted/60",
+                      "flex w-full cursor-pointer gap-2 rounded-lg border p-2.5 text-left text-body transition",
+                      c.id === commentId ? "border-primary bg-primary-soft" : "border-border hover:bg-muted/60",
                     )}
                   >
-                    <span className="shrink-0 font-mono text-[11px] text-accent">{c.timestamp ?? "—"}</span>
+                    <span className="shrink-0 font-mono text-body text-primary">{c.timestamp ?? "—"}</span>
                     <span className="flex-1">
                       {c.text}
-                      <span className="mt-0.5 block text-[11px] text-muted-foreground">
+                      <span className="mt-0.5 block text-body text-muted-foreground">
                         {c.author} · {video.versions.find((v) => v.id === c.versionId)?.label} · {fmtDate(c.at)}
                         {c.resolved && " · resolved"}
                       </span>
@@ -142,7 +142,7 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           )}
 
           <div className="space-y-2">
-            <span className="text-[13px] font-medium">3 · Class</span>
+            <span className="text-body font-medium">3 · Class</span>
             <div className="grid gap-2">
               {KINDS.map((k) => {
                 const m = kindMeta[k];
@@ -153,15 +153,15 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                     onClick={() => setKind(k)}
                     className={cn(
                       "flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-left transition",
-                      kind === k ? "border-accent ring-2 ring-accent/15" : "border-border hover:bg-muted/50",
+                      kind === k ? "border-primary ring-2 ring-primary/15" : "border-border hover:bg-muted/50",
                     )}
                   >
                     <span className={cn("mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg", m.iconCls)}>
                       <Icon className="size-4" />
                     </span>
                     <span>
-                      <span className="block text-[13.5px] font-medium">{m.label}</span>
-                      <span className="block text-[12px] text-muted-foreground">{m.rule}</span>
+                      <span className="block text-body font-medium">{m.label}</span>
+                      <span className="block text-body text-muted-foreground">{m.rule}</span>
                     </span>
                   </button>
                 );
@@ -171,7 +171,7 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 
           {video && (
             <div className="rounded-xl border border-border bg-muted/40 p-4">
-              <div className="text-[12px] font-medium uppercase tracking-wider text-muted-foreground">Impact preview</div>
+              <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Impact preview</div>
               <div className="mt-3 flex items-center gap-3">
                 <AllowanceMeter used={before} allowance={allowance} label="Before" />
                 <ArrowRight className="size-4 text-muted-foreground" />
@@ -183,9 +183,9 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                   <Field label="Rework hours (est.)">
                     <Input type="number" min={0} value={hours} onChange={(e) => setHours(e.target.value)} />
                   </Field>
-                  <div className="pb-2 text-[13px]">
+                  <div className="pb-2 text-body">
                     Rework cost <span className="font-semibold tabular">{inr(reworkCost)}</span>
-                    <div className="text-[11.5px] text-muted-foreground">@ {inr(reworkHourlyCost)}/hr · internal only</div>
+                    <div className="text-body text-muted-foreground">@ {inr(reworkHourlyCost)}/hr · internal only</div>
                   </div>
                 </div>
               )}
@@ -199,19 +199,19 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                       <Input type="number" min={0} value={days} onChange={(e) => setDays(e.target.value)} />
                     </Field>
                   </div>
-                  <p className="text-[12.5px] text-muted-foreground">
+                  <p className="text-body text-muted-foreground">
                     Delivery moves {fmtDate(video.dueDate)} → <span className="font-medium text-foreground">{fmtDate(addDays(video.dueDate, Number(days) || 0))}</span>{" "}
                     if approved. Work is blocked until the client approves the estimate.
                   </p>
                 </div>
               )}
               {kind === "included-revision" && (
-                <p className="mt-3 text-[12.5px] text-muted-foreground">
+                <p className="mt-3 text-body text-muted-foreground">
                   Uses round {after} of {allowance} included in {agreementById(video.agreementId).packageName}.
                 </p>
               )}
               {exceeds && (
-                <div className="mt-3 flex items-start gap-2 rounded-lg bg-warning-soft p-2.5 text-[12.5px] text-warning">
+                <div className="mt-3 flex items-start gap-2 rounded-lg bg-warning-soft p-2.5 text-body text-warning">
                   <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
                   <span>
                     Allowance exhausted. Agreement rules say extra rounds are out-of-scope.{" "}
@@ -240,16 +240,16 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 function AllowanceMeter({ used, allowance, label, highlight, danger }: { used: number; allowance: number; label: string; highlight?: boolean; danger?: boolean }) {
   return (
     <div className="flex-1 rounded-lg border border-border bg-card p-2.5">
-      <div className="flex items-center justify-between text-[11.5px] text-muted-foreground">
+      <div className="flex items-center justify-between text-body text-muted-foreground">
         {label}
         {highlight && <Badge tone={danger ? "danger" : "accent"}>+1</Badge>}
       </div>
-      <div className={cn("mt-0.5 text-[17px] font-semibold tabular", danger && "text-danger")}>
-        {used} <span className="text-[12px] font-normal text-muted-foreground">of {allowance} rounds</span>
+      <div className={cn("mt-0.5 text-subheading font-semibold tabular", danger && "text-danger")}>
+        {used} <span className="text-body font-normal text-muted-foreground">of {allowance} rounds</span>
       </div>
       <div className="mt-1.5 flex gap-1">
         {Array.from({ length: Math.max(allowance, used) }).map((_, i) => (
-          <span key={i} className={cn("h-1.5 flex-1 rounded-full", i < used ? (i >= allowance ? "bg-danger" : "bg-accent") : "bg-muted")} />
+          <span key={i} className={cn("h-1.5 flex-1 rounded-full", i < used ? (i >= allowance ? "bg-danger" : "bg-primary") : "bg-muted")} />
         ))}
       </div>
     </div>

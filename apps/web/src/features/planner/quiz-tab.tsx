@@ -59,11 +59,11 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Badge tone={isFlow ? "accent" : "gold"}>{isFlow ? "Part A · Money Flow Pattern" : "Part B · Money Belief"}</Badge>
-              <span className="text-[12.5px] text-muted-foreground">
+              <span className="text-body text-muted-foreground">
                 {sectionIndex} of 27
               </span>
             </div>
-            <span className="text-[12.5px] text-muted-foreground tabular">
+            <span className="text-body text-muted-foreground tabular">
               {answeredCount}/54 answered
             </span>
           </div>
@@ -79,8 +79,8 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
               exit={{ opacity: 0, x: -24 }}
               transition={{ duration: 0.18 }}
             >
-              <div className="text-[12px] font-medium text-muted-foreground tabular">Question {q.n}</div>
-              <h2 className="mt-2 max-w-2xl text-[22px] font-semibold leading-snug tracking-tight md:text-[24px]">{q.q}</h2>
+              <div className="text-body font-medium text-muted-foreground tabular">Question {q.n}</div>
+              <h2 className="mt-2 max-w-2xl text-heading font-semibold leading-snug tracking-tight md:text-heading">{q.q}</h2>
               <div className="mt-8 grid grid-cols-5 gap-2 md:gap-3">
                 {SCALE.map((s) => {
                   const active = answers[q.n] === s.value;
@@ -90,23 +90,23 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
                       onClick={() => pick(s.value)}
                       className={cn(
                         "group flex cursor-pointer flex-col items-center gap-2 rounded-xl border px-2 py-4 transition",
-                        active ? "border-accent bg-accent-soft text-accent shadow-sm" : "border-border hover:border-accent/40 hover:bg-muted/60",
+                        active ? "border-primary bg-primary-soft text-primary shadow-sm" : "border-border hover:border-primary/40 hover:bg-muted/60",
                       )}
                     >
                       <span
                         className={cn(
-                          "inline-flex size-9 items-center justify-center rounded-full text-[15px] font-semibold tabular transition",
-                          active ? "bg-accent text-white" : "bg-muted text-foreground group-hover:bg-card",
+                          "inline-flex size-9 items-center justify-center rounded-full text-subheading font-semibold tabular transition",
+                          active ? "bg-primary text-white" : "bg-muted text-foreground group-hover:bg-card",
                         )}
                       >
                         {s.value}
                       </span>
-                      <span className="text-[12.5px] font-medium">{s.label}</span>
+                      <span className="text-body font-medium">{s.label}</span>
                     </button>
                   );
                 })}
               </div>
-              <div className="mt-3 text-center text-[11.5px] text-muted-foreground">Tip: press 1–5 on your keyboard · ← → to move</div>
+              <div className="mt-3 text-center text-body text-muted-foreground">Tip: press 1–5 on your keyboard · ← → to move</div>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -129,8 +129,8 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
 
       <div className="space-y-4">
         <Card className="p-4">
-          <div className="text-[13px] font-semibold">Money Behaviour Diagnostic</div>
-          <p className="mt-1 text-[12.5px] text-muted-foreground">
+          <div className="text-body font-semibold">Money Behaviour Diagnostic</div>
+          <p className="mt-1 text-body text-muted-foreground">
             54 honest answers → your flow patterns, belief blocks and a Money Behaviour Score out of 100.
           </p>
           <div className="mt-4 space-y-3">
@@ -139,7 +139,7 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
               { label: "Part B · Beliefs", from: 28, to: 54 },
             ].map((part) => (
               <div key={part.label}>
-                <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{part.label}</div>
+                <div className="mb-1.5 text-body font-medium uppercase tracking-wider text-muted-foreground">{part.label}</div>
                 <div className="grid grid-cols-9 gap-1">
                   {questions
                     .filter((x) => x.n >= part.from && x.n <= part.to)
@@ -150,9 +150,9 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
                           <button
                             onClick={() => setIdx(x.n - 1)}
                             className={cn(
-                              "h-5 cursor-pointer rounded-[5px] text-[9px] font-medium transition tabular",
-                              x.n === q.n ? "ring-2 ring-accent ring-offset-1 ring-offset-card" : "",
-                              typeof a === "number" ? "bg-accent text-white" : "bg-muted text-muted-foreground hover:bg-input",
+                              "h-5 cursor-pointer rounded-[5px] text-body font-medium transition tabular",
+                              x.n === q.n ? "ring-2 ring-primary ring-offset-1 ring-offset-card" : "",
+                              typeof a === "number" ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-input",
                             )}
                           >
                             {x.n}
@@ -166,8 +166,8 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
           </div>
         </Card>
         <Card className="p-4">
-          <div className="text-[13px] font-semibold">Short on time?</div>
-          <p className="mt-1 text-[12.5px] text-muted-foreground">Load the workbook&apos;s sample answers and jump straight to the profile.</p>
+          <div className="text-body font-semibold">Short on time?</div>
+          <p className="mt-1 text-body text-muted-foreground">Load the workbook&apos;s sample answers and jump straight to the profile.</p>
           <div className="mt-3 flex flex-col gap-2">
             <Button
               variant="soft"

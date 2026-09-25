@@ -20,7 +20,7 @@ import { useRT } from "./store";
 const Q_META = [
   { icon: ThumbsUp, tone: "text-success bg-success-soft", short: "What you do best" },
   { icon: TrendingDown, tone: "text-danger bg-danger-soft", short: "Where you fall short" },
-  { icon: TrendingUp, tone: "text-accent bg-accent-soft", short: "What you can do better" },
+  { icon: TrendingUp, tone: "text-primary bg-primary-soft", short: "What you can do better" },
 ];
 
 /** Stable shuffle so anonymous answers don't reveal the author by order. */
@@ -46,7 +46,7 @@ export function MyFeedback({ initialPerson, initialSession }: { initialPerson?: 
 
   return (
     <div className="space-y-6">
-      <Link href="/round-table" className="inline-flex items-center gap-1 text-[12.5px] text-muted-foreground hover:text-foreground">
+      <Link href="/round-table" className="inline-flex items-center gap-1 text-body text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-3.5" /> Round Tables
       </Link>
       <PageHeader
@@ -107,13 +107,13 @@ function FeedbackBody({ session, personId, previous }: { session: RTSession; per
     <div className="space-y-5">
       <Card className="glow-accent overflow-hidden">
         <CardContent className="flex flex-col gap-5 p-6 md:flex-row md:items-center">
-          <Avatar name={person.name} size="xl" className="size-16 text-xl" />
+          <Avatar name={person.name} size="xl" className="size-16 text-heading" />
           <div className="flex-1">
-            <div className="text-[20px] font-semibold tracking-tight">{person.name}</div>
-            <div className="text-[13px] text-muted-foreground">
+            <div className="text-heading font-semibold tracking-tight">{person.name}</div>
+            <div className="text-body text-muted-foreground">
               {person.role} · {session.reviewTitle}
             </div>
-            <div className="mt-2 flex flex-wrap items-center gap-2 text-[12.5px]">
+            <div className="mt-2 flex flex-wrap items-center gap-2 text-body">
               <Badge tone="accent">
                 {team.length} teammates answered
               </Badge>
@@ -128,7 +128,7 @@ function FeedbackBody({ session, personId, previous }: { session: RTSession; per
             </div>
           </div>
           <div className="min-w-56 rounded-xl border border-border bg-card/70 p-3">
-            <div className="mb-2 flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground">
+            <div className="mb-2 flex items-center gap-1.5 text-body font-medium text-muted-foreground">
               <Sparkles className="size-3.5" /> Top themes to work on
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -169,17 +169,17 @@ function FeedbackBody({ session, personId, previous }: { session: RTSession; per
               </CardHeader>
               <CardContent className="flex-1 space-y-2.5">
                 {self && (
-                  <div className="rounded-xl border border-accent/40 bg-accent-soft/60 p-3">
-                    <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-accent">You said</div>
-                    <p className="text-[13px] leading-snug">{self.answers[i] || "—"}</p>
+                  <div className="rounded-xl border border-primary/40 bg-primary-soft/60 p-3">
+                    <div className="mb-1 text-body font-semibold uppercase tracking-wider text-primary">You said</div>
+                    <p className="text-body leading-snug">{self.answers[i] || "—"}</p>
                   </div>
                 )}
                 {list.map(([t, n], k) => (
                   <div key={k} className="flex gap-2.5 rounded-xl bg-muted/50 p-3">
                     <Quote className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
                     <div className="min-w-0">
-                      <p className="text-[13px] leading-snug">{t}</p>
-                      {n > 1 && <p className="mt-1 text-[11.5px] font-medium text-warning">Said by {n} teammates</p>}
+                      <p className="text-body leading-snug">{t}</p>
+                      {n > 1 && <p className="mt-1 text-body font-medium text-warning">Said by {n} teammates</p>}
                     </div>
                   </div>
                 ))}
@@ -193,7 +193,7 @@ function FeedbackBody({ session, personId, previous }: { session: RTSession; per
         <Card>
           <CardHeader>
             <div className="flex items-start gap-3">
-              <span className="inline-flex size-8 items-center justify-center rounded-lg bg-gold-soft text-gold">
+              <span className="inline-flex size-8 items-center justify-center rounded-lg bg-accent-soft text-accent-strong">
                 <Target className="size-4" />
               </span>
               <div>
@@ -235,15 +235,15 @@ function FeedbackBody({ session, personId, previous }: { session: RTSession; per
           <CardContent className="space-y-3">
             {prevCommit ? (
               <div className="rounded-xl bg-muted/60 p-3">
-                <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">You committed</div>
-                <p className="text-[13px]">“{prevCommit}”</p>
+                <div className="mb-1 text-body font-semibold uppercase tracking-wider text-muted-foreground">You committed</div>
+                <p className="text-body">“{prevCommit}”</p>
               </div>
             ) : (
-              <p className="text-[13px] text-muted-foreground">No commitment was recorded last time.</p>
+              <p className="text-body text-muted-foreground">No commitment was recorded last time.</p>
             )}
             {prevThemes.length > 0 && (
               <div>
-                <div className="mb-1.5 text-[12px] text-muted-foreground">Themes then</div>
+                <div className="mb-1.5 text-body text-muted-foreground">Themes then</div>
                 <div className="flex flex-wrap gap-1.5">
                   {prevThemes.slice(0, 4).map((t) => (
                     <Badge key={t.name} tone="outline">

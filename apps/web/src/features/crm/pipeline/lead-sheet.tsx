@@ -24,7 +24,7 @@ function Section({ title, children, right }: { title: string; children: React.Re
   return (
     <section className="border-t border-border py-5">
       <div className="mb-3 flex items-center justify-between">
-        <h4 className="text-[12px] font-semibold uppercase tracking-wider text-muted-foreground">{title}</h4>
+        <h4 className="text-body font-semibold uppercase tracking-wider text-muted-foreground">{title}</h4>
         {right}
       </div>
       {children}
@@ -61,8 +61,8 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
           <Badge tone={sourceTone[lead.source]}>{lead.source}</Badge>
           <Badge tone="outline">{lead.service}</Badge>
         </div>
-        <DialogTitle className="pt-2 text-xl">{lead.company}</DialogTitle>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-muted-foreground">
+        <DialogTitle className="pt-2 text-heading">{lead.company}</DialogTitle>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-body text-muted-foreground">
           <span>{lead.name}</span>
           <span className="inline-flex items-center gap-1">
             <Phone className="size-3.5" /> {lead.phone}
@@ -75,38 +75,38 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
       <DialogBody className="pb-8">
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-xl border border-border p-3">
-            <div className="text-[11px] text-muted-foreground">Value / month</div>
-            <div className="mt-1 text-[16px] font-semibold tabular">{inr(lead.value)}</div>
+            <div className="text-body text-muted-foreground">Value / month</div>
+            <div className="mt-1 text-subheading font-semibold tabular">{inr(lead.value)}</div>
           </div>
           <div className="rounded-xl border border-border p-3">
-            <div className="text-[11px] text-muted-foreground">Win probability</div>
-            <div className="mt-1 text-[16px] font-semibold tabular">{Math.round(stageProbability[lead.stage] * 100)}%</div>
+            <div className="text-body text-muted-foreground">Win probability</div>
+            <div className="mt-1 text-subheading font-semibold tabular">{Math.round(stageProbability[lead.stage] * 100)}%</div>
           </div>
           <div className="rounded-xl border border-border p-3">
-            <div className="text-[11px] text-muted-foreground">Owner</div>
-            <div className="mt-1 flex items-center gap-1.5 text-[13px] font-medium">
+            <div className="text-body text-muted-foreground">Owner</div>
+            <div className="mt-1 flex items-center gap-1.5 text-body font-medium">
               <Avatar name={owner.name} size="xs" /> <span className="truncate">{owner.name.split(" ")[0]}</span>
             </div>
           </div>
         </div>
 
         <div className="mt-4 flex items-center gap-2">
-          <span className="text-[12.5px] text-muted-foreground">Stage</span>
+          <span className="text-body text-muted-foreground">Stage</span>
           <Select className="h-8 w-44" value={lead.stage} onValueChange={(v) => onMove(lead.id, v as Lead["stage"])} options={LEAD_STAGES.map((s) => ({ value: s, label: s }))} />
           <Button size="sm" variant="outline" className="ml-auto" onClick={() => toast.success("WhatsApp template sent", { description: `Follow-up to ${lead.name} logged` })}>
             <MessageSquare /> Follow up
           </Button>
         </div>
-        {lead.notes && <div className="mt-3 rounded-lg bg-muted/60 px-3 py-2 text-[12.5px]">{lead.notes}</div>}
+        {lead.notes && <div className="mt-3 rounded-lg bg-muted/60 px-3 py-2 text-body">{lead.notes}</div>}
 
         <div className="mt-5" />
         <Section title="Qualification score" right={<ScoreRing score={lead.score} size={34} />}>
           <div className="space-y-2.5">
             {breakdown.map((b) => (
-              <div key={b.label} className="grid grid-cols-[140px_1fr_44px] items-center gap-3 text-[12.5px]">
+              <div key={b.label} className="grid grid-cols-[140px_1fr_44px] items-center gap-3 text-body">
                 <span className="text-muted-foreground">{b.label}</span>
                 <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-accent" style={{ width: `${(b.value / b.max) * 100}%` }} />
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${(b.value / b.max) * 100}%` }} />
                 </div>
                 <span className="text-right tabular">
                   {b.value}
@@ -122,20 +122,20 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
             <div className="space-y-2">
               {proposals.map((p) => (
                 <div key={p.label} className={cn("flex items-center gap-3 rounded-xl border border-border p-3", p.status === "superseded" && "opacity-60")}>
-                  <span className="inline-flex size-9 items-center justify-center rounded-lg bg-muted text-[12px] font-semibold">{p.label}</span>
+                  <span className="inline-flex size-9 items-center justify-center rounded-lg bg-muted text-body font-semibold">{p.label}</span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-medium">{p.note}</div>
-                    <div className="text-[12px] text-muted-foreground">{p.scope}</div>
+                    <div className="text-body font-medium">{p.note}</div>
+                    <div className="text-body text-muted-foreground">{p.scope}</div>
                   </div>
                   <div className="text-right">
-                    <div className={cn("text-[13px] font-semibold tabular", p.status === "superseded" && "line-through")}>{inr(p.price)}</div>
+                    <div className={cn("text-body font-semibold tabular", p.status === "superseded" && "line-through")}>{inr(p.price)}</div>
                     <Badge tone={p.status === "accepted" ? "success" : p.status === "sent" ? "info" : "neutral"}>{p.status}</Badge>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-between rounded-xl border border-dashed border-border p-3 text-[12.5px] text-muted-foreground">
+            <div className="flex items-center justify-between rounded-xl border border-dashed border-border p-3 text-body text-muted-foreground">
               No proposal yet — sent after discovery.
               <Button size="xs" variant="soft" onClick={() => toast.success("Proposal draft created from package template")}>
                 Draft proposal
@@ -145,7 +145,7 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
         </Section>
 
         {!["Won", "Lost"].includes(lead.stage) && (
-          <Section title="Discount request" right={<span className="text-[11.5px] text-muted-foreground">Sales authority up to {SALES_AUTHORITY}%</span>}>
+          <Section title="Discount request" right={<span className="text-body text-muted-foreground">Sales authority up to {SALES_AUTHORITY}%</span>}>
             {disc && disc.status !== "auto-approved" ? (
               <div
                 className={cn(
@@ -155,7 +155,7 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
               >
                 <div className="flex items-start gap-2.5">
                   {disc.status === "pending" ? <ShieldAlert className="mt-0.5 size-4 text-warning" /> : disc.status === "approved" ? <CheckCircle2 className="mt-0.5 size-4 text-success" /> : <XCircle className="mt-0.5 size-4 text-danger" />}
-                  <div className="flex-1 text-[12.5px]">
+                  <div className="flex-1 text-body">
                     <div className="font-semibold text-foreground">
                       {disc.pct}% discount · {disc.status === "pending" ? "Needs founder approval" : disc.status === "approved" ? "Approved by Janarthanan" : "Rejected — counter at 8%"}
                     </div>
@@ -202,12 +202,12 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
                 <div className="flex gap-2">
                   <div className="relative w-28">
                     <Input type="number" value={pctIn} onChange={(e) => setPctIn(e.target.value)} placeholder="12" className="pr-7" />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[13px] text-muted-foreground">%</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-body text-muted-foreground">%</span>
                   </div>
                   <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason (e.g. competing quote)" />
                 </div>
                 {pctNum > 0 && (
-                  <div className={cn("text-[12px]", needsFounder ? "text-warning" : "text-success")}>
+                  <div className={cn("text-body", needsFounder ? "text-warning" : "text-success")}>
                     {needsFounder ? `Above ${SALES_AUTHORITY}% — will route to Janarthanan for approval` : "Within sales authority — auto-approved"} · net{" "}
                     {inr(lead.value * (1 - pctNum / 100))}/mo
                   </div>
@@ -250,14 +250,14 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
                     <Icon className="size-3.5" />
                   </span>
                   <div className="pt-0.5">
-                    <div className="text-[13px]">{t.text}</div>
-                    <div className="text-[11.5px] text-muted-foreground">{t.at}</div>
+                    <div className="text-body">{t.text}</div>
+                    <div className="text-body text-muted-foreground">{t.at}</div>
                   </div>
                 </li>
               );
             })}
           </ol>
-          <div className="mt-4 text-[11.5px] text-muted-foreground">Created {fmtDate(lead.createdAt, { day: "numeric", month: "short", year: "numeric" })}</div>
+          <div className="mt-4 text-body text-muted-foreground">Created {fmtDate(lead.createdAt, { day: "numeric", month: "short", year: "numeric" })}</div>
         </Section>
       </DialogBody>
     </>

@@ -85,7 +85,7 @@ export function ExpensesView() {
         <TabsList>
           <TabsTrigger value="requests">
             <Receipt /> Expense requests
-            {stats.pendingCount > 0 && <Badge tone="warning" className="px-1.5 py-0 text-[10.5px]">{stats.pendingCount}</Badge>}
+            {stats.pendingCount > 0 && <Badge tone="warning" className="px-1.5 py-0 text-body">{stats.pendingCount}</Badge>}
           </TabsTrigger>
           <TabsTrigger value="vendors">
             <CircleDollarSign /> Vendors
@@ -101,12 +101,12 @@ export function ExpensesView() {
                     key={f.key}
                     onClick={() => setFilter(f.key)}
                     className={cn(
-                      "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-[12.5px] font-medium transition",
+                      "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-body font-medium transition",
                       filter === f.key ? "border-foreground bg-foreground text-background" : "border-border bg-card text-muted-foreground hover:text-foreground",
                     )}
                   >
                     {f.label}
-                    <span className="tabular text-[11px] opacity-70">{counts[f.key]}</span>
+                    <span className="tabular text-body opacity-70">{counts[f.key]}</span>
                   </button>
                 ))}
               </div>
@@ -174,21 +174,21 @@ function ExpenseRow({ e, onOpen, onApprove, onReject, onSettle }: { e: Expense; 
           <ReceiptTile expense={e} />
           <div className="min-w-0 max-w-[280px]">
             <div className="truncate font-medium">{e.vendor}</div>
-            <div className="truncate text-[11.5px] text-muted-foreground">{e.description}</div>
-            <div className="text-[11px] text-muted-foreground">
+            <div className="truncate text-body text-muted-foreground">{e.description}</div>
+            <div className="text-body text-muted-foreground">
               <span className="font-mono">{e.code}</span> · {fmtDate(e.date)}
             </div>
           </div>
         </div>
       </TD>
       <TD>
-        <span className={cn("inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11.5px] font-medium", style.soft, style.text)}>
+        <span className={cn("inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-body font-medium", style.soft, style.text)}>
           <span className={cn("size-1.5 rounded-full", style.strip)} />
           {e.category}
         </span>
       </TD>
       <TD>
-        <div className="flex items-center gap-1.5 text-[12.5px]">
+        <div className="flex items-center gap-1.5 text-body">
           <Avatar name={requester.name} size="xs" />
           <span className="max-w-[90px] truncate">{requester.name.split(" ")[0]}</span>
           <span className="text-muted-foreground">→</span>
@@ -199,13 +199,13 @@ function ExpenseRow({ e, onOpen, onApprove, onReject, onSettle }: { e: Expense; 
       <TD>
         {e.clientId ? (
           <div>
-            <div className="text-[12.5px]">{clientById(e.clientId).name}</div>
-            <div className="font-mono text-[11px] text-muted-foreground">{e.videoCode}</div>
+            <div className="text-body">{clientById(e.clientId).name}</div>
+            <div className="font-mono text-body text-muted-foreground">{e.videoCode}</div>
           </div>
         ) : (
           <div>
             <Badge tone="outline">Overhead</Badge>
-            <div className="mt-0.5 text-[11px] text-muted-foreground">{e.overheadPool}</div>
+            <div className="mt-0.5 text-body text-muted-foreground">{e.overheadPool}</div>
           </div>
         )}
       </TD>
@@ -213,23 +213,23 @@ function ExpenseRow({ e, onOpen, onApprove, onReject, onSettle }: { e: Expense; 
         <div className="font-medium tabular">{inr(e.amount)}</div>
         {e.gst > 0 ? (
           <Tooltip content={e.itc ? "GST input tax credit claimable" : "GST paid — credit blocked under Sec 17(5)"}>
-            <span className={cn("text-[10.5px]", e.itc ? "text-success" : "text-muted-foreground")}>
+            <span className={cn("text-body", e.itc ? "text-success" : "text-muted-foreground")}>
               {e.itc ? "ITC" : "GST"} {inr(e.gst)}
             </span>
           </Tooltip>
         ) : (
-          <span className="text-[10.5px] text-muted-foreground">No GST</span>
+          <span className="text-body text-muted-foreground">No GST</span>
         )}
       </TD>
       <TD>
         <Badge tone={paymentMeta[e.paymentStatus].tone}>{paymentMeta[e.paymentStatus].label}</Badge>
-        <div className="mt-0.5 text-[10.5px] text-muted-foreground">{e.paidBy === "employee" ? "Employee paid" : e.mode}</div>
+        <div className="mt-0.5 text-body text-muted-foreground">{e.paidBy === "employee" ? "Employee paid" : e.mode}</div>
       </TD>
       <TD>
         <Badge tone={approvalMeta[e.approval].tone} dot>
           {approvalMeta[e.approval].label.replace(" approval", "")}
         </Badge>
-        {e.rejectReason && <div className="mt-0.5 max-w-[140px] truncate text-[10.5px] text-danger">{e.rejectReason}</div>}
+        {e.rejectReason && <div className="mt-0.5 max-w-[140px] truncate text-body text-danger">{e.rejectReason}</div>}
       </TD>
       <TD className="pr-5" onClick={(ev) => ev.stopPropagation()}>
         <div className="flex justify-end gap-1.5">

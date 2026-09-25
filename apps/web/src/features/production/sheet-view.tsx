@@ -33,13 +33,13 @@ export function SheetView({ videos }: { videos: Video[] }) {
     <Card className="overflow-hidden">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border px-5 py-4">
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Genie Magnet · Video list sheet</div>
-          <div className="mt-1 text-[13px] text-muted-foreground">
+          <div className="text-body font-semibold uppercase tracking-[0.18em] text-muted-foreground">Genie Magnet · Video list sheet</div>
+          <div className="mt-1 text-body text-muted-foreground">
             Digital copy of the paper sheet — tick urgency and VP right here. Changes sync to the board and calendar.
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[12px] tabular text-muted-foreground">
+          <span className="text-body tabular text-muted-foreground">
             Sheet {cur + 1} of {pages}
           </span>
           <Button variant="ghost" size="icon-sm" disabled={cur === 0} onClick={() => setPage(cur - 1)} aria-label="Previous sheet">
@@ -60,7 +60,7 @@ export function SheetView({ videos }: { videos: Video[] }) {
             <TH>Video Code</TH>
             <TH className="text-center">
               <div>Urgency</div>
-              <div className="mt-0.5 flex justify-center gap-3 text-[9.5px] normal-case tracking-normal">
+              <div className="mt-0.5 flex justify-center gap-3 text-body normal-case tracking-normal">
                 {URGENCIES.map((u) => (
                   <span key={u}>{urgencyMeta[u].label}</span>
                 ))}
@@ -79,8 +79,8 @@ export function SheetView({ videos }: { videos: Video[] }) {
             const editor = personById(v.editorId);
             return (
               <TR key={v.id}>
-                <TD className="text-center text-[12px] tabular text-muted-foreground">{cur * PER_SHEET + i + 1}</TD>
-                <TD className="font-mono text-[12px] font-medium">{v.code}</TD>
+                <TD className="text-center text-body tabular text-muted-foreground">{cur * PER_SHEET + i + 1}</TD>
+                <TD className="font-mono text-body font-medium">{v.code}</TD>
                 <TD>
                   <div className="flex justify-center gap-1.5">
                     {URGENCIES.map((u) => {
@@ -110,7 +110,7 @@ export function SheetView({ videos }: { videos: Video[] }) {
                   </div>
                 </TD>
                 <TD>
-                  <Link href={`/production/${v.id}`} className="font-medium hover:text-accent">
+                  <Link href={`/production/${v.id}`} className="font-medium hover:text-primary">
                     {v.title}
                   </Link>
                 </TD>
@@ -118,7 +118,7 @@ export function SheetView({ videos }: { videos: Video[] }) {
                   <input
                     value={v.clipNo}
                     onChange={(e) => updateVideo(v.id, { clipNo: e.target.value })}
-                    className="w-36 rounded-md border border-transparent bg-transparent px-1.5 py-1 font-mono text-[12px] outline-none transition hover:border-border focus:border-ring focus:bg-card"
+                    className="w-36 rounded-md border border-transparent bg-transparent px-1.5 py-1 font-mono text-body outline-none transition hover:border-border focus:border-ring focus:bg-card"
                   />
                 </TD>
                 <TD className="text-center">
@@ -153,7 +153,7 @@ export function SheetView({ videos }: { videos: Video[] }) {
           })}
           {Array.from({ length: blanks }).map((_, i) => (
             <TR key={`blank-${i}`} className="hover:bg-transparent">
-              <TD className="h-11 text-center text-[12px] tabular text-muted-foreground/40">{cur * PER_SHEET + rows.length + i + 1}</TD>
+              <TD className="h-11 text-center text-body tabular text-muted-foreground/40">{cur * PER_SHEET + rows.length + i + 1}</TD>
               <TD colSpan={8} />
             </TR>
           ))}

@@ -53,8 +53,8 @@ export function ReviewsHub() {
           <StrategicHero />
           <div>
             <div className="mb-3 flex items-baseline justify-between">
-              <h2 className="text-[15px] font-semibold tracking-tight">Review cadences</h2>
-              <span className="text-[12.5px] text-muted-foreground">Daily · 7-day · 14-day · 45-day — all four included in V1</span>
+              <h2 className="text-subheading font-semibold tracking-tight">Review cadences</h2>
+              <span className="text-body text-muted-foreground">Daily · 7-day · 14-day · 45-day — all four included in V1</span>
             </div>
             <CadenceLanes />
           </div>
@@ -113,7 +113,7 @@ function ScheduleButton() {
                 <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
               </Field>
             </div>
-            <div className="rounded-xl bg-muted/60 p-3 text-[12.5px]">
+            <div className="rounded-xl bg-muted/60 p-3 text-body">
               <div className="font-medium">{title}</div>
               <div className="mt-0.5 text-muted-foreground">
                 {c.duration} · {c.participantIds.length} participants · {c.agenda.length} agenda items · calendar invites go to everyone

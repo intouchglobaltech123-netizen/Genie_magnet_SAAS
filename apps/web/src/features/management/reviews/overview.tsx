@@ -36,18 +36,18 @@ export function StrategicHero() {
     <Card className="relative overflow-hidden">
       <div className="glow-accent pointer-events-none absolute inset-0 opacity-70" />
       <div className="relative grid gap-6 p-6 lg:grid-cols-[auto_1fr_minmax(280px,360px)]">
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-gold/30 bg-card/80 px-7 py-5 text-center backdrop-blur">
-          <div className="text-[11px] font-medium uppercase tracking-wider text-gold">{locked ? "Locked" : "Starts in"}</div>
-          <div className="mt-1 text-[44px] font-semibold leading-none tracking-tight tabular">{locked ? "✓" : days}</div>
-          <div className="mt-1 text-[12px] text-muted-foreground">{locked ? "record sealed" : days === 1 ? "day" : "days"}</div>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-accent/30 bg-card/80 px-7 py-5 text-center backdrop-blur">
+          <div className="text-body font-medium uppercase tracking-wider text-accent-strong">{locked ? "Locked" : "Starts in"}</div>
+          <div className="mt-1 text-heading font-semibold leading-none tracking-tight tabular">{locked ? "✓" : days}</div>
+          <div className="mt-1 text-body text-muted-foreground">{locked ? "record sealed" : days === 1 ? "day" : "days"}</div>
         </div>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone="gold">S · Strategic · every 45 days</Badge>
             <Badge tone="danger">Mandatory · full day</Badge>
           </div>
-          <h2 className="mt-2 text-[22px] font-semibold tracking-tight">{m.title}</h2>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
+          <h2 className="mt-2 text-heading font-semibold tracking-tight">{m.title}</h2>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-body text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <CalendarClock className="size-3.5" />
               {fmtLong(m.date)} · 10:00 AM – 6:00 PM
@@ -57,7 +57,7 @@ export function StrategicHero() {
               {m.venue}
             </span>
           </div>
-          <p className="mt-3 max-w-xl text-[13.5px] leading-relaxed text-muted-foreground">
+          <p className="mt-3 max-w-xl text-body leading-relaxed text-muted-foreground">
             Completion of the last 45 days since <span className="text-foreground">Strategic #6 (26 Aug)</span>, competence development, celebration and
             creation of the next 45-day plan. Facilitated by {personById(m.facilitatorId).name}.
           </p>
@@ -75,7 +75,7 @@ export function StrategicHero() {
           </div>
         </div>
         <div className="rounded-2xl border border-border bg-card/80 p-4 backdrop-blur">
-          <div className="mb-2 flex items-center justify-between text-[13px]">
+          <div className="mb-2 flex items-center justify-between text-body">
             <span className="font-medium">Preparation</span>
             <span className="text-muted-foreground tabular">{Math.round(prepPct)}%</span>
           </div>
@@ -85,8 +85,8 @@ export function StrategicHero() {
               <li key={p.label} className="flex items-start gap-2">
                 {p.done ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" /> : <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />}
                 <div>
-                  <div className="text-[12.5px] font-medium leading-tight">{p.label}</div>
-                  <div className="text-[11.5px] text-muted-foreground">{p.detail}</div>
+                  <div className="text-body font-medium leading-tight">{p.label}</div>
+                  <div className="text-body text-muted-foreground">{p.detail}</div>
                 </div>
               </li>
             ))}
@@ -94,7 +94,7 @@ export function StrategicHero() {
         </div>
       </div>
       {toReview.some((c) => commitmentState(c) === "overdue") && (
-        <div className="relative flex items-center gap-2 border-t border-border bg-warning-soft/60 px-6 py-2 text-[12.5px] text-warning">
+        <div className="relative flex items-center gap-2 border-t border-border bg-warning-soft/60 px-6 py-2 text-body text-warning">
           <Repeat className="size-3.5" />
           {toReview.filter((c) => commitmentState(c) === "overdue").length} commitments from #6 are overdue — they will auto-carry to Strategic #8 if still open when #7 is locked.
         </div>
@@ -124,14 +124,14 @@ export function UpcomingSchedule() {
                 <span
                   className={cn(
                     "absolute -left-[26px] top-3.5 size-2.5 rounded-full ring-4 ring-card",
-                    m.cadence === "strategic" ? "bg-gold" : m.cadence === "tactical" ? "bg-accent" : m.cadence === "daily" ? "bg-info" : "bg-chart-5",
+                    m.cadence === "strategic" ? "bg-accent" : m.cadence === "tactical" ? "bg-primary" : m.cadence === "daily" ? "bg-info" : "bg-chart-5",
                   )}
                 />
                 <Link href={`/reviews/${m.id}`} className="group flex items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-muted/60">
-                  <CadenceLetter cadence={m.cadence} letter={c.letter} className="size-7 text-[12px]" />
+                  <CadenceLetter cadence={m.cadence} letter={c.letter} className="size-7 text-body" />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[13px] font-medium">{m.title}</div>
-                    <div className="text-[11.5px] text-muted-foreground">
+                    <div className="truncate text-body font-medium">{m.title}</div>
+                    <div className="text-body text-muted-foreground">
                       {fmtLong(m.date)} · {new Date(m.date).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })} · {c.duration}
                     </div>
                   </div>
@@ -176,7 +176,7 @@ export function PastReviews() {
             return (
               <TR key={m.id}>
                 <TD className="pl-5">
-                  <Link href={`/reviews/${m.id}`} className="flex items-center gap-2 font-medium hover:text-accent">
+                  <Link href={`/reviews/${m.id}`} className="flex items-center gap-2 font-medium hover:text-primary">
                     <Badge tone={cadenceTone[m.cadence]}>{cadenceById(m.cadence).every}</Badge>
                     {m.title}
                   </Link>
@@ -193,7 +193,7 @@ export function PastReviews() {
                         <div className="bg-success" style={{ width: `${((s?.bt ?? 0) / total) * 100}%` }} />
                         <div className="bg-danger" style={{ width: `${((s?.bd ?? 0) / total) * 100}%` }} />
                       </div>
-                      <span className="text-[11.5px] text-muted-foreground tabular">
+                      <span className="text-body text-muted-foreground tabular">
                         {s?.bt}/{s?.bd}
                       </span>
                     </div>
@@ -202,7 +202,7 @@ export function PastReviews() {
                   )}
                 </TD>
                 <TD className="pr-5 text-right">
-                  <Link href={`/reviews/${m.id}`} className="inline-flex items-center gap-1 text-[12px] text-muted-foreground hover:text-foreground">
+                  <Link href={`/reviews/${m.id}`} className="inline-flex items-center gap-1 text-body text-muted-foreground hover:text-foreground">
                     <Lock className="size-3" /> Locked
                   </Link>
                 </TD>

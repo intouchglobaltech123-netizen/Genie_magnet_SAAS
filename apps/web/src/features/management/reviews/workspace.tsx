@@ -56,8 +56,8 @@ export function MeetingWorkspace({ id }: { id: string }) {
   if (!meeting) {
     return (
       <div className="mx-auto max-w-md py-24 text-center">
-        <h1 className="text-xl font-semibold">Review not found</h1>
-        <p className="mt-2 text-sm text-muted-foreground">This meeting record doesn&apos;t exist in the demo data.</p>
+        <h1 className="text-heading font-semibold">Review not found</h1>
+        <p className="mt-2 text-body text-muted-foreground">This meeting record doesn&apos;t exist in the demo data.</p>
         <Button variant="outline" className="mt-6" asChild>
           <Link href="/reviews">
             <ArrowLeft /> Back to Reviews
@@ -85,12 +85,12 @@ function Workspace({ meeting }: { meeting: Meeting }) {
   return (
     <div className="space-y-5">
       <div>
-        <Link href="/reviews" className="inline-flex items-center gap-1 text-[12.5px] text-muted-foreground hover:text-foreground">
+        <Link href="/reviews" className="inline-flex items-center gap-1 text-body text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-3.5" /> Reviews & Meetings
         </Link>
         <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="flex items-start gap-3.5">
-            <CadenceLetter cadence={meeting.cadence} letter={cadence.letter} className="size-11 text-[17px]" />
+            <CadenceLetter cadence={meeting.cadence} letter={cadence.letter} className="size-11 text-subheading" />
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={meeting.cadence === "strategic" ? "gold" : "accent"}>
@@ -107,10 +107,10 @@ function Workspace({ meeting }: { meeting: Meeting }) {
                   </Badge>
                 )}
               </div>
-              <h1 className="mt-1.5 text-[24px] font-semibold tracking-tight">
+              <h1 className="mt-1.5 text-heading font-semibold tracking-tight">
                 {meeting.title} — {new Date(meeting.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
               </h1>
-              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
+              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-body text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarClock className="size-3.5" /> {fmtLong(meeting.date)} · {new Date(meeting.date).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })} –{" "}
                   {new Date(`2000-01-01T${meeting.end}:00`).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}
@@ -136,7 +136,7 @@ function Workspace({ meeting }: { meeting: Meeting }) {
       </div>
 
       {locked && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-border bg-muted/60 px-4 py-3 text-[13px]">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-border bg-muted/60 px-4 py-3 text-body">
           <ShieldCheck className="size-4 text-success" />
           <span className="font-medium">
             Locked by {personById(meeting.lockedBy ?? meeting.facilitatorId).name} on {meeting.lockedAt ? fmtDateTime(meeting.lockedAt) : ""}
@@ -150,7 +150,7 @@ function Workspace({ meeting }: { meeting: Meeting }) {
       <div className="grid gap-5 xl:grid-cols-[240px_minmax(0,1fr)_300px]">
         {/* Stepper */}
         <nav className="space-y-1 xl:sticky xl:top-20 xl:self-start">
-          <div className="mb-2 px-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Agenda</div>
+          <div className="mb-2 px-2 text-body font-medium uppercase tracking-wider text-muted-foreground">Agenda</div>
           {steps.map((s, i) => {
             const active = i === step;
             const done = locked || i < step;
@@ -165,15 +165,15 @@ function Workspace({ meeting }: { meeting: Meeting }) {
               >
                 <span
                   className={cn(
-                    "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold",
-                    active ? "bg-accent text-white" : done ? "bg-success-soft text-success" : "bg-muted text-muted-foreground",
+                    "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-body font-semibold",
+                    active ? "bg-primary text-white" : done ? "bg-success-soft text-success" : "bg-muted text-muted-foreground",
                   )}
                 >
                   {done && !active ? <Check className="size-3.5" /> : i + 1}
                 </span>
                 <span className="min-w-0">
-                  <span className={cn("block text-[13px] font-medium", !active && "text-foreground/85")}>{s.title}</span>
-                  <span className="block text-[11.5px] text-muted-foreground">
+                  <span className={cn("block text-body font-medium", !active && "text-foreground/85")}>{s.title}</span>
+                  <span className="block text-body text-muted-foreground">
                     {s.hint}
                     {meeting.cadence === "strategic" && minutes[i] ? ` · ${minutes[i]!.minutes}m` : ""}
                   </span>
@@ -188,10 +188,10 @@ function Workspace({ meeting }: { meeting: Meeting }) {
           <Card>
             <CardHeader className="pb-4">
               <div>
-                <div className="text-[11.5px] font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">
                   Step {step + 1} of {steps.length}
                 </div>
-                <CardTitle className="mt-0.5 text-[18px]">{cur.title}</CardTitle>
+                <CardTitle className="mt-0.5 text-subheading">{cur.title}</CardTitle>
               </div>
               <div className="flex gap-1.5">
                 <Button variant="outline" size="icon-sm" disabled={step === 0} onClick={() => setStep(step - 1)} aria-label="Previous step">
@@ -211,9 +211,9 @@ function Workspace({ meeting }: { meeting: Meeting }) {
               {cur.kind === "decisions" && <DecisionsStep meeting={meeting} locked={locked} />}
               {cur.kind === "coaching" && <CoachingStep meeting={meeting} locked={locked} />}
               {cur.kind === "clarity" && (
-                <div className="rounded-xl border border-border p-4 text-[13px] text-muted-foreground">
+                <div className="rounded-xl border border-border p-4 text-body text-muted-foreground">
                   Stand-up entries are collected in{" "}
-                  <Link href="/reviews" className="font-medium text-accent hover:underline">
+                  <Link href="/reviews" className="font-medium text-primary hover:underline">
                     Reviews → Daily stand-up
                   </Link>
                   . Use this record to capture unblock actions.
@@ -222,7 +222,7 @@ function Workspace({ meeting }: { meeting: Meeting }) {
             </CardContent>
           </Card>
           <Card className="p-4">
-            <div className="mb-2 flex items-center justify-between text-[12.5px]">
+            <div className="mb-2 flex items-center justify-between text-body">
               <span className="font-medium">Notes · {cur.title}</span>
               {!locked && <span className="text-muted-foreground">Saved automatically</span>}
             </div>
@@ -255,10 +255,10 @@ function Attendees({ meeting, locked }: { meeting: Meeting; locked: boolean }) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-[14px]">
+        <CardTitle className="flex items-center gap-2 text-body">
           <UserCheck className="size-4 text-muted-foreground" /> Attendance
         </CardTitle>
-        <span className="text-[12px] text-muted-foreground tabular">
+        <span className="text-body text-muted-foreground tabular">
           {present}/{meeting.attendeeIds.length}
         </span>
       </CardHeader>
@@ -270,8 +270,8 @@ function Attendees({ meeting, locked }: { meeting: Meeting; locked: boolean }) {
             <div key={pid} className="flex items-center gap-2.5 rounded-lg px-1.5 py-1">
               <Avatar name={p.name} size="sm" />
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[12.5px] font-medium">{p.name}</div>
-                <div className="truncate text-[11px] text-muted-foreground">{p.role}</div>
+                <div className="truncate text-body font-medium">{p.name}</div>
+                <div className="truncate text-body text-muted-foreground">{p.role}</div>
               </div>
               {locked ? (
                 <Badge tone={a === "present" ? "success" : a === "late" ? "warning" : "danger"}>{a ?? "absent"}</Badge>
@@ -279,14 +279,14 @@ function Attendees({ meeting, locked }: { meeting: Meeting; locked: boolean }) {
                 <button
                   onClick={() => checkIn(meeting.id, pid, nextAttend[String(a) as keyof typeof nextAttend])}
                   className={cn(
-                    "cursor-pointer rounded-md px-2 py-0.5 text-[11.5px] font-medium transition",
+                    "cursor-pointer rounded-md px-2 py-0.5 text-body font-medium transition",
                     a === "present"
                       ? "bg-success-soft text-success"
                       : a === "late"
                         ? "bg-warning-soft text-warning"
                         : a === "absent"
                           ? "bg-danger-soft text-danger"
-                          : "border border-border text-muted-foreground hover:border-accent hover:text-accent",
+                          : "border border-border text-muted-foreground hover:border-primary hover:text-primary",
                   )}
                 >
                   {a ? a[0]!.toUpperCase() + a.slice(1) : "Check in"}
@@ -314,7 +314,7 @@ function AuditLog({ meeting }: { meeting: Meeting }) {
   const ws = useWs(meeting.id);
   if (meeting.status !== "locked" && ws.audit.length === 0) {
     return (
-      <Card className="p-4 text-[12.5px] text-muted-foreground">
+      <Card className="p-4 text-body text-muted-foreground">
         <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
           <History className="size-4 text-muted-foreground" /> Record history
         </div>
@@ -325,14 +325,14 @@ function AuditLog({ meeting }: { meeting: Meeting }) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-[14px]">
+        <CardTitle className="flex items-center gap-2 text-body">
           <History className="size-4 text-muted-foreground" /> Audit log
         </CardTitle>
       </CardHeader>
       <CardContent>
         <ol className="space-y-3 border-l border-border pl-4">
           {ws.audit.map((a, i) => (
-            <li key={i} className="relative text-[12px]">
+            <li key={i} className="relative text-body">
               <span className="absolute -left-[21px] top-1 size-2 rounded-full bg-warning ring-4 ring-card" />
               <div className="font-medium">{a.text}</div>
               <div className="text-muted-foreground">
@@ -341,7 +341,7 @@ function AuditLog({ meeting }: { meeting: Meeting }) {
             </li>
           ))}
           {meeting.lockedAt && (
-            <li className="relative text-[12px]">
+            <li className="relative text-body">
               <span className="absolute -left-[21px] top-1 size-2 rounded-full bg-success ring-4 ring-card" />
               <div className="font-medium">Record locked · snapshot frozen</div>
               <div className="text-muted-foreground">
@@ -392,7 +392,7 @@ function LockButton({ meeting }: { meeting: Meeting }) {
             <DialogDescription>After locking, the record is read-only. Corrections need a reason and are audit-logged.</DialogDescription>
           </DialogHeader>
           <DialogBody className="space-y-3">
-            <div className="grid grid-cols-2 gap-2 text-[13px]">
+            <div className="grid grid-cols-2 gap-2 text-body">
               {[
                 ["Attendance", `${present} of ${meeting.attendeeIds.length}`],
                 ["Decisions → commitments", String(decisions)],
@@ -400,13 +400,13 @@ function LockButton({ meeting }: { meeting: Meeting }) {
                 ["Carried forward", `${unresolved} → ${target}`],
               ].map(([k, v]) => (
                 <div key={k} className="rounded-xl border border-border p-3">
-                  <div className="text-[11.5px] text-muted-foreground">{k}</div>
+                  <div className="text-body text-muted-foreground">{k}</div>
                   <div className="mt-0.5 font-semibold">{v}</div>
                 </div>
               ))}
             </div>
-            {present === 0 && <p className="rounded-lg bg-warning-soft px-3 py-2 text-[12.5px] text-warning">No attendees checked in yet — attendance will be recorded as absent.</p>}
-            <label className="flex cursor-pointer items-start gap-2.5 rounded-xl bg-muted/60 p-3 text-[12.5px]">
+            {present === 0 && <p className="rounded-lg bg-warning-soft px-3 py-2 text-body text-warning">No attendees checked in yet — attendance will be recorded as absent.</p>}
+            <label className="flex cursor-pointer items-start gap-2.5 rounded-xl bg-muted/60 p-3 text-body">
               <Checkbox checked={ack} onCheckedChange={(v) => setAck(!!v)} className="mt-0.5" />
               <span>Freeze the numbers snapshot as of now and carry unresolved commitments forward automatically.</span>
             </label>

@@ -70,7 +70,7 @@ export function SettingsView() {
                 key={s.id}
                 onClick={() => setSection(s.id)}
                 className={cn(
-                  "flex shrink-0 cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13.5px] font-medium transition",
+                  "flex shrink-0 cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-body font-medium transition",
                   section === s.id ? "bg-card text-foreground shadow-card ring-1 ring-border" : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -139,7 +139,7 @@ function OrgSection() {
         <CardContent>
           <div className="flex flex-wrap gap-2">
             {depts.map((d) => (
-              <span key={d} className="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1 text-[13px]">
+              <span key={d} className="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1 text-body">
                 {d}
                 <button
                   onClick={() => {
@@ -181,7 +181,7 @@ function OrgSection() {
         <CardContent className="grid gap-x-8 gap-y-5 md:grid-cols-2">
           {moduleItems.map((s) => (
             <div key={s.title}>
-              <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{s.title}</div>
+              <div className="mb-1 text-body font-semibold uppercase tracking-wider text-muted-foreground">{s.title}</div>
               <div className="divide-y divide-border">
                 {s.items.map((i) => {
                   const Icon = i.icon;
@@ -189,7 +189,7 @@ function OrgSection() {
                   return (
                     <div key={i.href} className="flex items-center gap-3 py-2">
                       <Icon className="size-4 text-muted-foreground" />
-                      <span className="flex-1 text-[13px]">{i.title}</span>
+                      <span className="flex-1 text-body">{i.title}</span>
                       {planned && <Badge>Phase 2</Badge>}
                       <Switch
                         checked={enabled[i.href]}
@@ -271,7 +271,7 @@ function UsersSection() {
                       <Avatar name={p.name} size="sm" />
                       <div className="leading-tight">
                         <div className="font-medium">{p.name}</div>
-                        <div className="text-[11.5px] text-muted-foreground">{p.email}</div>
+                        <div className="text-body text-muted-foreground">{p.email}</div>
                       </div>
                     </div>
                   </TD>
@@ -317,11 +317,11 @@ function UsersSection() {
                 key={r}
                 onClick={() => setRole(r)}
                 className={cn(
-                  "cursor-pointer rounded-lg border px-3 py-1.5 text-[12.5px] font-medium transition",
-                  role === r ? "border-accent bg-accent-soft text-accent" : "border-border text-muted-foreground hover:text-foreground",
+                  "cursor-pointer rounded-lg border px-3 py-1.5 text-body font-medium transition",
+                  role === r ? "border-primary bg-primary-soft text-primary" : "border-border text-muted-foreground hover:text-foreground",
                 )}
               >
-                {r} <span className="ml-1 text-[11px] opacity-70 tabular">{count}</span>
+                {r} <span className="ml-1 text-body opacity-70 tabular">{count}</span>
               </button>
             );
           })}
@@ -421,7 +421,7 @@ function PackagesSection() {
             <TR key={p.name + i}>
               <TD className="pl-5">
                 <div className="font-medium">{p.name}</div>
-                <div className="text-[11.5px] text-muted-foreground">{p.service}</div>
+                <div className="text-body text-muted-foreground">{p.service}</div>
               </TD>
               <TD className="text-muted-foreground">{p.units}</TD>
               <TD className="text-center tabular">{p.revisions}</TD>
@@ -462,7 +462,7 @@ function WorkflowSection() {
           <div className="flex flex-wrap items-center gap-1.5">
             {VIDEO_STAGES.map((s, i) => (
               <span key={s} className="inline-flex items-center gap-1.5">
-                <span className="rounded-lg border border-border bg-card px-2.5 py-1 text-[12.5px] font-medium">
+                <span className="rounded-lg border border-border bg-card px-2.5 py-1 text-body font-medium">
                   <span className="mr-1.5 text-muted-foreground tabular">{i + 1}</span>
                   {s}
                 </span>
@@ -542,8 +542,8 @@ function ThresholdsSection() {
           {items.map((i) => (
             <div key={i.key} className="grid items-center gap-3 py-4 first:pt-0 md:grid-cols-[1fr_260px_80px]">
               <div>
-                <div className="text-[13.5px] font-medium">{i.label}</div>
-                <div className="text-[12.5px] text-muted-foreground">{i.desc}</div>
+                <div className="text-body font-medium">{i.label}</div>
+                <div className="text-body text-muted-foreground">{i.desc}</div>
               </div>
               <input
                 type="range"
@@ -554,10 +554,10 @@ function ThresholdsSection() {
                 onChange={(e) => setVals((v) => ({ ...v, [i.key]: Number(e.target.value) }))}
                 onPointerUp={() => saved(`${i.label}: ${vals[i.key]} ${i.unit}`)}
                 onKeyUp={() => saved(`${i.label}: ${vals[i.key]} ${i.unit}`)}
-                className="w-full cursor-pointer accent-[var(--accent)]"
+                className="w-full cursor-pointer accent-[var(--color-primary)]"
               />
-              <div className="text-right text-[15px] font-semibold tabular">
-                {vals[i.key]} <span className="text-[12px] font-normal text-muted-foreground">{i.unit}</span>
+              <div className="text-right text-subheading font-semibold tabular">
+                {vals[i.key]} <span className="text-body font-normal text-muted-foreground">{i.unit}</span>
               </div>
             </div>
           ))}
@@ -579,9 +579,9 @@ function ThresholdsSection() {
         </CardHeader>
         <CardContent className={cn("flex flex-wrap items-center gap-3", !quiet && "opacity-50")}>
           <Select value={qStart} onValueChange={(v) => { setQStart(v); saved(`Quiet hours from ${v}:00`); }} options={["20", "21", "22"].map((h) => ({ value: h, label: `${h}:00` }))} className="w-28" />
-          <span className="text-[13px] text-muted-foreground">to</span>
+          <span className="text-body text-muted-foreground">to</span>
           <Select value={qEnd} onValueChange={(v) => { setQEnd(v); saved(`Quiet hours until ${v}:00`); }} options={["07", "08", "09"].map((h) => ({ value: h, label: `${h}:00` }))} className="w-28" />
-          <span className="text-[12.5px] text-muted-foreground">IST · Sundays all day</span>
+          <span className="text-body text-muted-foreground">IST · Sundays all day</span>
         </CardContent>
       </Card>
     </>
@@ -650,7 +650,7 @@ function GroupRows({
   return (
     <>
       <TR className="bg-muted/40 hover:bg-muted/40">
-        <TD colSpan={4} className="py-1.5 pl-5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <TD colSpan={4} className="py-1.5 pl-5 text-body font-semibold uppercase tracking-wider text-muted-foreground">
           {group}
         </TD>
       </TR>

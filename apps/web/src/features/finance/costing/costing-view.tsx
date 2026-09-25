@@ -64,8 +64,8 @@ export function CostingView() {
       />
 
       {scenarioOn && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-accent/30 bg-accent-soft px-4 py-2.5 text-[13px]">
-          <div className="flex items-center gap-2 text-accent">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary-soft px-4 py-2.5 text-body">
+          <div className="flex items-center gap-2 text-primary">
             <FlaskConical className="size-4" />
             <span className="font-medium">Scenario mode</span>
             <span className="text-foreground/80">

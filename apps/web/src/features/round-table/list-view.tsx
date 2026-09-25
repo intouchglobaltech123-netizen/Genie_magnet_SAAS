@@ -67,11 +67,11 @@ export function RoundTableList() {
         <CardContent className="grid gap-4 p-5 md:grid-cols-5">
           {rules.map((r) => (
             <div key={r.title} className="space-y-1.5">
-              <span className="inline-flex size-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
+              <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary-soft text-primary">
                 <r.icon className="size-4" />
               </span>
-              <div className="text-[13.5px] font-semibold">{r.title}</div>
-              <p className="text-[12.5px] leading-relaxed text-muted-foreground">{r.text}</p>
+              <div className="text-body font-semibold">{r.title}</div>
+              <p className="text-body leading-relaxed text-muted-foreground">{r.text}</p>
             </div>
           ))}
         </CardContent>
@@ -99,7 +99,7 @@ export function RoundTableList() {
                 </div>
               </CardHeader>
               <CardContent className="flex flex-1 flex-col gap-4">
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-body text-muted-foreground">
                   <span className="flex items-center gap-2">
                     <AvatarStack names={s.participantIds.map((id) => personById(id).name)} max={7} />
                     {total} people
@@ -109,7 +109,7 @@ export function RoundTableList() {
                   </span>
                   <span>Facilitator: {personById(s.facilitatorId).name}</span>
                 </div>
-                <ol className="space-y-1 rounded-xl bg-muted/60 p-3 text-[12.5px]">
+                <ol className="space-y-1 rounded-xl bg-muted/60 p-3 text-body">
                   {s.questions.map((q, i) => (
                     <li key={i} className="flex gap-2">
                       <span className="font-mono text-muted-foreground">Q{i + 1}</span>
@@ -118,7 +118,7 @@ export function RoundTableList() {
                   ))}
                 </ol>
                 {s.status !== "draft" && s.status !== "released" && (
-                  <div className="text-[12.5px] text-muted-foreground">
+                  <div className="text-body text-muted-foreground">
                     Round {Math.min(done + 1, total)} of {total}
                   </div>
                 )}
@@ -172,8 +172,8 @@ function SetupDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: 
 
           <div className="space-y-2">
             <div className="flex items-baseline justify-between">
-              <span className="text-[13px] font-medium">Team members ({selected.length})</span>
-              <span className="text-[12px] text-muted-foreground">The manager is reviewed too</span>
+              <span className="text-body font-medium">Team members ({selected.length})</span>
+              <span className="text-body text-muted-foreground">The manager is reviewed too</span>
             </div>
             <div className="grid gap-1.5 sm:grid-cols-2">
               {pool.map((p) => (
@@ -181,14 +181,14 @@ function SetupDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: 
                   key={p.id}
                   className={cn(
                     "flex cursor-pointer items-center gap-2.5 rounded-lg border px-2.5 py-2 transition",
-                    selected.includes(p.id) ? "border-accent/50 bg-accent-soft/50" : "border-border hover:bg-muted/60",
+                    selected.includes(p.id) ? "border-primary/50 bg-primary-soft/50" : "border-border hover:bg-muted/60",
                   )}
                 >
                   <Checkbox checked={selected.includes(p.id)} onCheckedChange={() => toggle(p.id)} />
                   <Avatar name={p.name} size="sm" />
                   <span className="min-w-0 leading-tight">
-                    <span className="block truncate text-[13px] font-medium">{p.name}</span>
-                    <span className="block truncate text-[11px] text-muted-foreground">{p.role}</span>
+                    <span className="block truncate text-body font-medium">{p.name}</span>
+                    <span className="block truncate text-body text-muted-foreground">{p.role}</span>
                   </span>
                 </label>
               ))}
@@ -196,10 +196,10 @@ function SetupDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: 
           </div>
 
           <div className="space-y-2">
-            <span className="text-[13px] font-medium">The three questions</span>
+            <span className="text-body font-medium">The three questions</span>
             {questions.map((q, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="w-6 font-mono text-[12px] text-muted-foreground">Q{i + 1}</span>
+                <span className="w-6 font-mono text-body text-muted-foreground">Q{i + 1}</span>
                 <Input
                   value={q}
                   onChange={(e) => {
@@ -210,25 +210,25 @@ function SetupDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: 
                 />
               </div>
             ))}
-            <p className="pl-8 text-[11.5px] text-muted-foreground">{"{name}"} is replaced with the teammate&apos;s name on screen.</p>
+            <p className="pl-8 text-body text-muted-foreground">{"{name}"} is replaced with the teammate&apos;s name on screen.</p>
           </div>
 
           <div className="space-y-2">
-            <span className="text-[13px] font-medium">Time per person</span>
+            <span className="text-body font-medium">Time per person</span>
             <div className="flex flex-wrap gap-2">
               {[60, 90, 120].map((s) => (
                 <button
                   key={s}
                   onClick={() => setSeconds(s)}
                   className={cn(
-                    "cursor-pointer rounded-lg border px-4 py-2 text-[13px] font-medium transition",
-                    seconds === s ? "border-accent bg-accent text-accent-foreground" : "border-border hover:bg-muted",
+                    "cursor-pointer rounded-lg border px-4 py-2 text-body font-medium transition",
+                    seconds === s ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted",
                   )}
                 >
                   {s / 60 === 1 ? "1 min" : `${s / 60} min`}
                 </button>
               ))}
-              <span className="self-center text-[12.5px] text-muted-foreground">
+              <span className="self-center text-body text-muted-foreground">
                 Total ≈ {Math.ceil((seconds * selected.length) / 60)} min for {selected.length} people
               </span>
             </div>

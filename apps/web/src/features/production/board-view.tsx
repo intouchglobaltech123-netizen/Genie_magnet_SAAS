@@ -17,8 +17,8 @@ const toneDot: Record<string, string> = {
   neutral: "bg-muted-foreground/50",
   outline: "bg-muted-foreground",
   info: "bg-info",
-  accent: "bg-accent",
-  gold: "bg-gold",
+  accent: "bg-primary",
+  gold: "bg-accent",
   warning: "bg-warning",
   danger: "bg-danger",
   success: "bg-success",
@@ -69,22 +69,22 @@ export function BoardView({ videos }: { videos: Video[] }) {
               }}
               className={cn(
                 "flex w-[272px] shrink-0 flex-col rounded-2xl border border-transparent bg-muted/60 p-2 transition-colors",
-                over === stage && (blocked ? "border-danger/40 bg-danger-soft/60" : "border-accent/40 bg-accent-soft/50"),
+                over === stage && (blocked ? "border-danger/40 bg-danger-soft/60" : "border-primary/40 bg-primary-soft/50"),
               )}
             >
               <div className="flex items-center justify-between px-2 pb-2 pt-1">
-                <div className="flex items-center gap-2 text-[13px] font-semibold">
+                <div className="flex items-center gap-2 text-body font-semibold">
                   <span className={cn("size-2 rounded-full", toneDot[stageTone[stage]])} />
                   {stage}
                 </div>
-                <span className="rounded-md bg-card px-1.5 text-[11px] font-medium tabular text-muted-foreground">{items.length}</span>
+                <span className="rounded-md bg-card px-1.5 text-body font-medium tabular text-muted-foreground">{items.length}</span>
               </div>
               <div className="flex min-h-24 flex-col gap-2">
                 {items.map((v) => (
                   <BoardCard key={v.id} v={v} onDragStart={() => setDragId(v.id)} onDragEnd={() => setDragId(null)} />
                 ))}
                 {!items.length && (
-                  <div className="flex h-20 items-center justify-center rounded-xl border border-dashed border-border text-[12px] text-muted-foreground">
+                  <div className="flex h-20 items-center justify-center rounded-xl border border-dashed border-border text-body text-muted-foreground">
                     Drop here
                   </div>
                 )}
@@ -112,21 +112,21 @@ function BoardCard({ v, onDragStart, onDragEnd }: { v: Video; onDragStart: () =>
       }}
       onDragEnd={onDragEnd}
       onClick={() => router.push(`/production/${v.id}`)}
-      className="group relative cursor-pointer rounded-xl border border-border bg-card p-3 shadow-card transition hover:-translate-y-px hover:border-accent/40 hover:shadow-pop active:cursor-grabbing"
+      className="group relative cursor-pointer rounded-xl border border-border bg-card p-3 shadow-card transition hover:-translate-y-px hover:border-primary/40 hover:shadow-pop active:cursor-grabbing"
     >
       <GripVertical className="absolute right-1.5 top-3 size-3.5 text-muted-foreground/0 transition group-hover:text-muted-foreground/60" />
       <div className="flex items-center justify-between gap-2 pr-3">
-        <span className="font-mono text-[11px] font-medium tracking-wide text-muted-foreground">{v.code}</span>
+        <span className="font-mono text-body font-medium tracking-wide text-muted-foreground">{v.code}</span>
         <div className="flex items-center gap-1">
           <UrgencyIcon urgency={v.urgency} />
           <VPBadge on={v.videoProtection} />
         </div>
       </div>
-      <div className="mt-1.5 line-clamp-2 text-[13.5px] font-medium leading-snug">{v.title}</div>
+      <div className="mt-1.5 line-clamp-2 text-body font-medium leading-snug">{v.title}</div>
       <ClientChip clientId={v.clientId} className="mt-1.5" />
       {(v.stage === "Editing" || v.stage === "Shot") && (
         <div className="mt-2.5">
-          <div className="mb-1 flex justify-between text-[10.5px] text-muted-foreground">
+          <div className="mb-1 flex justify-between text-body text-muted-foreground">
             <span>Edit steps</span>
             <span className="tabular">{steps}/9</span>
           </div>
@@ -134,14 +134,14 @@ function BoardCard({ v, onDragStart, onDragEnd }: { v: Video; onDragStart: () =>
         </div>
       )}
       {v.stage === "Internal QC" && (
-        <div className="mt-2.5 flex items-center gap-2 text-[11px]">
+        <div className="mt-2.5 flex items-center gap-2 text-body">
           <span className="text-success">{qc.pass} pass</span>
           {qc.fail > 0 && <span className="font-medium text-danger">{qc.fail} fail</span>}
           <span className="text-muted-foreground">{qc.pending} pending</span>
         </div>
       )}
       <div className="mt-3 flex items-center justify-between border-t border-border pt-2.5">
-        <span className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 text-body text-muted-foreground">
           <Avatar name={editor.name} size="xs" />
           {editor.name.split(" ")[0]}
         </span>

@@ -117,18 +117,18 @@ function RecordPaymentForm({ invoice, onDone }: { invoice: InvoiceView; onDone: 
         <div className="rounded-xl border border-border p-3">
           <label className="flex cursor-pointer items-center gap-2.5">
             <Checkbox checked={tdsOn} onCheckedChange={(v) => onTds(v === true)} />
-            <span className="text-[13px] font-medium">Client deducted TDS</span>
-            <span className="text-xs text-muted-foreground">(2% u/s 194C on taxable value)</span>
+            <span className="text-body font-medium">Client deducted TDS</span>
+            <span className="text-body text-muted-foreground">(2% u/s 194C on taxable value)</span>
           </label>
           {tdsOn && (
             <div className="mt-3 flex items-center gap-3">
-              <Label className="shrink-0 text-xs text-muted-foreground">TDS amount (₹)</Label>
+              <Label className="shrink-0 text-body text-muted-foreground">TDS amount (₹)</Label>
               <Input type="number" value={tds} onChange={(e) => setTds(e.target.value)} className="h-8 w-36 tabular" />
-              <span className="text-xs text-muted-foreground">Claim in Form 26AS</span>
+              <span className="text-body text-muted-foreground">Claim in Form 26AS</span>
             </div>
           )}
         </div>
-        <div className="grid grid-cols-3 gap-2 rounded-xl bg-muted/60 p-3 text-[12.5px]">
+        <div className="grid grid-cols-3 gap-2 rounded-xl bg-muted/60 p-3 text-body">
           <div>
             <div className="text-muted-foreground">Settled now</div>
             <div className="font-semibold tabular">{inr(settled)}</div>
@@ -237,7 +237,7 @@ function NewInvoiceForm({ onDone }: { onDone: () => void }) {
             <Input type="number" value={taxable} onChange={(e) => setTaxable(e.target.value)} className="tabular" />
           </Field>
           <Field label="Place of supply">
-            <div className="flex h-9 items-center gap-2 rounded-lg border border-input bg-muted/50 px-3 text-sm">
+            <div className="flex h-9 items-center gap-2 rounded-lg border border-input bg-muted/50 px-3 text-body">
               {party.state} <Badge tone={party.interState ? "gold" : "neutral"}>{party.interState ? "Inter-state" : "Intra-state"}</Badge>
             </div>
           </Field>
@@ -254,7 +254,7 @@ function NewInvoiceForm({ onDone }: { onDone: () => void }) {
           )}
           <Row label="Invoice total" value={inr(split.total)} strong />
         </div>
-        <p className="text-xs text-muted-foreground">GSTIN {party.gstin} · due {fmtDate(addDays(TODAY, Number(terms)), { day: "numeric", month: "short", year: "numeric" })}</p>
+        <p className="text-body text-muted-foreground">GSTIN {party.gstin} · due {fmtDate(addDays(TODAY, Number(terms)), { day: "numeric", month: "short", year: "numeric" })}</p>
       </DialogBody>
       <DialogFooter>
         <Button variant="outline" size="sm" onClick={onDone}>
@@ -270,7 +270,7 @@ function NewInvoiceForm({ onDone }: { onDone: () => void }) {
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className={cn("flex items-center justify-between px-3.5 py-2 text-[13px]", strong ? "border-t border-border font-semibold" : "text-muted-foreground")}>
+    <div className={cn("flex items-center justify-between px-3.5 py-2 text-body", strong ? "border-t border-border font-semibold" : "text-muted-foreground")}>
       <span>{label}</span>
       <span className={cn("tabular", !strong && "text-foreground")}>{value}</span>
     </div>
@@ -311,33 +311,33 @@ export function InvoiceSheet({
               </DialogDescription>
             </DialogHeader>
             <DialogBody className="space-y-5">
-              <div className="grid grid-cols-2 gap-4 rounded-xl border border-border p-4 text-[13px]">
+              <div className="grid grid-cols-2 gap-4 rounded-xl border border-border p-4 text-body">
                 <div>
-                  <div className="text-xs text-muted-foreground">Billed to</div>
+                  <div className="text-body text-muted-foreground">Billed to</div>
                   <div className="mt-0.5 font-medium">{party.name}</div>
                   <div className="text-muted-foreground">
                     {party.city}, {party.state}
                   </div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">GSTIN {party.gstin}</div>
+                  <div className="mt-1 font-mono text-body text-muted-foreground">GSTIN {party.gstin}</div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">From</div>
+                  <div className="text-body text-muted-foreground">From</div>
                   <div className="mt-0.5 font-medium">Genie Magnet</div>
                   <div className="text-muted-foreground">Appakudal, Erode, Tamil Nadu</div>
-                  <div className="mt-1 font-mono text-xs text-muted-foreground">GSTIN 33AAQFG7120K1Z4</div>
+                  <div className="mt-1 font-mono text-body text-muted-foreground">GSTIN 33AAQFG7120K1Z4</div>
                 </div>
                 {invoice.category && (
-                  <div className="col-span-2 flex items-center gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
+                  <div className="col-span-2 flex items-center gap-2 border-t border-border pt-3 text-body text-muted-foreground">
                     Customer category <CategoryBadge category={invoice.category as CustomerCategory} />
                   </div>
                 )}
               </div>
 
               <div className="rounded-xl border border-border">
-                <div className="flex items-start justify-between gap-3 px-3.5 py-3 text-[13px]">
+                <div className="flex items-start justify-between gap-3 px-3.5 py-3 text-body">
                   <div>
                     <div className="font-medium">{invoice.description}</div>
-                    <div className="text-xs text-muted-foreground">Cycle {invoice.period} · SAC 998386</div>
+                    <div className="text-body text-muted-foreground">Cycle {invoice.period} · SAC 998386</div>
                   </div>
                   <div className="tabular font-medium">{inr(invoice.taxable)}</div>
                 </div>
@@ -358,22 +358,22 @@ export function InvoiceSheet({
               </div>
 
               <div>
-                <div className="mb-2 text-[13px] font-semibold">Payments</div>
+                <div className="mb-2 text-body font-semibold">Payments</div>
                 {invoice.payments.length === 0 ? (
-                  <p className="rounded-lg bg-muted/60 px-3 py-2.5 text-[13px] text-muted-foreground">No payments received yet.</p>
+                  <p className="rounded-lg bg-muted/60 px-3 py-2.5 text-body text-muted-foreground">No payments received yet.</p>
                 ) : (
                   <ul className="space-y-1.5">
                     {invoice.payments.map((p) => (
-                      <li key={p.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-[13px]">
+                      <li key={p.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-body">
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="size-4 text-success" />
                           <span>{fmtDate(p.date)}</span>
                           <Badge tone="neutral">{p.mode}</Badge>
-                          <span className="truncate font-mono text-[11px] text-muted-foreground">{p.ref}</span>
+                          <span className="truncate font-mono text-body text-muted-foreground">{p.ref}</span>
                         </div>
                         <div className="text-right tabular">
                           {inr(p.amount)}
-                          {p.tds > 0 && <div className="text-[11px] text-muted-foreground">+ TDS {inr(p.tds)}</div>}
+                          {p.tds > 0 && <div className="text-body text-muted-foreground">+ TDS {inr(p.tds)}</div>}
                         </div>
                       </li>
                     ))}
@@ -381,7 +381,7 @@ export function InvoiceSheet({
                 )}
               </div>
 
-              <div className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2.5 text-[13px] text-muted-foreground">
+              <div className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2.5 text-body text-muted-foreground">
                 <BellRing className="size-4" />
                 {invoice.reminders ? (
                   <>

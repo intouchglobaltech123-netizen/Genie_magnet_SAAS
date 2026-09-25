@@ -21,7 +21,7 @@ export function Select({
     <SP.Root value={value} onValueChange={onValueChange}>
       <SP.Trigger
         className={cn(
-          "flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-input bg-card px-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 data-[placeholder]:text-muted-foreground",
+          "flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-input bg-card px-3 text-body focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 data-[placeholder]:text-muted-foreground",
           className,
         )}
       >
@@ -41,7 +41,7 @@ export function Select({
               <SP.Item
                 key={o.value}
                 value={o.value}
-                className="relative flex cursor-pointer select-none items-center rounded-lg py-1.5 pl-8 pr-3 text-[13px] outline-none data-[highlighted]:bg-muted"
+                className="relative flex cursor-pointer select-none items-center rounded-lg py-1.5 pl-8 pr-3 text-body outline-none data-[highlighted]:bg-muted"
               >
                 <SP.ItemIndicator className="absolute left-2.5">
                   <Check className="size-3.5" />

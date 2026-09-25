@@ -4,11 +4,11 @@ export type ProgressTone = "accent" | "success" | "warning" | "danger" | "gold" 
 
 export function Progress({ value, className, tone = "accent" }: { value: number; className?: string; tone?: ProgressTone }) {
   const color = {
-    accent: "bg-accent",
+    accent: "bg-primary",
     success: "bg-success",
     warning: "bg-warning",
     danger: "bg-danger",
-    gold: "bg-gold",
+    gold: "bg-accent",
     info: "bg-info",
   }[tone];
   return (

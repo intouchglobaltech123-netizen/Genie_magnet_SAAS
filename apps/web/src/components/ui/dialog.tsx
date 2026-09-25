@@ -48,8 +48,8 @@ export function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLD
   return <div className={cn("flex justify-end gap-2 border-t border-border px-6 py-4", className)} {...props} />;
 }
 export function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
-  return <DialogPrimitive.Title className={cn("text-lg font-semibold tracking-tight", className)} {...props} />;
+  return <DialogPrimitive.Title className={cn("text-subheading font-semibold tracking-tight", className)} {...props} />;
 }
 export function DialogDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
-  return <DialogPrimitive.Description className={cn("text-sm text-muted-foreground", className)} {...props} />;
+  return <DialogPrimitive.Description className={cn("text-body text-muted-foreground", className)} {...props} />;
 }

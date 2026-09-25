@@ -41,19 +41,19 @@ export function OnboardingTracker() {
                 key={c.id}
                 onClick={() => setSel(c.id)}
                 className={cn(
-                  "w-full cursor-pointer rounded-2xl border bg-card p-4 text-left shadow-card transition hover:border-accent/40",
-                  sel === c.id ? "border-accent ring-2 ring-accent/15" : "border-border",
+                  "w-full cursor-pointer rounded-2xl border bg-card p-4 text-left shadow-card transition hover:border-primary/40",
+                  sel === c.id ? "border-primary ring-2 ring-primary/15" : "border-border",
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-[13.5px] font-semibold">{c.name}</span>
+                  <span className="text-body font-semibold">{c.name}</span>
                   <Badge tone={complete ? "success" : exceptions[c.id] ? "warning" : "accent"}>{complete ? "Completed" : exceptions[c.id] ? "Exception" : "In progress"}</Badge>
                 </div>
-                <div className="mt-1 text-[12px] text-muted-foreground">
+                <div className="mt-1 text-body text-muted-foreground">
                   {c.packageName} · won {format(parseISO(c.wonOn), "d MMM")}
                 </div>
                 <Progress className="mt-3" value={(done.length / onboardingTemplate.length) * 100} tone={complete ? "success" : "accent"} />
-                <div className="mt-1 text-[11.5px] text-muted-foreground tabular">
+                <div className="mt-1 text-body text-muted-foreground tabular">
                   {done.length}/{onboardingTemplate.length} items
                 </div>
               </button>
@@ -96,11 +96,11 @@ function Detail({ id }: { id: string }) {
             {gateOpen ? <LockOpen className="size-5" /> : exception ? <ShieldQuestion className="size-5" /> : <Lock className="size-5" />}
           </span>
           <div className="flex-1">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Onboarding gate</div>
-            <div className="text-[16px] font-semibold">
+            <div className="text-body font-semibold uppercase tracking-wider text-muted-foreground">Onboarding gate</div>
+            <div className="text-subheading font-semibold">
               {gateOpen ? "Clear — production can start" : exception ? "Exception requested — awaiting Janarthanan" : `Production blocked · ${missing.length} mandatory item${missing.length > 1 ? "s" : ""} pending`}
             </div>
-            <div className="text-[12.5px] text-muted-foreground">
+            <div className="text-body text-muted-foreground">
               {gateOpen
                 ? `First cycle starts ${format(parseISO(c.targetStart), "d MMM yyyy")}. Shoots and edits are unlocked.`
                 : exception
@@ -151,14 +151,14 @@ function Detail({ id }: { id: string }) {
                   }}
                 />
                 <div className="min-w-0 flex-1">
-                  <div className={cn("flex items-center gap-2 text-[13px] font-medium", checked && "text-muted-foreground line-through")}>
+                  <div className={cn("flex items-center gap-2 text-body font-medium", checked && "text-muted-foreground line-through")}>
                     {item.label}
                     {item.mandatory && !checked && <Badge tone="danger">Required</Badge>}
                     {!item.mandatory && <Badge tone="neutral">Optional</Badge>}
                   </div>
-                  <div className="text-[12px] text-muted-foreground">{item.detail}</div>
+                  <div className="text-body text-muted-foreground">{item.detail}</div>
                 </div>
-                <div className="hidden items-center gap-1.5 text-[12px] text-muted-foreground sm:flex">
+                <div className="hidden items-center gap-1.5 text-body text-muted-foreground sm:flex">
                   <Avatar name={item.owner} size="xs" /> {item.owner.split(" ")[0]}
                 </div>
               </label>
@@ -174,7 +174,7 @@ function Detail({ id }: { id: string }) {
             <DialogDescription>Start production before onboarding is complete. The founder is notified and the exception is logged.</DialogDescription>
           </DialogHeader>
           <DialogBody className="space-y-3">
-            <div className="rounded-lg bg-muted/60 p-3 text-[12.5px]">
+            <div className="rounded-lg bg-muted/60 p-3 text-body">
               <b>Still missing:</b> {missing.map((m) => m.label).join(", ")}
             </div>
             <Field label="Reason">

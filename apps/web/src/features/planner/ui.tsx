@@ -8,16 +8,16 @@ import type { Intensity, SpendKind } from "@/features/planner/calc";
 import { cn } from "@/lib/utils";
 
 export const kindMeta: Record<SpendKind | "Savings", { color: string; soft: string; text: string; desc: string }> = {
-  Need: { color: "var(--chart-2)", soft: "bg-[color-mix(in_srgb,var(--chart-2)_14%,transparent)]", text: "text-[var(--chart-2)]", desc: "Essential — rent, food, transport, medicine" },
-  Want: { color: "var(--chart-3)", soft: "bg-[color-mix(in_srgb,var(--chart-3)_16%,transparent)]", text: "text-[var(--chart-3)]", desc: "Nice to have — 50% counts as leakage if the 48-hr rule was skipped" },
-  Craving: { color: "var(--chart-4)", soft: "bg-[color-mix(in_srgb,var(--chart-4)_14%,transparent)]", text: "text-[var(--chart-4)]", desc: "Emotional urge — 100% counts as leakage" },
-  Savings: { color: "var(--chart-1)", soft: "bg-accent-soft", text: "text-accent", desc: "Money left to invest" },
+  Need: { color: "var(--color-chart-2)", soft: "bg-[color-mix(in_srgb,var(--color-chart-2)_14%,transparent)]", text: "text-[var(--color-chart-2)]", desc: "Essential — rent, food, transport, medicine" },
+  Want: { color: "var(--color-chart-3)", soft: "bg-[color-mix(in_srgb,var(--color-chart-3)_16%,transparent)]", text: "text-[var(--color-chart-3)]", desc: "Nice to have — 50% counts as leakage if the 48-hr rule was skipped" },
+  Craving: { color: "var(--color-chart-4)", soft: "bg-[color-mix(in_srgb,var(--color-chart-4)_14%,transparent)]", text: "text-[var(--color-chart-4)]", desc: "Emotional urge — 100% counts as leakage" },
+  Savings: { color: "var(--color-chart-1)", soft: "bg-primary-soft", text: "text-primary", desc: "Money left to invest" },
 };
 
 export function KindPill({ kind, className }: { kind: SpendKind; className?: string }) {
   const m = kindMeta[kind];
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11.5px] font-medium", m.soft, m.text, className)}>
+    <span className={cn("inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-body font-medium", m.soft, m.text, className)}>
       <span className="size-1.5 rounded-full" style={{ background: m.color }} />
       {kind}
     </span>
@@ -101,7 +101,7 @@ export function Segmented<T extends string>({
           type="button"
           onClick={() => onChange(o.value)}
           className={cn(
-            "h-7 cursor-pointer rounded-md px-2.5 text-[12.5px] font-medium transition",
+            "h-7 cursor-pointer rounded-md px-2.5 text-body font-medium transition",
             value === o.value ? (o.activeCls ?? "bg-primary text-primary-foreground") : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >
@@ -118,23 +118,23 @@ export function years(n: number, digits = 1) {
 
 export const tooltipStyle: { contentStyle: CSSProperties; labelStyle: CSSProperties; itemStyle: CSSProperties } = {
   contentStyle: {
-    background: "var(--popover)",
-    border: "1px solid var(--border)",
+    background: "var(--color-popover)",
+    border: "1px solid var(--color-border)",
     borderRadius: 10,
     boxShadow: "0 8px 24px -8px rgba(0,0,0,0.18)",
     fontSize: 12,
     padding: "8px 10px",
   },
-  labelStyle: { color: "var(--muted-foreground)", marginBottom: 4, fontWeight: 500 },
-  itemStyle: { color: "var(--foreground)", padding: 0 },
+  labelStyle: { color: "var(--color-muted-foreground)", marginBottom: 4, fontWeight: 500 },
+  itemStyle: { color: "var(--color-foreground)", padding: 0 },
 };
 
 export const axisProps = {
   tickLine: false,
   axisLine: false,
-  tick: { fill: "var(--muted-foreground)", fontSize: 11 },
+  tick: { fill: "var(--color-muted-foreground)", fontSize: 11 },
 } as const;
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{children}</div>;
+  return <div className="mb-2 text-body font-semibold uppercase tracking-wider text-muted-foreground">{children}</div>;
 }

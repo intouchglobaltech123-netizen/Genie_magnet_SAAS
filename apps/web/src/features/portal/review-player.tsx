@@ -74,13 +74,13 @@ export function ReviewPlayer({
           <div className="absolute inset-0 bg-[radial-gradient(90%_70%_at_50%_110%,rgba(0,0,0,0.7),transparent)]" />
           {time > 0.5 && (
             <div className="absolute inset-x-[8%] bottom-[9%] text-center">
-              <span className="rounded bg-black/55 px-2 py-1 text-[13px] font-medium leading-relaxed text-white md:text-[15px]">{caption}</span>
+              <span className="rounded bg-black/55 px-2 py-1 text-body font-medium leading-relaxed text-white md:text-subheading">{caption}</span>
             </div>
           )}
         </div>
 
         {/* Review watermark */}
-        <div className="pointer-events-none absolute right-3 top-3 rounded bg-black/40 px-2 py-1 font-mono text-[10.5px] tracking-wide text-white/60">
+        <div className="pointer-events-none absolute right-3 top-3 rounded bg-black/40 px-2 py-1 font-mono text-body tracking-wide text-white/60">
           {video.code} · {version.label} · REVIEW COPY
         </div>
 
@@ -107,7 +107,7 @@ export function ReviewPlayer({
         <button onClick={onToggle} className="cursor-pointer rounded-md p-1 text-white/90 hover:bg-white/10" aria-label={playing ? "Pause" : "Play"}>
           {playing ? <Pause className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
         </button>
-        <span className="font-mono text-[12px] tabular-nums text-white/80">
+        <span className="font-mono text-body tabular-nums text-white/80">
           {fmtTs(time)} <span className="text-white/40">/ {fmtTs(duration)}</span>
         </span>
 
@@ -127,7 +127,7 @@ export function ReviewPlayer({
           />
           {hoverX !== null && (
             <div
-              className="pointer-events-none absolute -top-6 -translate-x-1/2 rounded bg-white px-1.5 py-0.5 font-mono text-[10.5px] text-black"
+              className="pointer-events-none absolute -top-6 -translate-x-1/2 rounded bg-white px-1.5 py-0.5 font-mono text-body text-black"
               style={{ left: `${hoverX * 100}%` }}
             >
               {fmtTs(hoverX * duration)}
@@ -147,8 +147,8 @@ export function ReviewPlayer({
                   }}
                   title={`${c.timestamp} · ${c.author}`}
                   className={cn(
-                    "absolute -bottom-1.5 flex size-4 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full text-[7px] font-bold ring-2 transition",
-                    active ? "z-10 scale-125 bg-accent text-white ring-white" : c.resolved ? "bg-white/30 text-black ring-black/60" : "bg-warning text-black ring-black/60 hover:scale-110",
+                    "absolute -bottom-1.5 flex size-4 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full text-body font-bold ring-2 transition",
+                    active ? "z-10 scale-125 bg-primary text-white ring-white" : c.resolved ? "bg-white/30 text-black ring-black/60" : "bg-warning text-black ring-black/60 hover:scale-110",
                   )}
                   style={{ left: `${left}%` }}
                 >
@@ -158,7 +158,7 @@ export function ReviewPlayer({
             })}
         </div>
 
-        <button onClick={onSpeed} className="cursor-pointer rounded-md px-1.5 py-0.5 font-mono text-[11.5px] text-white/80 hover:bg-white/10">
+        <button onClick={onSpeed} className="cursor-pointer rounded-md px-1.5 py-0.5 font-mono text-body text-white/80 hover:bg-white/10">
           {speed}×
         </button>
         <Volume2 className="size-4 text-white/60" />
@@ -169,7 +169,7 @@ export function ReviewPlayer({
 
 function Burst() {
   const pieces = Array.from({ length: 28 }, (_, i) => i);
-  const colors = ["var(--success)", "var(--accent)", "var(--gold)", "#ffffff"];
+  const colors = ["var(--color-success)", "var(--color-primary)", "var(--color-chart-3)", "#ffffff"];
   return (
     <motion.div className="pointer-events-none absolute inset-0" initial={{ opacity: 1 }} exit={{ opacity: 0 }}>
       {pieces.map((i) => {
@@ -191,7 +191,7 @@ function Burst() {
         animate={{ scale: 1, opacity: 1 }}
         className="absolute inset-0 flex items-center justify-center"
       >
-        <span className="rounded-full bg-success px-4 py-2 text-[14px] font-semibold text-white shadow-2xl">Approved</span>
+        <span className="rounded-full bg-success px-4 py-2 text-body font-semibold text-white shadow-2xl">Approved</span>
       </motion.div>
     </motion.div>
   );

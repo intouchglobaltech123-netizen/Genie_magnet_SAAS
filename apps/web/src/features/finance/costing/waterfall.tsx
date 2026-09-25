@@ -32,20 +32,20 @@ export function CostWaterfall() {
 
   const cost = c.complete ? a.total : c.projected;
   const raw: Omit<Step, "base">[] = [
-    { name: "Labour", value: a.labour, fill: "var(--chart-1)", formula: `${hoursLabel(a.labourLines.reduce((s, l) => s + l.minutes, 0))} across ${a.labourLines.length} people` },
-    { name: "Equip.", value: a.equipment, fill: "var(--chart-2)", formula: a.equipmentLines.map((e) => `${e.hours.toFixed(1)}h × ₹${e.rate.toFixed(0)}`).join(" + ") || "No kit hours yet" },
-    { name: "Overhead", value: a.overhead, fill: "var(--chart-3)", formula: `${a.labourHours.toFixed(1)} labour hrs × ₹${OVERHEAD_RATE.toFixed(0)}/hr` },
-    { name: "Travel", value: a.travel, fill: "var(--chart-4)", formula: a.travelNote ?? "No shoot travel" },
-    { name: "Rework", value: a.rework, fill: "var(--danger)", formula: `${a.reworkMinutes} min agency corrections × editor rate` },
+    { name: "Labour", value: a.labour, fill: "var(--color-chart-1)", formula: `${hoursLabel(a.labourLines.reduce((s, l) => s + l.minutes, 0))} across ${a.labourLines.length} people` },
+    { name: "Equip.", value: a.equipment, fill: "var(--color-chart-2)", formula: a.equipmentLines.map((e) => `${e.hours.toFixed(1)}h × ₹${e.rate.toFixed(0)}`).join(" + ") || "No kit hours yet" },
+    { name: "Overhead", value: a.overhead, fill: "var(--color-chart-3)", formula: `${a.labourHours.toFixed(1)} labour hrs × ₹${OVERHEAD_RATE.toFixed(0)}/hr` },
+    { name: "Travel", value: a.travel, fill: "var(--color-chart-4)", formula: a.travelNote ?? "No shoot travel" },
+    { name: "Rework", value: a.rework, fill: "var(--color-danger)", formula: `${a.reworkMinutes} min agency corrections × editor rate` },
   ];
   const steps: Step[] = raw.map((s, i) => ({ ...s, base: raw.slice(0, i).reduce((t, x) => t + x.value, 0) }));
   const data: Step[] = [
     ...steps,
-    { name: c.complete ? "True cost" : "To date", base: 0, value: a.total, fill: "var(--foreground)", formula: "Sum of the five components" },
-    { name: "Revenue", base: 0, value: c.revenue, fill: "var(--success)", formula: `₹${c.revenueInfo.fee.toLocaleString("en-IN")} ÷ ${c.revenueInfo.totalWeight} weighted units × ${c.revenueInfo.weight}` },
+    { name: c.complete ? "True cost" : "To date", base: 0, value: a.total, fill: "var(--color-foreground)", formula: "Sum of the five components" },
+    { name: "Revenue", base: 0, value: c.revenue, fill: "var(--color-success)", formula: `₹${c.revenueInfo.fee.toLocaleString("en-IN")} ÷ ${c.revenueInfo.totalWeight} weighted units × ${c.revenueInfo.weight}` },
     c.margin >= 0
-      ? { name: "Margin", base: cost, value: c.margin, fill: "color-mix(in srgb, var(--success) 45%, transparent)", formula: "Revenue share − true cost" }
-      : { name: "Loss", base: c.revenue, value: -c.margin, fill: "color-mix(in srgb, var(--danger) 55%, transparent)", formula: "True cost exceeds revenue share" },
+      ? { name: "Margin", base: cost, value: c.margin, fill: "color-mix(in srgb, var(--color-success) 45%, transparent)", formula: "Revenue share − true cost" }
+      : { name: "Loss", base: c.revenue, value: -c.margin, fill: "color-mix(in srgb, var(--color-danger) 55%, transparent)", formula: "True cost exceeds revenue share" },
   ];
 
   const tone = marginTone(c.marginPct);
@@ -68,7 +68,7 @@ export function CostWaterfall() {
           <Select
             value={c.video.id}
             onValueChange={select}
-            className="h-8 text-[13px]"
+            className="h-8 text-body"
             options={rows.map((r) => ({ value: r.video.id, label: `${r.video.code} · ${r.video.format}` }))}
           />
           <StageBadge stage={v.stage} />
@@ -78,11 +78,11 @@ export function CostWaterfall() {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 18, right: 4, left: -14, bottom: 0 }}>
-              <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+              <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
               <XAxis dataKey="name" {...axisProps} interval={0} tick={{ ...axisProps.tick, fontSize: 10 }} />
               <YAxis {...axisProps} tickFormatter={(x: number) => inrCompact(x)} width={52} />
               <Tooltip
-                cursor={{ fill: "var(--muted)", opacity: 0.5 }}
+                cursor={{ fill: "var(--color-muted)", opacity: 0.5 }}
                 content={({ active, payload }) => {
                   const p = payload?.find((x) => x.dataKey === "value")?.payload as Step | undefined;
                   if (!active || !p) return null;
@@ -91,7 +91,7 @@ export function CostWaterfall() {
                       <div className="font-medium">
                         {p.name} · {inr(p.value)}
                       </div>
-                      <div className="mt-0.5 max-w-56 text-[11px] text-muted-foreground">{p.formula}</div>
+                      <div className="mt-0.5 max-w-56 text-body text-muted-foreground">{p.formula}</div>
                     </div>
                   );
                 }}
@@ -113,7 +113,7 @@ export function CostWaterfall() {
           </ResponsiveContainer>
         </div>
 
-        <div className="space-y-3 text-[12.5px]">
+        <div className="space-y-3 text-body">
           <Section title="Labour" total={a.labour} std={c.standard.labour}>
             {a.labourLines.length === 0 && <Muted>No time logged yet</Muted>}
             {a.labourLines.map((l) => (
@@ -137,7 +137,7 @@ export function CostWaterfall() {
           </Section>
           <div className="flex items-center justify-between rounded-lg bg-muted/60 px-3 py-2">
             <span className="text-muted-foreground">
-              Revenue share <span className="text-[11px]">({c.revenueInfo.packageName})</span>
+              Revenue share <span className="text-body">({c.revenueInfo.packageName})</span>
             </span>
             <span className="font-semibold tabular">{inr(c.revenue)}</span>
           </div>
@@ -153,7 +153,7 @@ function Section({ title, total, std, danger, children }: { title: string; total
       <div className="mb-1 flex items-center justify-between">
         <span className={cn("font-medium", danger && "text-danger")}>{title}</span>
         <span className="flex items-baseline gap-2 tabular">
-          <span className="text-[11px] text-muted-foreground">std {inr(std)}</span>
+          <span className="text-body text-muted-foreground">std {inr(std)}</span>
           <span className="font-semibold">{inr(total)}</span>
         </span>
       </div>
@@ -164,10 +164,10 @@ function Section({ title, total, std, danger, children }: { title: string; total
 
 function Row({ label, formula, value }: { label: string; formula: string; value: number }) {
   return (
-    <div className="flex items-center justify-between gap-2 text-[12px]">
+    <div className="flex items-center justify-between gap-2 text-body">
       <span className="truncate text-muted-foreground">{label}</span>
       <span className="flex shrink-0 items-baseline gap-2 tabular">
-        <span className="font-mono text-[11px] text-muted-foreground/80">{formula}</span>
+        <span className="font-mono text-body text-muted-foreground/80">{formula}</span>
         <span>{inr(value)}</span>
       </span>
     </div>
@@ -175,5 +175,5 @@ function Row({ label, formula, value }: { label: string; formula: string; value:
 }
 
 function Muted({ children }: { children: React.ReactNode }) {
-  return <div className="text-[12px] text-muted-foreground">{children}</div>;
+  return <div className="text-body text-muted-foreground">{children}</div>;
 }

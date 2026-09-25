@@ -15,7 +15,7 @@ export function UrgencyIcon({ urgency, withLabel }: { urgency: Urgency; withLabe
   const Icon = m.icon;
   return (
     <Tooltip content={m.desc}>
-      <span className={cn("inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11.5px] font-medium", m.cls)}>
+      <span className={cn("inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-body font-medium", m.cls)}>
         <Icon className="size-3.5" strokeWidth={2.4} />
         {withLabel && m.label}
       </span>
@@ -28,7 +28,7 @@ export function VPBadge({ on }: { on: boolean }) {
     <Tooltip content={on ? "Video Protection: raw footage backed up & verified" : "Video Protection pending — footage not yet backed up"}>
       <span
         className={cn(
-          "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold",
+          "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-body font-semibold",
           on ? "bg-success-soft text-success" : "bg-muted text-muted-foreground",
         )}
       >

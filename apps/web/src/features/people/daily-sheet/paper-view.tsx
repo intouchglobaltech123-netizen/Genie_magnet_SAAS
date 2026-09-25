@@ -48,20 +48,20 @@ export function PaperView({
           <div className="rounded-lg border border-border bg-card p-6 text-foreground shadow-card">
             <div className="flex items-start justify-between border-b-2 border-foreground/80 pb-3">
               <div>
-                <div className="text-[11px] font-semibold tracking-[0.2em] text-muted-foreground">GENIE MAGNET</div>
-                <div className="text-[18px] font-bold uppercase tracking-wide">{template.title}</div>
+                <div className="text-body font-semibold tracking-[0.2em] text-muted-foreground">GENIE MAGNET</div>
+                <div className="text-subheading font-bold uppercase tracking-wide">{template.title}</div>
               </div>
-              <div className="text-right text-[12px] leading-5">
+              <div className="text-right text-body leading-5">
                 <div>
-                  Name: <span className="font-serif text-[14px] italic">{person.name}</span>
+                  Name: <span className="font-serif text-body italic">{person.name}</span>
                 </div>
                 <div>
-                  Date: <span className="font-serif text-[14px] italic">{dayLabel(date, { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                  Date: <span className="font-serif text-body italic">{dayLabel(date, { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
                 </div>
               </div>
             </div>
 
-            <table className="mt-4 w-full border-collapse text-[12px]">
+            <table className="mt-4 w-full border-collapse text-body">
               <thead>
                 <tr className="[&>th]:border [&>th]:border-foreground/40 [&>th]:px-2 [&>th]:py-1.5 [&>th]:text-left [&>th]:font-semibold">
                   <th className="w-10">S.No</th>
@@ -99,7 +99,7 @@ export function PaperView({
                           <td>
                             {v?.code ?? r.task}
                             {v && (
-                              <div className="mt-0.5 flex flex-wrap gap-x-2 font-sans text-[10px] not-italic text-muted-foreground">
+                              <div className="mt-0.5 flex flex-wrap gap-x-2 font-sans text-body not-italic text-muted-foreground">
                                 {EDIT_STEPS.map((s) => (
                                   <span key={s}>
                                     {v.editSteps[s] ? "☑" : "☐"} {s}
@@ -132,11 +132,11 @@ export function PaperView({
             </table>
 
             {template.counters.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-1 text-[12px]">
+              <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-1 text-body">
                 {template.counters.map((c) => (
                   <div key={c.key} className="flex items-baseline justify-between border-b border-dotted border-foreground/40 py-0.5">
                     <span>Total No. of {c.label}</span>
-                    <span className="font-serif text-[14px] italic">
+                    <span className="font-serif text-body italic">
                       {sheet?.counters[c.key] ?? 0}
                       {c.unit}
                     </span>
@@ -144,14 +144,14 @@ export function PaperView({
                 ))}
                 <div className="col-span-2 flex items-baseline gap-2 border-b border-dotted border-foreground/40 py-0.5">
                   <span>Other works:</span>
-                  <span className="font-serif text-[14px] italic">{sheet?.otherWorks}</span>
+                  <span className="font-serif text-body italic">{sheet?.otherWorks}</span>
                 </div>
               </div>
             )}
 
-            <div className="mt-4 text-[12px]">
+            <div className="mt-4 text-body">
               <div className="font-semibold">{isEditor ? "Delay / Extra Time Reason" : "Reason for the delay"}:</div>
-              <div className="min-h-10 border-b border-dotted border-foreground/40 font-serif text-[14px] italic">
+              <div className="min-h-10 border-b border-dotted border-foreground/40 font-serif text-body italic">
                 {[sheet?.dayReason, ...rows.filter((r) => r.delayReason).map((r, i) => `(${i + 1}) ${r.delayReason}`)].filter(Boolean).join(" · ")}
               </div>
             </div>
@@ -161,9 +161,9 @@ export function PaperView({
                 const sig = sigFor(label);
                 return (
                   <div key={label} className="text-center">
-                    <div className="flex h-10 items-end justify-center font-serif text-[18px] italic">{sig.at ? sig.name : ""}</div>
-                    <div className="border-t border-foreground/60 pt-1 text-[11px] font-semibold">{label} Sign</div>
-                    <div className="text-[10px] text-muted-foreground">{sig.at ? stampLabel(sig.at) : "—"}</div>
+                    <div className="flex h-10 items-end justify-center font-serif text-subheading italic">{sig.at ? sig.name : ""}</div>
+                    <div className="border-t border-foreground/60 pt-1 text-body font-semibold">{label} Sign</div>
+                    <div className="text-body text-muted-foreground">{sig.at ? stampLabel(sig.at) : "—"}</div>
                   </div>
                 );
               })}

@@ -29,7 +29,7 @@ export function PlannerView() {
       <PageHeader
         eyebrow={
           <span className="inline-flex items-center gap-1.5">
-            <span className="font-semibold text-gold">{WTF_TOOL.name}</span>
+            <span className="font-semibold text-accent-strong">{WTF_TOOL.name}</span>
             <span>· by {WTF_TOOL.author}</span>
           </span>
         }
@@ -90,7 +90,7 @@ export function PlannerView() {
         <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-success-soft text-success">
           <LockKeyhole className="size-3.5" />
         </span>
-        <div className="text-[12.5px]">
+        <div className="text-body">
           <span className="font-medium">Private to you.</span>{" "}
           <span className="text-muted-foreground">
             Personal-finance entries are visible only to the employee who owns them. This module has its own permission, separate from company finance — managers, HR and
@@ -142,7 +142,7 @@ export function PlannerView() {
         </TabsContent>
       </Tabs>
 
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 text-[12px] text-muted-foreground">
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-4 text-body text-muted-foreground">
         <span>
           {WTF_TOOL.name} · {WTF_TOOL.site} · used in the {WTF_TOOL.community}
         </span>

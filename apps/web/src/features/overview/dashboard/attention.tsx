@@ -25,7 +25,7 @@ const toneCls = {
   danger: "bg-danger-soft text-danger",
   warning: "bg-warning-soft text-warning",
   info: "bg-info-soft text-info",
-  accent: "bg-accent-soft text-accent",
+  accent: "bg-primary-soft text-primary",
 };
 
 export function AttentionCard() {
@@ -51,7 +51,7 @@ export function AttentionCard() {
       tone: "danger",
       title: (
         <>
-          <span className="font-mono text-[12px] text-muted-foreground">{v.code}</span> {v.title}
+          <span className="font-mono text-body text-muted-foreground">{v.code}</span> {v.title}
         </>
       ),
       detail: (
@@ -182,15 +182,15 @@ export function AttentionCard() {
                   <i.icon className="size-4" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] font-medium">{i.title}</div>
-                  <div className="line-clamp-1 text-[12px] text-muted-foreground">{i.detail}</div>
+                  <div className="truncate text-body font-medium">{i.title}</div>
+                  <div className="line-clamp-1 text-body text-muted-foreground">{i.detail}</div>
                 </div>
                 <div className="flex shrink-0 gap-1.5">{i.actions}</div>
               </motion.li>
             ))}
           </AnimatePresence>
           {!visible.length && (
-            <li className="py-10 text-center text-[13px] text-muted-foreground">Nothing needs you right now. Enjoy the chai.</li>
+            <li className="py-10 text-center text-body text-muted-foreground">Nothing needs you right now. Enjoy the chai.</li>
           )}
         </ul>
       </CardContent>

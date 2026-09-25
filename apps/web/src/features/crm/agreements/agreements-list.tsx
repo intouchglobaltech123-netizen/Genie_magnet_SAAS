@@ -52,7 +52,7 @@ export function AgreementsList() {
         <button
           onClick={() => router.push("/agreements")}
           className={cn(
-            "h-7 cursor-pointer rounded-full border px-3 text-[12px] font-medium transition",
+            "h-7 cursor-pointer rounded-full border px-3 text-body font-medium transition",
             !clientFilter ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground",
           )}
         >
@@ -63,7 +63,7 @@ export function AgreementsList() {
             key={c.id}
             onClick={() => router.push(`/agreements?client=${c.id}`)}
             className={cn(
-              "h-7 cursor-pointer rounded-full border px-3 text-[12px] font-medium transition",
+              "h-7 cursor-pointer rounded-full border px-3 text-body font-medium transition",
               clientFilter === c.id ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground",
             )}
           >
@@ -100,8 +100,8 @@ export function AgreementsList() {
                 <TR key={a.id} className="cursor-pointer" onClick={() => router.push(`/agreements/${a.id}`)}>
                   <TD className="pl-5">
                     <Link href={`/agreements/${a.id}`} className="block" onClick={(e) => e.stopPropagation()}>
-                      <div className="text-[13.5px] font-semibold hover:text-accent">{c.name}</div>
-                      <div className="mt-0.5 flex items-center gap-2 text-[12px] text-muted-foreground">
+                      <div className="text-body font-semibold hover:text-primary">{c.name}</div>
+                      <div className="mt-0.5 flex items-center gap-2 text-body text-muted-foreground">
                         <CategoryBadge category={c.category} />
                         <span>{c.kind === "partner" ? "Partner client" : "Recurring"}</span>
                       </div>
@@ -109,33 +109,33 @@ export function AgreementsList() {
                   </TD>
                   <TD>
                     <div className="font-medium">{a.packageName}</div>
-                    <div className="text-[12px] text-muted-foreground">{a.service}</div>
+                    <div className="text-body text-muted-foreground">{a.service}</div>
                   </TD>
                   <TD>
                     <StatusBadge status={a.status} />
                   </TD>
                   <TD className="text-right">
                     <div className="font-semibold tabular">{inr(a.monthlyFee)}</div>
-                    <div className="text-[11.5px] text-muted-foreground">{a.billing}</div>
+                    <div className="text-body text-muted-foreground">{a.billing}</div>
                   </TD>
                   <TD>
                     <Progress value={p * 100} tone={left <= 45 ? "warning" : "accent"} />
-                    <div className="mt-1 flex justify-between text-[11.5px] text-muted-foreground tabular">
+                    <div className="mt-1 flex justify-between text-body text-muted-foreground tabular">
                       <span>{fmtDate(a.startDate, { month: "short", year: "2-digit" })}</span>
                       <span className={cn(left <= 45 && "font-medium text-warning")}>{left}d left</span>
                       <span>{fmtDate(a.endDate, { month: "short", year: "2-digit" })}</span>
                     </div>
                   </TD>
                   <TD className="text-right">
-                    <div className="text-[15px] font-semibold tabular">{unitsTotal(a)}</div>
-                    <div className="max-w-44 truncate text-[11.5px] text-muted-foreground" title={a.units.map((u) => `${u.perCycle} ${u.label}`).join(", ")}>
+                    <div className="text-subheading font-semibold tabular">{unitsTotal(a)}</div>
+                    <div className="max-w-44 truncate text-body text-muted-foreground" title={a.units.map((u) => `${u.perCycle} ${u.label}`).join(", ")}>
                       {a.units.map((u) => `${u.perCycle} ${u.label}`).join(" · ")}
                     </div>
                   </TD>
                   <TD className="pr-5">
                     <div className="flex items-center gap-2">
                       <Avatar name={owner.name} size="sm" />
-                      <span className="text-[12.5px]">{owner.name.split(" ")[0]}</span>
+                      <span className="text-body">{owner.name.split(" ")[0]}</span>
                     </div>
                   </TD>
                 </TR>
@@ -143,7 +143,7 @@ export function AgreementsList() {
             })}
           </TBody>
         </Table>
-        {!list.length && <div className="py-12 text-center text-[13px] text-muted-foreground">No agreements for this client.</div>}
+        {!list.length && <div className="py-12 text-center text-body text-muted-foreground">No agreements for this client.</div>}
       </Card>
     </div>
   );

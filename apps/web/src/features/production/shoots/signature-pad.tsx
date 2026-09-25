@@ -58,7 +58,7 @@ export function SignaturePad({ onSave, disabled }: { onSave: (dataUrl: string) =
           }}
         />
         {!dirty && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-[12px] text-muted-foreground">
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-body text-muted-foreground">
             Client signs here with a finger or stylus
           </div>
         )}

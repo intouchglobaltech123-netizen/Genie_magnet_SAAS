@@ -55,21 +55,21 @@ export function ReportsView() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="mr-1 text-[12.5px] font-medium text-muted-foreground">Period</span>
+        <span className="mr-1 text-body font-medium text-muted-foreground">Period</span>
         {PERIODS.map((x) => (
           <button
             key={x.key}
             onClick={() => setPeriod(x.key)}
             className={cn(
-              "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3.5 text-[12.5px] font-medium transition",
+              "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3.5 text-body font-medium transition",
               period === x.key ? "border-foreground bg-foreground text-background" : "border-border bg-card text-muted-foreground hover:text-foreground",
             )}
           >
             {x.label}
-            <span className="text-[11px] opacity-60">{x.sub}</span>
+            <span className="text-body opacity-60">{x.sub}</span>
           </button>
         ))}
-        <span className="ml-auto text-[12px] text-muted-foreground">{BUSINESS_ASPIRATION.fy} · Indian FY Apr–Mar · figures ex-GST</span>
+        <span className="ml-auto text-body text-muted-foreground">{BUSINESS_ASPIRATION.fy} · Indian FY Apr–Mar · figures ex-GST</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -160,7 +160,7 @@ function BizProgressCard() {
             {pct(BUSINESS_ASPIRATION.netMarginGoal)} net margin)
           </CardDescription>
         </div>
-        <div className="inline-flex shrink-0 rounded-lg bg-muted p-0.5 text-[12px]">
+        <div className="inline-flex shrink-0 rounded-lg bg-muted p-0.5 text-body">
           <button onClick={() => setView("table")} className={cn("inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 font-medium transition", view === "table" ? "bg-card shadow-sm" : "text-muted-foreground")}>
             <Table2 className="size-3.5" /> Table
           </button>
@@ -210,7 +210,7 @@ function BizProgressCard() {
                     <span className="inline-flex items-center gap-1.5">
                       {r.label}
                       {locked && <Lock className="size-3 text-muted-foreground" />}
-                      {open && !locked && <Badge tone="info" className="px-1.5 py-0 text-[10px]">MTD</Badge>}
+                      {open && !locked && <Badge tone="info" className="px-1.5 py-0 text-body">MTD</Badge>}
                     </span>
                   </TD>
                   <TD className="border-l border-border text-right text-muted-foreground tabular">{inrCompact(r.prevRev)}</TD>
@@ -219,7 +219,7 @@ function BizProgressCard() {
                       <>
                         {inrCompact(r.rev)}
                         {r.kind !== "fy" && (
-                          <div className="text-[10.5px] font-normal text-muted-foreground">
+                          <div className="text-body font-normal text-muted-foreground">
                             {signed(r.rev / r.prevRev - 1)} YoY
                           </div>
                         )}
@@ -233,9 +233,9 @@ function BizProgressCard() {
                     {vsRev === null ? (
                       <span className="text-muted-foreground">—</span>
                     ) : r.kind === "fy" ? (
-                      <span className="inline-block rounded-md bg-accent-soft px-1.5 py-0.5 text-[11.5px] font-semibold text-accent tabular">{pct(vsRev)} of FY goal</span>
+                      <span className="inline-block rounded-md bg-primary-soft px-1.5 py-0.5 text-body font-semibold text-primary tabular">{pct(vsRev)} of FY goal</span>
                     ) : (
-                      <span className={cn("inline-block rounded-md px-1.5 py-0.5 text-[11.5px] font-semibold tabular", revTone(vsRev))}>{signed(vsRev)}</span>
+                      <span className={cn("inline-block rounded-md px-1.5 py-0.5 text-body font-semibold tabular", revTone(vsRev))}>{signed(vsRev)}</span>
                     )}
                   </TD>
                   <TD className="border-l border-border text-right text-muted-foreground tabular">{inrCompact(r.prevExp)}</TD>
@@ -245,7 +245,7 @@ function BizProgressCard() {
                     {vsExp === null ? (
                       <span className="text-muted-foreground">—</span>
                     ) : (
-                      <span className={cn("inline-block rounded-md px-1.5 py-0.5 text-[11.5px] font-semibold tabular", expTone(vsExp))}>{signed(vsExp)}</span>
+                      <span className={cn("inline-block rounded-md px-1.5 py-0.5 text-body font-semibold tabular", expTone(vsExp))}>{signed(vsExp)}</span>
                     )}
                   </TD>
                 </TR>
@@ -254,7 +254,7 @@ function BizProgressCard() {
           </TBody>
         </Table>
       )}
-      <div className="flex flex-wrap gap-x-5 gap-y-1 border-t border-border px-5 py-3 text-[11.5px] text-muted-foreground">
+      <div className="flex flex-wrap gap-x-5 gap-y-1 border-t border-border px-5 py-3 text-body text-muted-foreground">
         <span>Quarter & FY “vs goal” compare against the goal for months with actuals only.</span>
         <span className="inline-flex items-center gap-1.5">
           <span className="size-2 rounded-full bg-success" /> on/above goal · under budget
@@ -283,8 +283,8 @@ function BudgetCard() {
           <CardDescription>By cost category · Apr–Sep 2026 (ex-GST)</CardDescription>
         </div>
         <div className="text-right">
-          <div className="text-[11px] text-muted-foreground">Total variance</div>
-          <div className={cn("text-[16px] font-semibold tabular", totalA > totalB ? "text-danger" : "text-success")}>
+          <div className="text-body text-muted-foreground">Total variance</div>
+          <div className={cn("text-subheading font-semibold tabular", totalA > totalB ? "text-danger" : "text-success")}>
             {totalA > totalB ? "+" : "−"}
             {inr(Math.abs(totalA - totalB))}
           </div>
@@ -297,10 +297,10 @@ function BudgetCard() {
           const tone = ratio > 1.02 ? "danger" : ratio > 0.97 ? "warning" : "success";
           return (
             <div key={c.category}>
-              <div className="flex items-baseline justify-between gap-3 text-[13px]">
+              <div className="flex items-baseline justify-between gap-3 text-body">
                 <div className="min-w-0 truncate">
                   <span className="font-medium">{c.category}</span>
-                  <span className="ml-2 text-[11.5px] text-muted-foreground">{c.note}</span>
+                  <span className="ml-2 text-body text-muted-foreground">{c.note}</span>
                 </div>
                 <div className="flex shrink-0 items-baseline gap-3 tabular">
                   <span>
@@ -308,7 +308,7 @@ function BudgetCard() {
                   </span>
                   <span
                     className={cn(
-                      "w-20 text-right text-[12px] font-semibold",
+                      "w-20 text-right text-body font-semibold",
                       tone === "danger" ? "text-danger" : tone === "warning" ? "text-warning" : "text-success",
                     )}
                   >
@@ -324,7 +324,7 @@ function BudgetCard() {
             </div>
           );
         })}
-        <div className="flex items-center justify-between border-t border-border pt-3 text-[13px] font-semibold">
+        <div className="flex items-center justify-between border-t border-border pt-3 text-body font-semibold">
           <span>Total</span>
           <span className="tabular">
             {inr(totalA)} <span className="font-normal text-muted-foreground">/ {inr(totalB)}</span>
@@ -339,7 +339,7 @@ function BudgetCard() {
 
 function PnlLine({ label, value, sub }: { label: string; value: number; sub?: boolean }) {
   return (
-    <div className={cn("flex items-center justify-between py-1 text-[13px]", sub ? "pl-4 text-muted-foreground" : "font-medium")}>
+    <div className={cn("flex items-center justify-between py-1 text-body", sub ? "pl-4 text-muted-foreground" : "font-medium")}>
       <span>{label}</span>
       <span className="tabular">{sub ? `(${inrCompact(value)})` : inrCompact(value)}</span>
     </div>
@@ -348,11 +348,11 @@ function PnlLine({ label, value, sub }: { label: string; value: number; sub?: bo
 
 function PnlTotal({ label, value, rev, tone }: { label: string; value: number; rev: number; tone: string }) {
   return (
-    <div className="my-1.5 flex items-center justify-between rounded-lg bg-muted/70 px-3 py-2 text-[13.5px] font-semibold">
+    <div className="my-1.5 flex items-center justify-between rounded-lg bg-muted/70 px-3 py-2 text-body font-semibold">
       <span>{label}</span>
       <span className="flex items-baseline gap-2 tabular">
         {inrCompact(value)}
-        <span className={cn("rounded-md px-1.5 py-0.5 text-[11px]", tone)}>{pct(value / rev, 1)}</span>
+        <span className={cn("rounded-md px-1.5 py-0.5 text-body", tone)}>{pct(value / rev, 1)}</span>
       </span>
     </div>
   );
@@ -380,7 +380,7 @@ function PnlCard() {
         <Badge tone="warning">Draft</Badge>
       </CardHeader>
       <CardContent>
-        <div className="mb-3 flex gap-2.5 rounded-xl border border-warning/40 bg-warning-soft p-3 text-[12.5px]">
+        <div className="mb-3 flex gap-2.5 rounded-xl border border-warning/40 bg-warning-soft p-3 text-body">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
           <div>
             <div className="font-semibold text-foreground">Definitions of gross profit, contribution and operating profit to be approved by Finance / Janarthanan</div>
@@ -420,8 +420,8 @@ function PnlCard() {
         {pnlYtd.fixed.map((x) => (
           <PnlLine key={x.label} label={x.label} value={x.amount} sub />
         ))}
-        <PnlTotal label="Operating profit" value={op} rev={rev} tone={op / rev >= BUSINESS_ASPIRATION.netMarginGoal ? "bg-success-soft text-success" : "bg-gold-soft text-gold"} />
-        <p className="mt-2 text-[11.5px] text-muted-foreground">
+        <PnlTotal label="Operating profit" value={op} rev={rev} tone={op / rev >= BUSINESS_ASPIRATION.netMarginGoal ? "bg-success-soft text-success" : "bg-accent-soft text-accent-strong"} />
+        <p className="mt-2 text-body text-muted-foreground">
           Goal: {pct(BUSINESS_ASPIRATION.netMarginGoal)} net margin · gap {inrCompact(rev * BUSINESS_ASPIRATION.netMarginGoal - op)} · founder remuneration below operating profit.
         </p>
       </CardContent>
@@ -470,20 +470,20 @@ function PeriodLockCard() {
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] font-semibold">
+                  <span className="text-body font-semibold">
                     {m} {year}
                   </span>
                   {l ? <Lock className="size-3.5 text-muted-foreground" /> : future ? <CircleDashed className="size-3.5 text-muted-foreground" /> : <LockOpen className="size-3.5 text-info" />}
                 </div>
                 {l ? (
-                  <div className="mt-1 text-[11px] leading-snug text-muted-foreground">
+                  <div className="mt-1 text-body leading-snug text-muted-foreground">
                     Locked by {l.by} on {l.lockedOn}
                   </div>
                 ) : future ? (
-                  <div className="mt-1 text-[11px] text-muted-foreground">Not started</div>
+                  <div className="mt-1 text-body text-muted-foreground">Not started</div>
                 ) : (
                   <>
-                    <div className="mt-1 text-[11px] text-info">Open · month-to-date</div>
+                    <div className="mt-1 text-body text-info">Open · month-to-date</div>
                     <Button size="xs" variant="outline" className="mt-2 w-full" onClick={() => setConfirm(m)}>
                       <Lock /> Lock period
                     </Button>
@@ -503,13 +503,13 @@ function PeriodLockCard() {
           <DialogBody>
             <ul className="space-y-2">
               {checklist.map((c) => (
-                <li key={c.label} className="flex items-start gap-2 text-[13px]">
+                <li key={c.label} className="flex items-start gap-2 text-body">
                   {c.ok ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" /> : <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />}
                   <span className={cn(!c.ok && "text-warning")}>{c.label}</span>
                 </li>
               ))}
             </ul>
-            <p className="mt-3 text-xs text-muted-foreground">Pending items will roll into October if you lock now.</p>
+            <p className="mt-3 text-body text-muted-foreground">Pending items will roll into October if you lock now.</p>
           </DialogBody>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => setConfirm(null)}>
@@ -531,7 +531,7 @@ function PeriodLockCard() {
         </DialogContent>
       </Dialog>
       {!openMonth && (
-        <div className="border-t border-border px-5 py-3 text-[12.5px] text-muted-foreground">
+        <div className="border-t border-border px-5 py-3 text-body text-muted-foreground">
           <CheckCircle2 className="mr-1.5 inline size-4 text-success" /> All months with activity are locked. October opens on 1 Oct.
         </div>
       )}

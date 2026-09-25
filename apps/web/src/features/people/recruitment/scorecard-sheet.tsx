@@ -69,14 +69,14 @@ function Dots({ value, onChange }: { value: number; onChange: (v: number) => voi
           aria-label={`Score ${n}`}
           onClick={() => onChange(n)}
           className={cn(
-            "inline-flex size-7 cursor-pointer items-center justify-center rounded-full border text-[12px] font-semibold tabular transition",
+            "inline-flex size-7 cursor-pointer items-center justify-center rounded-full border text-body font-semibold tabular transition",
             n <= value
               ? value >= 4
                 ? "border-success bg-success text-white"
                 : value === 3
                   ? "border-warning bg-warning text-white"
                   : "border-danger bg-danger text-white"
-              : "border-border bg-card text-muted-foreground hover:border-accent/50",
+              : "border-border bg-card text-muted-foreground hover:border-primary/50",
           )}
         >
           {n}
@@ -136,7 +136,7 @@ function Body({
             <DialogDescription>
               {role.name} · {candidate.experience}
             </DialogDescription>
-            <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[12px] text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-1.5 pt-1 text-body text-muted-foreground">
               <Badge tone={stageMeta[candidate.stage].tone}>{stageMeta[candidate.stage].label}</Badge>
               <Badge tone={sourceTone[candidate.source]}>{candidate.source}</Badge>
               <span className="inline-flex items-center gap-1">
@@ -154,26 +154,26 @@ function Body({
         <div className="sticky top-0 z-10 -mx-1 rounded-xl border border-border bg-card/95 p-4 shadow-card backdrop-blur">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-[12px] text-muted-foreground">Competence total</div>
-              <div className="text-2xl font-semibold tabular">
+              <div className="text-body text-muted-foreground">Competence total</div>
+              <div className="text-heading font-semibold tabular">
                 {ev.total}
-                <span className="text-[14px] font-normal text-muted-foreground">/25</span>
+                <span className="text-body font-normal text-muted-foreground">/25</span>
               </div>
             </div>
             <div>
-              <div className="text-[12px] text-muted-foreground">Task</div>
-              <div className="text-2xl font-semibold tabular">
+              <div className="text-body text-muted-foreground">Task</div>
+              <div className="text-heading font-semibold tabular">
                 {sc.taskScore}
-                <span className="text-[14px] font-normal text-muted-foreground">/10</span>
+                <span className="text-body font-normal text-muted-foreground">/10</span>
               </div>
             </div>
             <div>
-              <div className="text-[12px] text-muted-foreground">Weighted</div>
-              <div className="text-2xl font-semibold tabular">{ev.pct}%</div>
+              <div className="text-body text-muted-foreground">Weighted</div>
+              <div className="text-heading font-semibold tabular">{ev.pct}%</div>
             </div>
             <div className="text-right">
-              <div className="mb-1 text-[12px] text-muted-foreground">Recommendation</div>
-              <Badge tone={recTone} className="px-2.5 py-1 text-[13px]">
+              <div className="mb-1 text-body text-muted-foreground">Recommendation</div>
+              <Badge tone={recTone} className="px-2.5 py-1 text-body">
                 {ev.rec}
               </Badge>
             </div>
@@ -187,8 +187,8 @@ function Body({
             {(Object.keys(sc.params) as (keyof Scorecard["params"])[]).map((k) => (
               <div key={k} className="flex items-center justify-between gap-4 px-4 py-3">
                 <div>
-                  <div className="text-[13px] font-medium">{k}</div>
-                  <div className="text-[12px] text-muted-foreground">{paramHelp[k]}</div>
+                  <div className="text-body font-medium">{k}</div>
+                  <div className="text-body text-muted-foreground">{paramHelp[k]}</div>
                 </div>
                 <Dots value={sc.params[k]} onChange={(v) => setParam(k, v)} />
               </div>
@@ -202,19 +202,19 @@ function Body({
             {(["Situation", "Task", "Action", "Result"] as const).map((k) => (
               <div key={k} className="rounded-xl border border-border p-4">
                 <div className="mb-2 flex items-start gap-2.5">
-                  <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-accent-soft text-[12px] font-bold text-accent">
+                  <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-primary-soft text-body font-bold text-primary">
                     {k[0]}
                   </span>
                   <div>
-                    <div className="text-[12px] font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
-                    <div className="text-[13px] font-medium">{qs[k]}</div>
+                    <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
+                    <div className="text-body font-medium">{qs[k]}</div>
                   </div>
                 </div>
                 <Textarea
                   value={sc.star[k]}
                   onChange={(e) => setSc((s) => ({ ...s, star: { ...s.star, [k]: e.target.value } }))}
                   placeholder="Interviewer notes…"
-                  className="min-h-16 text-[13px]"
+                  className="min-h-16 text-body"
                 />
               </div>
             ))}
@@ -224,7 +224,7 @@ function Body({
         <section className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-border p-4">
             <Label>Task / assignment score</Label>
-            <p className="mb-3 text-[12px] text-muted-foreground">
+            <p className="mb-3 text-body text-muted-foreground">
               {candidate.roleId === "r-editor" ? "30-sec reel from raw footage in 24 hrs" : "Mock sales call with a textile showroom owner"}
             </p>
             <div className="flex items-center gap-3">
@@ -234,9 +234,9 @@ function Body({
                 max={10}
                 value={sc.taskScore}
                 onChange={(e) => setSc((s) => ({ ...s, taskScore: Number(e.target.value) }))}
-                className="w-full cursor-pointer accent-[var(--accent)]"
+                className="w-full cursor-pointer accent-[var(--color-primary)]"
               />
-              <span className="w-12 text-right text-[15px] font-semibold tabular">{sc.taskScore}/10</span>
+              <span className="w-12 text-right text-subheading font-semibold tabular">{sc.taskScore}/10</span>
             </div>
           </div>
           <div className="rounded-xl border border-border p-4">
@@ -249,7 +249,7 @@ function Body({
                 onCheckedChange={(v) => setSc((s) => ({ ...s, psychometric: v, psychometricScore: v ? s.psychometricScore || 72 : 0 }))}
               />
             </div>
-            <p className="mb-3 mt-1 text-[12px] text-muted-foreground">Optional · DISC profile via online link</p>
+            <p className="mb-3 mt-1 text-body text-muted-foreground">Optional · DISC profile via online link</p>
             {sc.psychometric ? (
               <div className="flex items-center gap-2">
                 <Input
@@ -258,12 +258,12 @@ function Body({
                   max={100}
                   value={sc.psychometricScore}
                   onChange={(e) => setSc((s) => ({ ...s, psychometricScore: Math.min(100, Math.max(0, Number(e.target.value))) }))}
-                  className="h-8 w-20 text-[13px] tabular"
+                  className="h-8 w-20 text-body tabular"
                 />
-                <span className="text-[13px] text-muted-foreground">/ 100 · profile “I-S” (Influencer–Steady)</span>
+                <span className="text-body text-muted-foreground">/ 100 · profile “I-S” (Influencer–Steady)</span>
               </div>
             ) : (
-              <div className="text-[12px] text-muted-foreground">Not administered</div>
+              <div className="text-body text-muted-foreground">Not administered</div>
             )}
           </div>
         </section>
@@ -274,7 +274,7 @@ function Body({
             value={sc.remarks}
             onChange={(e) => setSc((s) => ({ ...s, remarks: e.target.value }))}
             placeholder="Summary for the founder — strengths, risks, salary fit…"
-            className="mt-1.5 text-[13px]"
+            className="mt-1.5 text-body"
           />
         </section>
       </DialogBody>
@@ -304,11 +304,11 @@ function Body({
 function SectionTitle({ title, hint, icon: Icon }: { title: string; hint?: string; icon?: typeof ClipboardCheck }) {
   return (
     <div className="mb-3">
-      <div className="flex items-center gap-1.5 text-[14px] font-semibold">
+      <div className="flex items-center gap-1.5 text-body font-semibold">
         {Icon && <Icon className="size-4 text-muted-foreground" />}
         {title}
       </div>
-      {hint && <div className="text-[12px] text-muted-foreground">{hint}</div>}
+      {hint && <div className="text-body text-muted-foreground">{hint}</div>}
     </div>
   );
 }

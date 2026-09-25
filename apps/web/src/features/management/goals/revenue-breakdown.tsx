@@ -14,18 +14,18 @@ import { useGoals } from "./goals-store";
 
 const tooltipStyle = {
   contentStyle: {
-    background: "var(--popover)",
-    border: "1px solid var(--border)",
+    background: "var(--color-popover)",
+    border: "1px solid var(--color-border)",
     borderRadius: 10,
     boxShadow: "0 8px 24px -8px rgba(0,0,0,0.18)",
     fontSize: 12,
     padding: "8px 10px",
   },
-  labelStyle: { color: "var(--muted-foreground)", marginBottom: 4, fontWeight: 500 },
-  itemStyle: { color: "var(--foreground)", padding: 0 },
-  cursor: { fill: "var(--muted)" },
+  labelStyle: { color: "var(--color-muted-foreground)", marginBottom: 4, fontWeight: 500 },
+  itemStyle: { color: "var(--color-foreground)", padding: 0 },
+  cursor: { fill: "var(--color-muted)" },
 };
-const axisProps = { tickLine: false, axisLine: false, tick: { fill: "var(--muted-foreground)", fontSize: 11 } } as const;
+const axisProps = { tickLine: false, axisLine: false, tick: { fill: "var(--color-muted-foreground)", fontSize: 11 } } as const;
 
 type Inputs = typeof FUNNEL_HISTORY & typeof CAPACITY_HISTORY;
 type Key = keyof Inputs;
@@ -109,11 +109,11 @@ export function RevenueBreakdown() {
   const hires = Math.max(0, Math.ceil(((required - capacity) * v.hrsPerVideo) / v.productiveHrs));
 
   const waterfall = [
-    { name: "Base book", base: 0, value: v.baseBook, color: "var(--chart-5)", sign: "" },
-    { name: "Not renewed", base: renewals, value: v.baseBook - renewals, color: "var(--danger)", sign: "−" },
-    { name: "Churn", base: kept, value: churnAmt, color: "var(--warning)", sign: "−" },
-    { name: "New sales", base: kept, value: newNeeded, color: "var(--accent)", sign: "+" },
-    { name: "FY target", base: 0, value: v.revenueTarget, color: "var(--success)", sign: "" },
+    { name: "Base book", base: 0, value: v.baseBook, color: "var(--color-chart-5)", sign: "" },
+    { name: "Not renewed", base: renewals, value: v.baseBook - renewals, color: "var(--color-danger)", sign: "−" },
+    { name: "Churn", base: kept, value: churnAmt, color: "var(--color-warning)", sign: "−" },
+    { name: "New sales", base: kept, value: newNeeded, color: "var(--color-primary)", sign: "+" },
+    { name: "FY target", base: 0, value: v.revenueTarget, color: "var(--color-success)", sign: "" },
   ];
 
   const funnel = [
@@ -172,7 +172,7 @@ export function RevenueBreakdown() {
           <CardContent>
             <div className="grid gap-3 sm:grid-cols-3">
               <Metric label="Renewals kept" value={inrCompact(kept)} sub={`${inrCompact(renewals)} renewed − ${inrCompact(churnAmt)} churn`} dot="bg-chart-5" />
-              <Metric label="New sales needed" value={inrCompact(newNeeded)} sub={`${Math.round((newNeeded / v.revenueTarget) * 100)}% of target`} dot="bg-accent" />
+              <Metric label="New sales needed" value={inrCompact(newNeeded)} sub={`${Math.round((newNeeded / v.revenueTarget) * 100)}% of target`} dot="bg-primary" />
               <Metric label="Lost from base book" value={inrCompact(v.baseBook - kept)} sub="Not renewed + churn" dot="bg-danger" />
             </div>
 
@@ -180,9 +180,9 @@ export function RevenueBreakdown() {
             <div className="mt-5">
               <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted">
                 <motion.div className="h-full bg-chart-5" animate={{ width: `${(kept / v.revenueTarget) * 100}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }} />
-                <motion.div className="h-full bg-accent" animate={{ width: `${(newNeeded / v.revenueTarget) * 100}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }} />
+                <motion.div className="h-full bg-primary" animate={{ width: `${(newNeeded / v.revenueTarget) * 100}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }} />
               </div>
-              <div className="mt-1.5 flex justify-between text-[11.5px] text-muted-foreground">
+              <div className="mt-1.5 flex justify-between text-body text-muted-foreground">
                 <span>Renewals {Math.round((kept / v.revenueTarget) * 100)}%</span>
                 <span>New sales {Math.round((newNeeded / v.revenueTarget) * 100)}%</span>
               </div>
@@ -233,19 +233,19 @@ export function RevenueBreakdown() {
             <CardContent className="space-y-3">
               {funnel.map((f, i) => (
                 <div key={f.label}>
-                  <div className="mb-1 flex items-baseline justify-between text-[13px]">
+                  <div className="mb-1 flex items-baseline justify-between text-body">
                     <span className="font-medium">{f.label}</span>
-                    <span className="text-[18px] font-semibold tracking-tight tabular">{f.value}</span>
+                    <span className="text-subheading font-semibold tracking-tight tabular">{f.value}</span>
                   </div>
                   <div className="h-7 w-full rounded-md bg-muted/60">
                     <motion.div
-                      className={cn("h-full rounded-md", ["bg-accent/30", "bg-accent/50", "bg-accent/75", "bg-accent"][i])}
+                      className={cn("h-full rounded-md", ["bg-primary/30", "bg-primary/50", "bg-primary/75", "bg-primary"][i])}
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.max(3, (f.value / Math.max(1, leads)) * 100)}%` }}
                       transition={{ type: "spring", stiffness: 110, damping: 18, delay: i * 0.05 }}
                     />
                   </div>
-                  <div className="mt-0.5 text-[11.5px] text-muted-foreground">{f.note}</div>
+                  <div className="mt-0.5 text-body text-muted-foreground">{f.note}</div>
                 </div>
               ))}
             </CardContent>
@@ -268,7 +268,7 @@ export function RevenueBreakdown() {
                   <Metric label="Leads / month" value={String(leadsPerMonth)} sub={`${leads} for the year`} />
                   <Metric label="Ad budget / month" value={inr(adPerMonth)} sub={`${inrCompact(adBudget)} for the year`} />
                 </div>
-                <div className="mt-3 rounded-lg bg-muted/60 px-3 py-2 text-[12.5px]">
+                <div className="mt-3 rounded-lg bg-muted/60 px-3 py-2 text-body">
                   {leads <= 240 ? (
                     <span>
                       Marketing goal of <b>240 MQLs</b> covers this with a buffer of <b className="tabular">{240 - leads}</b> leads.
@@ -300,12 +300,12 @@ export function RevenueBreakdown() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-[26px] font-semibold tracking-tight tabular">{required}</span>
-                  <span className="text-[13px] text-muted-foreground">needed</span>
+                  <span className="text-heading font-semibold tracking-tight tabular">{required}</span>
+                  <span className="text-body text-muted-foreground">needed</span>
                   <ArrowRight className="size-3.5 self-center text-muted-foreground" />
-                  <span className="text-[26px] font-semibold tracking-tight tabular">{capacity}</span>
-                  <span className="text-[13px] text-muted-foreground">capacity</span>
-                  <span className={cn("ml-auto text-[15px] font-semibold tabular", { success: "text-success", warning: "text-warning", danger: "text-danger" }[capTone])}>{Math.round(util * 100)}%</span>
+                  <span className="text-heading font-semibold tracking-tight tabular">{capacity}</span>
+                  <span className="text-body text-muted-foreground">capacity</span>
+                  <span className={cn("ml-auto text-subheading font-semibold tabular", { success: "text-success", warning: "text-warning", danger: "text-danger" }[capTone])}>{Math.round(util * 100)}%</span>
                 </div>
                 <div className="relative mt-2 h-2.5 w-full overflow-hidden rounded-full bg-muted">
                   <motion.div
@@ -314,7 +314,7 @@ export function RevenueBreakdown() {
                     transition={{ type: "spring", stiffness: 120, damping: 20 }}
                   />
                 </div>
-                <div className="mt-2 space-y-0.5 text-[12px] text-muted-foreground tabular">
+                <div className="mt-2 space-y-0.5 text-body text-muted-foreground tabular">
                   <div>
                     Load = existing {v.currentLoad} × {pctFmt(v.retention - v.churn)} kept ({Math.round(keptLoad)}) + {deals} new × {v.unitsPerClient} ({newLoad})
                   </div>
@@ -324,7 +324,7 @@ export function RevenueBreakdown() {
                 </div>
                 <div
                   className={cn(
-                    "mt-3 flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-[13px]",
+                    "mt-3 flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-body",
                     capTone === "success" && "bg-success-soft text-success",
                     capTone === "warning" && "bg-warning-soft text-warning",
                     capTone === "danger" && "bg-danger-soft text-danger",
@@ -352,7 +352,7 @@ export function RevenueBreakdown() {
                   )}
                 </div>
                 {v.hrsPerVideo > 4 && (
-                  <p className="mt-2 text-[12px] text-muted-foreground">
+                  <p className="mt-2 text-body text-muted-foreground">
                     If Divya&apos;s edit-time goal (4h) lands, capacity rises to{" "}
                     <b className="text-foreground tabular">{Math.floor((v.editors * v.productiveHrs) / 4)}</b> videos / month.
                   </p>
@@ -369,12 +369,12 @@ export function RevenueBreakdown() {
 function Metric({ label, value, sub, dot }: { label: string; value: string; sub?: string; dot?: string }) {
   return (
     <div className="rounded-xl border border-border p-3">
-      <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-body text-muted-foreground">
         {dot && <span className={cn("size-2 rounded-sm", dot)} />}
         {label}
       </div>
-      <div className="mt-1 text-[20px] font-semibold tracking-tight tabular">{value}</div>
-      {sub && <div className="text-[11.5px] text-muted-foreground tabular">{sub}</div>}
+      <div className="mt-1 text-heading font-semibold tracking-tight tabular">{value}</div>
+      {sub && <div className="text-body text-muted-foreground tabular">{sub}</div>}
     </div>
   );
 }
@@ -396,16 +396,16 @@ function SliderGroup({
 }) {
   return (
     <div className="space-y-4">
-      <div className="text-[11.5px] font-medium uppercase tracking-wide text-muted-foreground">{title}</div>
+      <div className="text-body font-medium uppercase tracking-wide text-muted-foreground">{title}</div>
       {defs.map((d) => {
         const isManual = manual.has(d.key);
         return (
           <div key={d.key}>
             <div className="flex items-baseline justify-between gap-2">
-              <label htmlFor={`sl-${d.key}`} className="text-[13px]">
+              <label htmlFor={`sl-${d.key}`} className="text-body">
                 {d.label}
               </label>
-              <span className="text-[13px] font-semibold tabular">{d.fmt(v[d.key])}</span>
+              <span className="text-body font-semibold tabular">{d.fmt(v[d.key])}</span>
             </div>
             <input
               id={`sl-${d.key}`}
@@ -417,7 +417,7 @@ function SliderGroup({
               onChange={(e) => set(d.key, Number(e.target.value))}
               className="mt-1.5 h-1.5 w-full cursor-pointer accent-accent"
             />
-            <div className="mt-0.5 flex items-center justify-between text-[11px]">
+            <div className="mt-0.5 flex items-center justify-between text-body">
               {isManual ? (
                 <span className="inline-flex items-center gap-1 text-warning">
                   <span className="size-1.5 rounded-full bg-current" /> source: manual
@@ -428,7 +428,7 @@ function SliderGroup({
                 </span>
               )}
               {isManual && (
-                <button type="button" onClick={() => reset(d.key)} className="cursor-pointer text-accent hover:underline">
+                <button type="button" onClick={() => reset(d.key)} className="cursor-pointer text-primary hover:underline">
                   Reset to {d.historyLabel ? "plan" : "history"} ({d.fmt(HISTORY[d.key])})
                 </button>
               )}

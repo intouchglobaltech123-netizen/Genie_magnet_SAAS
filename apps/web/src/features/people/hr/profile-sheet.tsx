@@ -145,7 +145,7 @@ export function StatusBadge({ status }: { status: Person["status"] }) {
 
 function InfoRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-4 py-2.5 text-[13px]">
+    <div className="flex items-center justify-between gap-4 py-2.5 text-body">
       <span className="text-muted-foreground">{label}</span>
       <span className="text-right font-medium">{children}</span>
     </div>
@@ -164,7 +164,7 @@ function OverviewTab({ person }: { person: Person }) {
             navigator.clipboard?.writeText(person.email).catch(() => {});
             toast.success("Email copied", { description: person.email });
           }}
-          className="flex items-center gap-2.5 rounded-xl border border-border p-3 text-[13px] hover:bg-muted"
+          className="flex items-center gap-2.5 rounded-xl border border-border p-3 text-body hover:bg-muted"
         >
           <Mail className="size-4 text-muted-foreground" />
           <span className="truncate">{person.email}</span>
@@ -172,7 +172,7 @@ function OverviewTab({ person }: { person: Person }) {
         <button
           type="button"
           onClick={() => toast.success("Calling via WhatsApp", { description: person.phone })}
-          className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-border p-3 text-left text-[13px] hover:bg-muted"
+          className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-border p-3 text-left text-body hover:bg-muted"
         >
           <Phone className="size-4 text-muted-foreground" />
           <span className="tabular">{person.phone}</span>
@@ -204,10 +204,10 @@ function OverviewTab({ person }: { person: Person }) {
         </InfoRow>
       </div>
       <div>
-        <div className="mb-2 text-[12px] font-medium uppercase tracking-wider text-muted-foreground">Skills</div>
+        <div className="mb-2 text-body font-medium uppercase tracking-wider text-muted-foreground">Skills</div>
         <div className="flex flex-wrap gap-1.5">
           {person.skills.map((s) => (
-            <Badge key={s} tone="neutral" className="px-2.5 py-1 text-[12px]">
+            <Badge key={s} tone="neutral" className="px-2.5 py-1 text-body">
               {s}
             </Badge>
           ))}
@@ -222,7 +222,7 @@ function DocumentsTab({ person }: { person: Person }) {
   const log = useDemo((s) => s.log);
   return (
     <div className="space-y-3">
-      <div className="flex items-center gap-2.5 rounded-xl border border-warning/30 bg-warning-soft px-3.5 py-2.5 text-[13px] text-warning">
+      <div className="flex items-center gap-2.5 rounded-xl border border-warning/30 bg-warning-soft px-3.5 py-2.5 text-body text-warning">
         <Lock className="size-4 shrink-0" />
         <span>
           <b className="font-semibold">Restricted · HR &amp; Founder only.</b> Numbers are masked; every view is logged to
@@ -236,11 +236,11 @@ function DocumentsTab({ person }: { person: Person }) {
               <FileText className="size-4" />
             </span>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2 text-[13px] font-medium">
+              <div className="flex items-center gap-2 text-body font-medium">
                 {d.label}
                 <Lock className="size-3 text-muted-foreground" />
               </div>
-              <div className="font-mono text-[12px] tracking-wide text-muted-foreground tabular">{d.value}</div>
+              <div className="font-mono text-body tracking-wide text-muted-foreground tabular">{d.value}</div>
             </div>
             {d.verified ? (
               <Badge tone="success">
@@ -275,14 +275,14 @@ function AssetsTab({ person }: { person: Person }) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-10 text-center">
         <Boxes className="mb-2 size-6 text-muted-foreground" />
-        <div className="text-[13px] font-medium">No assets in custody</div>
-        <div className="text-[12px] text-muted-foreground">Checked-out equipment will appear here.</div>
+        <div className="text-body font-medium">No assets in custody</div>
+        <div className="text-body text-muted-foreground">Checked-out equipment will appear here.</div>
       </div>
     );
   const total = mine.reduce((s, a) => s + a.purchaseValue, 0);
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between text-[13px]">
+      <div className="flex items-center justify-between text-body">
         <span className="text-muted-foreground">
           {mine.length} item{mine.length > 1 ? "s" : ""} in custody
         </span>
@@ -291,16 +291,16 @@ function AssetsTab({ person }: { person: Person }) {
       <div className="divide-y divide-border rounded-xl border border-border">
         {mine.map((a) => (
           <div key={a.id} className="flex items-center gap-3 px-4 py-3">
-            <span className="inline-flex size-9 items-center justify-center rounded-lg bg-accent-soft text-accent">
+            <span className="inline-flex size-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
               <Boxes className="size-4" />
             </span>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-medium">{a.name}</div>
-              <div className="text-[12px] text-muted-foreground">
+              <div className="truncate text-body font-medium">{a.name}</div>
+              <div className="text-body text-muted-foreground">
                 <span className="font-mono">{a.tag}</span> · {a.category} · {a.condition}
               </div>
             </div>
-            <span className="text-[13px] tabular text-muted-foreground">{inr(a.purchaseValue)}</span>
+            <span className="text-body tabular text-muted-foreground">{inr(a.purchaseValue)}</span>
           </div>
         ))}
       </div>
@@ -319,8 +319,8 @@ function TrainingTab({ person }: { person: Person }) {
               <GraduationCap className="size-4" />
             </span>
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-medium">{t.title}</div>
-              <div className="text-[12px] text-muted-foreground">
+              <div className="text-body font-medium">{t.title}</div>
+              <div className="text-body text-muted-foreground">
                 {t.provider}
                 {t.due && t.status !== "completed" ? ` · due ${fmtDate(t.due)}` : ""}
               </div>
@@ -356,35 +356,35 @@ function TrainingTab({ person }: { person: Person }) {
 function PerformanceTab({ person }: { person: Person }) {
   const p = performanceFor(person);
   if (!p.score)
-    return <div className="rounded-xl border border-dashed border-border p-8 text-center text-[13px] text-muted-foreground">{p.note}</div>;
+    return <div className="rounded-xl border border-dashed border-border p-8 text-center text-body text-muted-foreground">{p.note}</div>;
   const tone = p.score >= 80 ? "success" : p.score >= 70 ? "warning" : "danger";
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-3">
         <div className="rounded-xl border border-border p-4">
-          <div className="text-[12px] text-muted-foreground">Q3 composite</div>
-          <div className="mt-1 text-2xl font-semibold tabular">{p.score}</div>
+          <div className="text-body text-muted-foreground">Q3 composite</div>
+          <div className="mt-1 text-heading font-semibold tabular">{p.score}</div>
           <Progress value={p.score} tone={tone} className="mt-2" />
         </div>
         <div className="rounded-xl border border-border p-4">
-          <div className="text-[12px] text-muted-foreground">Player rating</div>
+          <div className="text-body text-muted-foreground">Player rating</div>
           <div className="mt-1.5">
-            <Badge tone={p.rating.startsWith("A") ? "success" : p.rating.startsWith("C") ? "danger" : "warning"} className="text-[12.5px]">
+            <Badge tone={p.rating.startsWith("A") ? "success" : p.rating.startsWith("C") ? "danger" : "warning"} className="text-body">
               {p.rating}
             </Badge>
           </div>
         </div>
         <div className="rounded-xl border border-border p-4">
-          <div className="text-[12px] text-muted-foreground">vs last quarter</div>
-          <div className={cn("mt-1 flex items-center gap-1 text-2xl font-semibold tabular", p.trend >= 0 ? "text-success" : "text-danger")}>
+          <div className="text-body text-muted-foreground">vs last quarter</div>
+          <div className={cn("mt-1 flex items-center gap-1 text-heading font-semibold tabular", p.trend >= 0 ? "text-success" : "text-danger")}>
             {p.trend >= 0 ? <TrendingUp className="size-5" /> : <TrendingDown className="size-5" />}
             {p.trend > 0 ? "+" : ""}
             {p.trend}
           </div>
         </div>
       </div>
-      <div className="flex gap-3 rounded-xl bg-muted/60 p-4 text-[13px]">
-        <Sparkles className="mt-0.5 size-4 shrink-0 text-accent" />
+      <div className="flex gap-3 rounded-xl bg-muted/60 p-4 text-body">
+        <Sparkles className="mt-0.5 size-4 shrink-0 text-primary" />
         <p>{p.note}</p>
       </div>
       <Button variant="outline" size="sm" asChild>
@@ -454,11 +454,11 @@ function LifecycleTab({
               <s.icon className="size-4" />
             </span>
             <div className="pt-1">
-              <div className="flex items-center gap-2 text-[13px] font-medium">
+              <div className="flex items-center gap-2 text-body font-medium">
                 {s.label}
-                <span className="text-[12px] font-normal text-muted-foreground tabular">{fmtDate(s.date, longDate)}</span>
+                <span className="text-body font-normal text-muted-foreground tabular">{fmtDate(s.date, longDate)}</span>
               </div>
-              <div className="text-[12px] text-muted-foreground">{s.desc}</div>
+              <div className="text-body text-muted-foreground">{s.desc}</div>
             </div>
           </li>
         ))}
@@ -466,7 +466,7 @@ function LifecycleTab({
 
       {!exitStarted ? (
         <div className="flex items-center justify-between gap-4 rounded-xl border border-dashed border-border p-4">
-          <div className="text-[13px]">
+          <div className="text-body">
             <div className="font-medium">Offboarding</div>
             <div className="text-muted-foreground">Starts a guided exit checklist with asset return and access revocation.</div>
           </div>
@@ -489,10 +489,10 @@ function LifecycleTab({
         <div className="rounded-xl border border-border">
           <div className="border-b border-border p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-[13px] font-semibold">
+              <div className="flex items-center gap-2 text-body font-semibold">
                 <ShieldAlert className="size-4 text-danger" /> Exit checklist
               </div>
-              <span className="text-[12px] font-medium tabular text-muted-foreground">
+              <span className="text-body font-medium tabular text-muted-foreground">
                 {done.size}/{allItems.length} · {progress}%
               </span>
             </div>
@@ -503,7 +503,7 @@ function LifecycleTab({
               const gDone = g.items.every((i) => done.has(`${g.title}::${i}`));
               return (
                 <div key={g.title} className="p-4">
-                  <div className="mb-2.5 flex items-center gap-2 text-[13px] font-medium">
+                  <div className="mb-2.5 flex items-center gap-2 text-body font-medium">
                     {gDone ? <CheckCircle2 className="size-4 text-success" /> : <Circle className="size-4 text-muted-foreground" />}
                     {g.title}
                   </div>
@@ -511,7 +511,7 @@ function LifecycleTab({
                     {g.items.map((i) => {
                       const k = `${g.title}::${i}`;
                       return (
-                        <label key={k} className="flex cursor-pointer items-center gap-2.5 text-[13px]">
+                        <label key={k} className="flex cursor-pointer items-center gap-2.5 text-body">
                           <Checkbox
                             checked={done.has(k)}
                             onCheckedChange={(v) => {

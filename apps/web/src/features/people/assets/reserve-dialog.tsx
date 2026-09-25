@@ -90,7 +90,7 @@ function ReserveForm({
         </Field>
 
         {conflict ? (
-          <div className="rounded-xl border border-danger/30 bg-danger-soft p-3.5 text-[13px]">
+          <div className="rounded-xl border border-danger/30 bg-danger-soft p-3.5 text-body">
             <div className="flex items-start gap-2 text-danger">
               <AlertOctagon className="mt-0.5 size-4 shrink-0" />
               <div>
@@ -103,8 +103,8 @@ function ReserveForm({
             </div>
             {alt && altFree && (
               <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-card px-3 py-2">
-                <span className="flex items-center gap-1.5 text-[12.5px]">
-                  <Sparkles className="size-3.5 text-accent" />
+                <span className="flex items-center gap-1.5 text-body">
+                  <Sparkles className="size-3.5 text-primary" />
                   Suggest alternative: <b>{alt.tag}</b> {alt.name} available
                 </span>
                 <Button size="xs" variant="soft" onClick={() => setTag(alt.tag)}>
@@ -114,11 +114,11 @@ function ReserveForm({
             )}
           </div>
         ) : inMaintenance ? (
-          <div className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning-soft p-3.5 text-[13px] text-warning">
+          <div className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning-soft p-3.5 text-body text-warning">
             <AlertOctagon className="mt-0.5 size-4 shrink-0" /> This asset is under maintenance and can&apos;t be reserved.
           </div>
         ) : asset && date ? (
-          <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success-soft p-3 text-[13px] text-success">
+          <div className="flex items-center gap-2 rounded-xl border border-success/30 bg-success-soft p-3 text-body text-success">
             <CheckCircle2 className="size-4" /> {asset.tag} is free on {fmtDate(date, { day: "numeric", month: "short", year: "numeric" })}
           </div>
         ) : null}

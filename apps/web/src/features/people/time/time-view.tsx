@@ -140,14 +140,14 @@ export function TimeView() {
             }}
             options={[{ value: "all", label: "Everyone (8 people)" }, ...TIME_PEOPLE.map((id) => ({ value: id, label: personById(id).name }))]}
           />
-          <Badge tone="outline" className="h-9 px-3 text-[12.5px]">
+          <Badge tone="outline" className="h-9 px-3 text-body">
             Week 39 · 21 – 27 Sep 2026
           </Badge>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={approveAll} disabled={!submitted.length}>
             <CheckCheck /> Approve all submitted
-            {submitted.length > 0 && <span className="tabular rounded-full bg-info-soft px-1.5 text-[11px] text-info">{submitted.length}</span>}
+            {submitted.length > 0 && <span className="tabular rounded-full bg-info-soft px-1.5 text-body text-info">{submitted.length}</span>}
           </Button>
           <Button variant="accent" onClick={() => setLogOpen(true)}>
             <Plus /> Log time
@@ -172,16 +172,16 @@ export function TimeView() {
           </CardHeader>
           <CardContent className="px-0 pb-3">
             <div className="overflow-x-auto scrollbar-thin">
-              <table className="w-full min-w-[720px] text-[13px]">
+              <table className="w-full min-w-[720px] text-body">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="h-10 pl-5 text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Person</th>
+                    <th className="h-10 pl-5 text-left text-body font-medium uppercase tracking-wider text-muted-foreground">Person</th>
                     {WEEK.map((d) => (
-                      <th key={d} className={cn("text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground", d === TODAY && "text-accent", d > TODAY && "opacity-50")}>
+                      <th key={d} className={cn("text-center text-body font-medium uppercase tracking-wider text-muted-foreground", d === TODAY && "text-primary", d > TODAY && "opacity-50")}>
                         {dayLabel(d)}
                       </th>
                     ))}
-                    <th className="pr-5 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Total</th>
+                    <th className="pr-5 text-right text-body font-medium uppercase tracking-wider text-muted-foreground">Total</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -209,10 +209,10 @@ export function TimeView() {
                                   setDay(active ? null : d);
                                 }}
                                 className={cn(
-                                  "tabular h-8 w-full min-w-12 rounded-md text-[12.5px] transition enabled:cursor-pointer enabled:hover:ring-2 enabled:hover:ring-accent/30",
+                                  "tabular h-8 w-full min-w-12 rounded-md text-body transition enabled:cursor-pointer enabled:hover:ring-2 enabled:hover:ring-primary/30",
                                   !v ? "text-muted-foreground/50" : v > 9.5 ? "bg-warning-soft font-medium text-warning" : "bg-muted/70",
-                                  d === TODAY && v > 0 && v <= 9.5 && "bg-accent-soft",
-                                  active && "ring-2 ring-accent",
+                                  d === TODAY && v > 0 && v <= 9.5 && "bg-primary-soft",
+                                  active && "ring-2 ring-primary",
                                 )}
                               >
                                 {v ? h(v) : "—"}
@@ -230,7 +230,7 @@ export function TimeView() {
                     );
                   })}
                   <tr className="border-t border-border bg-muted/40">
-                    <td className="py-2 pl-5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Team</td>
+                    <td className="py-2 pl-5 text-body font-medium uppercase tracking-wider text-muted-foreground">Team</td>
                     {WEEK.map((d) => {
                       const v = entries.filter((e) => e.date === d).reduce((s, e) => s + e.hours, 0);
                       return (
@@ -258,7 +258,7 @@ export function TimeView() {
             <div className="relative h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie data={donut} dataKey="value" nameKey="name" innerRadius={58} outerRadius={84} paddingAngle={2} stroke="var(--card)" strokeWidth={2}>
+                  <Pie data={donut} dataKey="value" nameKey="name" innerRadius={58} outerRadius={84} paddingAngle={2} stroke="var(--color-card)" strokeWidth={2}>
                     {donut.map((d) => (
                       <Cell key={d.name} fill={catMeta[d.name as Category].color} />
                     ))}
@@ -267,13 +267,13 @@ export function TimeView() {
                 </PieChart>
               </ResponsiveContainer>
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <span className="tabular text-[22px] font-semibold">{h(total)}h</span>
-                <span className="text-[11px] text-muted-foreground">logged</span>
+                <span className="tabular text-heading font-semibold">{h(total)}h</span>
+                <span className="text-body text-muted-foreground">logged</span>
               </div>
             </div>
             <ul className="mt-3 space-y-1.5">
               {donut.map((d) => (
-                <li key={d.name} className="flex items-center gap-2 text-[12.5px]">
+                <li key={d.name} className="flex items-center gap-2 text-body">
                   <span className="size-2.5 rounded-sm" style={{ background: catMeta[d.name as Category].color }} />
                   <span className="flex-1">{d.name}</span>
                   <span className="tabular text-muted-foreground">{h(d.value)}h</span>
@@ -282,14 +282,14 @@ export function TimeView() {
               ))}
             </ul>
             <div className="mt-4 border-t border-border pt-4">
-              <div className="mb-1.5 flex justify-between text-[12px]">
+              <div className="mb-1.5 flex justify-between text-body">
                 <span className="font-medium text-success">Productive {h(productive)}h</span>
                 <span className="text-muted-foreground">Non-productive {h(total - productive)}h</span>
               </div>
               <div className="flex h-2 overflow-hidden rounded-full bg-muted">
                 <div className="bg-success transition-all duration-500" style={{ width: `${total ? (productive / total) * 100 : 0}%` }} />
               </div>
-              <p className="mt-2 text-[11.5px] text-muted-foreground">Target: 70% productive for editors, 50% for leads.</p>
+              <p className="mt-2 text-body text-muted-foreground">Target: 70% productive for editors, 50% for leads.</p>
             </div>
           </CardContent>
         </Card>
@@ -302,13 +302,13 @@ export function TimeView() {
             <CardDescription>
               {list.length} entries{day ? ` on ${dayLabel(day)} Sep` : ""}
               {day && (
-                <button className="ml-2 cursor-pointer text-accent hover:underline" onClick={() => setDay(null)}>
+                <button className="ml-2 cursor-pointer text-primary hover:underline" onClick={() => setDay(null)}>
                   Clear day
                 </button>
               )}
             </CardDescription>
           </div>
-          <div className="flex items-center gap-1 rounded-lg bg-muted p-1 text-[12.5px]">
+          <div className="flex items-center gap-1 rounded-lg bg-muted p-1 text-body">
             {(["all", "Draft", "Submitted", "Approved", "Rejected"] as const).map((s) => (
               <button
                 key={s}
@@ -322,11 +322,11 @@ export function TimeView() {
         </CardHeader>
         <CardContent className="px-0 pb-2">
           <div className="max-h-[520px] overflow-auto scrollbar-thin">
-            <table className="w-full min-w-[860px] text-[13px]">
+            <table className="w-full min-w-[860px] text-body">
               <thead className="sticky top-0 z-10 bg-card">
                 <tr className="border-b border-border">
                   {["Date", "Person", "Category", "Video", "Description", "Hours", "Status", ""].map((c, i) => (
-                    <th key={i} className={cn("h-10 px-3 text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground", i === 0 && "pl-5", c === "Hours" && "text-right", i === 7 && "pr-5")}>
+                    <th key={i} className={cn("h-10 px-3 text-left text-body font-medium uppercase tracking-wider text-muted-foreground", i === 0 && "pl-5", c === "Hours" && "text-right", i === 7 && "pr-5")}>
                       {c}
                     </th>
                   ))}
@@ -349,7 +349,7 @@ export function TimeView() {
                       </td>
                       <td className="px-3">
                         {e.videoCode ? (
-                          <span className="tabular inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-border px-1.5 py-0.5 font-mono text-[11.5px]">
+                          <span className="tabular inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-border px-1.5 py-0.5 font-mono text-body">
                             <Film className="size-3 text-muted-foreground" />
                             {e.videoCode}
                           </span>
@@ -377,7 +377,7 @@ export function TimeView() {
                             </Button>
                           </div>
                         ) : e.status === "Draft" ? (
-                          <span className="text-[11.5px] text-muted-foreground">Not submitted</span>
+                          <span className="text-body text-muted-foreground">Not submitted</span>
                         ) : null}
                       </td>
                     </tr>

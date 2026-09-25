@@ -31,7 +31,7 @@ export function TypeBadge({ type }: { type: GoalType }) {
 export function CadenceChip({ cadence, className }: { cadence: Goal["cadence"]; className?: string }) {
   const c = CADENCES[cadence];
   return (
-    <span className={cn("inline-flex items-center gap-1 text-[11.5px] text-muted-foreground", className)}>
+    <span className={cn("inline-flex items-center gap-1 text-body text-muted-foreground", className)}>
       <CalendarClock className="size-3" />
       {c.label} · {c.every}
     </span>
@@ -54,7 +54,7 @@ export function GoalProgressBar({ goal, className }: { goal: Goal; className?: s
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <Progress value={p * 100} tone={statusProgressTone[st]} className="flex-1" />
-      <span className="w-9 text-right text-[12px] font-medium tabular text-muted-foreground">{Math.round(p * 100)}%</span>
+      <span className="w-9 text-right text-body font-medium tabular text-muted-foreground">{Math.round(p * 100)}%</span>
     </div>
   );
 }

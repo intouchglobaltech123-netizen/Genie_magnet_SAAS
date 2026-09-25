@@ -55,7 +55,7 @@ export function DiagnosticPreview() {
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_220px]">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[440px] text-[12.5px]">
+        <table className="w-full min-w-[440px] text-body">
           <thead>
             <tr>
               <th className="pb-2 text-left font-medium text-muted-foreground">Function</th>
@@ -75,9 +75,9 @@ export function DiagnosticPreview() {
                     <button
                       onClick={() => setSel([i, j])}
                       className={cn(
-                        "h-8 w-full cursor-pointer rounded-md text-[13px] font-semibold tabular transition",
+                        "h-8 w-full cursor-pointer rounded-md text-body font-semibold tabular transition",
                         cell(v, j),
-                        sel && sel[0] === i && sel[1] === j && "ring-2 ring-accent ring-offset-1 ring-offset-card",
+                        sel && sel[0] === i && sel[1] === j && "ring-2 ring-primary ring-offset-1 ring-offset-card",
                       )}
                     >
                       {v}
@@ -89,7 +89,7 @@ export function DiagnosticPreview() {
           </tbody>
         </table>
         {sel && (
-          <div className="mt-3 rounded-xl bg-muted/60 p-3 text-[12.5px]">
+          <div className="mt-3 rounded-xl bg-muted/60 p-3 text-body">
             <span className="font-medium">
               {FUNCTIONS[sel[0]]} · {DIMS[sel[1]]}: {bfa[sel[0]][sel[1]]}/5.
             </span>{" "}
@@ -102,10 +102,10 @@ export function DiagnosticPreview() {
         )}
       </div>
       <div className="rounded-2xl border border-border p-4 text-center">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Founder-dependency index</div>
-        <div className="mt-3 text-[40px] font-semibold leading-none tabular text-warning">{fdi}</div>
-        <div className="text-[12px] text-muted-foreground">out of 100 · lower is better</div>
-        <div className="mt-4 space-y-1.5 text-left text-[12px]">
+        <div className="text-body font-semibold uppercase tracking-wider text-muted-foreground">Founder-dependency index</div>
+        <div className="mt-3 text-heading font-semibold leading-none tabular text-warning">{fdi}</div>
+        <div className="text-body text-muted-foreground">out of 100 · lower is better</div>
+        <div className="mt-4 space-y-1.5 text-left text-body">
           {["Sales closes need founder", "Client escalations", "Discount approvals"].map((x, i) => (
             <div key={x} className="flex items-center justify-between">
               <span className="text-muted-foreground">{x}</span>
@@ -147,14 +147,14 @@ export function ScenarioPreview() {
       <div className="space-y-4">
         {sliders.map((s) => (
           <div key={s.label}>
-            <div className="flex items-center justify-between text-[13px]">
+            <div className="flex items-center justify-between text-body">
               <span className="font-medium">{s.label}</span>
               <span className="font-semibold tabular">{s.fmt(s.value)}</span>
             </div>
-            <input type="range" min={s.min} max={s.max} step={s.step} value={s.value} onChange={(e) => s.set(Number(e.target.value))} className="mt-1 w-full cursor-pointer accent-[var(--accent)]" />
+            <input type="range" min={s.min} max={s.max} step={s.step} value={s.value} onChange={(e) => s.set(Number(e.target.value))} className="mt-1 w-full cursor-pointer accent-[var(--color-primary)]" />
           </div>
         ))}
-        <label className="flex items-center justify-between rounded-xl border border-border px-3 py-2.5 text-[13px]">
+        <label className="flex items-center justify-between rounded-xl border border-border px-3 py-2.5 text-body">
           <span className="font-medium">Hire one more editor (₹38,000/mo)</span>
           <Switch checked={hire} onCheckedChange={setHire} />
         </label>
@@ -167,18 +167,18 @@ export function ScenarioPreview() {
           { label: "Editor utilisation", value: `${Math.round(editorUtil)}%`, warn: editorUtil > 100 },
         ].map((k) => (
           <div key={k.label} className="rounded-xl border border-border p-3">
-            <div className="text-[11.5px] text-muted-foreground">{k.label}</div>
-            <div className={cn("mt-1 text-[22px] font-semibold tabular", k.warn && "text-danger")}>{k.value}</div>
+            <div className="text-body text-muted-foreground">{k.label}</div>
+            <div className={cn("mt-1 text-heading font-semibold tabular", k.warn && "text-danger")}>{k.value}</div>
             {k.delta !== undefined && (
-              <div className={cn("text-[11.5px] font-medium tabular", (k.invert ? -k.delta : k.delta) >= 0 ? "text-success" : "text-danger")}>
+              <div className={cn("text-body font-medium tabular", (k.invert ? -k.delta : k.delta) >= 0 ? "text-success" : "text-danger")}>
                 {k.delta >= 0 ? "+" : ""}
                 {(k.delta * 100).toFixed(0)}% vs today
               </div>
             )}
-            {k.warn && <div className="text-[11.5px] text-danger">Overloaded — hire or outsource</div>}
+            {k.warn && <div className="text-body text-danger">Overloaded — hire or outsource</div>}
           </div>
         ))}
-        <div className="col-span-2 text-[11.5px] text-muted-foreground">Illustrative only — the real model will use true costing, capacity and agreements.</div>
+        <div className="col-span-2 text-body text-muted-foreground">Illustrative only — the real model will use true costing, capacity and agreements.</div>
       </div>
     </div>
   );
@@ -195,24 +195,24 @@ export function PeerFeedbackPreview() {
         <div className="flex items-center gap-2">
           <Avatar name="Surya Prakash" size="md" />
           <div>
-            <div className="text-[13px] font-medium">Feedback for Surya Prakash</div>
-            <div className="text-[11.5px] text-muted-foreground">45-day cycle · closes 30 Sep</div>
+            <div className="text-body font-medium">Feedback for Surya Prakash</div>
+            <div className="text-body text-muted-foreground">45-day cycle · closes 30 Sep</div>
           </div>
         </div>
-        <div className="mt-4 text-[13px] font-medium">Hands off work that is ready to use, without rework</div>
+        <div className="mt-4 text-body font-medium">Hands off work that is ready to use, without rework</div>
         <div className="mt-2 flex gap-1.5">
           {[1, 2, 3, 4, 5].map((n) => (
             <button
               key={n}
               onClick={() => setRating(n)}
-              className={cn("size-8 cursor-pointer rounded-lg border text-[13px] font-semibold tabular transition", rating === n ? "border-accent bg-accent text-white" : "border-border hover:bg-muted")}
+              className={cn("size-8 cursor-pointer rounded-lg border text-body font-semibold tabular transition", rating === n ? "border-primary bg-primary text-white" : "border-border hover:bg-muted")}
             >
               {n}
             </button>
           ))}
         </div>
-        <div className="mt-3 rounded-lg bg-muted/60 p-2.5 text-[12.5px] text-muted-foreground">Give one specific example from the last 45 days…</div>
-        <div className="mt-3 flex items-center justify-between text-[12.5px]">
+        <div className="mt-3 rounded-lg bg-muted/60 p-2.5 text-body text-muted-foreground">Give one specific example from the last 45 days…</div>
+        <div className="mt-3 flex items-center justify-between text-body">
           <span className="inline-flex items-center gap-1.5">
             {anon ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
             {anon ? "Anonymous to Surya" : "Name visible to Surya"}
@@ -228,12 +228,12 @@ export function PeerFeedbackPreview() {
           { t: "Release in 45-day review", d: "Shared by manager with a development plan", done: false },
         ].map((s, i) => (
           <div key={s.t} className="flex gap-3 rounded-xl border border-border p-3">
-            <span className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold", s.done ? "bg-success text-white" : "bg-muted text-muted-foreground")}>
+            <span className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-full text-body font-semibold", s.done ? "bg-success text-white" : "bg-muted text-muted-foreground")}>
               {s.done ? <Check className="size-3.5" /> : i + 1}
             </span>
             <div>
-              <div className="text-[13px] font-medium">{s.t}</div>
-              <div className="text-[12px] text-muted-foreground">{s.d}</div>
+              <div className="text-body font-medium">{s.t}</div>
+              <div className="text-body text-muted-foreground">{s.d}</div>
             </div>
           </div>
         ))}
@@ -271,22 +271,22 @@ export function AiPreview() {
     <div className="space-y-3">
       <AnimatePresence initial={false}>
         {recs.map((r) => (
-          <motion.div key={r.id} layout className={cn("rounded-2xl border p-4 transition", state[r.id] ? "border-border bg-muted/40" : "border-accent/25 bg-accent-soft/30")}>
+          <motion.div key={r.id} layout className={cn("rounded-2xl border p-4 transition", state[r.id] ? "border-border bg-muted/40" : "border-primary/25 bg-primary-soft/30")}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex gap-3">
-                <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
                   <Sparkles className="size-3.5" />
                 </span>
                 <div>
-                  <div className={cn("text-[13.5px] font-medium", state[r.id] === "dismissed" && "text-muted-foreground line-through")}>{r.title}</div>
-                  <ul className="mt-1.5 space-y-0.5 text-[12px] text-muted-foreground">
+                  <div className={cn("text-body font-medium", state[r.id] === "dismissed" && "text-muted-foreground line-through")}>{r.title}</div>
+                  <ul className="mt-1.5 space-y-0.5 text-body text-muted-foreground">
                     {r.evidence.map((e) => (
                       <li key={e} className="flex items-center gap-1.5">
                         <span className="size-1 rounded-full bg-muted-foreground/60" /> {e}
                       </li>
                     ))}
                   </ul>
-                  <div className="mt-2 text-[11px] text-muted-foreground">{r.scope}</div>
+                  <div className="mt-2 text-body text-muted-foreground">{r.scope}</div>
                 </div>
               </div>
               {state[r.id] ? (
@@ -319,7 +319,7 @@ export function AiPreview() {
           </motion.div>
         ))}
       </AnimatePresence>
-      <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+      <div className="flex items-center gap-2 text-body text-muted-foreground">
         <Bot className="size-3.5" /> The assistant only reads records your role can see, and never acts without approval.
       </div>
     </div>
@@ -345,7 +345,7 @@ export function AutomationPreview() {
     <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
       <div className="divide-y divide-border rounded-2xl border border-border">
         {rules.map((r) => (
-          <div key={r.trigger} className="flex items-center gap-3 px-4 py-3 text-[13px]">
+          <div key={r.trigger} className="flex items-center gap-3 px-4 py-3 text-body">
             <span className={cn("size-2 shrink-0 rounded-full", r.status === "ok" ? "bg-success" : "bg-warning")} />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5">
@@ -354,22 +354,22 @@ export function AutomationPreview() {
                 <span className="text-muted-foreground">{r.action}</span>
               </div>
             </div>
-            <span className="shrink-0 text-[12px] text-muted-foreground tabular">{r.runs} runs</span>
+            <span className="shrink-0 text-body text-muted-foreground tabular">{r.runs} runs</span>
           </div>
         ))}
       </div>
       <div className="rounded-2xl border border-border p-4">
         <div className="flex items-center justify-between">
-          <div className="text-[13px] font-semibold">Exception queue</div>
+          <div className="text-body font-semibold">Exception queue</div>
           <Badge tone={queue.length ? "danger" : "success"}>{queue.length} open</Badge>
         </div>
         <div className="mt-3 space-y-2">
-          {queue.length === 0 && <div className="py-6 text-center text-[12.5px] text-muted-foreground">All clear</div>}
+          {queue.length === 0 && <div className="py-6 text-center text-body text-muted-foreground">All clear</div>}
           {queue.map((q) => (
-            <div key={q.id} className="rounded-xl bg-muted/60 p-3 text-[12.5px]">
+            <div key={q.id} className="rounded-xl bg-muted/60 p-3 text-body">
               <div>{q.text}</div>
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-[11.5px] text-muted-foreground">{q.tries} attempts · idempotent retry</span>
+                <span className="text-body text-muted-foreground">{q.tries} attempts · idempotent retry</span>
                 <Button
                   size="xs"
                   variant="outline"
@@ -411,7 +411,7 @@ export function IntegrationsPreview() {
       {integrations.map((i) => (
         <div key={i.name} className="flex flex-col rounded-2xl border border-border p-4">
           <div className="flex items-start justify-between gap-2">
-            <span className="inline-flex size-9 items-center justify-center rounded-xl bg-muted text-[13px] font-semibold text-muted-foreground">
+            <span className="inline-flex size-9 items-center justify-center rounded-xl bg-muted text-body font-semibold text-muted-foreground">
               {i.name
                 .split(/[\s/(]+/)
                 .filter(Boolean)
@@ -421,16 +421,16 @@ export function IntegrationsPreview() {
             </span>
             <Badge>Planned</Badge>
           </div>
-          <div className="mt-3 text-[13px] font-medium leading-tight">{i.name}</div>
-          <div className="mt-0.5 flex-1 text-[12px] text-muted-foreground">{i.desc}</div>
+          <div className="mt-3 text-body font-medium leading-tight">{i.name}</div>
+          <div className="mt-0.5 flex-1 text-body text-muted-foreground">{i.desc}</div>
           <button
             onClick={() => {
               setWatch((w) => ({ ...w, [i.name]: !w[i.name] }));
               toast.success(watch[i.name] ? "Removed from priority list" : `${i.name} marked as priority`);
             }}
             className={cn(
-              "mt-3 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2 py-1 text-[12px] font-medium transition",
-              watch[i.name] ? "border-accent/30 bg-accent-soft text-accent" : "border-border text-muted-foreground hover:text-foreground",
+              "mt-3 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border px-2 py-1 text-body font-medium transition",
+              watch[i.name] ? "border-primary/30 bg-primary-soft text-primary" : "border-border text-muted-foreground hover:text-foreground",
             )}
           >
             <Bell className="size-3.5" /> {watch[i.name] ? "Priority" : "Mark priority"}
@@ -457,7 +457,7 @@ export function OfflinePreview() {
   return (
     <div className="grid items-start gap-6 lg:grid-cols-[280px_1fr]">
       <div className="mx-auto w-[260px] rounded-[28px] border-[6px] border-foreground/90 bg-card p-3 shadow-pop">
-        <div className="flex items-center justify-between px-1 text-[11px]">
+        <div className="flex items-center justify-between px-1 text-body">
           <span className="font-medium">Kaveri — shoot kit</span>
           <button onClick={() => setOnline(!online)} className={cn("inline-flex cursor-pointer items-center gap-1 rounded-full px-2 py-0.5 font-medium", online ? "bg-success-soft text-success" : "bg-warning-soft text-warning")}>
             {online ? <Wifi className="size-3" /> : <CloudOff className="size-3" />}
@@ -469,28 +469,28 @@ export function OfflinePreview() {
             <button
               key={i.t}
               onClick={() => setItems((x) => x.map((y, j) => (j === idx ? { ...y, done: !y.done } : y)))}
-              className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-muted/60 px-2.5 py-2 text-left text-[12px]"
+              className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-muted/60 px-2.5 py-2 text-left text-body"
             >
               <CheckCircle2 className={cn("size-4", i.done ? "text-success" : "text-muted-foreground/40")} />
               {i.t}
             </button>
           ))}
         </div>
-        <div className="mt-3 rounded-lg bg-muted px-2.5 py-1.5 text-center text-[11px] text-muted-foreground">
+        <div className="mt-3 rounded-lg bg-muted px-2.5 py-1.5 text-center text-body text-muted-foreground">
           {online ? "All changes synced" : `${pending} changes queued · will sync on signal`}
         </div>
       </div>
       <div className="space-y-3">
-        <p className="text-[13px] text-muted-foreground">Tap the status pill to go online. Queued ticks sync in order; if someone changed the same item meanwhile, you review the conflict.</p>
+        <p className="text-body text-muted-foreground">Tap the status pill to go online. Queued ticks sync in order; if someone changed the same item meanwhile, you review the conflict.</p>
         {conflict ? (
           <div className="rounded-2xl border border-warning/30 bg-warning-soft/50 p-4">
-            <div className="text-[13px] font-semibold">Sync conflict · Mic Box</div>
-            <div className="mt-2 grid grid-cols-2 gap-2 text-[12.5px]">
+            <div className="text-body font-semibold">Sync conflict · Mic Box</div>
+            <div className="mt-2 grid grid-cols-2 gap-2 text-body">
               <div className="rounded-lg bg-card p-2.5">
-                <div className="text-[11px] text-muted-foreground">On this phone · 10:42</div>Not packed — needs new battery
+                <div className="text-body text-muted-foreground">On this phone · 10:42</div>Not packed — needs new battery
               </div>
               <div className="rounded-lg bg-card p-2.5">
-                <div className="text-[11px] text-muted-foreground">Office (Naveen) · 10:47</div>Packed — spare battery added
+                <div className="text-body text-muted-foreground">Office (Naveen) · 10:47</div>Packed — spare battery added
               </div>
             </div>
             <div className="mt-3 flex gap-2">
@@ -503,7 +503,7 @@ export function OfflinePreview() {
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl border border-success/30 bg-success-soft/50 p-4 text-[13px] text-success">Conflict resolved — audit log records both versions.</div>
+          <div className="rounded-2xl border border-success/30 bg-success-soft/50 p-4 text-body text-success">Conflict resolved — audit log records both versions.</div>
         )}
       </div>
     </div>
@@ -532,7 +532,7 @@ export function AuditPreview() {
           <button
             key={a}
             onClick={() => setWho(a)}
-            className={cn("cursor-pointer rounded-full border px-2.5 py-0.5 text-[12px] font-medium", who === a ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:text-foreground")}
+            className={cn("cursor-pointer rounded-full border px-2.5 py-0.5 text-body font-medium", who === a ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:text-foreground")}
           >
             {a}
           </button>
@@ -561,7 +561,7 @@ export function AuditPreview() {
                 </TD>
                 <TD className="whitespace-nowrap text-muted-foreground tabular">{a.at}</TD>
                 <TD className="whitespace-nowrap">{a.action}</TD>
-                <TD className="whitespace-nowrap font-mono text-[12px]">{a.record}</TD>
+                <TD className="whitespace-nowrap font-mono text-body">{a.record}</TD>
                 <TD className="whitespace-nowrap">
                   <span className="text-muted-foreground line-through decoration-muted-foreground/40">{a.from}</span> <ArrowRight className="inline size-3 text-muted-foreground" />{" "}
                   <span className="font-medium">{a.to}</span>
@@ -599,8 +599,8 @@ export function MigrationPreview() {
             <button
               onClick={() => setStep(i)}
               className={cn(
-                "inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-[12.5px] font-medium transition",
-                i < step ? "bg-success-soft text-success" : i === step ? "bg-accent text-white" : "bg-muted text-muted-foreground",
+                "inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-body font-medium transition",
+                i < step ? "bg-success-soft text-success" : i === step ? "bg-primary text-white" : "bg-muted text-muted-foreground",
               )}
             >
               {i < step ? <Check className="size-3.5" /> : <span className="tabular">{i + 1}</span>} {s}
@@ -616,23 +616,23 @@ export function MigrationPreview() {
               key={x.name}
               onClick={() => setEntity(i)}
               className={cn(
-                "flex w-full cursor-pointer items-center justify-between rounded-lg border px-3 py-2 text-[13px] transition",
-                entity === i ? "border-accent/40 bg-accent-soft/50" : "border-border hover:bg-muted",
+                "flex w-full cursor-pointer items-center justify-between rounded-lg border px-3 py-2 text-body transition",
+                entity === i ? "border-primary/40 bg-primary-soft/50" : "border-border hover:bg-muted",
               )}
             >
               <span className="inline-flex items-center gap-2">
                 <FileSpreadsheet className="size-4 text-muted-foreground" />
                 {x.name}
               </span>
-              <span className="text-[11.5px] text-muted-foreground tabular">{x.rows} rows</span>
+              <span className="text-body text-muted-foreground tabular">{x.rows} rows</span>
             </button>
           ))}
         </div>
         <div className="rounded-2xl border border-border p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <div className="text-[13px] font-semibold">{e.name.toLowerCase()}_template.csv</div>
-              <div className="text-[12px] text-muted-foreground">{e.cols.length} columns · required columns in bold</div>
+              <div className="text-body font-semibold">{e.name.toLowerCase()}_template.csv</div>
+              <div className="text-body text-muted-foreground">{e.cols.length} columns · required columns in bold</div>
             </div>
             <Button size="xs" variant="outline" onClick={() => toast.success(`${e.name} template ready`, { description: e.cols.join(", ") })}>
               <Download /> Template
@@ -640,20 +640,20 @@ export function MigrationPreview() {
           </div>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {e.cols.map((c, i) => (
-              <code key={c} className={cn("rounded-md bg-muted px-2 py-0.5 text-[11.5px]", i < 3 && "font-bold")}>
+              <code key={c} className={cn("rounded-md bg-muted px-2 py-0.5 text-body", i < 3 && "font-bold")}>
                 {c}
               </code>
             ))}
           </div>
-          <div className="mt-4 grid grid-cols-3 gap-2 text-center text-[12px]">
+          <div className="mt-4 grid grid-cols-3 gap-2 text-center text-body">
             <div className="rounded-lg bg-success-soft p-2 text-success">
-              <div className="text-[18px] font-semibold tabular">{e.rows - 3}</div>valid
+              <div className="text-subheading font-semibold tabular">{e.rows - 3}</div>valid
             </div>
             <div className="rounded-lg bg-warning-soft p-2 text-warning">
-              <div className="text-[18px] font-semibold tabular">2</div>warnings
+              <div className="text-subheading font-semibold tabular">2</div>warnings
             </div>
             <div className="rounded-lg bg-danger-soft p-2 text-danger">
-              <div className="text-[18px] font-semibold tabular">1</div>error
+              <div className="text-subheading font-semibold tabular">1</div>error
             </div>
           </div>
         </div>
@@ -682,11 +682,11 @@ export function FilesPreview() {
         {docs.map((x, i) => {
           const I = x.icon;
           return (
-            <button key={x.name} onClick={() => setSel(i)} className={cn("flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-[13px] transition", sel === i ? "bg-accent-soft/40" : "hover:bg-muted/50")}>
+            <button key={x.name} onClick={() => setSel(i)} className={cn("flex w-full cursor-pointer items-center gap-3 px-4 py-2.5 text-left text-body transition", sel === i ? "bg-primary-soft/40" : "hover:bg-muted/50")}>
               <I className="size-4 shrink-0 text-muted-foreground" />
               <div className="min-w-0 flex-1">
                 <div className="truncate font-medium">{x.name}</div>
-                <div className="text-[11.5px] text-muted-foreground">{x.record}</div>
+                <div className="text-body text-muted-foreground">{x.record}</div>
               </div>
               {x.link && <Link2 className="size-3.5 text-info" />}
               <Badge tone="outline">{x.v}</Badge>
@@ -698,8 +698,8 @@ export function FilesPreview() {
         <div className="flex aspect-video items-center justify-center rounded-xl bg-muted">
           <Icon className="size-10 text-muted-foreground/60" />
         </div>
-        <div className="mt-3 text-[13px] font-medium">{d.name}</div>
-        <div className="mt-2 space-y-1 text-[12px]">
+        <div className="mt-3 text-body font-medium">{d.name}</div>
+        <div className="mt-2 space-y-1 text-body">
           {[
             ["Linked to", d.record],
             ["Uploaded by", d.by],

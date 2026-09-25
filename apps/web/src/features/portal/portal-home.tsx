@@ -66,11 +66,11 @@ export function PortalHome() {
       {/* Welcome */}
       <section className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-[13px] font-medium text-muted-foreground">
+          <p className="text-body font-medium text-muted-foreground">
             {fmtDate(TODAY, { weekday: "long", day: "numeric", month: "long" })} · {agreement.packageName}
           </p>
-          <h1 className="mt-1.5 text-[30px] font-semibold tracking-tight">Good morning, {firstName(PORTAL_USER.name)}</h1>
-          <p className="mt-1.5 max-w-xl text-[14.5px] text-muted-foreground">
+          <h1 className="mt-1.5 text-heading font-semibold tracking-tight">Good morning, {firstName(PORTAL_USER.name)}</h1>
+          <p className="mt-1.5 max-w-xl text-body text-muted-foreground">
             {awaiting.length > 0 ? (
               <>
                 <span className="font-medium text-foreground">
@@ -96,8 +96,8 @@ export function PortalHome() {
       {/* Awaiting review */}
       <section>
         <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="text-[16px] font-semibold tracking-tight">Awaiting your review</h2>
-          <span className="text-[12.5px] text-muted-foreground">Only you can approve · approval is never assumed from silence</span>
+          <h2 className="text-subheading font-semibold tracking-tight">Awaiting your review</h2>
+          <span className="text-body text-muted-foreground">Only you can approve · approval is never assumed from silence</span>
         </div>
         {awaiting.length === 0 ? (
           <Card className="flex items-center gap-4 p-6">
@@ -106,7 +106,7 @@ export function PortalHome() {
             </span>
             <div>
               <div className="font-medium">Nothing waiting on you</div>
-              <div className="text-[13px] text-muted-foreground">We&apos;ll notify you on WhatsApp and email when the next cut is ready.</div>
+              <div className="text-body text-muted-foreground">We&apos;ll notify you on WhatsApp and email when the next cut is ready.</div>
             </div>
           </Card>
         ) : (
@@ -121,10 +121,10 @@ export function PortalHome() {
                       <Poster video={v} className={cn("aspect-[16/8]", awaiting.length === 1 && "md:aspect-auto md:min-h-[260px]")} size="lg" />
                       <div className={cn("flex items-start justify-between gap-3 p-5", awaiting.length === 1 && "md:flex-col md:justify-center md:p-7")}>
                         <div className="min-w-0">
-                          <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+                          <div className="flex items-center gap-2 text-body text-muted-foreground">
                             <span className="font-mono">{v.code}</span>·<span>{v.format}</span>·<span>{ver?.duration}</span>
                           </div>
-                          <div className="mt-1 truncate text-[16px] font-semibold tracking-tight">{v.title}</div>
+                          <div className="mt-1 truncate text-subheading font-semibold tracking-tight">{v.title}</div>
                           <div className="mt-2 flex flex-wrap items-center gap-2">
                             <Badge tone="accent">{ver?.label} ready</Badge>
                             <Badge tone={overdueBy > 0 ? "warning" : "neutral"}>
@@ -135,7 +135,7 @@ export function PortalHome() {
                             </Badge>
                           </div>
                         </div>
-                        <span className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-lg bg-primary px-3 py-2 text-[13px] font-medium text-primary-foreground">
+                        <span className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-lg bg-primary px-3 py-2 text-body font-medium text-primary-foreground">
                           Review <ArrowRight className="size-3.5 transition group-hover:translate-x-0.5" />
                         </span>
                       </div>
@@ -172,28 +172,28 @@ export function PortalHome() {
                   transition={{ duration: 0.6 }}
                 />
                 <motion.div
-                  className="h-full bg-accent/70"
+                  className="h-full bg-primary/70"
                   initial={{ width: 0 }}
                   animate={{ width: `${(inProgress / cycle.promised) * 100}%` }}
                   transition={{ duration: 0.6, delay: 0.1 }}
                 />
               </div>
-              <div className="mt-2.5 flex flex-wrap gap-x-5 gap-y-1 text-[12.5px]">
+              <div className="mt-2.5 flex flex-wrap gap-x-5 gap-y-1 text-body">
                 <Legend cls="bg-success" label="Approved / published" value={delivered} />
-                <Legend cls="bg-accent/70" label="In progress" value={inProgress} />
+                <Legend cls="bg-primary/70" label="In progress" value={inProgress} />
                 <Legend cls="bg-muted border border-border" label="Being planned" value={notStarted} />
               </div>
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
               {units.map((u) => (
                 <div key={u.label} className="rounded-xl border border-border p-3.5">
-                  <div className="text-[12.5px] text-muted-foreground">{u.label}</div>
-                  <div className="mt-1 text-[20px] font-semibold tabular">
+                  <div className="text-body text-muted-foreground">{u.label}</div>
+                  <div className="mt-1 text-heading font-semibold tabular">
                     {u.delivered}
-                    <span className="text-[14px] font-normal text-muted-foreground"> / {u.perCycle}</span>
+                    <span className="text-body font-normal text-muted-foreground"> / {u.perCycle}</span>
                   </div>
                   <Progress value={(u.delivered / u.perCycle) * 100} tone="success" className="mt-2" />
-                  <div className="mt-1.5 text-[11.5px] text-muted-foreground">{u.active} in progress</div>
+                  <div className="mt-1.5 text-body text-muted-foreground">{u.active} in progress</div>
                 </div>
               ))}
             </div>
@@ -223,7 +223,7 @@ export function PortalHome() {
               badge={<Badge tone="success">Paid {fmtDate(sep.paidOn!)}</Badge>}
               onOpen={() => toast("Receipt opened", { description: `${sep.no} · paid on ${fmtDate(sep.paidOn!, { day: "numeric", month: "long" })}` })}
             />
-            <p className="pt-1 text-[12px] text-muted-foreground">Invoices are issued on the 25th and due on the 1st of each month.</p>
+            <p className="pt-1 text-body text-muted-foreground">Invoices are issued on the 25th and due on the 1st of each month.</p>
           </CardContent>
         </Card>
       </section>
@@ -245,13 +245,13 @@ export function PortalHome() {
                 return (
                   <li key={v.id} className="flex items-center gap-4 px-5 py-3">
                     <div className="w-11 shrink-0 text-center">
-                      <div className="text-[10.5px] font-medium uppercase text-muted-foreground">{d.toLocaleDateString("en-IN", { month: "short" })}</div>
-                      <div className="text-[19px] font-semibold leading-none tabular">{d.getDate()}</div>
+                      <div className="text-body font-medium uppercase text-muted-foreground">{d.toLocaleDateString("en-IN", { month: "short" })}</div>
+                      <div className="text-subheading font-semibold leading-none tabular">{d.getDate()}</div>
                     </div>
                     <Poster video={v} className="hidden h-10 w-16 shrink-0 rounded-md sm:block" size="sm" showMeta={false} showPlay={false} />
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-[13.5px] font-medium">{v.title}</div>
-                      <div className="text-[12px] text-muted-foreground">
+                      <div className="truncate text-body font-medium">{v.title}</div>
+                      <div className="text-body text-muted-foreground">
                         {v.platform.join(" · ")} · {publishTimes[v.id] ?? "18:30"}
                       </div>
                     </div>
@@ -280,27 +280,27 @@ export function PortalHome() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3.5">
-            {withRevisions.length === 0 && <p className="text-[13px] text-muted-foreground">No videos in review yet.</p>}
+            {withRevisions.length === 0 && <p className="text-body text-muted-foreground">No videos in review yet.</p>}
             {withRevisions.map((v) => {
               const allow = allowanceFor(v);
               const left = Math.max(0, allow - v.revisionsUsed);
               return (
                 <div key={v.id}>
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="truncate text-[13px] font-medium">{v.title}</span>
-                    <span className={cn("shrink-0 text-[12px] tabular", left === 0 ? "text-warning" : "text-muted-foreground")}>
+                    <span className="truncate text-body font-medium">{v.title}</span>
+                    <span className={cn("shrink-0 text-body tabular", left === 0 ? "text-warning" : "text-muted-foreground")}>
                       {left} left
                     </span>
                   </div>
                   <div className="mt-1.5 flex gap-1">
                     {Array.from({ length: allow }).map((_, i) => (
-                      <span key={i} className={cn("h-1.5 flex-1 rounded-full", i < v.revisionsUsed ? "bg-accent" : "bg-muted")} />
+                      <span key={i} className={cn("h-1.5 flex-1 rounded-full", i < v.revisionsUsed ? "bg-primary" : "bg-muted")} />
                     ))}
                   </div>
                 </div>
               );
             })}
-            <div className="flex gap-2 rounded-lg bg-muted p-2.5 text-[12px] text-muted-foreground">
+            <div className="flex gap-2 rounded-lg bg-muted p-2.5 text-body text-muted-foreground">
               <ShieldCheck className="mt-0.5 size-3.5 shrink-0 text-success" />
               Fixes for our own mistakes never count against your allowance.
             </div>
@@ -328,13 +328,13 @@ export function PortalHome() {
                 <div key={v.id} className="group overflow-hidden rounded-xl border border-border">
                   <Poster video={v} className="aspect-video" size="sm" showMeta={false} />
                   <div className="p-3">
-                    <div className="line-clamp-2 text-[13px] font-medium leading-snug">{v.title}</div>
-                    <div className="mt-1.5 flex items-center justify-between text-[11.5px] text-muted-foreground">
+                    <div className="line-clamp-2 text-body font-medium leading-snug">{v.title}</div>
+                    <div className="mt-1.5 flex items-center justify-between text-body text-muted-foreground">
                       <span>
                         {ver?.label} approved
                       </span>
                       {v.publishedUrl ? (
-                        <a href={v.publishedUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-accent hover:underline">
+                        <a href={v.publishedUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
                           Live <ExternalLink className="size-3" />
                         </a>
                       ) : (
@@ -345,7 +345,7 @@ export function PortalHome() {
                 </div>
               );
             })}
-            {approvals.length === 0 && <p className="text-[13px] text-muted-foreground">No approvals yet this month.</p>}
+            {approvals.length === 0 && <p className="text-body text-muted-foreground">No approvals yet this month.</p>}
           </CardContent>
         </Card>
 
@@ -361,16 +361,16 @@ export function PortalHome() {
               <Avatar name={PORTAL_ACCOUNT_MANAGER.name} size="lg" />
               <div>
                 <div className="font-medium">{PORTAL_ACCOUNT_MANAGER.name}</div>
-                <div className="text-[12.5px] text-muted-foreground">
+                <div className="text-body text-muted-foreground">
                   {PORTAL_ACCOUNT_MANAGER.title} · {PORTAL_ACCOUNT_MANAGER.hours}
                 </div>
               </div>
             </div>
             <div className="mt-auto rounded-xl border border-dashed border-border p-4">
-              <div className="flex items-center gap-2 text-[13px] font-medium">
-                <Sparkles className="size-4 text-accent" /> Need something extra?
+              <div className="flex items-center gap-2 text-body font-medium">
+                <Sparkles className="size-4 text-primary" /> Need something extra?
               </div>
-              <p className="mt-1 text-[12.5px] text-muted-foreground">Festive ads, extra cut-downs, new formats — you&apos;ll get an estimate first.</p>
+              <p className="mt-1 text-body text-muted-foreground">Festive ads, extra cut-downs, new formats — you&apos;ll get an estimate first.</p>
               <Button size="sm" variant="outline" className="mt-3 w-full" onClick={() => setRequestOpen(true)}>
                 <Plus /> Request something new
               </Button>
@@ -400,11 +400,11 @@ function InvoiceRow({ title, no, amount, badge, onOpen }: { title: string; no: s
         <FileText className="size-4" />
       </span>
       <div className="min-w-0 flex-1">
-        <div className="text-[13.5px] font-medium">{title}</div>
-        <div className="font-mono text-[11px] text-muted-foreground">{no}</div>
+        <div className="text-body font-medium">{title}</div>
+        <div className="font-mono text-body text-muted-foreground">{no}</div>
       </div>
       <div className="text-right">
-        <div className="text-[14px] font-semibold tabular">{inr(amount)}</div>
+        <div className="text-body font-semibold tabular">{inr(amount)}</div>
         <div className="mt-0.5">{badge}</div>
       </div>
     </button>

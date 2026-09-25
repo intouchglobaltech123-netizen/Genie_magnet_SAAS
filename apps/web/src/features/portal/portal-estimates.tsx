@@ -24,7 +24,7 @@ export function PortalEstimates() {
 
   return (
     <section>
-      <h2 className="mb-3 text-[16px] font-semibold tracking-tight">Estimates awaiting your decision</h2>
+      <h2 className="mb-3 text-subheading font-semibold tracking-tight">Estimates awaiting your decision</h2>
       <div className="space-y-3">
         {mine.map((c) => {
           const video = videos.find((v) => v.id === c.videoId);
@@ -34,15 +34,15 @@ export function PortalEstimates() {
                 <BadgeIndianRupee className="size-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <div className="text-[12px] text-muted-foreground">{video ? video.title : "New request"}</div>
-                <div className="mt-0.5 text-[14px] font-medium">{c.summary.replace(/^Client request · /, "")}</div>
-                <div className="mt-1 text-[12.5px] text-muted-foreground">
+                <div className="text-body text-muted-foreground">{video ? video.title : "New request"}</div>
+                <div className="mt-0.5 text-body font-medium">{c.summary.replace(/^Client request · /, "")}</div>
+                <div className="mt-1 text-body text-muted-foreground">
                   Outside your monthly package · {c.dateImpactDays ? `adds ${c.dateImpactDays} working days` : "no change to dates"}
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[20px] font-semibold tabular">{inr(c.estimate ?? 0)}</div>
-                <div className="text-[11.5px] text-muted-foreground">+ GST · billed on next invoice</div>
+                <div className="text-heading font-semibold tabular">{inr(c.estimate ?? 0)}</div>
+                <div className="text-body text-muted-foreground">+ GST · billed on next invoice</div>
               </div>
               <div className="flex gap-2">
                 <Button

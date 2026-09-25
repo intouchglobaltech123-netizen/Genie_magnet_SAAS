@@ -8,7 +8,7 @@ export function Checkbox({ className, ...props }: React.ComponentProps<typeof CB
   return (
     <CB.Root
       className={cn(
-        "peer size-[18px] shrink-0 cursor-pointer rounded-[5px] border border-input bg-card transition data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50",
+        "peer size-[18px] shrink-0 cursor-pointer rounded-[5px] border border-input bg-card transition data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
       {...props}

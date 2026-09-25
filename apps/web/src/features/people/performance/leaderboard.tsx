@@ -35,7 +35,7 @@ export function rankedTeam() {
     .sort((a, b) => b.score - a.score);
 }
 
-const medal = ["text-gold", "text-muted-foreground", "text-warning"];
+const medal = ["text-accent-strong", "text-muted-foreground", "text-warning"];
 
 export function Leaderboard({
   appeals,
@@ -55,7 +55,7 @@ export function Leaderboard({
           <CardDescription>Q3 composite, after quality gates.</CardDescription>
         </div>
         <div className="flex flex-col items-end gap-1.5">
-          <label className="flex cursor-pointer items-center gap-2 text-[12px] font-medium text-muted-foreground">
+          <label className="flex cursor-pointer items-center gap-2 text-body font-medium text-muted-foreground">
             Visible to team
             <Switch
               checked={visible}
@@ -85,29 +85,29 @@ export function Leaderboard({
           const appeal = appeals[r.id];
           return (
             <div key={r.id} className="group flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-muted/60">
-              <span className="flex w-6 justify-center text-[13px] font-semibold tabular text-muted-foreground">
+              <span className="flex w-6 justify-center text-body font-semibold tabular text-muted-foreground">
                 {i < 3 ? <Medal className={cn("size-4", medal[i])} /> : i + 1}
               </span>
               <Avatar name={p.name} size="sm" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="truncate text-[13px] font-medium">{p.name}</span>
+                  <span className="truncate text-body font-medium">{p.name}</span>
                   {appeal && (
-                    <Badge tone="warning" className="text-[10.5px]">
+                    <Badge tone="warning" className="text-body">
                       Under review
                     </Badge>
                   )}
                 </div>
-                <div className="truncate text-[11.5px] text-muted-foreground">{p.role}</div>
+                <div className="truncate text-body text-muted-foreground">{p.role}</div>
               </div>
               <Badge tone={playerMeta[r.player].tone} className="hidden sm:inline-flex">
                 {r.player === "A" ? "A" : r.player === "C" ? "C" : r.player.replace("-", " · ")}
               </Badge>
-              <span className={cn("flex w-10 items-center justify-end gap-0.5 text-[11.5px] tabular", r.trend >= 0 ? "text-success" : "text-danger")}>
+              <span className={cn("flex w-10 items-center justify-end gap-0.5 text-body tabular", r.trend >= 0 ? "text-success" : "text-danger")}>
                 {r.trend >= 0 ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
                 {Math.abs(r.trend)}
               </span>
-              <span className="w-10 text-right text-[14px] font-semibold tabular">{r.score.toFixed(0)}</span>
+              <span className="w-10 text-right text-body font-semibold tabular">{r.score.toFixed(0)}</span>
               <Tooltip content={appeal ? "Appeal already filed" : "Appeal this score"}>
                 <Button
                   variant="ghost"
@@ -142,7 +142,7 @@ export function IncentivePool() {
     <Card>
       <CardHeader>
         <div className="flex items-start gap-3">
-          <span className="inline-flex size-10 items-center justify-center rounded-xl bg-gold-soft text-gold">
+          <span className="inline-flex size-10 items-center justify-center rounded-xl bg-accent-soft text-accent-strong">
             <Wallet className="size-5" />
           </span>
           <div>
@@ -180,7 +180,7 @@ export function IncentivePool() {
               <div key={s.id} className="flex items-center gap-3">
                 <Avatar name={p.name} size="sm" />
                 <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex items-center justify-between text-[12.5px]">
+                  <div className="mb-1 flex items-center justify-between text-body">
                     <span className="truncate font-medium">
                       {p.name}
                       <span className="ml-1.5 font-normal text-muted-foreground tabular">· {s.score.toFixed(0)}</span>
@@ -189,7 +189,7 @@ export function IncentivePool() {
                   </div>
                   <div className="h-2 overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full rounded-full bg-[var(--chart-1)] transition-all duration-700"
+                      className="h-full rounded-full bg-[var(--color-chart-1)] transition-all duration-700"
                       style={{ width: `${(s.amount / max) * 100}%` }}
                     />
                   </div>
@@ -199,7 +199,7 @@ export function IncentivePool() {
           })}
         </div>
         {excluded.length > 0 && (
-          <div className="mt-5 rounded-xl border border-dashed border-border px-4 py-3 text-[12.5px] text-muted-foreground">
+          <div className="mt-5 rounded-xl border border-dashed border-border px-4 py-3 text-body text-muted-foreground">
             Not eligible this quarter:{" "}
             {excluded.map((e) => (
               <span key={e.id} className="font-medium text-foreground">

@@ -21,14 +21,14 @@ export function PageHeader({
     <div className={cn("mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between", className)}>
       <div className="min-w-0">
         {(eyebrow || depth) && (
-          <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-muted-foreground">
+          <div className="mb-2 flex items-center gap-2 text-body font-medium text-muted-foreground">
             {eyebrow}
             {depth === "preview" && <Badge tone="info">Preview · sample data</Badge>}
             {depth === "planned" && <Badge tone="neutral">Planned · Phase 2</Badge>}
           </div>
         )}
-        <h1 className="text-[26px] font-semibold leading-tight tracking-tight">{title}</h1>
-        {description && <p className="mt-1.5 max-w-2xl text-[14px] text-muted-foreground">{description}</p>}
+        <h1 className="text-heading font-semibold leading-tight tracking-tight">{title}</h1>
+        {description && <p className="mt-1.5 max-w-2xl text-body text-muted-foreground">{description}</p>}
       </div>
       {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
     </div>

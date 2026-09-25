@@ -17,7 +17,7 @@ function BalCell({ left, of }: { left: number; of: number }) {
   const ratio = left / of;
   return (
     <div className="w-32">
-      <div className="mb-1 flex items-baseline justify-between text-[12px]">
+      <div className="mb-1 flex items-baseline justify-between text-body">
         <span className="tabular font-semibold">{left}</span>
         <span className="tabular text-muted-foreground">of {of}</span>
       </div>
@@ -67,7 +67,7 @@ export function BalancesAndHolidays({ balances }: { balances: Record<string, Bal
                         <Avatar name={e.name} size="sm" />
                         <div>
                           <div className="font-medium">{e.name}</div>
-                          <div className="text-[11.5px] text-muted-foreground">{e.role}</div>
+                          <div className="text-body text-muted-foreground">{e.role}</div>
                         </div>
                       </div>
                     </TD>
@@ -111,20 +111,20 @@ export function BalancesAndHolidays({ balances }: { balances: Record<string, Bal
               const past = away < 0;
               return (
                 <li key={h.date} className={cn("flex items-center gap-3 rounded-xl border border-border p-3", past && "opacity-55")}>
-                  <div className="flex w-11 shrink-0 flex-col items-center rounded-lg bg-gold-soft py-1 text-gold">
-                    <span className="text-[10px] font-semibold uppercase">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
-                    <span className="tabular text-[17px] font-semibold leading-none">{d.getDate()}</span>
+                  <div className="flex w-11 shrink-0 flex-col items-center rounded-lg bg-accent-soft py-1 text-accent-strong">
+                    <span className="text-body font-semibold uppercase">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
+                    <span className="tabular text-subheading font-semibold leading-none">{d.getDate()}</span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 text-[13px] font-medium">
-                      {h.name === "Deepavali" && <PartyPopper className="size-3.5 text-gold" />}
+                    <div className="flex items-center gap-1.5 text-body font-medium">
+                      {h.name === "Deepavali" && <PartyPopper className="size-3.5 text-accent-strong" />}
                       {h.name}
                     </div>
-                    <div className="text-[12px] text-muted-foreground">{d.toLocaleDateString("en-IN", { weekday: "long" })}</div>
+                    <div className="text-body text-muted-foreground">{d.toLocaleDateString("en-IN", { weekday: "long" })}</div>
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <Badge tone={h.kind === "National" ? "info" : h.kind === "State (TN)" ? "accent" : "gold"}>{h.kind}</Badge>
-                    <span className="tabular text-[11px] text-muted-foreground">{past ? "Done" : away === 0 ? "Today" : `in ${away} days`}</span>
+                    <span className="tabular text-body text-muted-foreground">{past ? "Done" : away === 0 ? "Today" : `in ${away} days`}</span>
                   </div>
                 </li>
               );

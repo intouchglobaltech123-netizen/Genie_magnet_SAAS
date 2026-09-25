@@ -91,8 +91,8 @@ export function ReviewComments({
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div>
-          <div className="text-[14px] font-semibold">Comments on {versionLabel}</div>
-          <div className="text-[12px] text-muted-foreground">
+          <div className="text-body font-semibold">Comments on {versionLabel}</div>
+          <div className="text-body text-muted-foreground">
             {comments.length} total · {open} open
           </div>
         </div>
@@ -103,7 +103,7 @@ export function ReviewComments({
 
       <div ref={listRef} className="scrollbar-thin min-h-[220px] flex-1 space-y-1 overflow-y-auto p-2 lg:max-h-[440px]">
         {sorted.length === 0 && (
-          <div className="px-4 py-10 text-center text-[13px] text-muted-foreground">
+          <div className="px-4 py-10 text-center text-body text-muted-foreground">
             No comments yet. Pause anywhere and leave a note — it will be pinned to that exact moment.
           </div>
         )}
@@ -118,20 +118,20 @@ export function ReviewComments({
               onClick={() => onSelect(c)}
               className={cn(
                 "flex w-full cursor-pointer gap-3 rounded-xl p-3 text-left transition",
-                c.id === activeId ? "bg-accent-soft ring-1 ring-accent/30" : "hover:bg-muted/70",
+                c.id === activeId ? "bg-primary-soft ring-1 ring-primary/30" : "hover:bg-muted/70",
                 c.resolved && "opacity-70",
               )}
             >
               <Avatar name={c.author} size="sm" className="mt-0.5" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[13px] font-medium">{c.author}</span>
+                  <span className="text-body font-medium">{c.author}</span>
                   {c.timestamp && (
-                    <span className="rounded bg-muted px-1.5 font-mono text-[11px] text-accent">{c.timestamp}</span>
+                    <span className="rounded bg-muted px-1.5 font-mono text-body text-primary">{c.timestamp}</span>
                   )}
-                  <span className="ml-auto text-[11px] text-muted-foreground">{fmtDate(c.at)}</span>
+                  <span className="ml-auto text-body text-muted-foreground">{fmtDate(c.at)}</span>
                 </div>
-                {c.kind === "voice" ? <VoiceNote text={c.text} /> : <p className="mt-1 text-[13px] leading-relaxed">{c.text}</p>}
+                {c.kind === "voice" ? <VoiceNote text={c.text} /> : <p className="mt-1 text-body leading-relaxed">{c.text}</p>}
                 {c.resolved && (
                   <Badge tone="success" className="mt-1.5">
                     Addressed in next version
@@ -145,20 +145,20 @@ export function ReviewComments({
 
       <div className="border-t border-border p-3">
         {!canComment ? (
-          <p className="px-1 py-2 text-[12.5px] text-muted-foreground">Commenting is closed for this version. Switch to the latest version to add notes.</p>
+          <p className="px-1 py-2 text-body text-muted-foreground">Commenting is closed for this version. Switch to the latest version to add notes.</p>
         ) : (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPinTime((p) => !p)}
                 className={cn(
-                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 font-mono text-[11.5px] transition",
-                  pinTime ? "bg-accent-soft text-accent" : "bg-muted text-muted-foreground line-through",
+                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 font-mono text-body transition",
+                  pinTime ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground line-through",
                 )}
               >
                 <Clock className="size-3" /> {fmtTs(currentTime)}
               </button>
-              <span className="text-[11.5px] text-muted-foreground">{pinTime ? "Pinned to current frame" : "General comment"}</span>
+              <span className="text-body text-muted-foreground">{pinTime ? "Pinned to current frame" : "General comment"}</span>
             </div>
 
             {recording !== null ? (
@@ -167,7 +167,7 @@ export function ReviewComments({
                   <span className="absolute inline-flex size-full animate-ping rounded-full bg-danger opacity-60" />
                   <span className="relative inline-flex size-3 rounded-full bg-danger" />
                 </span>
-                <span className="font-mono text-[13px] text-danger">0:0{recording}</span>
+                <span className="font-mono text-body text-danger">0:0{recording}</span>
                 <Bars active className="text-danger" />
                 <Button size="xs" variant="ghost" className="ml-auto" onClick={cancelRecording}>
                   <Square className="!size-3" /> Cancel
@@ -220,7 +220,7 @@ export function ReviewComments({
 
 function Chip({ children, onRemove }: { children: React.ReactNode; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-[12px]">
+    <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-body">
       {children}
       <button onClick={onRemove} className="cursor-pointer text-muted-foreground hover:text-foreground" aria-label="Remove">
         <X className="size-3" />
@@ -263,15 +263,15 @@ function VoiceNote({ text }: { text: string }) {
         role="button"
         tabIndex={0}
         onClick={toggle}
-        className="inline-flex items-center gap-2 rounded-full bg-muted py-1 pl-1 pr-3 text-accent"
+        className="inline-flex items-center gap-2 rounded-full bg-muted py-1 pl-1 pr-3 text-primary"
       >
-        <span className="flex size-6 items-center justify-center rounded-full bg-accent text-white">
+        <span className="flex size-6 items-center justify-center rounded-full bg-primary text-white">
           {playing ? <Pause className="size-3 fill-current" /> : <Play className="ml-0.5 size-3 fill-current" />}
         </span>
         <Bars active={playing} />
-        <span className="font-mono text-[11px] text-muted-foreground">{duration}</span>
+        <span className="font-mono text-body text-muted-foreground">{duration}</span>
       </span>
-      {rest && <p className="text-[13px] leading-relaxed text-muted-foreground">{rest}</p>}
+      {rest && <p className="text-body leading-relaxed text-muted-foreground">{rest}</p>}
     </div>
   );
 }

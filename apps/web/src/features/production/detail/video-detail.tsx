@@ -33,8 +33,8 @@ export function VideoDetail({ id }: { id: string }) {
     return (
       <div className="flex flex-col items-center gap-3 py-24 text-center">
         <Film className="size-8 text-muted-foreground" />
-        <div className="text-lg font-semibold">Video not found</div>
-        <p className="text-[13px] text-muted-foreground">It may have been removed, or the demo data was reset.</p>
+        <div className="text-subheading font-semibold">Video not found</div>
+        <p className="text-body text-muted-foreground">It may have been removed, or the demo data was reset.</p>
         <Button variant="outline" asChild>
           <Link href="/production">
             <ArrowLeft /> Back to Video Production
@@ -49,26 +49,26 @@ export function VideoDetail({ id }: { id: string }) {
 
   return (
     <div>
-      <Link href="/production" className="mb-4 inline-flex items-center gap-1.5 text-[13px] text-muted-foreground transition hover:text-foreground">
+      <Link href="/production" className="mb-4 inline-flex items-center gap-1.5 text-body text-muted-foreground transition hover:text-foreground">
         <ArrowLeft className="size-3.5" /> Video Production
       </Link>
 
       <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <span className="font-mono text-[13px] font-semibold tracking-wide">{v.code}</span>
+            <span className="font-mono text-body font-semibold tracking-wide">{v.code}</span>
             <ClientTag clientId={v.clientId} />
             <StageBadge stage={v.stage} />
             <UrgencyIcon urgency={v.urgency} withLabel />
             <VPBadge on={v.videoProtection} />
           </div>
-          <h1 className="text-[26px] font-semibold leading-tight tracking-tight">{v.title}</h1>
-          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-muted-foreground">
+          <h1 className="text-heading font-semibold leading-tight tracking-tight">{v.title}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-body text-muted-foreground">
             <span>{c.name}</span>
             <span className={cn(isOverdue(v) && "font-medium text-danger")}>
               {fmt(v.dueDate, "EEE, d MMM")} · {relDue(v.dueDate)}
             </span>
-            <Link href="/agreements" className="inline-flex items-center gap-1 hover:text-accent">
+            <Link href="/agreements" className="inline-flex items-center gap-1 hover:text-primary">
               <FileSignature className="size-3.5" /> {ag.packageName}
             </Link>
           </div>
@@ -84,8 +84,8 @@ export function VideoDetail({ id }: { id: string }) {
             <div key={label} className="flex items-center gap-2">
               <Avatar name={personById(pid).name} size="md" />
               <div className="leading-tight">
-                <div className="text-[11px] text-muted-foreground">{label}</div>
-                <div className="text-[13px] font-medium">{personById(pid).name.split(" ")[0]}</div>
+                <div className="text-body text-muted-foreground">{label}</div>
+                <div className="text-body font-medium">{personById(pid).name.split(" ")[0]}</div>
               </div>
             </div>
           ))}
@@ -100,7 +100,7 @@ export function VideoDetail({ id }: { id: string }) {
             <TabsList>
               <TabsTrigger value="editing">
                 <PenTool /> Editing sheet
-                <span className="ml-0.5 text-[11px] tabular text-muted-foreground">{doneSteps(v)}/9</span>
+                <span className="ml-0.5 text-body tabular text-muted-foreground">{doneSteps(v)}/9</span>
               </TabsTrigger>
               <TabsTrigger value="qc">
                 <ClipboardCheck /> QC
@@ -129,7 +129,7 @@ export function VideoDetail({ id }: { id: string }) {
               <CardHeader>
                 <div>
                   <CardTitle>Internal QC checklist</CardTitle>
-                  <p className="mt-0.5 text-[13px] text-muted-foreground">Every check is mandatory. A failure holds the stage and creates a corrective task.</p>
+                  <p className="mt-0.5 text-body text-muted-foreground">Every check is mandatory. A failure holds the stage and creates a corrective task.</p>
                 </div>
               </CardHeader>
               <CardContent>
@@ -220,16 +220,16 @@ function StageStepper({ v }: { v: Video }) {
                   <span
                     className={cn(
                       "absolute right-1/2 top-[13px] h-0.5 w-full -translate-y-1/2",
-                      i <= cur ? "bg-accent" : "bg-border",
+                      i <= cur ? "bg-primary" : "bg-border",
                     )}
                   />
                 )}
                 <span
                   className={cn(
-                    "relative z-10 inline-flex size-[26px] items-center justify-center rounded-full border-2 text-[11px] font-semibold tabular transition",
-                    done && "border-accent bg-accent text-accent-foreground",
+                    "relative z-10 inline-flex size-[26px] items-center justify-center rounded-full border-2 text-body font-semibold tabular transition",
+                    done && "border-primary bg-primary text-primary-foreground",
                     skipped && "border-dashed border-border bg-card text-muted-foreground",
-                    current && !isGate && "border-accent bg-card text-accent ring-4 ring-accent/15",
+                    current && !isGate && "border-primary bg-card text-primary ring-4 ring-primary/15",
                     current && isGate && "border-danger bg-card text-danger ring-4 ring-danger/15",
                     !done && !current && !skipped && "border-border bg-card text-muted-foreground",
                   )}
@@ -238,7 +238,7 @@ function StageStepper({ v }: { v: Video }) {
                 </span>
                 <span
                   className={cn(
-                    "mt-2 px-1 text-center text-[11.5px] leading-tight",
+                    "mt-2 px-1 text-center text-body leading-tight",
                     current ? "font-semibold text-foreground" : done ? "text-foreground/80" : "text-muted-foreground",
                     skipped && "italic",
                   )}
@@ -254,7 +254,7 @@ function StageStepper({ v }: { v: Video }) {
       <div className="mt-5 flex flex-col gap-3 border-t border-border pt-4 lg:flex-row lg:items-center">
         <div className="min-w-0 flex-1">
           {gate.ok ? (
-            <div className="text-[13px] text-muted-foreground">
+            <div className="text-body text-muted-foreground">
               {next ? (
                 <>
                   Current stage <b className="font-medium text-foreground">{v.stage}</b>. All gates clear — ready for{" "}
@@ -264,7 +264,7 @@ function StageStepper({ v }: { v: Video }) {
                 <>
                   Published{v.publishedUrl ? " · " : ""}
                   {v.publishedUrl && (
-                    <a href={v.publishedUrl} target="_blank" rel="noreferrer" className="text-accent hover:underline">
+                    <a href={v.publishedUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline">
                       {v.publishedUrl.replace("https://", "")}
                     </a>
                   )}
@@ -333,7 +333,7 @@ function DetailSidebar({ v }: { v: Video }) {
     ["Platforms", v.platform.join(", ")],
     ["Cycle", cycle?.label ?? "—"],
     ["Package", ag.packageName],
-    ["Clip No.", <span key="clip" className="font-mono text-[12px]">{v.clipNo}</span>],
+    ["Clip No.", <span key="clip" className="font-mono text-body">{v.clipNo}</span>],
     ["Planned edit", hoursLabel(v.plannedMinutes)],
     ["Logged", hoursLabel(v.loggedMinutes)],
   ];
@@ -344,7 +344,7 @@ function DetailSidebar({ v }: { v: Video }) {
         <CardHeader className="pb-2">
           <CardTitle>Details</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-0 text-[13px]">
+        <CardContent className="space-y-0 text-body">
           {rows.map(([k, val]) => (
             <div key={k} className="flex items-center justify-between gap-3 border-b border-border py-2 last:border-0">
               <span className="text-muted-foreground">{k}</span>
@@ -352,17 +352,17 @@ function DetailSidebar({ v }: { v: Video }) {
             </div>
           ))}
           <div className="pt-3">
-            <div className="mb-1.5 flex justify-between text-[12px]">
+            <div className="mb-1.5 flex justify-between text-body">
               <span className="text-muted-foreground">Revisions used</span>
               <span className={cn("font-medium tabular", v.revisionsUsed >= allowed && "text-danger")}>
                 {v.revisionsUsed} / {allowed}
               </span>
             </div>
             <Progress value={(v.revisionsUsed / allowed) * 100} tone={v.revisionsUsed >= allowed ? "danger" : v.revisionsUsed ? "warning" : "success"} />
-            {v.revisionsUsed >= allowed && <p className="mt-1.5 text-[11.5px] text-danger">Allowance used — further changes need a CR.</p>}
+            {v.revisionsUsed >= allowed && <p className="mt-1.5 text-body text-danger">Allowance used — further changes need a CR.</p>}
           </div>
           {v.delayReason && (
-            <div className="mt-3 rounded-lg bg-warning-soft px-3 py-2 text-[12px] text-warning">
+            <div className="mt-3 rounded-lg bg-warning-soft px-3 py-2 text-body text-warning">
               <b className="font-semibold">Delay:</b> {v.delayReason}
             </div>
           )}
@@ -379,11 +379,11 @@ function DetailSidebar({ v }: { v: Video }) {
                 <span
                   className={cn(
                     "absolute -left-[21px] top-1 size-2 rounded-full ring-4 ring-card",
-                    a.tone === "success" ? "bg-success" : a.tone === "danger" ? "bg-danger" : a.tone === "warning" ? "bg-warning" : a.tone === "accent" ? "bg-accent" : "bg-muted-foreground/50",
+                    a.tone === "success" ? "bg-success" : a.tone === "danger" ? "bg-danger" : a.tone === "warning" ? "bg-warning" : a.tone === "accent" ? "bg-primary" : "bg-muted-foreground/50",
                   )}
                 />
-                <div className="text-[12.5px] leading-snug">{a.text}</div>
-                <div className="mt-0.5 text-[11px] text-muted-foreground">{format(parseISO(a.at), "d MMM, HH:mm")}</div>
+                <div className="text-body leading-snug">{a.text}</div>
+                <div className="mt-0.5 text-body text-muted-foreground">{format(parseISO(a.at), "d MMM, HH:mm")}</div>
               </li>
             ))}
           </ol>

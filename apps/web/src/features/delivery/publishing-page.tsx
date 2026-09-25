@@ -28,7 +28,7 @@ const platformCls: Record<string, string> = {
 };
 
 function PlatformChip({ p }: { p: string }) {
-  return <span className={`rounded-md px-1.5 py-0.5 text-[11px] font-medium ${platformCls[p] ?? "bg-muted text-muted-foreground"}`}>{p}</span>;
+  return <span className={`rounded-md px-1.5 py-0.5 text-body font-medium ${platformCls[p] ?? "bg-muted text-muted-foreground"}`}>{p}</span>;
 }
 
 function defaultSlot(v: Video) {
@@ -52,7 +52,7 @@ export function PublishingPage() {
         description="Only the client-approved version goes live. Every post is closed with its URL, timestamp and a proof screenshot."
       />
 
-      <div className="mb-6 flex items-start gap-3 rounded-xl border border-info/25 bg-info-soft p-3.5 text-[13px] text-info">
+      <div className="mb-6 flex items-start gap-3 rounded-xl border border-info/25 bg-info-soft p-3.5 text-body text-info">
         <Info className="mt-0.5 size-4 shrink-0" />
         <span>
           Phase 1: the social team posts manually and records proof here. <span className="font-medium">Phase 2:</span> direct scheduling &amp; publishing via Meta Graph and YouTube
@@ -74,7 +74,7 @@ export function PublishingPage() {
         </TabsList>
 
         <TabsContent value="queue" className="space-y-3">
-          {queue.length === 0 && <Card className="p-10 text-center text-[13px] text-muted-foreground">Queue is clear — nothing approved and waiting.</Card>}
+          {queue.length === 0 && <Card className="p-10 text-center text-body text-muted-foreground">Queue is clear — nothing approved and waiting.</Card>}
           {queue.map((v) => {
             const ver = v.versions.find((x) => x.status === "approved") ?? v.versions.at(-1);
             const client = clientById(v.clientId);
@@ -83,10 +83,10 @@ export function PublishingPage() {
               <Card key={v.id} className="flex flex-col gap-4 p-4 md:flex-row md:items-center">
                 <Poster video={v} className="aspect-video w-full shrink-0 rounded-lg md:w-40" size="sm" showMeta={false} />
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+                  <div className="flex items-center gap-2 text-body text-muted-foreground">
                     <span className="font-mono">{v.code}</span>·<span>{client.name}</span>
                   </div>
-                  <div className="mt-0.5 truncate text-[15px] font-semibold">{v.title}</div>
+                  <div className="mt-0.5 truncate text-subheading font-semibold">{v.title}</div>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
                     {v.platform.map((p) => (
                       <PlatformChip key={p} p={p} />
@@ -146,16 +146,16 @@ export function PublishingPage() {
                 <Card key={v.id} className="overflow-hidden">
                   <div className="relative">
                     <Poster video={v} className="aspect-video" showPlay={false} />
-                    <span className="absolute right-3 top-3 rounded bg-success px-1.5 py-0.5 text-[10.5px] font-semibold text-white">LIVE</span>
+                    <span className="absolute right-3 top-3 rounded bg-success px-1.5 py-0.5 text-body font-semibold text-white">LIVE</span>
                   </div>
                   <div className="space-y-2.5 p-4">
                     <div>
-                      <div className="font-mono text-[11.5px] text-muted-foreground">
+                      <div className="font-mono text-body text-muted-foreground">
                         {v.code} · {clientById(v.clientId).name}
                       </div>
-                      <div className="mt-0.5 truncate text-[14px] font-semibold">{v.title}</div>
+                      <div className="mt-0.5 truncate text-body font-semibold">{v.title}</div>
                     </div>
-                    <dl className="grid grid-cols-[88px_1fr] gap-y-1 text-[12px]">
+                    <dl className="grid grid-cols-[88px_1fr] gap-y-1 text-body">
                       <dt className="text-muted-foreground">Version</dt>
                       <dd>{ver?.label ?? "—"} (client-approved)</dd>
                       <dt className="text-muted-foreground">Published</dt>
@@ -170,7 +170,7 @@ export function PublishingPage() {
                       <dd className="flex items-center gap-1">
                         {proof ? (
                           <button
-                            className="inline-flex cursor-pointer items-center gap-1 text-accent hover:underline"
+                            className="inline-flex cursor-pointer items-center gap-1 text-primary hover:underline"
                             onClick={() => toast("Proof screenshot", { description: `${proof.proofFile} · captured ${fmtDate(proof.publishedAt)}` })}
                           >
                             <ImageIcon className="size-3" /> {proof.proofFile}
@@ -181,7 +181,7 @@ export function PublishingPage() {
                       </dd>
                     </dl>
                     {v.publishedUrl && (
-                      <a href={v.publishedUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 truncate text-[12px] text-accent hover:underline">
+                      <a href={v.publishedUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 truncate text-body text-primary hover:underline">
                         <ExternalLink className="size-3 shrink-0" /> {v.publishedUrl}
                       </a>
                     )}
@@ -244,11 +244,11 @@ function MarkPublishedDialog({ video, onClose }: { video: Video | null; onClose:
             <Input type="datetime-local" value={at} onChange={(e) => setAt(e.target.value)} />
           </Field>
           <div className="space-y-1.5">
-            <span className="text-[13px] font-medium">Proof screenshot</span>
+            <span className="text-body font-medium">Proof screenshot</span>
             {proof ? (
               <div className="flex items-center gap-3 rounded-xl border border-border p-2.5">
                 {video && <Poster video={video} className="h-12 w-20 shrink-0 rounded-md" size="sm" showMeta={false} showPlay={false} />}
-                <div className="min-w-0 flex-1 text-[12.5px]">
+                <div className="min-w-0 flex-1 text-body">
                   <div className="truncate font-medium">{proof}</div>
                   <div className="text-muted-foreground">412 KB · uploaded</div>
                 </div>
@@ -259,7 +259,7 @@ function MarkPublishedDialog({ video, onClose }: { video: Video | null; onClose:
             ) : (
               <button
                 onClick={() => setProof(`proof_${video?.code}.png`)}
-                className="flex w-full cursor-pointer flex-col items-center gap-1.5 rounded-xl border border-dashed border-input p-5 text-[12.5px] text-muted-foreground transition hover:border-accent hover:bg-accent-soft/40"
+                className="flex w-full cursor-pointer flex-col items-center gap-1.5 rounded-xl border border-dashed border-input p-5 text-body text-muted-foreground transition hover:border-primary hover:bg-primary-soft/40"
               >
                 <Upload className="size-5" />
                 <span>
@@ -268,7 +268,7 @@ function MarkPublishedDialog({ video, onClose }: { video: Video | null; onClose:
               </button>
             )}
           </div>
-          <label className="flex cursor-pointer items-center gap-2.5 text-[13px]">
+          <label className="flex cursor-pointer items-center gap-2.5 text-body">
             <Checkbox checked={confirmed} onCheckedChange={(v) => setConfirmed(v === true)} />I posted the client-approved {ver?.label} file, unchanged
           </label>
         </DialogBody>

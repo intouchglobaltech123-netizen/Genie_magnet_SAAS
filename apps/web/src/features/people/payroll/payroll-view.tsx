@@ -94,8 +94,8 @@ export function PayrollView() {
       <Card className="p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-[15px] font-semibold tracking-tight">Payroll run · {PAY_PERIOD.short}</div>
-            <div className="text-[13px] text-muted-foreground">
+            <div className="text-subheading font-semibold tracking-tight">Payroll run · {PAY_PERIOD.short}</div>
+            <div className="text-body text-muted-foreground">
               {released ? "Run complete. Payslips are visible to employees." : `Step ${done + 1} of 4 — ${RUN_STEPS[done]!.label}`}
             </div>
           </div>
@@ -126,7 +126,7 @@ export function PayrollView() {
                 className={cn(
                   "relative flex items-start gap-3 rounded-xl border p-3 transition-colors",
                   state === "done" && "border-success/30 bg-success-soft/60",
-                  state === "current" && "border-accent/40 bg-accent-soft/60",
+                  state === "current" && "border-primary/40 bg-primary-soft/60",
                   state === "todo" && "border-border",
                 )}
               >
@@ -134,15 +134,15 @@ export function PayrollView() {
                   className={cn(
                     "inline-flex size-8 shrink-0 items-center justify-center rounded-full",
                     state === "done" && "bg-success text-white",
-                    state === "current" && "bg-accent text-accent-foreground",
+                    state === "current" && "bg-primary text-primary-foreground",
                     state === "todo" && "bg-muted text-muted-foreground",
                   )}
                 >
                   {state === "done" ? <Check className="size-4" /> : <Icon className="size-4" />}
                 </span>
                 <div className="min-w-0">
-                  <div className="text-[13px] font-medium">{s.label}</div>
-                  <div className="truncate text-[12px] text-muted-foreground">{stamps[i] ?? s.detail}</div>
+                  <div className="text-body font-medium">{s.label}</div>
+                  <div className="truncate text-body text-muted-foreground">{stamps[i] ?? s.detail}</div>
                 </div>
               </li>
             );
@@ -213,7 +213,7 @@ export function PayrollView() {
                     <Avatar name={r.person.name} size="sm" />
                     <div className="min-w-0">
                       <div className="font-medium">{r.person.name}</div>
-                      <div className="text-[12px] text-muted-foreground">
+                      <div className="text-body text-muted-foreground">
                         {r.empId} · {r.person.role}
                       </div>
                     </div>
@@ -266,7 +266,7 @@ export function PayrollView() {
           </TBody>
         </Table>
         {!calculated && (
-          <div className="border-t border-border px-5 py-3 text-[12.5px] text-muted-foreground">
+          <div className="border-t border-border px-5 py-3 text-body text-muted-foreground">
             Net pay and payslips unlock after the run is calculated. Lock inputs first so late attendance edits can&apos;t change LOP.
           </div>
         )}
@@ -279,13 +279,13 @@ export function PayrollView() {
             <DialogDescription>Once approved, amounts are frozen and HR can release payslips.</DialogDescription>
           </DialogHeader>
           <DialogBody className="space-y-3">
-            <div className="grid grid-cols-2 gap-3 rounded-xl border border-border p-4 text-[13px]">
+            <div className="grid grid-cols-2 gap-3 rounded-xl border border-border p-4 text-body">
               <Summary label="Employees" value="10" />
               <Summary label="Total gross" value={inr(payrollTotals.gross)} />
               <Summary label="LOP deductions" value={inr(payrollTotals.lop)} />
               <Summary label="Net payout" value={inr(payrollTotals.net)} strong />
             </div>
-            <div className="flex gap-2 rounded-lg bg-warning-soft px-3 py-2 text-[12.5px] text-warning">
+            <div className="flex gap-2 rounded-lg bg-warning-soft px-3 py-2 text-body text-warning">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
               PF, ESI, PT and TDS are placeholder rules — statutory configuration still to be confirmed.
             </div>
@@ -325,8 +325,8 @@ function StatHead({ label }: { label: string }) {
 function Summary({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
     <div>
-      <div className="text-[12px] text-muted-foreground">{label}</div>
-      <div className={cn("tabular", strong ? "text-[16px] font-semibold" : "font-medium")}>{value}</div>
+      <div className="text-body text-muted-foreground">{label}</div>
+      <div className={cn("tabular", strong ? "text-subheading font-semibold" : "font-medium")}>{value}</div>
     </div>
   );
 }

@@ -26,9 +26,9 @@ import { ScorecardSheet } from "./scorecard-sheet";
 const dotCls: Record<string, string> = {
   neutral: "bg-muted-foreground/50",
   info: "bg-info",
-  accent: "bg-accent",
+  accent: "bg-primary",
   warning: "bg-warning",
-  gold: "bg-gold",
+  gold: "bg-accent",
   success: "bg-success",
   danger: "bg-danger",
 };
@@ -125,17 +125,17 @@ export function RecruitmentView() {
                 type="button"
                 onClick={() => setRoleId(r.id)}
                 className={cn(
-                  "inline-flex cursor-pointer items-center gap-2 rounded-lg px-3.5 py-1.5 text-[13px] font-medium transition",
+                  "inline-flex cursor-pointer items-center gap-2 rounded-lg px-3.5 py-1.5 text-body font-medium transition",
                   roleId === r.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {r.name}
-                <span className={cn("rounded-md px-1.5 text-[11px] tabular", roleId === r.id ? "bg-white/15" : "bg-muted")}>{count}</span>
+                <span className={cn("rounded-md px-1.5 text-body tabular", roleId === r.id ? "bg-white/15" : "bg-muted")}>{count}</span>
               </button>
             );
           })}
         </div>
-        <div className="text-[13px] text-muted-foreground">
+        <div className="text-body text-muted-foreground">
           Referrals make up <b className="text-foreground tabular">{Math.round((referrals / candidates.length) * 100)}%</b> of applicants
         </div>
       </div>
@@ -158,18 +158,18 @@ export function RecruitmentView() {
                 return (
                   <div key={st} className="flex w-[264px] shrink-0 flex-col rounded-2xl border border-border bg-muted/40">
                     <div className="flex items-center justify-between px-3.5 py-3">
-                      <div className="flex items-center gap-2 text-[13px] font-semibold">
+                      <div className="flex items-center gap-2 text-body font-semibold">
                         <span className={cn("size-2 rounded-full", dotCls[meta.tone])} />
                         {meta.label}
                       </div>
-                      <span className="rounded-md bg-card px-1.5 text-[11.5px] font-medium tabular text-muted-foreground">{col.length}</span>
+                      <span className="rounded-md bg-card px-1.5 text-body font-medium tabular text-muted-foreground">{col.length}</span>
                     </div>
                     <div className="flex min-h-40 flex-col gap-2.5 px-2.5 pb-2.5">
                       {col.map((c) => (
                         <CandidateCard key={c.id} c={c} onOpen={() => setOpenId(c.id)} onMove={move} />
                       ))}
                       {!col.length && (
-                        <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-border py-8 text-[12px] text-muted-foreground">
+                        <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-border py-8 text-body text-muted-foreground">
                           No candidates
                         </div>
                       )}
@@ -212,15 +212,15 @@ function CandidateCard({ c, onOpen, onMove }: { c: Candidate; onOpen: () => void
       onClick={onOpen}
       onKeyDown={(e) => e.key === "Enter" && onOpen()}
       className={cn(
-        "group cursor-pointer rounded-xl border border-border bg-card p-3 shadow-card transition hover:border-accent/40",
+        "group cursor-pointer rounded-xl border border-border bg-card p-3 shadow-card transition hover:border-primary/40",
         c.stage === "Rejected" && "opacity-70",
       )}
     >
       <div className="flex items-start gap-2.5">
         <Avatar name={c.name} size="sm" className="mt-0.5" />
         <div className="min-w-0 flex-1">
-          <div className="truncate text-[13px] font-semibold">{c.name}</div>
-          <div className="truncate text-[11.5px] text-muted-foreground">
+          <div className="truncate text-body font-semibold">{c.name}</div>
+          <div className="truncate text-body text-muted-foreground">
             {c.city} · {c.experience}
           </div>
         </div>
@@ -248,7 +248,7 @@ function CandidateCard({ c, onOpen, onMove }: { c: Candidate; onOpen: () => void
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <p className="mt-2 line-clamp-2 text-[12px] leading-snug text-muted-foreground">{c.highlight}</p>
+      <p className="mt-2 line-clamp-2 text-body leading-snug text-muted-foreground">{c.highlight}</p>
       <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
         <Badge tone={sourceTone[c.source]}>{c.source}</Badge>
         <Badge tone="outline" className="tabular">
@@ -258,19 +258,19 @@ function CandidateCard({ c, onOpen, onMove }: { c: Candidate; onOpen: () => void
       {(ev || next) && (
         <div className="mt-3 flex items-center justify-between border-t border-border pt-2.5">
           {ev ? (
-            <span className="text-[11.5px] text-muted-foreground">
+            <span className="text-body text-muted-foreground">
               <b className="font-semibold text-foreground tabular">{ev.total}/25</b> ·{" "}
               <span className={ev.rec === "Hire" ? "text-success" : ev.rec === "Hold" ? "text-warning" : "text-danger"}>{ev.rec}</span>
               {c.scorecard && !c.scorecard.submitted && " · draft"}
             </span>
           ) : (
-            <span className="text-[11.5px] text-muted-foreground">Not scored</span>
+            <span className="text-body text-muted-foreground">Not scored</span>
           )}
           {next && (
             <Button
               size="xs"
               variant="ghost"
-              className="h-6 px-2 text-[11.5px]"
+              className="h-6 px-2 text-body"
               onClick={(e) => {
                 e.stopPropagation();
                 onMove(c.id, next);

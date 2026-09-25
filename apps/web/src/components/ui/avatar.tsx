@@ -25,11 +25,11 @@ export function Avatar({
   className?: string;
 }) {
   const s = {
-    xs: "size-5 text-[9px]",
-    sm: "size-6 text-[10px]",
-    md: "size-8 text-xs",
-    lg: "size-10 text-sm",
-    xl: "size-14 text-lg",
+    xs: "size-5 text-body",
+    sm: "size-6 text-body",
+    md: "size-8 text-body",
+    lg: "size-10 text-body",
+    xl: "size-14 text-subheading",
   }[size];
   return (
     <span
@@ -54,7 +54,7 @@ export function AvatarStack({ names, max = 4, size = "sm" }: { names: string[]; 
         <Avatar key={n} name={n} size={size} />
       ))}
       {names.length > max && (
-        <span className="inline-flex size-6 items-center justify-center rounded-full bg-muted text-[10px] font-medium ring-2 ring-card">
+        <span className="inline-flex size-6 items-center justify-center rounded-full bg-muted text-body font-medium ring-2 ring-card">
           +{names.length - max}
         </span>
       )}

@@ -2,13 +2,13 @@ export const CATEGORIES = ["Production", "Meeting", "Revision", "Travel", "Train
 export type Category = (typeof CATEGORIES)[number];
 
 export const catMeta: Record<Category, { tone: "accent" | "info" | "gold" | "warning" | "success" | "danger" | "neutral"; color: string; productive: boolean }> = {
-  Production: { tone: "accent", color: "var(--accent)", productive: true },
-  Revision: { tone: "gold", color: "var(--gold)", productive: true },
-  Meeting: { tone: "info", color: "var(--info)", productive: false },
-  Travel: { tone: "warning", color: "var(--warning)", productive: false },
-  Training: { tone: "success", color: "var(--success)", productive: false },
-  "Client waiting": { tone: "danger", color: "var(--danger)", productive: false },
-  Internal: { tone: "neutral", color: "var(--chart-5)", productive: false },
+  Production: { tone: "accent", color: "var(--color-primary)", productive: true },
+  Revision: { tone: "gold", color: "var(--color-chart-3)", productive: true },
+  Meeting: { tone: "info", color: "var(--color-info)", productive: false },
+  Travel: { tone: "warning", color: "var(--color-warning)", productive: false },
+  Training: { tone: "success", color: "var(--color-success)", productive: false },
+  "Client waiting": { tone: "danger", color: "var(--color-danger)", productive: false },
+  Internal: { tone: "neutral", color: "var(--color-chart-5)", productive: false },
 };
 
 export type EntryStatus = "Draft" | "Submitted" | "Approved" | "Rejected";

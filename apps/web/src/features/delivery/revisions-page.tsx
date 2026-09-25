@@ -141,9 +141,9 @@ export function RevisionsPage() {
                 <Icon className="size-4.5" />
               </span>
               <div>
-                <div className="text-[14px] font-semibold">{m.label}</div>
-                <div className="text-[12.5px] text-muted-foreground">{m.rule}</div>
-                <div className="mt-1.5 text-[12px] font-medium">{m.effect}</div>
+                <div className="text-body font-semibold">{m.label}</div>
+                <div className="text-body text-muted-foreground">{m.rule}</div>
+                <div className="mt-1.5 text-body font-medium">{m.effect}</div>
               </div>
             </Card>
           );
@@ -198,22 +198,22 @@ export function RevisionsPage() {
                 return (
                   <TR key={cr.id}>
                     <TD className="pl-5">
-                      <div className="font-mono text-[11.5px] text-muted-foreground">{video?.code ?? "New request"}</div>
+                      <div className="font-mono text-body text-muted-foreground">{video?.code ?? "New request"}</div>
                       <div className="max-w-[200px] truncate font-medium">{video?.title ?? "Client portal request"}</div>
-                      <div className="text-[12px] text-muted-foreground">{client?.name}</div>
+                      <div className="text-body text-muted-foreground">{client?.name}</div>
                     </TD>
                     <TD>
                       <Badge tone={km.tone}>{km.short}</Badge>
                     </TD>
                     <TD className="max-w-[280px]">
-                      <div className="line-clamp-2 text-[12.5px]">{cr.summary}</div>
-                      <div className="mt-0.5 text-[11px] text-muted-foreground">Logged {fmtDate(cr.createdAt)}</div>
+                      <div className="line-clamp-2 text-body">{cr.summary}</div>
+                      <div className="mt-0.5 text-body text-muted-foreground">Logged {fmtDate(cr.createdAt)}</div>
                     </TD>
                     <TD className="text-right tabular">
                       {cr.estimate !== undefined ? (
                         <div>
                           <div className="font-medium">{inr(cr.estimate)}</div>
-                          <div className="text-[11px] text-muted-foreground">
+                          <div className="text-body text-muted-foreground">
                             {cr.kind === "agency-correction" ? "rework cost" : `+${cr.dateImpactDays ?? 0} days`}
                           </div>
                         </div>
@@ -293,19 +293,19 @@ export function RevisionsPage() {
                       ))}
                     </Pie>
                     <RTooltip
-                      contentStyle={{ background: "var(--popover)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 12 }}
-                      itemStyle={{ color: "var(--foreground)" }}
+                      contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 10, fontSize: 12 }}
+                      itemStyle={{ color: "var(--color-foreground)" }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-[22px] font-semibold tabular">{donutTotal}</span>
-                  <span className="text-[11px] text-muted-foreground">revisions</span>
+                  <span className="text-heading font-semibold tabular">{donutTotal}</span>
+                  <span className="text-body text-muted-foreground">revisions</span>
                 </div>
               </div>
               <div className="mt-3 space-y-1.5">
                 {donut.map((d) => (
-                  <div key={d.kind} className="flex items-center gap-2 text-[12.5px]">
+                  <div key={d.kind} className="flex items-center gap-2 text-body">
                     <span className="size-2 rounded-full" style={{ background: d.color }} />
                     <span className="flex-1">{d.name}</span>
                     <span className="tabular text-muted-foreground">{Math.round((d.value / donutTotal) * 100)}%</span>
@@ -314,12 +314,12 @@ export function RevisionsPage() {
                 ))}
               </div>
               <div className="mt-4 border-t border-border pt-3">
-                <div className="mb-1.5 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Top root causes</div>
+                <div className="mb-1.5 text-body font-medium uppercase tracking-wider text-muted-foreground">Top root causes</div>
                 {[...revisionCauseBaseline]
                   .sort((a, b) => b.count - a.count)
                   .slice(0, 4)
                   .map((c) => (
-                    <div key={c.cause} className="flex justify-between py-0.5 text-[12.5px]">
+                    <div key={c.cause} className="flex justify-between py-0.5 text-body">
                       <span className="text-muted-foreground">{c.cause}</span>
                       <span className="tabular">{c.count}</span>
                     </div>
@@ -336,17 +336,17 @@ export function RevisionsPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-2.5">
-              {inRevision.length === 0 && <p className="text-[12.5px] text-muted-foreground">No videos in revision.</p>}
+              {inRevision.length === 0 && <p className="text-body text-muted-foreground">No videos in revision.</p>}
               {inRevision.map((v) => {
                 const allow = agreementById(v.agreementId).revisionsPerDeliverable;
                 return (
                   <div key={v.id} className="rounded-xl border border-border p-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-[11.5px] text-muted-foreground">{v.code}</span>
+                      <span className="font-mono text-body text-muted-foreground">{v.code}</span>
                       <StageBadge stage={v.stage} />
                     </div>
-                    <div className="mt-1 truncate text-[13px] font-medium">{v.title}</div>
-                    <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted-foreground">
+                    <div className="mt-1 truncate text-body font-medium">{v.title}</div>
+                    <div className="mt-1 flex items-center gap-2 text-body text-muted-foreground">
                       <Clock className="size-3" /> Due {fmtDate(v.dueDate)} · rounds {v.revisionsUsed}/{allow}
                     </div>
                     <Button size="xs" variant="soft" className="mt-2.5 w-full" onClick={() => sendNextVersion(v.id)}>
@@ -377,7 +377,7 @@ export function RevisionsPage() {
                 <Input type="number" value={estDays} onChange={(e) => setEstDays(e.target.value)} />
               </Field>
             </div>
-            <p className="rounded-xl bg-warning-soft p-3 text-[12.5px] text-warning">
+            <p className="rounded-xl bg-warning-soft p-3 text-body text-warning">
               The client sees this in their Client Hub and must approve it. No billable work starts until they do.
             </p>
           </DialogBody>

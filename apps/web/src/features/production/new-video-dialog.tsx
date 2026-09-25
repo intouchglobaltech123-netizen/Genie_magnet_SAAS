@@ -87,12 +87,12 @@ export function NewVideoDialog({ open, onOpenChange, defaultDue }: { open: boole
         <DialogBody className="space-y-4">
           <div className="flex items-center justify-between rounded-xl border border-dashed border-border bg-muted/50 px-4 py-3">
             <div>
-              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Video code (auto)</div>
-              <div className="mt-0.5 font-mono text-lg font-semibold tracking-wide">{code}</div>
+              <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Video code (auto)</div>
+              <div className="mt-0.5 font-mono text-subheading font-semibold tracking-wide">{code}</div>
             </div>
-            <div className="text-right text-[12px] text-muted-foreground">
+            <div className="text-right text-body text-muted-foreground">
               <div className="inline-flex items-center gap-1">
-                <Sparkles className="size-3.5 text-accent" /> Client · MMYY · sequence
+                <Sparkles className="size-3.5 text-primary" /> Client · MMYY · sequence
               </div>
               <div className="mt-0.5">Cycle: {cycle.label}</div>
             </div>
@@ -141,8 +141,8 @@ export function NewVideoDialog({ open, onOpenChange, defaultDue }: { open: boole
                     type="button"
                     onClick={() => setUrgency(u)}
                     className={cn(
-                      "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-left text-[13px] transition",
-                      urgency === u ? "border-accent bg-accent-soft/60 ring-2 ring-accent/20" : "border-border hover:bg-muted",
+                      "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-left text-body transition",
+                      urgency === u ? "border-primary bg-primary-soft/60 ring-2 ring-primary/20" : "border-border hover:bg-muted",
                     )}
                   >
                     <span className={cn("inline-flex size-6 items-center justify-center rounded-md", m.cls)}>

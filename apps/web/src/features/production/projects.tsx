@@ -33,7 +33,7 @@ const statusMeta: Record<TaskStatus, { label: string; tone: BadgeTone }> = {
   blocked: { label: "Blocked", tone: "danger" },
 };
 const prioTone: Record<GenTask["priority"], BadgeTone> = { High: "danger", Medium: "warning", Low: "outline" };
-const dotCls: Record<TaskStatus, string> = { done: "bg-success", "in-progress": "bg-accent", todo: "bg-muted-foreground/25", blocked: "bg-danger" };
+const dotCls: Record<TaskStatus, string> = { done: "bg-success", "in-progress": "bg-primary", todo: "bg-muted-foreground/25", blocked: "bg-danger" };
 
 export function ProjectsView() {
   useProductionHydration();
@@ -130,9 +130,9 @@ export function ProjectsView() {
           />
         )}
         {mode === "mine" && (
-          <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+          <div className="flex items-center gap-2 text-body text-muted-foreground">
             <Avatar name={personById(me).name} size="sm" />
-            <Select className="h-8 w-52 text-[13px]" value={me} onValueChange={setPicked} options={owners.map((o) => ({ value: o, label: personById(o).name }))} />
+            <Select className="h-8 w-52 text-body" value={me} onValueChange={setPicked} options={owners.map((o) => ({ value: o, label: personById(o).name }))} />
             <span>accountable tasks · signed in as {roleLabels[role].label}</span>
           </div>
         )}
@@ -162,8 +162,8 @@ export function ProjectsView() {
                     </TD>
                     <TD className="font-medium">{t.name}</TD>
                     <TD>
-                      <Link href={`/production/${v.id}`} className="hover:text-accent">
-                        <span className="font-mono text-[11.5px] text-muted-foreground">{v.code}</span> {v.title}
+                      <Link href={`/production/${v.id}`} className="hover:text-primary">
+                        <span className="font-mono text-body text-muted-foreground">{v.code}</span> {v.title}
                       </Link>
                     </TD>
                     <TD className="text-muted-foreground">{t.dependsOn ?? "—"}</TD>
@@ -191,7 +191,7 @@ export function ProjectsView() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {!projects.length && <Card className="py-14 text-center text-[13px] text-muted-foreground">No deliverables planned for {cycleLabel} yet.</Card>}
+          {!projects.length && <Card className="py-14 text-center text-body text-muted-foreground">No deliverables planned for {cycleLabel} yet.</Card>}
           {projects.map(({ cy, ag, vids, tasks }) => {
             const c = clientById(cy.clientId);
             const done = tasks.filter((t) => t.status === "done").length;
@@ -201,12 +201,12 @@ export function ProjectsView() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <ClientTag clientId={c.id} />
-                      <span className="text-[12px] text-muted-foreground">{cy.label} cycle</span>
+                      <span className="text-body text-muted-foreground">{cy.label} cycle</span>
                     </div>
-                    <div className="mt-1 text-[15px] font-semibold tracking-tight">{ag.title}</div>
+                    <div className="mt-1 text-subheading font-semibold tracking-tight">{ag.title}</div>
                   </div>
                   <div className="w-48">
-                    <div className="mb-1 flex justify-between text-[11.5px] text-muted-foreground">
+                    <div className="mb-1 flex justify-between text-body text-muted-foreground">
                       <span>Tasks</span>
                       <span className="tabular">
                         {done}/{tasks.length}
@@ -214,7 +214,7 @@ export function ProjectsView() {
                     </div>
                     <Progress value={(done / Math.max(1, tasks.length)) * 100} tone="success" />
                   </div>
-                  <div className="text-right text-[12px]">
+                  <div className="text-right text-body">
                     <div className="text-muted-foreground">Deliverables</div>
                     <div className="font-semibold tabular">
                       {cy.delivered}/{cy.promised}
@@ -251,7 +251,7 @@ export function ProjectsView() {
                             </TD>
                             <TD>
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-[11.5px] text-muted-foreground">{v.code}</span>
+                                <span className="font-mono text-body text-muted-foreground">{v.code}</span>
                                 <span className="font-medium">{v.title}</span>
                                 <UrgencyIcon urgency={v.urgency} />
                               </div>
@@ -279,13 +279,13 @@ export function ProjectsView() {
                                 </TD>
                                 <TD className={cn("pl-6", t.status === "done" && "text-muted-foreground line-through")}>{t.name}</TD>
                                 <TD>
-                                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-[12.5px]">
+                                  <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-body">
                                     <Avatar name={personById(t.ownerId).name} size="xs" />
                                     {personById(t.ownerId).name}
                                   </span>
                                 </TD>
                                 <TD>{t.contributors.length ? <AvatarStack names={t.contributors.map((x) => personById(x).name)} size="xs" /> : <span className="text-muted-foreground">—</span>}</TD>
-                                <TD className="text-[12.5px] text-muted-foreground">
+                                <TD className="text-body text-muted-foreground">
                                   {t.dependsOn ? (
                                     <span className="inline-flex items-center gap-1">
                                       <ArrowRight className="size-3" /> {t.dependsOn}

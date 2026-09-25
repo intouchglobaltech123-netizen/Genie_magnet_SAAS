@@ -60,13 +60,13 @@ export function OverheadPools() {
                       <TD colSpan={5} className="py-3 pl-11 pr-5">
                         <div className="space-y-1">
                           {p.items.map((i) => (
-                            <div key={i.label} className="flex justify-between text-[12.5px]">
+                            <div key={i.label} className="flex justify-between text-body">
                               <span className="text-muted-foreground">{i.label}</span>
                               <span className="tabular">{inr(i.amount * factor)}</span>
                             </div>
                           ))}
                           {p.note && (
-                            <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-info-soft px-2.5 py-1.5 text-[12px] text-info">
+                            <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-info-soft px-2.5 py-1.5 text-body text-info">
                               <Info className="mt-0.5 size-3.5 shrink-0" />
                               {p.note}
                             </div>
@@ -116,18 +116,18 @@ function AllocationFlow({ factor }: { factor: number }) {
       </CardHeader>
       <CardContent className="space-y-2">
         {steps.map((s, i) => (
-          <div key={s.k} className={cn("flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5", s.strong && "border-accent/40 bg-accent-soft/50")}>
+          <div key={s.k} className={cn("flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5", s.strong && "border-primary/40 bg-primary-soft/50")}>
             <div className="flex items-center gap-2.5">
-              <span className="flex size-5 items-center justify-center rounded-full bg-muted text-[10px] font-semibold text-muted-foreground">{i + 1}</span>
+              <span className="flex size-5 items-center justify-center rounded-full bg-muted text-body font-semibold text-muted-foreground">{i + 1}</span>
               <div>
-                <div className="text-[13px] font-medium">{s.k}</div>
-                <div className="text-[11px] text-muted-foreground">{s.sub}</div>
+                <div className="text-body font-medium">{s.k}</div>
+                <div className="text-body text-muted-foreground">{s.sub}</div>
               </div>
             </div>
-            <span className={cn("tabular", s.strong ? "text-[16px] font-semibold text-accent" : "font-medium")}>{s.v}</span>
+            <span className={cn("tabular", s.strong ? "text-subheading font-semibold text-primary" : "font-medium")}>{s.v}</span>
           </div>
         ))}
-        <div className="flex items-start gap-2 rounded-xl bg-muted/60 p-3 text-[12px] text-muted-foreground">
+        <div className="flex items-start gap-2 rounded-xl bg-muted/60 p-3 text-body text-muted-foreground">
           <ArrowRight className="mt-0.5 size-3.5 shrink-0" />
           No double counting: founder remuneration is excluded, and Ashwin&apos;s hours logged directly on a video are charged as labour — only his unlogged share sits in the Management pool.
         </div>
@@ -164,12 +164,12 @@ function EquipmentRates() {
             const hero = a.id === "as-01";
             const life = hero ? sc.cameraLifeYears : a.usefulLifeYears;
             return (
-              <TR key={a.id} className={cn(hero && "bg-gold-soft/50 hover:bg-gold-soft/60")}>
+              <TR key={a.id} className={cn(hero && "bg-accent-soft/50 hover:bg-accent-soft/60")}>
                 <TD className="pl-5">
                   <div className="font-medium">{a.name}</div>
-                  <div className="font-mono text-[11px] text-muted-foreground">
+                  <div className="font-mono text-body text-muted-foreground">
                     {a.tag} · {a.category}
-                    {hero && <span className="ml-1.5 font-sans text-gold">worked example</span>}
+                    {hero && <span className="ml-1.5 font-sans text-accent-strong">worked example</span>}
                   </div>
                 </TD>
                 <TD className="text-right tabular">{inr(a.purchaseValue)}</TD>

@@ -29,7 +29,7 @@ export function FounderDashboard() {
       <PageHeader
         eyebrow={
           <span className="inline-flex items-center gap-1.5">
-            <Sparkles className="size-3.5 text-accent" /> {todayLabel}
+            <Sparkles className="size-3.5 text-primary" /> {todayLabel}
           </span>
         }
         title="Good morning, Janarthanan"

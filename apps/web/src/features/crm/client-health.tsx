@@ -19,10 +19,10 @@ import { axisProps, tooltipStyle } from "@/features/overview/chart-style";
 import { useCrmDemo } from "./crm-store";
 
 const catColor: Record<CustomerCategory, string> = {
-  Awesome: "var(--success)",
-  Breadwinning: "var(--chart-1)",
-  Convincing: "var(--warning)",
-  Dangerous: "var(--danger)",
+  Awesome: "var(--color-success)",
+  Breadwinning: "var(--color-chart-1)",
+  Convincing: "var(--color-warning)",
+  Dangerous: "var(--color-danger)",
 };
 
 const factorDefs: { key: keyof (typeof healthFactors)[string]; label: string; invert?: boolean }[] = [
@@ -53,16 +53,16 @@ export function ClientHealth() {
             const list = clients.filter((c) => c.category === cat);
             return (
               <Card key={cat} className="flex items-center gap-3 p-4">
-                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-[16px] font-bold text-white" style={{ background: catColor[cat] }}>
+                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-subheading font-bold text-white" style={{ background: catColor[cat] }}>
                   {categoryMeta[cat].letter}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[13.5px] font-semibold">{cat}</div>
-                  <div className="text-[12px] text-muted-foreground">{categoryMeta[cat].desc}</div>
+                  <div className="text-body font-semibold">{cat}</div>
+                  <div className="text-body text-muted-foreground">{categoryMeta[cat].desc}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[15px] font-semibold tabular">{list.length}</div>
-                  <div className="text-[11px] text-muted-foreground">{list.map((c) => c.code).join(" · ") || "—"}</div>
+                  <div className="text-subheading font-semibold tabular">{list.length}</div>
+                  <div className="text-body text-muted-foreground">{list.map((c) => c.code).join(" · ") || "—"}</div>
                 </div>
               </Card>
             );
@@ -92,19 +92,19 @@ function Matrix() {
         <div className="relative h-[340px]">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 16, bottom: 20, left: 0 }}>
-              <ReferenceArea x1={0} x2={50} y1={50} y2={100} fill="var(--success)" fillOpacity={0.05} />
-              <ReferenceArea x1={50} x2={100} y1={50} y2={100} fill="var(--chart-1)" fillOpacity={0.05} />
-              <ReferenceArea x1={0} x2={50} y1={0} y2={50} fill="var(--warning)" fillOpacity={0.05} />
-              <ReferenceArea x1={50} x2={100} y1={0} y2={50} fill="var(--danger)" fillOpacity={0.06} />
-              <CartesianGrid stroke="var(--border)" strokeDasharray="3 3" />
-              <ReferenceLine x={50} stroke="var(--border)" strokeWidth={1.5} />
-              <ReferenceLine y={50} stroke="var(--border)" strokeWidth={1.5} />
-              <XAxis type="number" dataKey="effort" domain={[0, 100]} {...axisProps} label={{ value: "Effort to serve →", position: "insideBottom", offset: -12, fill: "var(--muted-foreground)", fontSize: 11 }} />
-              <YAxis type="number" dataKey="return" domain={[0, 100]} {...axisProps} width={40} label={{ value: "Return →", angle: -90, position: "insideLeft", offset: 14, fill: "var(--muted-foreground)", fontSize: 11 }} />
+              <ReferenceArea x1={0} x2={50} y1={50} y2={100} fill="var(--color-success)" fillOpacity={0.05} />
+              <ReferenceArea x1={50} x2={100} y1={50} y2={100} fill="var(--color-chart-1)" fillOpacity={0.05} />
+              <ReferenceArea x1={0} x2={50} y1={0} y2={50} fill="var(--color-warning)" fillOpacity={0.05} />
+              <ReferenceArea x1={50} x2={100} y1={0} y2={50} fill="var(--color-danger)" fillOpacity={0.06} />
+              <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" />
+              <ReferenceLine x={50} stroke="var(--color-border)" strokeWidth={1.5} />
+              <ReferenceLine y={50} stroke="var(--color-border)" strokeWidth={1.5} />
+              <XAxis type="number" dataKey="effort" domain={[0, 100]} {...axisProps} label={{ value: "Effort to serve →", position: "insideBottom", offset: -12, fill: "var(--color-muted-foreground)", fontSize: 11 }} />
+              <YAxis type="number" dataKey="return" domain={[0, 100]} {...axisProps} width={40} label={{ value: "Return →", angle: -90, position: "insideLeft", offset: 14, fill: "var(--color-muted-foreground)", fontSize: 11 }} />
               <ZAxis type="number" dataKey="value" range={[260, 900]} />
               <Tooltip
                 {...tooltipStyle}
-                cursor={{ strokeDasharray: "3 3", stroke: "var(--border)" }}
+                cursor={{ strokeDasharray: "3 3", stroke: "var(--color-border)" }}
                 content={({ payload }) => {
                   const p = payload?.[0]?.payload as (typeof data)[number] | undefined;
                   if (!p) return null;
@@ -126,7 +126,7 @@ function Matrix() {
                   return (
                     <g>
                       <circle cx={cx} cy={cy} r={r} fill={catColor[payload.category]} fillOpacity={0.22} stroke={catColor[payload.category]} strokeWidth={1.5} />
-                      <text x={cx} y={cy + 3.5} textAnchor="middle" fontSize={10} fontWeight={700} fill="var(--foreground)">
+                      <text x={cx} y={cy + 3.5} textAnchor="middle" fontSize={10} fontWeight={700} fill="var(--color-foreground)">
                         {payload.code}
                       </text>
                     </g>
@@ -147,7 +147,7 @@ function Matrix() {
 
 function QuadLabel({ className, text, color }: { className: string; text: string; color: string }) {
   return (
-    <span className={cn("pointer-events-none absolute text-[10.5px] font-semibold uppercase tracking-wider", className)} style={{ color }}>
+    <span className={cn("pointer-events-none absolute text-body font-semibold uppercase tracking-wider", className)} style={{ color }}>
       {text}
     </span>
   );
@@ -160,23 +160,23 @@ function ClientCard({ clientId }: { clientId: string }) {
   const renewIn = daysBetween(TODAY, a.endDate);
   const actions = recoveryActions[c.id];
   const danger = c.category === "Dangerous";
-  const tone = c.health >= 80 ? "var(--success)" : c.health >= 60 ? "var(--warning)" : "var(--danger)";
+  const tone = c.health >= 80 ? "var(--color-success)" : c.health >= 60 ? "var(--color-warning)" : "var(--color-danger)";
   return (
     <Card className={cn(danger && "border-danger/40")}>
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="relative size-14 shrink-0">
             <svg viewBox="0 0 36 36" className="size-14 -rotate-90">
-              <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--muted)" strokeWidth="3" />
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--color-muted)" strokeWidth="3" />
               <circle cx="18" cy="18" r="15.5" fill="none" stroke={tone} strokeWidth="3" strokeLinecap="round" strokeDasharray={`${(c.health / 100) * 97.4} 97.4`} />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-[15px] font-semibold tabular">{c.health}</span>
+            <span className="absolute inset-0 flex items-center justify-center text-subheading font-semibold tabular">{c.health}</span>
           </div>
           <div>
-            <CardTitle className="text-[16px]">{c.name}</CardTitle>
+            <CardTitle className="text-subheading">{c.name}</CardTitle>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <CategoryBadge category={c.category} />
-              <span className="text-[12px] text-muted-foreground">
+              <span className="text-body text-muted-foreground">
                 {c.industry} · {c.city}
               </span>
             </div>
@@ -189,14 +189,14 @@ function ClientCard({ clientId }: { clientId: string }) {
         </Button>
       </CardHeader>
       <CardContent>
-        <p className="mb-4 text-[12.5px] text-muted-foreground">{categoryMeta[c.category].desc}</p>
+        <p className="mb-4 text-body text-muted-foreground">{categoryMeta[c.category].desc}</p>
         <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
           {factorDefs.map((fd) => {
             const raw = f[fd.key];
             const good = fd.invert ? 100 - raw : raw;
             return (
               <div key={fd.key}>
-                <div className="mb-1 flex justify-between text-[12px]">
+                <div className="mb-1 flex justify-between text-body">
                   <span className="text-muted-foreground">{fd.label}</span>
                   <span className="font-medium tabular">{fd.invert ? (raw >= 70 ? "High" : raw >= 40 ? "Medium" : "Low") : raw}</span>
                 </div>
@@ -210,16 +210,16 @@ function ClientCard({ clientId }: { clientId: string }) {
             );
           })}
         </div>
-        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4 text-[12px]">
+        <div className="mt-4 grid grid-cols-3 gap-3 border-t border-border pt-4 text-body">
           <div>
             <div className="text-muted-foreground">Monthly value</div>
-            <div className="mt-0.5 text-[14px] font-semibold tabular">{inr(c.monthlyValue)}</div>
+            <div className="mt-0.5 text-body font-semibold tabular">{inr(c.monthlyValue)}</div>
           </div>
           <div>
             <div className="flex items-center gap-1 text-muted-foreground">
               <Wallet className="size-3" /> Outstanding
             </div>
-            <div className={cn("mt-0.5 text-[14px] font-semibold tabular", c.outstanding >= 90000 ? "text-danger" : c.outstanding ? "text-warning" : "text-success")}>
+            <div className={cn("mt-0.5 text-body font-semibold tabular", c.outstanding >= 90000 ? "text-danger" : c.outstanding ? "text-warning" : "text-success")}>
               {c.outstanding ? inr(c.outstanding) : "Nil"}
             </div>
           </div>
@@ -227,8 +227,8 @@ function ClientCard({ clientId }: { clientId: string }) {
             <div className="flex items-center gap-1 text-muted-foreground">
               <CalendarClock className="size-3" /> Renewal
             </div>
-            <div className={cn("mt-0.5 text-[14px] font-semibold", renewIn <= 45 && "text-warning")}>
-              {format(parseISO(a.endDate), "d MMM yy")} <span className="text-[11px] font-normal text-muted-foreground">({renewIn}d)</span>
+            <div className={cn("mt-0.5 text-body font-semibold", renewIn <= 45 && "text-warning")}>
+              {format(parseISO(a.endDate), "d MMM yy")} <span className="text-body font-normal text-muted-foreground">({renewIn}d)</span>
             </div>
           </div>
         </div>
@@ -244,10 +244,10 @@ function RecoveryPlan({ clientId, name, actions, danger }: { clientId: string; n
   return (
     <div className={cn("mt-4 rounded-xl border p-3.5", danger ? "border-danger/30 bg-danger-soft/50" : "border-warning/30 bg-warning-soft/50")}>
       <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-1.5 text-[12.5px] font-semibold">
+        <div className="flex items-center gap-1.5 text-body font-semibold">
           <AlertOctagon className={cn("size-4", danger ? "text-danger" : "text-warning")} /> {danger ? "Recovery plan" : "Improvement actions"}
         </div>
-        <span className="text-[11.5px] text-muted-foreground tabular">
+        <span className="text-body text-muted-foreground tabular">
           {actions.filter((_, i) => resolved.includes(`${clientId}-rec-${i}`)).length}/{actions.length} done
         </span>
       </div>
@@ -267,7 +267,7 @@ function RecoveryPlan({ clientId, name, actions, danger }: { clientId: string; n
                 }}
                 className="mt-0.5"
               />
-              <span className={cn("text-[12.5px]", done && "text-muted-foreground line-through")}>{t}</span>
+              <span className={cn("text-body", done && "text-muted-foreground line-through")}>{t}</span>
             </li>
           );
         })}

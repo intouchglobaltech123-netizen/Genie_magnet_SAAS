@@ -47,8 +47,8 @@ export function Poster({
       )}
       {showMeta && (
         <div className="absolute left-3 top-3 flex gap-1.5">
-          <span className="rounded bg-black/45 px-1.5 py-0.5 text-[10.5px] font-medium text-white/90 backdrop-blur">{video.format}</span>
-          <span className="rounded bg-black/45 px-1.5 py-0.5 font-mono text-[10.5px] text-white/80 backdrop-blur">{video.aspect}</span>
+          <span className="rounded bg-black/45 px-1.5 py-0.5 text-body font-medium text-white/90 backdrop-blur">{video.format}</span>
+          <span className="rounded bg-black/45 px-1.5 py-0.5 font-mono text-body text-white/80 backdrop-blur">{video.aspect}</span>
         </div>
       )}
       {showPlay && (
@@ -64,7 +64,7 @@ export function Poster({
         </div>
       )}
       {showMeta && size !== "sm" && (
-        <div className="absolute inset-x-3 bottom-3 truncate text-[12px] font-medium text-white/85 drop-shadow">{video.title}</div>
+        <div className="absolute inset-x-3 bottom-3 truncate text-body font-medium text-white/85 drop-shadow">{video.title}</div>
       )}
     </div>
   );

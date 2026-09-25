@@ -31,7 +31,7 @@ export function CadenceLanes() {
             .sort((a, b) => b.date.localeCompare(a.date))[0];
           const mins = agendas[c.id].reduce((s, a) => s + a.minutes, 0);
           return (
-            <Card key={c.id} className={cn("flex flex-col p-5", c.mandatory && "border-gold/40")}>
+            <Card key={c.id} className={cn("flex flex-col p-5", c.mandatory && "border-accent/40")}>
               <div className="flex items-start justify-between gap-2">
                 <CadenceLetter cadence={c.id} letter={c.letter} />
                 <div className="flex flex-wrap justify-end gap-1">
@@ -44,18 +44,18 @@ export function CadenceLanes() {
                 </div>
               </div>
               <div className="mt-3">
-                <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{c.stop}</div>
-                <h3 className="mt-0.5 text-[15px] font-semibold tracking-tight">{c.name}</h3>
-                <p className="mt-1 text-[12.5px] leading-relaxed text-muted-foreground">{c.purpose}</p>
+                <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">{c.stop}</div>
+                <h3 className="mt-0.5 text-subheading font-semibold tracking-tight">{c.name}</h3>
+                <p className="mt-1 text-body leading-relaxed text-muted-foreground">{c.purpose}</p>
               </div>
               <div className="mt-3 flex flex-wrap gap-1">
                 {c.focus.map((f) => (
-                  <span key={f} className="rounded-md bg-muted px-1.5 py-0.5 text-[11px] font-medium">
+                  <span key={f} className="rounded-md bg-muted px-1.5 py-0.5 text-body font-medium">
                     {f}
                   </span>
                 ))}
               </div>
-              <div className="mt-4 space-y-1.5 border-t border-border pt-3 text-[12px]">
+              <div className="mt-4 space-y-1.5 border-t border-border pt-3 text-body">
                 <div className="flex items-center justify-between text-muted-foreground">
                   <span className="inline-flex items-center gap-1.5">
                     <Clock className="size-3.5" /> {c.duration}
@@ -125,17 +125,17 @@ function TemplateEditor({ cadence: c, onClose }: { cadence: Cadence; onClose: ()
       </DialogHeader>
       <DialogBody className="space-y-6">
         <section>
-          <h4 className="mb-1.5 text-[12px] font-medium uppercase tracking-wider text-muted-foreground">Purpose</h4>
-          <p className="text-[13.5px] leading-relaxed">{c.purpose}</p>
+          <h4 className="mb-1.5 text-body font-medium uppercase tracking-wider text-muted-foreground">Purpose</h4>
+          <p className="text-body leading-relaxed">{c.purpose}</p>
         </section>
 
         <section>
-          <h4 className="mb-2 flex items-center gap-1.5 text-[12px] font-medium uppercase tracking-wider text-muted-foreground">
+          <h4 className="mb-2 flex items-center gap-1.5 text-body font-medium uppercase tracking-wider text-muted-foreground">
             <Users className="size-3.5" /> Participants · facilitator {personById(c.facilitatorId).name}
           </h4>
           <div className="flex flex-wrap gap-1.5">
             {c.participantIds.map((p) => (
-              <span key={p} className="rounded-md border border-border px-2 py-0.5 text-[12px]">
+              <span key={p} className="rounded-md border border-border px-2 py-0.5 text-body">
                 {personById(p).name}
               </span>
             ))}
@@ -144,25 +144,25 @@ function TemplateEditor({ cadence: c, onClose }: { cadence: Cadence; onClose: ()
 
         <section>
           <div className="mb-2 flex items-center justify-between">
-            <h4 className="text-[12px] font-medium uppercase tracking-wider text-muted-foreground">Agenda template</h4>
-            <span className="text-[12px] text-muted-foreground tabular">{total} min total</span>
+            <h4 className="text-body font-medium uppercase tracking-wider text-muted-foreground">Agenda template</h4>
+            <span className="text-body text-muted-foreground tabular">{total} min total</span>
           </div>
           <div className="space-y-1.5">
             {items.map((it, i) => (
               <div key={it.title + i} className="group flex items-center gap-2 rounded-lg border border-border bg-card px-2.5 py-2">
-                <span className="w-5 text-center text-[12px] font-semibold text-muted-foreground tabular">{i + 1}</span>
+                <span className="w-5 text-center text-body font-semibold text-muted-foreground tabular">{i + 1}</span>
                 <Input
                   value={it.title}
                   onChange={(e) => setItems(items.map((x, k) => (k === i ? { ...x, title: e.target.value } : x)))}
-                  className="h-7 flex-1 border-transparent bg-transparent px-1.5 text-[13px] hover:border-input"
+                  className="h-7 flex-1 border-transparent bg-transparent px-1.5 text-body hover:border-input"
                 />
                 <Input
                   type="number"
                   value={it.minutes}
                   onChange={(e) => setItems(items.map((x, k) => (k === i ? { ...x, minutes: Number(e.target.value) || 0 } : x)))}
-                  className="h-7 w-16 px-1.5 text-right text-[12.5px] tabular"
+                  className="h-7 w-16 px-1.5 text-right text-body tabular"
                 />
-                <span className="text-[11px] text-muted-foreground">min</span>
+                <span className="text-body text-muted-foreground">min</span>
                 <div className="flex opacity-50 transition group-hover:opacity-100">
                   <Button variant="ghost" size="icon-sm" className="size-7" onClick={() => move(i, -1)} aria-label="Move up">
                     <ArrowUp className="!size-3.5" />
@@ -185,7 +185,7 @@ function TemplateEditor({ cadence: c, onClose }: { cadence: Cadence; onClose: ()
                 setDraft("");
               }}
             >
-              <Input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Add agenda item…" className="h-8 text-[13px]" />
+              <Input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="Add agenda item…" className="h-8 text-body" />
               <Button type="submit" variant="outline" size="sm">
                 <Plus /> Add
               </Button>
@@ -194,10 +194,10 @@ function TemplateEditor({ cadence: c, onClose }: { cadence: Cadence; onClose: ()
         </section>
 
         <section>
-          <h4 className="mb-2 flex items-center gap-1.5 text-[12px] font-medium uppercase tracking-wider text-muted-foreground">
+          <h4 className="mb-2 flex items-center gap-1.5 text-body font-medium uppercase tracking-wider text-muted-foreground">
             <Database className="size-3.5" /> Prefilled data blocks
           </h4>
-          <p className="mb-2 text-[12px] text-muted-foreground">Pulled from live modules when the meeting opens; frozen when the record is locked.</p>
+          <p className="mb-2 text-body text-muted-foreground">Pulled from live modules when the meeting opens; frozen when the record is locked.</p>
           <div className="flex flex-wrap gap-1.5">
             {c.dataBlocks.map((b) => {
               const on = blocks.includes(b);
@@ -206,8 +206,8 @@ function TemplateEditor({ cadence: c, onClose }: { cadence: Cadence; onClose: ()
                   key={b}
                   onClick={() => setBlocks(on ? blocks.filter((x) => x !== b) : [...blocks, b])}
                   className={cn(
-                    "cursor-pointer rounded-lg border px-2.5 py-1 text-[12px] transition",
-                    on ? "border-accent/40 bg-accent-soft text-accent" : "border-border text-muted-foreground line-through",
+                    "cursor-pointer rounded-lg border px-2.5 py-1 text-body transition",
+                    on ? "border-primary/40 bg-primary-soft text-primary" : "border-border text-muted-foreground line-through",
                   )}
                 >
                   {b}

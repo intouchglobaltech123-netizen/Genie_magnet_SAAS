@@ -41,17 +41,17 @@ function MyVideos() {
             <Link key={v.id} href={`/production/${v.id}`} className="flex items-center gap-3 py-3 first:pt-0 hover:opacity-90">
               <UrgencyIcon urgency={v.urgency} />
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[13px] font-medium">{v.title}</div>
-                <div className="text-[11.5px] text-muted-foreground">
+                <div className="truncate text-body font-medium">{v.title}</div>
+                <div className="text-body text-muted-foreground">
                   <span className="font-mono">{v.code}</span> · {clientById(v.clientId).name}
                 </div>
               </div>
               <div className="hidden w-32 sm:block">
-                <div className="mb-1 text-[11px] text-muted-foreground tabular">{done}/9 edit steps</div>
+                <div className="mb-1 text-body text-muted-foreground tabular">{done}/9 edit steps</div>
                 <Progress value={(done / 9) * 100} />
               </div>
               <StageBadge stage={v.stage} />
-              <span className={cn("w-20 text-right text-[12px] tabular", isOverdue(v) ? "font-medium text-danger" : days <= 1 ? "text-warning" : "text-muted-foreground")}>
+              <span className={cn("w-20 text-right text-body tabular", isOverdue(v) ? "font-medium text-danger" : days <= 1 ? "text-warning" : "text-muted-foreground")}>
                 {isOverdue(v) ? `${-days}d late` : days === 0 ? "Due today" : `Due ${fmtDate(v.dueDate)}`}
               </span>
             </Link>
@@ -81,7 +81,7 @@ function Receivables() {
           .filter((c) => c.outstanding > 0)
           .sort((a, b) => b.outstanding - a.outstanding)
           .map((c) => (
-            <div key={c.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-[13px]">
+            <div key={c.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-body">
               <span className="font-medium">{c.name}</span>
               <span className={cn("font-semibold tabular", c.outstanding >= 100000 && "text-danger")}>{inr(c.outstanding)}</span>
             </div>

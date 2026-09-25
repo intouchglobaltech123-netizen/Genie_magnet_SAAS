@@ -37,12 +37,12 @@ export function AgingBar({ invoices, barOnly }: { invoices: InvoiceView[]; barOn
       <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
         {sums.map((b) => (
           <div key={b.key} className="min-w-0">
-            <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-body text-muted-foreground">
               <span className={cn("size-2 rounded-full", b.bar)} />
               {b.label}
             </div>
-            <div className="mt-0.5 text-[15px] font-semibold tabular">{inrCompact(b.amount)}</div>
-            <div className="text-[11.5px] text-muted-foreground tabular">{Math.round((b.amount / total) * 100)}% of open</div>
+            <div className="mt-0.5 text-subheading font-semibold tabular">{inrCompact(b.amount)}</div>
+            <div className="text-body text-muted-foreground tabular">{Math.round((b.amount / total) * 100)}% of open</div>
           </div>
         ))}
       </div>
@@ -79,8 +79,8 @@ export function AgingTab({ invoices }: { invoices: InvoiceView[] }) {
             <CardDescription>Open balances by days past due date · not-yet-due invoices sit in 0–30</CardDescription>
           </div>
           <div className="text-right">
-            <div className="text-[11px] text-muted-foreground">Total open</div>
-            <div className="text-[18px] font-semibold tabular">{inr(grand)}</div>
+            <div className="text-body text-muted-foreground">Total open</div>
+            <div className="text-subheading font-semibold tabular">{inr(grand)}</div>
           </div>
         </CardHeader>
         <CardContent>
@@ -123,7 +123,7 @@ export function AgingTab({ invoices }: { invoices: InvoiceView[] }) {
                   </TD>
                 ))}
                 <TD className="text-right font-semibold tabular">{inr(r.total)}</TD>
-                <TD className="text-[12px] text-muted-foreground">
+                <TD className="text-body text-muted-foreground">
                   <span className="font-mono">{r.oldest.number.slice(-3)}</span> · {r.oldest.daysOverdue ? `${r.oldest.daysOverdue}d late` : `due ${fmtDate(r.oldest.dueDate)}`}
                 </TD>
                 <TD className="pr-5 text-right">
@@ -169,8 +169,8 @@ export function AdvancesTab() {
           <CardDescription>Money received before invoicing · adjusted against the client&apos;s next open invoice</CardDescription>
         </div>
         <div className="text-right">
-          <div className="text-[11px] text-muted-foreground">Unadjusted (liability)</div>
-          <div className="text-[18px] font-semibold tabular">{inr(unadjusted)}</div>
+          <div className="text-body text-muted-foreground">Unadjusted (liability)</div>
+          <div className="text-subheading font-semibold tabular">{inr(unadjusted)}</div>
         </div>
       </CardHeader>
       <Table>
@@ -188,14 +188,14 @@ export function AdvancesTab() {
         <TBody>
           {rows.map((r) => (
             <TR key={r.id}>
-              <TD className="pl-5 font-mono text-[12.5px]">{r.number}</TD>
+              <TD className="pl-5 font-mono text-body">{r.number}</TD>
               <TD>
                 <div className="font-medium">{r.party.name}</div>
-                <div className="text-[11.5px] text-muted-foreground">{r.purpose}</div>
+                <div className="text-body text-muted-foreground">{r.purpose}</div>
               </TD>
               <TD>
                 <div className="tabular">{fmtDate(r.receivedOn)}</div>
-                <div className="text-[11px] text-muted-foreground">
+                <div className="text-body text-muted-foreground">
                   {r.mode} · <span className="font-mono">{r.ref}</span>
                 </div>
               </TD>
@@ -204,13 +204,13 @@ export function AdvancesTab() {
                 {r.adjustments.length ? (
                   <div className="space-y-0.5">
                     {r.adjustments.map((a) => (
-                      <div key={a.invoiceNo + a.date} className="text-[12px]">
+                      <div key={a.invoiceNo + a.date} className="text-body">
                         <span className="font-mono">{a.invoiceNo}</span> <span className="text-muted-foreground tabular">· {inr(a.amount)}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <span className="text-[12px] text-muted-foreground">Not yet adjusted</span>
+                  <span className="text-body text-muted-foreground">Not yet adjusted</span>
                 )}
               </TD>
               <TD className={cn("text-right font-medium tabular", r.balance ? "text-foreground" : "text-muted-foreground")}>{r.balance ? inr(r.balance) : "—"}</TD>
@@ -281,16 +281,16 @@ export function CreditNotesTab() {
             return (
               <TR key={n.id} className={cn(n.status === "draft" && "bg-warning-soft/40")}>
                 <TD className="pl-5">
-                  <div className="font-mono text-[12.5px]">{n.number}</div>
-                  <div className="text-[11.5px] text-muted-foreground">{fmtDate(n.date)}</div>
+                  <div className="font-mono text-body">{n.number}</div>
+                  <div className="text-body text-muted-foreground">{fmtDate(n.date)}</div>
                 </TD>
                 <TD>
                   <div className="font-medium">{party.name}</div>
-                  <div className="font-mono text-[11.5px] text-muted-foreground">{n.invoiceNo}</div>
+                  <div className="font-mono text-body text-muted-foreground">{n.invoiceNo}</div>
                 </TD>
                 <TD className="max-w-[340px]">
-                  <div className="text-[12.5px]">{n.reason}</div>
-                  <div className="text-[11px] text-muted-foreground">Raised by {n.raisedBy}</div>
+                  <div className="text-body">{n.reason}</div>
+                  <div className="text-body text-muted-foreground">Raised by {n.raisedBy}</div>
                 </TD>
                 <TD className="text-right tabular">{inr(n.taxable)}</TD>
                 <TD className="text-right font-medium tabular">{inr(gross)}</TD>

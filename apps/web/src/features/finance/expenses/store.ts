@@ -81,14 +81,14 @@ export const useExpenses = create<ExpenseState>()((set, get) => ({
 }));
 
 export const CATEGORY_STYLE: Record<string, { strip: string; soft: string; text: string }> = {
-  Travel: { strip: "bg-chart-1", soft: "bg-accent-soft", text: "text-accent" },
+  Travel: { strip: "bg-chart-1", soft: "bg-primary-soft", text: "text-primary" },
   "Food & refreshments": { strip: "bg-chart-3", soft: "bg-warning-soft", text: "text-warning" },
   "Equipment rental": { strip: "bg-chart-2", soft: "bg-success-soft", text: "text-success" },
   "Props & consumables": { strip: "bg-chart-4", soft: "bg-danger-soft", text: "text-danger" },
   Software: { strip: "bg-info", soft: "bg-info-soft", text: "text-info" },
-  Freelancer: { strip: "bg-gold", soft: "bg-gold-soft", text: "text-gold" },
+  Freelancer: { strip: "bg-accent", soft: "bg-accent-soft", text: "text-accent-strong" },
   Utilities: { strip: "bg-chart-5", soft: "bg-muted", text: "text-muted-foreground" },
-  "Marketing/Ads": { strip: "bg-accent", soft: "bg-accent-soft", text: "text-accent" },
+  "Marketing/Ads": { strip: "bg-primary", soft: "bg-primary-soft", text: "text-primary" },
   Rent: { strip: "bg-chart-5", soft: "bg-muted", text: "text-muted-foreground" },
 };
 

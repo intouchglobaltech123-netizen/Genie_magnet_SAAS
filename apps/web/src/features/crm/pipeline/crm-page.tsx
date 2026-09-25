@@ -22,9 +22,9 @@ import { SourceTable } from "./source-table";
 const stageDot: Record<Lead["stage"], string> = {
   New: "bg-chart-5",
   Contacted: "bg-info",
-  Qualified: "bg-accent",
-  Discovery: "bg-accent",
-  Proposal: "bg-gold",
+  Qualified: "bg-primary",
+  Discovery: "bg-primary",
+  Proposal: "bg-accent",
   Negotiation: "bg-warning",
   Won: "bg-success",
   Lost: "bg-danger",
@@ -121,16 +121,16 @@ export function CrmPage() {
                     }}
                     className={cn(
                       "flex w-[272px] shrink-0 flex-col rounded-2xl border bg-muted/40 p-2 transition",
-                      over === stage ? "border-accent bg-accent-soft/60" : "border-transparent",
+                      over === stage ? "border-primary bg-primary-soft/60" : "border-transparent",
                     )}
                   >
                     <div className="flex items-center justify-between px-2 pb-2 pt-1">
                       <div className="flex items-center gap-2">
                         <span className={cn("size-2 rounded-full", stageDot[stage])} />
-                        <span className="text-[13px] font-semibold">{stage}</span>
-                        <span className="rounded-md bg-card px-1.5 text-[11px] font-medium text-muted-foreground tabular">{col.length}</span>
+                        <span className="text-body font-semibold">{stage}</span>
+                        <span className="rounded-md bg-card px-1.5 text-body font-medium text-muted-foreground tabular">{col.length}</span>
                       </div>
-                      <span className="text-[12px] font-medium text-muted-foreground tabular">{inrCompact(total)}</span>
+                      <span className="text-body font-medium text-muted-foreground tabular">{inrCompact(total)}</span>
                     </div>
                     <div className="flex min-h-24 flex-1 flex-col gap-2">
                       {col.map((l) => (
@@ -147,14 +147,14 @@ export function CrmPage() {
                             </div>
                           )}
                           {l.stage === "Won" && !converted.includes(l.id) && l.id !== "l-10" && (
-                            <button onClick={() => setWinLead(l)} className="cursor-pointer px-2 pt-1 text-[11.5px] font-medium text-accent hover:underline">
+                            <button onClick={() => setWinLead(l)} className="cursor-pointer px-2 pt-1 text-body font-medium text-primary hover:underline">
                               Convert to agreement →
                             </button>
                           )}
                         </div>
                       ))}
                       {!col.length && (
-                        <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-border py-6 text-[12px] text-muted-foreground">
+                        <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-border py-6 text-body text-muted-foreground">
                           Drop here
                         </div>
                       )}

@@ -25,22 +25,22 @@ export function CostingCard({ assets }: { assets: Asset[] }) {
       <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr]">
         <div className="p-5">
           <div className="flex items-center gap-2">
-            <span className="inline-flex size-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
+            <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary-soft text-primary">
               <Calculator className="size-4" />
             </span>
             <div>
-              <div className="text-[15px] font-semibold tracking-tight">How we cost equipment</div>
-              <div className="text-[13px] text-muted-foreground">Straight-line depreciation → cost per hour → charged to every shoot</div>
+              <div className="text-subheading font-semibold tracking-tight">How we cost equipment</div>
+              <div className="text-body text-muted-foreground">Straight-line depreciation → cost per hour → charged to every shoot</div>
             </div>
           </div>
 
           <div className="mt-5 rounded-xl border border-border bg-background/60 p-4">
-            <div className="mb-3 flex items-center gap-2 text-[13px]">
+            <div className="mb-3 flex items-center gap-2 text-body">
               <span className="font-medium">{cam.name}</span>
               <Badge tone="outline">{cam.tag}</Badge>
               <span className="text-muted-foreground">· useful life {cam.usefulLifeYears} year</span>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-[13px] tabular">
+            <div className="flex flex-wrap items-center gap-2 text-body tabular">
               <Chip label="Purchase" value={inr(cam.purchaseValue)} />
               <Op>−</Op>
               <Chip label="Residual" value={inr(cam.residualValue)} />
@@ -49,7 +49,7 @@ export function CostingCard({ assets }: { assets: Asset[] }) {
               <Op>=</Op>
               <Chip label="Per year" value={inr(annual)} strong />
             </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-[13px] tabular">
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-body tabular">
               <Chip label="Per year" value={inr(annual)} />
               <Op>÷</Op>
               <Chip label="Expected use" value="1,200 hrs/yr" />
@@ -57,16 +57,16 @@ export function CostingCard({ assets }: { assets: Asset[] }) {
               <Chip label="Per hour" value={`${inr(hourly)}/hr`} strong accent />
             </div>
           </div>
-          <p className="mt-3 text-[12.5px] text-muted-foreground">
+          <p className="mt-3 text-body text-muted-foreground">
             Cameras, lenses, audio, lighting & support assume 1,200 productive hrs/yr; computers 2,000 hrs/yr; storage is costed per project, not per hour.
           </p>
         </div>
 
-        <div className="border-t border-border bg-accent-soft/40 p-5 lg:border-l lg:border-t-0">
-          <div className="flex items-center gap-2 text-[13px] font-medium">
-            <Clapperboard className="size-4 text-accent" /> Flows into video true costing
+        <div className="border-t border-border bg-primary-soft/40 p-5 lg:border-l lg:border-t-0">
+          <div className="flex items-center gap-2 text-body font-medium">
+            <Clapperboard className="size-4 text-primary" /> Flows into video true costing
           </div>
-          <div className="mt-3 flex items-center gap-2 text-[13px]">
+          <div className="mt-3 flex items-center gap-2 text-body">
             <span className="text-muted-foreground">Shoot length</span>
             <Input
               type="number"
@@ -78,7 +78,7 @@ export function CostingCard({ assets }: { assets: Asset[] }) {
             />
             <span className="text-muted-foreground">hours</span>
           </div>
-          <div className="mt-4 space-y-2 text-[13px]">
+          <div className="mt-4 space-y-2 text-body">
             <Line label={`Camera body (${inr(hourly)} × ${h} h)`} value={inr(hourly * h)} strong />
             {kit.slice(1).map((a) => (
               <Line key={a.tag} label={`${a.name} (${inr(perHourCost(a) ?? 0)}/h)`} value={inr((perHourCost(a) ?? 0) * h)} />
@@ -88,7 +88,7 @@ export function CostingCard({ assets }: { assets: Asset[] }) {
               <span className="tabular">{inr(kitHourly * h)}</span>
             </div>
           </div>
-          <div className="mt-3 flex items-center gap-1.5 text-[12px] text-muted-foreground">
+          <div className="mt-3 flex items-center gap-1.5 text-body text-muted-foreground">
             <ArrowRight className="size-3.5" /> Added to each video&apos;s cost sheet alongside people hours & freelancer fees
           </div>
         </div>
@@ -102,11 +102,11 @@ function Chip({ label, value, strong, accent }: { label: string; value: string; 
     <span
       className={
         accent
-          ? "inline-flex flex-col rounded-lg bg-accent px-3 py-1.5 text-accent-foreground"
+          ? "inline-flex flex-col rounded-lg bg-primary px-3 py-1.5 text-primary-foreground"
           : "inline-flex flex-col rounded-lg border border-border bg-card px-3 py-1.5"
       }
     >
-      <span className={accent ? "text-[10.5px] uppercase tracking-wider opacity-80" : "text-[10.5px] uppercase tracking-wider text-muted-foreground"}>
+      <span className={accent ? "text-body uppercase tracking-wider opacity-80" : "text-body uppercase tracking-wider text-muted-foreground"}>
         {label}
       </span>
       <span className={strong ? "font-semibold" : "font-medium"}>{value}</span>
@@ -115,7 +115,7 @@ function Chip({ label, value, strong, accent }: { label: string; value: string; 
 }
 
 function Op({ children }: { children: React.ReactNode }) {
-  return <span className="text-[15px] font-medium text-muted-foreground">{children}</span>;
+  return <span className="text-subheading font-medium text-muted-foreground">{children}</span>;
 }
 
 function Line({ label, value, strong }: { label: string; value: string; strong?: boolean }) {

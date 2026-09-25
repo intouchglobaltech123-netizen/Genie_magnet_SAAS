@@ -59,12 +59,12 @@ export function ModelExplainer() {
     <div className="rounded-2xl border border-border bg-card p-5 shadow-card">
       <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <h3 className="text-[15px] font-semibold tracking-tight">How true cost is built</h3>
-          <p className="mt-0.5 text-[13px] text-muted-foreground">
+          <h3 className="text-subheading font-semibold tracking-tight">How true cost is built</h3>
+          <p className="mt-0.5 text-body text-muted-foreground">
             Every figure on this page follows one formula. Hover a block to see the rule behind it.
           </p>
         </div>
-        <div className="flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1 text-[12px] font-medium text-muted-foreground">
+        <div className="flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1 text-body font-medium text-muted-foreground">
           Revenue share − True cost = <span className="text-foreground">Margin</span>
         </div>
       </div>
@@ -72,15 +72,15 @@ export function ModelExplainer() {
         {blocks.map((b, i) => (
           <div key={b.key} className="flex flex-1 items-center gap-2 lg:min-w-0">
             <Tooltip content={b.detail}>
-              <div className="group min-w-0 flex-1 cursor-help rounded-xl border border-border bg-background/60 p-3 transition hover:border-accent/40 hover:bg-accent-soft/40">
+              <div className="group min-w-0 flex-1 cursor-help rounded-xl border border-border bg-background/60 p-3 transition hover:border-primary/40 hover:bg-primary-soft/40">
                 <div className="flex items-center gap-2">
                   <span className={cn("inline-flex size-6 items-center justify-center rounded-md text-white", b.color)}>
                     <b.icon className="size-3.5" />
                   </span>
-                  <span className="text-[13px] font-semibold">{b.name}</span>
+                  <span className="text-body font-semibold">{b.name}</span>
                 </div>
-                <div className="mt-2 text-[11.5px] leading-snug text-muted-foreground">{b.formula}</div>
-                <div className="mt-1.5 truncate font-mono text-[11px] text-foreground/80">{b.example}</div>
+                <div className="mt-2 text-body leading-snug text-muted-foreground">{b.formula}</div>
+                <div className="mt-1.5 truncate font-mono text-body text-foreground/80">{b.example}</div>
               </div>
             </Tooltip>
             {i < blocks.length - 1 ? (
@@ -92,8 +92,8 @@ export function ModelExplainer() {
         ))}
         <div className="flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-center text-primary-foreground lg:w-28">
           <div>
-            <div className="text-[11px] opacity-70">per video</div>
-            <div className="text-[14px] font-semibold">True cost</div>
+            <div className="text-body opacity-70">per video</div>
+            <div className="text-body font-semibold">True cost</div>
           </div>
         </div>
       </div>

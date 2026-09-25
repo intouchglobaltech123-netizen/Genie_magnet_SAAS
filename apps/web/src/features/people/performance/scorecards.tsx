@@ -73,13 +73,13 @@ function RolePanel({ sc, appeals, onAppeal }: { sc: RoleScorecard; appeals: Reco
                 onClick={() => setPid(p.personId)}
                 className={cn(
                   "flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2 text-left transition",
-                  pid === p.personId ? "border-accent/50 bg-accent-soft/60" : "border-border hover:bg-muted",
+                  pid === p.personId ? "border-primary/50 bg-primary-soft/60" : "border-border hover:bg-muted",
                 )}
               >
                 <Avatar name={pp.name} size="sm" />
                 <div>
-                  <div className="text-[13px] font-medium leading-tight">{pp.name}</div>
-                  <div className="text-[11.5px] text-muted-foreground tabular">
+                  <div className="text-body font-medium leading-tight">{pp.name}</div>
+                  <div className="text-body text-muted-foreground tabular">
                     Composite {Math.round(cc.final)}
                     {cc.triggered && <span className="text-danger"> · capped</span>}
                   </div>
@@ -88,7 +88,7 @@ function RolePanel({ sc, appeals, onAppeal }: { sc: RoleScorecard; appeals: Reco
             );
           })}
         </div>
-        <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
+        <div className="flex items-center gap-2 text-body text-muted-foreground">
           <ShieldCheck className="size-4" /> Gate: {sc.gate.label}
         </div>
       </div>
@@ -96,7 +96,7 @@ function RolePanel({ sc, appeals, onAppeal }: { sc: RoleScorecard; appeals: Reco
       {c.triggered ? (
         <div className="flex gap-3 rounded-xl border border-danger/30 bg-danger-soft p-4">
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-danger" />
-          <div className="text-[13px]">
+          <div className="text-body">
             <div className="font-semibold text-danger">Quality gate triggered — score capped</div>
             <p className="mt-0.5 text-foreground/80">
               {person.name.split(" ")[0]}&apos;s {sc.gate.kra.toLowerCase()} is{" "}
@@ -107,7 +107,7 @@ function RolePanel({ sc, appeals, onAppeal }: { sc: RoleScorecard; appeals: Reco
           </div>
         </div>
       ) : c.gateActual !== undefined && c.gateActual <= sc.gate.threshold ? (
-        <div className="flex gap-3 rounded-xl border border-warning/30 bg-warning-soft p-4 text-[13px]">
+        <div className="flex gap-3 rounded-xl border border-warning/30 bg-warning-soft p-4 text-body">
           <AlertTriangle className="mt-0.5 size-5 shrink-0 text-warning" />
           <div>
             <div className="font-semibold text-warning">On the edge of the quality gate</div>
@@ -140,12 +140,12 @@ function RolePanel({ sc, appeals, onAppeal }: { sc: RoleScorecard; appeals: Reco
                     <div className="flex items-center gap-1.5 font-medium">
                       {k.kra}
                       {isGate && (
-                        <Badge tone={c.triggered ? "danger" : "outline"} className="text-[10.5px]">
+                        <Badge tone={c.triggered ? "danger" : "outline"} className="text-body">
                           Gate
                         </Badge>
                       )}
                     </div>
-                    <div className="text-[12px] text-muted-foreground">
+                    <div className="text-body text-muted-foreground">
                       {k.measurement}
                       {k.lowerIsBetter ? " · lower is better" : ""}
                     </div>
@@ -155,7 +155,7 @@ function RolePanel({ sc, appeals, onAppeal }: { sc: RoleScorecard; appeals: Reco
                   <TD>
                     <div className="flex items-center gap-2">
                       <Progress value={a * 100} tone={a >= 0.95 ? "success" : a >= 0.85 ? "warning" : "danger"} className="flex-1" />
-                      <span className="w-9 text-right text-[12px] tabular text-muted-foreground">{Math.round(a * 100)}%</span>
+                      <span className="w-9 text-right text-body tabular text-muted-foreground">{Math.round(a * 100)}%</span>
                     </div>
                   </TD>
                   <TD className="text-right tabular text-muted-foreground">{k.weight}%</TD>
@@ -177,7 +177,7 @@ function RolePanel({ sc, appeals, onAppeal }: { sc: RoleScorecard; appeals: Reco
               </Button>
             )}
           </div>
-          <div className="flex items-center gap-5 text-[13px]">
+          <div className="flex items-center gap-5 text-body">
             <span className="text-muted-foreground">
               Raw <b className="font-semibold text-foreground tabular">{c.raw.toFixed(1)}</b>
             </span>
@@ -188,7 +188,7 @@ function RolePanel({ sc, appeals, onAppeal }: { sc: RoleScorecard; appeals: Reco
             )}
             <span className="flex items-baseline gap-1.5">
               <span className="text-muted-foreground">Composite</span>
-              <span className={cn("text-xl font-semibold tabular", c.triggered ? "text-danger" : "text-foreground")}>
+              <span className={cn("text-heading font-semibold tabular", c.triggered ? "text-danger" : "text-foreground")}>
                 {c.final.toFixed(1)}
               </span>
             </span>

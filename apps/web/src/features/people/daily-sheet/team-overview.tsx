@@ -169,13 +169,13 @@ export function TeamOverview({ date, onOpen }: { date: string; onOpen: (personId
               const p = personById(r.personId);
               const pctShift = Math.min(100, (r.minutes / 480) * 100);
               return (
-                <div key={r.personId} className="group rounded-xl border border-border bg-card p-4 transition hover:border-accent/30 hover:shadow-card">
+                <div key={r.personId} className="group rounded-xl border border-border bg-card p-4 transition hover:border-primary/30 hover:shadow-card">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex min-w-0 items-center gap-2.5">
                       <Avatar name={p.name} />
                       <div className="min-w-0">
-                        <div className="truncate text-[13.5px] font-semibold">{p.name}</div>
-                        <div className="truncate text-[12px] text-muted-foreground">{p.role}</div>
+                        <div className="truncate text-body font-semibold">{p.name}</div>
+                        <div className="truncate text-body text-muted-foreground">{p.role}</div>
                       </div>
                     </div>
                     <StatusBadge status={r.status} />
@@ -187,10 +187,10 @@ export function TeamOverview({ date, onOpen }: { date: string; onOpen: (personId
                     <Metric label="Errors" value={r.errors} cls={r.errors ? "text-danger" : undefined} />
                   </div>
                   <div className="mt-3 h-1 overflow-hidden rounded-full bg-muted">
-                    <div className={cn("h-full rounded-full", r.minutes > 480 ? "bg-warning" : "bg-accent")} style={{ width: `${pctShift}%` }} />
+                    <div className={cn("h-full rounded-full", r.minutes > 480 ? "bg-warning" : "bg-primary")} style={{ width: `${pctShift}%` }} />
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between gap-2 text-[11.5px] text-muted-foreground">
+                  <div className="mt-3 flex items-center justify-between gap-2 text-body text-muted-foreground">
                     <span className="flex items-center gap-2">
                       {r.submittedAt ? (
                         <span className="inline-flex items-center gap-1">
@@ -203,7 +203,7 @@ export function TeamOverview({ date, onOpen }: { date: string; onOpen: (personId
                       <SignPip on={r.hr} label="HR" />
                     </span>
                     {r.live ? (
-                      <Button size="xs" variant="ghost" className="h-6 px-2 text-accent" onClick={() => onOpen(r.personId, date)}>
+                      <Button size="xs" variant="ghost" className="h-6 px-2 text-primary" onClick={() => onOpen(r.personId, date)}>
                         Open sheet <ExternalLink className="size-3" />
                       </Button>
                     ) : r.status === "Pending" || r.status === "Missed" ? (
@@ -227,7 +227,7 @@ export function TeamOverview({ date, onOpen }: { date: string; onOpen: (personId
             <CardTitle>Submission heatmap</CardTitle>
             <CardDescription>Last two working weeks · click a cell to open that sheet</CardDescription>
           </div>
-          <div className="hidden flex-wrap items-center gap-3 text-[11.5px] text-muted-foreground md:flex">
+          <div className="hidden flex-wrap items-center gap-3 text-body text-muted-foreground md:flex">
             {(["Submitted", "Late", "Pending", "Missed", "On leave", "Holiday"] as SubmissionStatus[]).map((s) => (
               <span key={s} className="inline-flex items-center gap-1.5">
                 <span className={cn("size-3 rounded-[4px]", cellTone[s])} /> {s}
@@ -237,17 +237,17 @@ export function TeamOverview({ date, onOpen }: { date: string; onOpen: (personId
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto scrollbar-thin">
-            <table className="w-full min-w-[720px] border-separate border-spacing-1 text-[12px]">
+            <table className="w-full min-w-[720px] border-separate border-spacing-1 text-body">
               <thead>
                 <tr>
                   <th className="w-44" />
                   {days.map((dd) => (
-                    <th key={dd} className={cn("pb-1 text-center font-medium text-muted-foreground", dd === date && "text-accent")}>
-                      <div className="text-[10.5px] uppercase">{dayLabel(dd, { weekday: "short" })}</div>
+                    <th key={dd} className={cn("pb-1 text-center font-medium text-muted-foreground", dd === date && "text-primary")}>
+                      <div className="text-body uppercase">{dayLabel(dd, { weekday: "short" })}</div>
                       <div className="tabular">{Number(dd.slice(8))}</div>
                     </th>
                   ))}
-                  <th className="pl-2 text-right text-[11px] font-medium text-muted-foreground">On-time</th>
+                  <th className="pl-2 text-right text-body font-medium text-muted-foreground">On-time</th>
                 </tr>
               </thead>
               <tbody>
@@ -274,7 +274,7 @@ export function TeamOverview({ date, onOpen }: { date: string; onOpen: (personId
                                 className={cn(
                                   "h-7 w-full min-w-7 cursor-pointer rounded-[6px] transition hover:scale-110 hover:shadow-sm",
                                   cellTone[s],
-                                  dd === date && "outline-2 outline-offset-1 outline-accent",
+                                  dd === date && "outline-2 outline-offset-1 outline-primary",
                                 )}
                               />
                             </Tooltip>
@@ -290,7 +290,7 @@ export function TeamOverview({ date, onOpen }: { date: string; onOpen: (personId
               </tbody>
             </table>
           </div>
-          <div className="mt-3 flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-[12px] text-muted-foreground">
+          <div className="mt-3 flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2 text-body text-muted-foreground">
             <FileWarning className="size-3.5 shrink-0" />
             Repeated late or missed sheets flow into the monthly KRA as a discipline parameter — see Performance & KRA.
             <Badge tone="outline" className="ml-auto">
@@ -306,15 +306,15 @@ export function TeamOverview({ date, onOpen }: { date: string; onOpen: (personId
 function Metric({ label, value, cls }: { label: string; value: React.ReactNode; cls?: string }) {
   return (
     <div className="rounded-lg bg-muted/60 py-1.5">
-      <div className={cn("text-[14px] font-semibold tabular", cls)}>{value}</div>
-      <div className="text-[10.5px] text-muted-foreground">{label}</div>
+      <div className={cn("text-body font-semibold tabular", cls)}>{value}</div>
+      <div className="text-body text-muted-foreground">{label}</div>
     </div>
   );
 }
 
 function SignPip({ on, label }: { on: boolean; label: string }) {
   return (
-    <span className={cn("rounded px-1 text-[10px] font-semibold", on ? "bg-success-soft text-success" : "bg-muted text-muted-foreground/70")}>
+    <span className={cn("rounded px-1 text-body font-semibold", on ? "bg-success-soft text-success" : "bg-muted text-muted-foreground/70")}>
       {label}
       {on ? " ✓" : ""}
     </span>

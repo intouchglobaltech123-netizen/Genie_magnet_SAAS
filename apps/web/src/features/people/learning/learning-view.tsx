@@ -30,7 +30,7 @@ const statusTone: Record<AssignStatus, "neutral" | "info" | "success" | "danger"
   Overdue: "danger",
 };
 
-const cellBg = (s: number) => `color-mix(in oklab, var(--accent) ${[0, 10, 26, 44, 66, 90][s]}%, transparent)`;
+const cellBg = (s: number) => `color-mix(in oklab, var(--color-primary) ${[0, 10, 26, 44, 66, 90][s]}%, transparent)`;
 
 function PathsGrid() {
   return (
@@ -41,7 +41,7 @@ function PathsGrid() {
           <Card key={p.id} className="flex flex-col">
             <CardHeader>
               <div className="flex items-start gap-3">
-                <span className="inline-flex size-9 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                <span className="inline-flex size-9 items-center justify-center rounded-xl bg-primary-soft text-primary">
                   <GraduationCap className="size-4" />
                 </span>
                 <div>
@@ -53,15 +53,15 @@ function PathsGrid() {
             <CardContent className="flex-1">
               <ol className="space-y-2">
                 {p.modules.map((m, i) => (
-                  <li key={m.id} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2 text-[13px]">
-                    <span className="tabular inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-muted-foreground">{i + 1}</span>
+                  <li key={m.id} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2 text-body">
+                    <span className="tabular inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-body font-semibold text-muted-foreground">{i + 1}</span>
                     <span className="min-w-0 flex-1 truncate">{m.title}</span>
-                    <span className="tabular text-[11.5px] text-muted-foreground">{m.hours}h</span>
+                    <span className="tabular text-body text-muted-foreground">{m.hours}h</span>
                     <a
                       href={`${LMS}/${m.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex shrink-0 items-center gap-1 rounded-md bg-accent-soft px-1.5 py-0.5 text-[11px] font-medium text-accent hover:brightness-95"
+                      className="inline-flex shrink-0 items-center gap-1 rounded-md bg-primary-soft px-1.5 py-0.5 text-body font-medium text-primary hover:brightness-95"
                     >
                       Open in LMS <ExternalLink className="size-3" />
                     </a>
@@ -69,7 +69,7 @@ function PathsGrid() {
                 ))}
               </ol>
             </CardContent>
-            <div className="flex items-center justify-between border-t border-border px-5 py-3 text-[12px] text-muted-foreground">
+            <div className="flex items-center justify-between border-t border-border px-5 py-3 text-body text-muted-foreground">
               <span>
                 {p.modules.length} modules · <span className="tabular">{hrs}h</span>
               </span>
@@ -149,7 +149,7 @@ function AssignmentsTable({ rows, onAdd }: { rows: Assignment[]; onAdd: () => vo
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Select
-            className="h-8 w-36 text-[13px]"
+            className="h-8 w-36 text-body"
             value={filter}
             onValueChange={(v) => setFilter(v as typeof filter)}
             options={[{ value: "all", label: "All statuses" }, ...(["Not started", "In progress", "Completed", "Overdue"] as const).map((s) => ({ value: s, label: s }))]}
@@ -194,16 +194,16 @@ function AssignmentsTable({ rows, onAdd }: { rows: Assignment[]; onAdd: () => vo
                       <Avatar name={p.name} size="sm" />
                       <div>
                         <div className="font-medium">{p.name}</div>
-                        <div className="text-[11.5px] text-muted-foreground">{p.type === "freelancer" ? "Freelancer" : p.role}</div>
+                        <div className="text-body text-muted-foreground">{p.type === "freelancer" ? "Freelancer" : p.role}</div>
                       </div>
                     </div>
                   </TD>
                   <TD>
-                    <a href={`${LMS}/${m.slug}`} target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-1 font-medium hover:text-accent">
+                    <a href={`${LMS}/${m.slug}`} target="_blank" rel="noopener noreferrer" className="group inline-flex items-center gap-1 font-medium hover:text-primary">
                       {m.title}
                       <ExternalLink className="size-3 opacity-0 transition group-hover:opacity-100" />
                     </a>
-                    <div className="text-[11.5px] text-muted-foreground">{m.role} path</div>
+                    <div className="text-body text-muted-foreground">{m.role} path</div>
                   </TD>
                   <TD className="tabular text-muted-foreground">{fmtDate(a.assignedOn)}</TD>
                   <TD className={cn("tabular", a.status === "Overdue" && "font-medium text-danger")}>{fmtDate(a.due)}</TD>
@@ -215,12 +215,12 @@ function AssignmentsTable({ rows, onAdd }: { rows: Assignment[]; onAdd: () => vo
                   <TD>
                     <div className="flex items-center gap-2">
                       <Progress value={a.progress} tone={a.status === "Completed" ? "success" : a.status === "Overdue" ? "danger" : "accent"} />
-                      <span className="tabular w-9 text-right text-[12px] text-muted-foreground">{a.progress}%</span>
+                      <span className="tabular w-9 text-right text-body text-muted-foreground">{a.progress}%</span>
                     </div>
                   </TD>
                   <TD className="pr-5 text-right">
                     {a.status === "Completed" ? (
-                      <span className="inline-flex items-center gap-1 text-[12px] text-success">
+                      <span className="inline-flex items-center gap-1 text-body text-success">
                         <CheckCircle2 className="size-3.5" /> Done
                       </span>
                     ) : (
@@ -259,7 +259,7 @@ function SkillMatrix() {
           <CardTitle>Skill matrix</CardTitle>
           <CardDescription>Click a cell to update a score (1–5). Bus-factor risk where fewer than 2 people score 4+.</CardDescription>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-[11.5px] text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-body text-muted-foreground">
           {[1, 2, 3, 4, 5].map((s) => (
             <span key={s} className="inline-flex items-center gap-1.5">
               <span className={cn("tabular inline-flex size-5 items-center justify-center rounded font-semibold", s >= 4 ? "text-white" : "text-foreground")} style={{ background: cellBg(s) }}>
@@ -272,12 +272,12 @@ function SkillMatrix() {
       </CardHeader>
       <CardContent className="px-0">
         <div className="overflow-x-auto scrollbar-thin">
-          <table className="w-max min-w-full border-separate border-spacing-1 px-4 text-[12px]">
+          <table className="w-max min-w-full border-separate border-spacing-1 px-4 text-body">
             <thead>
               <tr>
-                <th className="sticky left-0 z-10 min-w-[170px] bg-card text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Person</th>
+                <th className="sticky left-0 z-10 min-w-[170px] bg-card text-left text-body font-medium uppercase tracking-wider text-muted-foreground">Person</th>
                 {SKILLS.map((s) => (
-                  <th key={s} className="w-[84px] px-1 pb-1 text-center align-bottom text-[11px] font-medium leading-tight text-muted-foreground">
+                  <th key={s} className="w-[84px] px-1 pb-1 text-center align-bottom text-body font-medium leading-tight text-muted-foreground">
                     <span className={cn(gaps.includes(s) && "text-warning")}>{s}</span>
                   </th>
                 ))}
@@ -300,7 +300,7 @@ function SkillMatrix() {
                           <button
                             onClick={() => cycle(pid, i)}
                             className={cn(
-                              "tabular flex h-8 w-full cursor-pointer items-center justify-center rounded-md font-semibold transition hover:ring-2 hover:ring-accent/40",
+                              "tabular flex h-8 w-full cursor-pointer items-center justify-center rounded-md font-semibold transition hover:ring-2 hover:ring-primary/40",
                               score >= 4 ? "text-white" : "text-foreground",
                             )}
                             style={{ background: cellBg(score) }}
@@ -314,7 +314,7 @@ function SkillMatrix() {
                 );
               })}
               <tr>
-                <td className="sticky left-0 z-10 bg-card pt-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Team avg</td>
+                <td className="sticky left-0 z-10 bg-card pt-2 text-body font-medium uppercase tracking-wider text-muted-foreground">Team avg</td>
                 {teamAvg.map((v, i) => (
                   <td key={SKILLS[i]} className="tabular pt-2 text-center font-semibold">
                     {v.toFixed(1)}
@@ -325,7 +325,7 @@ function SkillMatrix() {
           </table>
         </div>
         {gaps.length > 0 && (
-          <div className="mx-5 mt-3 flex items-start gap-2 rounded-xl bg-warning-soft p-3 text-[12.5px] text-warning">
+          <div className="mx-5 mt-3 flex items-start gap-2 rounded-xl bg-warning-soft p-3 text-body text-warning">
             <Sparkles className="mt-0.5 size-4 shrink-0" />
             <span>
               Coverage gap: <span className="font-semibold">{gaps.join(", ")}</span> — fewer than two people at “Strong”. Consider assigning the matching LMS path.

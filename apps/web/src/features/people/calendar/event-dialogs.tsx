@@ -46,7 +46,7 @@ export function EventDetailsDialog({
             <DialogHeader>
               <div className="flex items-center gap-2">
                 <span className="size-2.5 rounded-full" style={{ background: typeMeta[event.type].color }} />
-                <span className="text-[12px] font-medium text-muted-foreground">{typeMeta[event.type].label.replace(/s$/, "")}</span>
+                <span className="text-body font-medium text-muted-foreground">{typeMeta[event.type].label.replace(/s$/, "")}</span>
                 {event.locked && (
                   <Badge tone="danger">
                     <Lock /> Locked
@@ -57,7 +57,7 @@ export function EventDetailsDialog({
               <DialogTitle>{event.title}</DialogTitle>
               <DialogDescription>{format(parseISO(event.date), "EEEE, d MMMM yyyy")}</DialogDescription>
             </DialogHeader>
-            <DialogBody className="space-y-3 text-[13px]">
+            <DialogBody className="space-y-3 text-body">
               <div className="flex items-center gap-2.5">
                 <Clock className="size-4 text-muted-foreground" />
                 {event.start ? `${to12(event.start)} – ${to12(event.end ?? event.start)}` : "All day"}
@@ -192,8 +192,8 @@ export function NewEventDialog({
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </Field>
           </div>
-          <label className="flex cursor-pointer items-center gap-2 text-[13px]">
-            <input type="checkbox" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} className="accent-[var(--accent)]" />
+          <label className="flex cursor-pointer items-center gap-2 text-body">
+            <input type="checkbox" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} className="accent-[var(--color-primary)]" />
             All-day event
           </label>
           {!allDay && (

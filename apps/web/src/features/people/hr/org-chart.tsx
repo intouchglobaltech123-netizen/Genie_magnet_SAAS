@@ -32,14 +32,14 @@ function NodeCard({ person, onSelect, root }: { person: Person; onSelect: (p: Pe
       type="button"
       onClick={() => onSelect(person)}
       className={cn(
-        "group relative flex w-40 cursor-pointer flex-col items-center gap-1.5 rounded-xl border bg-card px-3 py-3 text-center shadow-card transition hover:-translate-y-0.5 hover:border-accent/40",
-        root ? "border-accent/40 ring-4 ring-accent-soft" : "border-border",
+        "group relative flex w-40 cursor-pointer flex-col items-center gap-1.5 rounded-xl border bg-card px-3 py-3 text-center shadow-card transition hover:-translate-y-0.5 hover:border-primary/40",
+        root ? "border-primary/40 ring-4 ring-primary-soft" : "border-border",
       )}
     >
       <Avatar name={person.name} size="md" />
       <div className="w-full">
-        <div className="truncate text-[12.5px] font-semibold">{person.name}</div>
-        <div className="truncate text-[11px] text-muted-foreground">{person.role}</div>
+        <div className="truncate text-body font-semibold">{person.name}</div>
+        <div className="truncate text-body text-muted-foreground">{person.role}</div>
       </div>
       {person.status !== "active" && (
         <span className="absolute right-2 top-2 size-2 rounded-full bg-warning ring-2 ring-card" title="On leave" />

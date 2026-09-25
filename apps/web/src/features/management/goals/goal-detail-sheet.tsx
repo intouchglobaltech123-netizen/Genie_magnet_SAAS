@@ -166,18 +166,18 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
   return (
     <>
       <DialogHeader className="border-b border-border pb-5">
-        <div className="flex flex-wrap items-center gap-2 text-[12px] text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-body text-muted-foreground">
           <span className="capitalize">{goal.level} goal</span>
           <span>·</span>
           <span>{goal.department}</span>
         </div>
-        <DialogTitle className="text-[19px]">{goal.title}</DialogTitle>
+        <DialogTitle className="text-subheading">{goal.title}</DialogTitle>
         <DialogDescription className="flex flex-wrap items-center gap-2 pt-1">
           <TypeBadge type={goal.type} />
           <StatusBadge status={status} />
           <CadenceChip cadence={goal.cadence} />
         </DialogDescription>
-        <div className="flex items-center gap-2 pt-2 text-[13px]">
+        <div className="flex items-center gap-2 pt-2 text-body">
           <div className="flex -space-x-1.5">
             {goal.ownerIds.map((id) => (
               <Avatar key={id} name={personById(id).name} size="sm" />
@@ -193,13 +193,13 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
         <section className="rounded-xl border border-border bg-muted/30 p-4">
           <div className="flex flex-wrap items-end justify-between gap-2">
             <div>
-              <div className="text-[12px] text-muted-foreground">{metric}</div>
-              <div className="mt-0.5 text-[24px] font-semibold tracking-tight tabular">
+              <div className="text-body text-muted-foreground">{metric}</div>
+              <div className="mt-0.5 text-heading font-semibold tracking-tight tabular">
                 {fmtValue(draft.actual, goal.unit)}
-                <span className="text-[15px] font-normal text-muted-foreground"> / {fmtValue(draft.target, goal.unit)}</span>
+                <span className="text-subheading font-normal text-muted-foreground"> / {fmtValue(draft.target, goal.unit)}</span>
               </div>
             </div>
-            <div className="text-right text-[12px] text-muted-foreground tabular">
+            <div className="text-right text-body text-muted-foreground tabular">
               Baseline {fmtValue(draft.baseline, goal.unit)}
               <br />
               {fmtStamp(goal.startDate, true)} → {fmtStamp(goal.dueDate, true)}
@@ -213,7 +213,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
               title="Expected by today"
             />
           </div>
-          <div className="mt-2 flex flex-wrap justify-between gap-2 text-[12px] tabular">
+          <div className="mt-2 flex flex-wrap justify-between gap-2 text-body tabular">
             <span>
               Progress <span className="font-semibold">{Math.round(progress * 100)}%</span>
               <span className="text-muted-foreground"> · expected by today {Math.round(expected * 100)}%</span>
@@ -223,7 +223,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
             </span>
           </div>
           {statusChanged && (
-            <div className="mt-2 text-[12px] text-accent">
+            <div className="mt-2 text-body text-primary">
               Unsaved: status will change from {GOAL_STATUS[goalStatus(goal)].label} to {GOAL_STATUS[status].label}.
             </div>
           )}
@@ -256,17 +256,17 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
           <div
             className={cn(
               "flex items-start justify-between gap-3 rounded-xl border p-3.5 transition-colors",
-              override ? "border-border opacity-60" : "border-accent/30 bg-accent-soft/40",
+              override ? "border-border opacity-60" : "border-primary/30 bg-primary-soft/40",
             )}
           >
             <div className="flex gap-3">
-              <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
+              <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
                 <Link2 className="size-4" />
               </span>
               <div>
-                <div className="text-[13px] font-medium">Linked to connected records</div>
-                <div className="text-[13px] text-muted-foreground">{linkedLabel}</div>
-                <div className="mt-1 text-[12px] text-muted-foreground tabular">
+                <div className="text-body font-medium">Linked to connected records</div>
+                <div className="text-body text-muted-foreground">{linkedLabel}</div>
+                <div className="mt-1 text-body text-muted-foreground tabular">
                   {override ? "Paused while manual override is on" : syncedAt ? `Last synced ${fmtStamp(syncedAt)}` : "Not synced yet"}
                 </div>
               </div>
@@ -284,8 +284,8 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
                   <PenLine className="size-4" />
                 </span>
                 <div>
-                  <div className="text-[13px] font-medium">Manual override</div>
-                  <div className="text-[12px] text-muted-foreground">Type the actual yourself. A reason is required and is written to the audit log.</div>
+                  <div className="text-body font-medium">Manual override</div>
+                  <div className="text-body text-muted-foreground">Type the actual yourself. A reason is required and is written to the audit log.</div>
                 </div>
               </div>
               <Switch checked={override} onCheckedChange={onToggleOverride} aria-label="Manual override" />
@@ -308,7 +308,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
                       placeholder="e.g. CRM missed two deals signed on paper at the Erode trade fair"
                       className={cn("min-h-16", needsReason && "border-warning/60")}
                     />
-                    {needsReason && <p className="text-[12px] text-warning">Add a reason to enable Save.</p>}
+                    {needsReason && <p className="text-body text-warning">Add a reason to enable Save.</p>}
                   </div>
                 </motion.div>
               )}
@@ -318,7 +318,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
           {goal.audit.length > 0 && (
             <div className="space-y-1.5">
               {goal.audit.map((a, i) => (
-                <div key={i} className="flex gap-2 text-[12px] text-muted-foreground">
+                <div key={i} className="flex gap-2 text-body text-muted-foreground">
                   <ShieldCheck className="mt-0.5 size-3.5 shrink-0" />
                   <span>
                     <span className="font-medium text-foreground">{a.by}</span> · {fmtStamp(a.at)} — {a.text}
@@ -334,15 +334,15 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
           <SectionTitle>S.M.A.R.T. definition</SectionTitle>
           {SMART_FIELDS.map((f) => (
             <div key={f.key} className="flex gap-3">
-              <span className="mt-1 inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-[13px] font-semibold text-accent">
+              <span className="mt-1 inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-body font-semibold text-primary">
                 {f.letter}
               </span>
               <div className="flex-1 space-y-1">
-                <Label className="text-[12px] text-muted-foreground">{f.label}</Label>
+                <Label className="text-body text-muted-foreground">{f.label}</Label>
                 <Textarea
                   value={smart[f.key]}
                   onChange={(e) => setSmart((s) => ({ ...s, [f.key]: e.target.value }))}
-                  className="min-h-14 text-[13px]"
+                  className="min-h-14 text-body"
                 />
               </div>
             </div>
@@ -363,7 +363,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
                     type="button"
                     onClick={() => setCiKind(k)}
                     className={cn(
-                      "h-7 cursor-pointer rounded-md px-2.5 text-[12px] font-medium transition",
+                      "h-7 cursor-pointer rounded-md px-2.5 text-body font-medium transition",
                       ciKind === k ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground",
                       ciKind === k && k === "breakthrough" && "text-success",
                       ciKind === k && k === "breakdown" && "text-danger",
@@ -377,7 +377,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
                 value={ciValue}
                 onChange={(e) => setCiValue(e.target.value)}
                 placeholder={`Reading (${goal.unit === "inr" ? "₹" : goal.unit}) — optional`}
-                className="h-8 w-48 text-[13px]"
+                className="h-8 w-48 text-body"
                 inputMode="decimal"
               />
             </div>
@@ -391,7 +391,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
                     ? "What broke, and the corrective action?"
                     : "Progress note for the next STOP review"
               }
-              className="mt-2 min-h-16 text-[13px]"
+              className="mt-2 min-h-16 text-body"
             />
             <div className="mt-2 flex justify-end">
               <Button size="sm" variant="soft" disabled={!ciNote.trim()} onClick={addCi}>
@@ -424,20 +424,20 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
                       <Icon className="size-3.5" />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-2 text-[12px]">
+                      <div className="flex flex-wrap items-center gap-2 text-body">
                         <Badge tone={m.tone}>{m.short}</Badge>
                         <span className="font-medium">{personById(c.by).name}</span>
                         <span className="text-muted-foreground">{fmtStamp(c.date, true)}</span>
                         {c.value !== undefined && <span className="text-muted-foreground tabular">· reading {fmtValue(c.value, goal.unit)}</span>}
                       </div>
-                      <p className="mt-1 text-[13px] leading-relaxed">{c.note}</p>
+                      <p className="mt-1 text-body leading-relaxed">{c.note}</p>
                     </div>
                   </motion.li>
                 );
               })}
             </AnimatePresence>
             {goal.checkIns.length === 0 && (
-              <li className="flex items-center gap-2 text-[13px] text-muted-foreground">
+              <li className="flex items-center gap-2 text-body text-muted-foreground">
                 <History className="size-4" /> No check-ins yet — the first one sets the tone for the next STOP review.
               </li>
             )}
@@ -446,7 +446,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
       </DialogBody>
 
       <DialogFooter className="sticky bottom-0 items-center bg-popover">
-        <span className="mr-auto text-[12px] text-muted-foreground">
+        <span className="mr-auto text-body text-muted-foreground">
           {needsReason ? "Reason required for manual override" : dirty ? "Unsaved changes" : "All changes saved"}
         </span>
         <Button variant="outline" size="sm" onClick={onClose}>
@@ -461,7 +461,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <h4 className="text-[13px] font-semibold tracking-tight">{children}</h4>;
+  return <h4 className="text-body font-semibold tracking-tight">{children}</h4>;
 }
 
 function NumField({
@@ -485,13 +485,13 @@ function NumField({
     <div className="space-y-1.5">
       <Label className="flex items-center justify-between">
         {label}
-        {hint && <span className="text-[11px] font-normal text-muted-foreground">{hint}</span>}
+        {hint && <span className="text-body font-normal text-muted-foreground">{hint}</span>}
       </Label>
       <div className="relative">
         <Input value={value} onChange={(e) => onChange(e.target.value)} disabled={disabled} inputMode="decimal" className="pr-8 tabular" />
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">{suffix}</span>
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-body text-muted-foreground">{suffix}</span>
       </div>
-      {unit === "inr" && Number.isFinite(n) && <div className="text-[11.5px] text-muted-foreground tabular">{fmtValue(n, unit)}</div>}
+      {unit === "inr" && Number.isFinite(n) && <div className="text-body text-muted-foreground tabular">{fmtValue(n, unit)}</div>}
     </div>
   );
 }

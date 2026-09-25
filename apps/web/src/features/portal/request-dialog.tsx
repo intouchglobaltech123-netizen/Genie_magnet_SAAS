@@ -76,7 +76,7 @@ export function RequestDialog({ open, onOpenChange }: { open: boolean; onOpenCha
               <Input type="date" value={by} onChange={(e) => setBy(e.target.value)} />
             </Field>
           </div>
-          <div className="flex gap-2.5 rounded-xl bg-accent-soft p-3 text-[12.5px] text-accent">
+          <div className="flex gap-2.5 rounded-xl bg-primary-soft p-3 text-body text-primary">
             <Sparkles className="mt-0.5 size-4 shrink-0" />
             You&apos;ll receive an estimate with price and delivery date. Work begins only after you approve it here.
           </div>

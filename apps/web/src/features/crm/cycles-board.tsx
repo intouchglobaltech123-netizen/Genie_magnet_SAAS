@@ -46,7 +46,7 @@ export function CyclesBoard() {
         }
       />
 
-      <div className="mb-5 flex items-start gap-3 rounded-2xl border border-info/30 bg-info-soft/60 p-4 text-[13px]">
+      <div className="mb-5 flex items-start gap-3 rounded-2xl border border-info/30 bg-info-soft/60 p-4 text-body">
         <Zap className="mt-0.5 size-4 shrink-0 text-info" />
         <div>
           <div className="font-medium">Auto-generated 7 days before cycle start</div>
@@ -57,7 +57,7 @@ export function CyclesBoard() {
         </div>
       </div>
 
-      <div className="mb-2 hidden grid-cols-[260px_repeat(3,1fr)] gap-3 px-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground lg:grid">
+      <div className="mb-2 hidden grid-cols-[260px_repeat(3,1fr)] gap-3 px-1 text-body font-medium uppercase tracking-wider text-muted-foreground lg:grid">
         <span>Agreement</span>
         <span>Aug 2026 · closed</span>
         <span>Sep 2026 · in progress</span>
@@ -73,7 +73,7 @@ export function CyclesBoard() {
         <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="size-5 text-accent" /> Generate October 2026 cycles
+              <Sparkles className="size-5 text-primary" /> Generate October 2026 cycles
             </DialogTitle>
             <DialogDescription>
               {pending.length} cycles · {pendingUnits} deliverables will be created from agreement units, with codes, due dates and owners.
@@ -85,8 +85,8 @@ export function CyclesBoard() {
               return (
                 <div key={a.id} className="rounded-xl border border-border p-3">
                   <div className="flex items-center justify-between">
-                    <div className="text-[13px] font-semibold">{c.name}</div>
-                    <span className="text-[12px] text-muted-foreground tabular">{inr(a.monthlyFee)}</span>
+                    <div className="text-body font-semibold">{c.name}</div>
+                    <span className="text-body text-muted-foreground tabular">{inr(a.monthlyFee)}</span>
                   </div>
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {a.units.map((u) => (
@@ -98,8 +98,8 @@ export function CyclesBoard() {
                       {c.code}-1026-01 … {c.code}-1026-{String(octPromised(a)).padStart(2, "0")}
                     </Badge>
                   </div>
-                  {a.status === "renewal-due" && <div className="mt-2 text-[12px] text-warning">Renewal due 31 Oct — cycle generated, renewal reminder attached</div>}
-                  {c.category === "Dangerous" && <div className="mt-2 text-[12px] text-danger">Payment risk — shoots held until ₹80,000 is cleared</div>}
+                  {a.status === "renewal-due" && <div className="mt-2 text-body text-warning">Renewal due 31 Oct — cycle generated, renewal reminder attached</div>}
+                  {c.category === "Dangerous" && <div className="mt-2 text-body text-danger">Payment risk — shoots held until ₹80,000 is cleared</div>}
                 </div>
               );
             })}
@@ -133,13 +133,13 @@ function Row({ a, octGenerated }: { a: LiveAgreement; octGenerated: boolean }) {
   return (
     <Card className="grid gap-3 p-3 lg:grid-cols-[260px_repeat(3,1fr)] lg:items-stretch">
       <Link href={`/agreements/${a.id}`} className="flex flex-col justify-center rounded-xl px-2 py-1 hover:bg-muted/50">
-        <div className="text-[13.5px] font-semibold">{c.name}</div>
+        <div className="text-body font-semibold">{c.name}</div>
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           <CategoryBadge category={c.category} />
           {paused && <Badge tone="neutral">Paused</Badge>}
           {a.status === "renewal-due" && <Badge tone="warning">Renewal due</Badge>}
         </div>
-        <div className="mt-1.5 text-[12px] text-muted-foreground">
+        <div className="mt-1.5 text-body text-muted-foreground">
           {a.packageName} · {unitsTotal(a)} units · {inrCompact(a.monthlyFee)}
         </div>
       </Link>
@@ -153,7 +153,7 @@ function Row({ a, octGenerated }: { a: LiveAgreement; octGenerated: boolean }) {
 function CycleCell({ cy, isOct, generated, paused }: { cy: Cycle & { synthetic?: boolean }; isOct: boolean; generated: boolean; paused: boolean }) {
   if (isOct && (paused || !generated)) {
     return (
-      <div className="flex flex-col justify-center rounded-xl border border-dashed border-border p-3 text-[12px] text-muted-foreground">
+      <div className="flex flex-col justify-center rounded-xl border border-dashed border-border p-3 text-body text-muted-foreground">
         <div className="flex items-center justify-between">
           <span className="font-medium text-foreground">{cy.label}</span>
           <Badge tone="neutral">{paused ? "Paused" : "Pending"}</Badge>
@@ -170,19 +170,19 @@ function CycleCell({ cy, isOct, generated, paused }: { cy: Cycle & { synthetic?:
       layout
       initial={isOct ? { opacity: 0, scale: 0.97 } : false}
       animate={{ opacity: 1, scale: 1 }}
-      className={cn("rounded-xl border p-3", cy.status === "in-progress" ? "border-accent/30 bg-accent-soft/30" : "border-border bg-card")}
+      className={cn("rounded-xl border p-3", cy.status === "in-progress" ? "border-primary/30 bg-primary-soft/30" : "border-border bg-card")}
     >
       <div className="flex items-center justify-between">
-        <span className="text-[13px] font-medium">{cy.label}</span>
+        <span className="text-body font-medium">{cy.label}</span>
         <Badge tone={statusTone[cy.status]} dot>
           {cy.status}
         </Badge>
       </div>
       <div className="mt-2.5 flex h-2 overflow-hidden rounded-full bg-muted">
         <div className="bg-success transition-all" style={{ width: `${(cy.delivered / cy.promised) * 100}%` }} />
-        <div className="bg-accent/50 transition-all" style={{ width: `${(cy.inProgress / cy.promised) * 100}%` }} />
+        <div className="bg-primary/50 transition-all" style={{ width: `${(cy.inProgress / cy.promised) * 100}%` }} />
       </div>
-      <div className="mt-2 flex items-center justify-between text-[12px] tabular">
+      <div className="mt-2 flex items-center justify-between text-body tabular">
         <span>
           <b>{cy.delivered}</b>
           <span className="text-muted-foreground">/{cy.promised} delivered</span>

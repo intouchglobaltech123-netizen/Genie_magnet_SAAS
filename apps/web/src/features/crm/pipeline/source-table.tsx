@@ -59,7 +59,7 @@ export function SourceTable() {
                 <TD>
                   <div className="flex items-center gap-2">
                     <div className="h-1.5 w-28 overflow-hidden rounded-full bg-muted">
-                      <div className={cn("h-full rounded-full", r.conv === best ? "bg-success" : "bg-accent")} style={{ width: `${(r.conv / best) * 100}%` }} />
+                      <div className={cn("h-full rounded-full", r.conv === best ? "bg-success" : "bg-primary")} style={{ width: `${(r.conv / best) * 100}%` }} />
                     </div>
                     <span className={cn("tabular", r.conv === best && "font-semibold text-success")}>{pct(r.conv)}</span>
                   </div>
@@ -70,7 +70,7 @@ export function SourceTable() {
             ))}
           </TBody>
         </Table>
-        <p className="px-3 pb-2 pt-3 text-[12px] text-muted-foreground">
+        <p className="px-3 pb-2 pt-3 text-body text-muted-foreground">
           Referrals and BNI convert 4–6× better than paid ads. Meta Ads bring volume but only ~6% close — consider a referral incentive for existing clients.
         </p>
       </CardContent>

@@ -24,7 +24,7 @@ export function ByOwner({ goals }: { goals: Goal[] }) {
     .sort((a, b) => b.counts["off-track"] - a.counts["off-track"] || b.counts["at-risk"] - a.counts["at-risk"] || b.list.length - a.list.length);
 
   if (!groups.length) {
-    return <Card className="px-5 py-12 text-center text-[13px] text-muted-foreground">No goals match these filters.</Card>;
+    return <Card className="px-5 py-12 text-center text-body text-muted-foreground">No goals match these filters.</Card>;
   }
 
   return (
@@ -35,8 +35,8 @@ export function ByOwner({ goals }: { goals: Goal[] }) {
             <div className="flex min-w-0 items-center gap-3">
               <Avatar name={person.name} size="lg" />
               <div className="min-w-0">
-                <div className="truncate text-[14px] font-semibold">{person.name}</div>
-                <div className="truncate text-[12.5px] text-muted-foreground">
+                <div className="truncate text-body font-semibold">{person.name}</div>
+                <div className="truncate text-body text-muted-foreground">
                   {person.role} · {person.department}
                 </div>
               </div>
@@ -62,8 +62,8 @@ export function ByOwner({ goals }: { goals: Goal[] }) {
                   )}
                 >
                   <div className="min-w-0">
-                    <div className="truncate text-[13.5px] font-medium">{g.title}</div>
-                    <div className="mt-1 flex items-center gap-2 text-[11.5px] text-muted-foreground">
+                    <div className="truncate text-body font-medium">{g.title}</div>
+                    <div className="mt-1 flex items-center gap-2 text-body text-muted-foreground">
                       <TypeBadge type={g.type} />
                       <span className="truncate tabular">
                         {fmtValue(g.actual, g.unit)} / {fmtValue(g.target, g.unit)}

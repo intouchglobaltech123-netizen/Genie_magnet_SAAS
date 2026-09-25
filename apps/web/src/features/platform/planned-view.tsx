@@ -22,8 +22,8 @@ export function PlannedView({ slug }: { slug: string }) {
     return (
       <Card className="bg-grid">
         <div className="mx-auto max-w-md px-6 py-20 text-center">
-          <h2 className="text-[18px] font-semibold">Module not found</h2>
-          <p className="mt-1 text-[13.5px] text-muted-foreground">This planned module doesn&apos;t exist. See the full list on the module map.</p>
+          <h2 className="text-subheading font-semibold">Module not found</h2>
+          <p className="mt-1 text-body text-muted-foreground">This planned module doesn&apos;t exist. See the full list on the module map.</p>
           <Button asChild variant="outline" className="mt-5">
             <Link href="/modules">
               <ArrowLeft /> Module map
@@ -44,7 +44,7 @@ export function PlannedView({ slug }: { slug: string }) {
         eyebrow={item.moduleNo ? <span>Module {item.moduleNo}</span> : undefined}
         title={
           <span className="inline-flex items-center gap-3">
-            <span className="inline-flex size-9 items-center justify-center rounded-xl bg-accent-soft text-accent">
+            <span className="inline-flex size-9 items-center justify-center rounded-xl bg-primary-soft text-primary">
               <Icon className="size-[18px]" />
             </span>
             {item.title}
@@ -61,7 +61,7 @@ export function PlannedView({ slug }: { slug: string }) {
       />
 
       <section>
-        <div className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">What it will do</div>
+        <div className="mb-3 text-body font-semibold uppercase tracking-wider text-muted-foreground">What it will do</div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {mod.capabilities.slice(0, 4).map((c) => {
             const CIcon = c.icon;
@@ -70,8 +70,8 @@ export function PlannedView({ slug }: { slug: string }) {
                 <span className="inline-flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
                   <CIcon className="size-4" />
                 </span>
-                <div className="mt-3 text-[14px] font-semibold tracking-tight">{c.title}</div>
-                <p className="mt-1 text-[13px] text-muted-foreground">{c.desc}</p>
+                <div className="mt-3 text-body font-semibold tracking-tight">{c.title}</div>
+                <p className="mt-1 text-body text-muted-foreground">{c.desc}</p>
               </Card>
             );
           })}
@@ -86,8 +86,8 @@ export function PlannedView({ slug }: { slug: string }) {
                     <CIcon className="size-4" />
                   </span>
                   <div>
-                    <div className="text-[14px] font-semibold tracking-tight">{c.title}</div>
-                    <p className="mt-0.5 text-[13px] text-muted-foreground">{c.desc}</p>
+                    <div className="text-body font-semibold tracking-tight">{c.title}</div>
+                    <p className="mt-0.5 text-body text-muted-foreground">{c.desc}</p>
                   </div>
                 </Card>
               );
@@ -121,7 +121,7 @@ export function PlannedView({ slug }: { slug: string }) {
               </div>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-[13px]">
+              <ul className="space-y-2 text-body">
                 {mod.dependencies.map((d) => (
                   <li key={d} className="flex gap-2.5">
                     <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-muted-foreground/50" />
@@ -141,21 +141,21 @@ export function PlannedView({ slug }: { slug: string }) {
               </div>
             </CardHeader>
             <CardContent>
-              <ol className="space-y-2.5 text-[13px]">
+              <ol className="space-y-2.5 text-body">
                 {mod.questions.map((q, i) => (
                   <li key={q} className="flex gap-2.5">
-                    <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-gold-soft text-[11px] font-semibold text-gold tabular">{i + 1}</span>
+                    <span className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-accent-soft text-body font-semibold text-accent-strong tabular">{i + 1}</span>
                     {q}
                   </li>
                 ))}
               </ol>
               <div className="mt-4 border-t border-border pt-4">
                 {notes.map((n, i) => (
-                  <div key={i} className="mb-2 rounded-lg bg-accent-soft/60 px-3 py-2 text-[12.5px]">
+                  <div key={i} className="mb-2 rounded-lg bg-primary-soft/60 px-3 py-2 text-body">
                     {n}
                   </div>
                 ))}
-                <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add an answer or a requirement…" className="min-h-16 text-[13px]" />
+                <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add an answer or a requirement…" className="min-h-16 text-body" />
                 <Button
                   size="sm"
                   variant="soft"

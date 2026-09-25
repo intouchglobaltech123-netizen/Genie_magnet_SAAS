@@ -131,7 +131,7 @@ export function SopsView() {
                   key={a}
                   onClick={() => setArea(a)}
                   className={cn(
-                    "cursor-pointer rounded-full border px-2.5 py-1 text-[12px] font-medium transition",
+                    "cursor-pointer rounded-full border px-2.5 py-1 text-body font-medium transition",
                     area === a ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -155,13 +155,13 @@ export function SopsView() {
               {list.map((s) => (
                 <TR key={s.id} className="cursor-pointer" onClick={() => setOpenId(s.id)}>
                   <TD className="max-w-[320px]">
-                    <div className="font-mono text-[11px] text-muted-foreground">{s.code}</div>
+                    <div className="font-mono text-body text-muted-foreground">{s.code}</div>
                     <div className="truncate font-medium">{s.title}</div>
                   </TD>
                   <TD>
                     <div className="flex items-center gap-2">
                       <Avatar name={s.owner} size="sm" />
-                      <div className="text-[12.5px] leading-tight">
+                      <div className="text-body leading-tight">
                         <div>{s.owner}</div>
                         <div className="text-muted-foreground">{s.reviewer}</div>
                       </div>
@@ -244,7 +244,7 @@ function ComplianceCard({ sops }: { sops: Sop[] }) {
           const rate = ((s.runsThisMonth - s.failures) / s.runsThisMonth) * 100;
           return (
             <div key={s.id}>
-              <div className="flex items-center justify-between text-[12.5px]">
+              <div className="flex items-center justify-between text-body">
                 <span className="truncate">{s.area}</span>
                 <span className="tabular text-muted-foreground">
                   {s.runsThisMonth - s.failures}/{s.runsThisMonth} · <span className={cn("font-medium", rate < 90 ? "text-warning" : "text-success")}>{rate.toFixed(0)}%</span>
@@ -255,14 +255,14 @@ function ComplianceCard({ sops }: { sops: Sop[] }) {
           );
         })}
         <div className="border-t border-border pt-3">
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Failures & exceptions</div>
+          <div className="mb-2 text-body font-semibold uppercase tracking-wider text-muted-foreground">Failures & exceptions</div>
           <div className="space-y-2.5">
             {complianceEvents.map((e) => (
-              <div key={e.text} className="flex gap-2.5 text-[12.5px]">
+              <div key={e.text} className="flex gap-2.5 text-body">
                 <span className={cn("mt-1.5 size-1.5 shrink-0 rounded-full", e.kind === "failure" ? "bg-danger" : "bg-warning")} />
                 <div>
                   <div>{e.text}</div>
-                  <div className="text-[11.5px] text-muted-foreground">
+                  <div className="text-body text-muted-foreground">
                     {e.sop} · {e.who} · {fmtDate(e.date)}
                   </div>
                 </div>
@@ -312,7 +312,7 @@ function SopSheet({
         <DialogContent side="right" className="max-w-2xl">
           <DialogHeader>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-[12px] text-muted-foreground">{sop.code}</span>
+              <span className="font-mono text-body text-muted-foreground">{sop.code}</span>
               <Badge tone="outline" className="font-mono">
                 {sop.version}
               </Badge>
@@ -331,8 +331,8 @@ function SopSheet({
                 ["Approver", sop.approver],
               ].map(([k, v]) => (
                 <div key={k} className="rounded-xl border border-border p-3">
-                  <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
-                  <div className="mt-0.5 text-[13px] font-medium">{v}</div>
+                  <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
+                  <div className="mt-0.5 text-body font-medium">{v}</div>
                 </div>
               ))}
             </div>
@@ -347,20 +347,20 @@ function SopSheet({
                 <ol className="relative space-y-4 border-l border-border pl-5">
                   {sop.steps.map((s, i) => (
                     <li key={s.title} className="relative">
-                      <span className="absolute -left-[31px] top-0 inline-flex size-5 items-center justify-center rounded-full border border-border bg-card text-[10px] font-semibold tabular">
+                      <span className="absolute -left-[31px] top-0 inline-flex size-5 items-center justify-center rounded-full border border-border bg-card text-body font-semibold tabular">
                         {i + 1}
                       </span>
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-[13.5px] font-medium">{s.title}</span>
+                        <span className="text-body font-medium">{s.title}</span>
                         <Badge>{s.role}</Badge>
                       </div>
-                      <p className="mt-0.5 text-[12.5px] text-muted-foreground">{s.detail}</p>
+                      <p className="mt-0.5 text-body text-muted-foreground">{s.detail}</p>
                     </li>
                   ))}
                 </ol>
               </TabsContent>
               <TabsContent value="checklist" className="space-y-4">
-                <div className="flex items-center justify-between rounded-xl bg-muted/60 px-3 py-2 text-[12px]">
+                <div className="flex items-center justify-between rounded-xl bg-muted/60 px-3 py-2 text-body">
                   <span className="text-muted-foreground">Preview a run — tick items to see evidence prompts</span>
                   <span className="font-medium tabular">
                     {Object.values(done).filter(Boolean).length}/{sop.checklist.length}
@@ -368,7 +368,7 @@ function SopSheet({
                 </div>
                 {groups.map(([g, items]) => (
                   <div key={g}>
-                    <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{g}</div>
+                    <div className="mb-1.5 text-body font-semibold uppercase tracking-wider text-muted-foreground">{g}</div>
                     <div className="divide-y divide-border rounded-xl border border-border">
                       {items.map((c) => {
                         const Icon = evidenceIcon[c.evidence];
@@ -377,7 +377,7 @@ function SopSheet({
                           <button
                             key={key}
                             onClick={() => setDone((d) => ({ ...d, [key]: !d[key] }))}
-                            className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left text-[13px] hover:bg-muted/50"
+                            className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left text-body hover:bg-muted/50"
                           >
                             <span
                               className={cn(
@@ -389,7 +389,7 @@ function SopSheet({
                             </span>
                             <span className={cn("flex-1", done[key] && "text-muted-foreground line-through")}>{c.item}</span>
                             {c.mandatory && <Badge tone="danger">Mandatory</Badge>}
-                            <span className="inline-flex w-24 items-center gap-1 text-[11.5px] text-muted-foreground">
+                            <span className="inline-flex w-24 items-center gap-1 text-body text-muted-foreground">
                               <Icon className="size-3.5" /> {evidenceMeta[c.evidence].label}
                             </span>
                           </button>
@@ -403,14 +403,14 @@ function SopSheet({
                 <div className="space-y-3">
                   {sop.history.map((h, i) => (
                     <div key={h.version + h.date} className="flex gap-3">
-                      <span className={cn("mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-lg", i === 0 ? "bg-accent-soft text-accent" : "bg-muted text-muted-foreground")}>
+                      <span className={cn("mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-lg", i === 0 ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground")}>
                         <GitBranch className="size-3.5" />
                       </span>
-                      <div className="text-[13px]">
+                      <div className="text-body">
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-medium">{h.version}</span>
                           {i === 0 && <Badge tone="accent">Current</Badge>}
-                          <span className="text-[12px] text-muted-foreground">
+                          <span className="text-body text-muted-foreground">
                             {fmtDate(h.date, { day: "numeric", month: "short", year: "numeric" })} · {h.by}
                           </span>
                         </div>
@@ -423,12 +423,12 @@ function SopSheet({
             </Tabs>
 
             {publishing && (
-              <div className="mt-5 space-y-3 rounded-xl border border-accent/30 bg-accent-soft/40 p-4">
-                <div className="text-[13px] font-semibold">
+              <div className="mt-5 space-y-3 rounded-xl border border-primary/30 bg-primary-soft/40 p-4">
+                <div className="text-body font-semibold">
                   Publish {sop.status === "published" ? bump(sop.version) : sop.version.startsWith("v0") ? "v1.0" : sop.version}
                 </div>
                 <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="What changed? e.g. Added drone battery check to kit list" />
-                <div className="rounded-lg bg-card p-3 text-[12.5px]">
+                <div className="rounded-lg bg-card p-3 text-body">
                   <div className="flex items-start gap-2">
                     <FileText className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                     <span>
@@ -437,7 +437,7 @@ function SopSheet({
                     </span>
                   </div>
                   <label className="mt-2 flex cursor-pointer items-center gap-2 pl-6">
-                    <input type="checkbox" checked={migrate} onChange={(e) => setMigrate(e.target.checked)} className="accent-[var(--accent)]" />
+                    <input type="checkbox" checked={migrate} onChange={(e) => setMigrate(e.target.checked)} className="accent-[var(--color-primary)]" />
                     Migrate active runs to the new version
                   </label>
                 </div>

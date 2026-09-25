@@ -80,12 +80,12 @@ export function VendorsTab() {
               <TR key={v.id}>
                 <TD className="pl-5">
                   <div className="flex items-center gap-2.5">
-                    <span className={cn("inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-[12px] font-semibold", style.soft, style.text)}>
+                    <span className={cn("inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-body font-semibold", style.soft, style.text)}>
                       {v.name.charAt(0)}
                     </span>
                     <div className="min-w-0">
                       <div className="truncate font-medium">{v.name}</div>
-                      <div className="truncate text-[11.5px] text-muted-foreground">
+                      <div className="truncate text-body text-muted-foreground">
                         {v.city} · {v.contact}
                       </div>
                     </div>
@@ -95,21 +95,21 @@ export function VendorsTab() {
                   <Badge tone="neutral">{v.category}</Badge>
                 </TD>
                 <TD>
-                  <div className={cn("text-[12px]", validGstin ? "font-mono" : "text-muted-foreground")}>{v.gstin}</div>
-                  {validGstin && <div className="text-[10.5px] text-muted-foreground">{STATE_CODES[v.gstin.slice(0, 2)] ?? "Other state"}</div>}
+                  <div className={cn("text-body", validGstin ? "font-mono" : "text-muted-foreground")}>{v.gstin}</div>
+                  {validGstin && <div className="text-body text-muted-foreground">{STATE_CODES[v.gstin.slice(0, 2)] ?? "Other state"}</div>}
                 </TD>
-                <TD className="text-[12.5px] text-muted-foreground">{v.terms}</TD>
+                <TD className="text-body text-muted-foreground">{v.terms}</TD>
                 <TD className="text-right">
                   <div className="font-medium tabular">{inr(v.ytdSpend)}</div>
                   <div className="ml-auto mt-1 h-1 w-20 overflow-hidden rounded-full bg-muted">
                     <div className={cn("h-full rounded-full", style.strip)} style={{ width: `${(v.ytdSpend / maxSpend) * 100}%` }} />
                   </div>
                 </TD>
-                <TD className="text-[12.5px]">
+                <TD className="text-body">
                   {v.lastPayment.date ? (
                     <>
                       <div className="tabular">{inr(v.lastPayment.amount)}</div>
-                      <div className="text-[11px] text-muted-foreground">{fmtDate(v.lastPayment.date)}</div>
+                      <div className="text-body text-muted-foreground">{fmtDate(v.lastPayment.date)}</div>
                     </>
                   ) : (
                     <span className="text-muted-foreground">—</span>
@@ -117,8 +117,8 @@ export function VendorsTab() {
                 </TD>
                 <TD>
                   {v.rating ? (
-                    <span className="inline-flex items-center gap-1 text-[12.5px] tabular">
-                      <Star className="size-3.5 fill-gold text-gold" /> {v.rating.toFixed(1)}
+                    <span className="inline-flex items-center gap-1 text-body tabular">
+                      <Star className="size-3.5 fill-accent text-accent-strong" /> {v.rating.toFixed(1)}
                     </span>
                   ) : (
                     <Badge tone="outline">New</Badge>
@@ -138,7 +138,7 @@ export function VendorsTab() {
                       Pay {inr(due)}
                     </Button>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[12px] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 text-body text-muted-foreground">
                       <CheckCircle2 className="size-3.5 text-success" /> Nil
                     </span>
                   )}

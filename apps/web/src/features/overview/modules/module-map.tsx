@@ -117,15 +117,15 @@ export function ModuleMap() {
             key={d}
             onClick={() => setFilter(filter === d ? "all" : d)}
             className={cn(
-              "flex cursor-pointer items-center justify-between rounded-2xl border bg-card p-4 text-left shadow-card transition hover:border-accent/40",
-              filter === d ? "border-accent ring-2 ring-accent/15" : "border-border",
+              "flex cursor-pointer items-center justify-between rounded-2xl border bg-card p-4 text-left shadow-card transition hover:border-primary/40",
+              filter === d ? "border-primary ring-2 ring-primary/15" : "border-border",
             )}
           >
             <div>
               <Badge tone={depthMeta[d].tone}>{depthMeta[d].label}</Badge>
-              <div className="mt-2 text-[12.5px] text-muted-foreground">{depthMeta[d].desc}</div>
+              <div className="mt-2 text-body text-muted-foreground">{depthMeta[d].desc}</div>
             </div>
-            <span className="text-[28px] font-semibold tabular">{counts[d]}</span>
+            <span className="text-heading font-semibold tabular">{counts[d]}</span>
           </button>
         ))}
       </div>
@@ -138,7 +138,7 @@ export function ModuleMap() {
                 key={f}
                 onClick={() => setFilter(f)}
                 className={cn(
-                  "h-7 cursor-pointer rounded-md px-3 text-[13px] font-medium capitalize text-muted-foreground transition hover:text-foreground",
+                  "h-7 cursor-pointer rounded-md px-3 text-body font-medium capitalize text-muted-foreground transition hover:text-foreground",
                   filter === f && "bg-card text-foreground shadow-sm",
                 )}
               >
@@ -151,7 +151,7 @@ export function ModuleMap() {
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search modules or #" className="pl-9" />
           </div>
           <div className="flex flex-1 flex-wrap items-center gap-2 lg:justify-end">
-            <div className="flex items-center gap-2 text-[12.5px]">
+            <div className="flex items-center gap-2 text-body">
               <div className="flex h-2 w-40 overflow-hidden rounded-full bg-muted">
                 <div className="bg-success transition-all" style={{ width: `${(tally.approve / 47) * 100}%` }} />
                 <div className="bg-warning transition-all" style={{ width: `${(tally.change / 47) * 100}%` }} />
@@ -172,7 +172,7 @@ export function ModuleMap() {
                 key={k}
                 onClick={() => setFb(fb === k ? "any" : k)}
                 className={cn(
-                  "h-7 cursor-pointer rounded-full border px-2.5 text-[12px] font-medium transition tabular",
+                  "h-7 cursor-pointer rounded-full border px-2.5 text-body font-medium transition tabular",
                   fb === k ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -190,8 +190,8 @@ export function ModuleMap() {
           return (
             <section key={g.id}>
               <div className="mb-3 flex items-baseline gap-3">
-                <h2 className="text-[15px] font-semibold tracking-tight">{g.title}</h2>
-                <span className="text-[12px] text-muted-foreground">
+                <h2 className="text-subheading font-semibold tracking-tight">{g.title}</h2>
+                <span className="text-body text-muted-foreground">
                   Modules {g.range} · {g.desc}
                 </span>
               </div>
@@ -214,7 +214,7 @@ export function ModuleMap() {
             </section>
           );
         })}
-        {!visible.length && <div className="py-20 text-center text-[13px] text-muted-foreground">No modules match these filters.</div>}
+        {!visible.length && <div className="py-20 text-center text-body text-muted-foreground">No modules match these filters.</div>}
       </div>
     </div>
   );
@@ -246,22 +246,22 @@ function ModuleCard({
       <div className="flex items-start gap-3">
         <span
           className={cn(
-            "inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-[12px] font-semibold tabular",
-            m.depth === "demo" ? "bg-accent-soft text-accent" : m.depth === "preview" ? "bg-info-soft text-info" : "bg-muted text-muted-foreground",
+            "inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-body font-semibold tabular",
+            m.depth === "demo" ? "bg-primary-soft text-primary" : m.depth === "preview" ? "bg-info-soft text-info" : "bg-muted text-muted-foreground",
           )}
         >
           {m.no}
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <h3 className={cn("text-[13.5px] font-semibold leading-snug", verdict === "remove" && "line-through")}>{m.name}</h3>
+            <h3 className={cn("text-body font-semibold leading-snug", verdict === "remove" && "line-through")}>{m.name}</h3>
             <Tooltip content={dm.desc}>
               <span>
                 <Badge tone={dm.tone}>{dm.label}</Badge>
               </span>
             </Tooltip>
           </div>
-          <p className="mt-0.5 text-[12.5px] text-muted-foreground">{m.summary}</p>
+          <p className="mt-0.5 text-body text-muted-foreground">{m.summary}</p>
         </div>
       </div>
 
@@ -271,13 +271,13 @@ function ModuleCard({
             <Link
               key={r.href}
               href={r.href}
-              className="inline-flex items-center gap-0.5 rounded-md border border-border px-1.5 py-0.5 text-[11.5px] text-muted-foreground transition hover:border-accent/40 hover:text-accent"
+              className="inline-flex items-center gap-0.5 rounded-md border border-border px-1.5 py-0.5 text-body text-muted-foreground transition hover:border-primary/40 hover:text-primary"
             >
               {r.title} <ArrowUpRight className="size-3" />
             </Link>
           ))
         ) : (
-          <span className="text-[11.5px] text-muted-foreground">No screen yet</span>
+          <span className="text-body text-muted-foreground">No screen yet</span>
         )}
       </div>
 
@@ -291,7 +291,7 @@ function ModuleCard({
                 key={v}
                 onClick={() => onVerdict(v)}
                 className={cn(
-                  "inline-flex h-7 flex-1 cursor-pointer items-center justify-center gap-1 rounded-md border text-[11.5px] font-medium transition",
+                  "inline-flex h-7 flex-1 cursor-pointer items-center justify-center gap-1 rounded-md border text-body font-medium transition",
                   on ? vm.on : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -307,7 +307,7 @@ function ModuleCard({
             value={note}
             onChange={(e) => onNote(e.target.value)}
             placeholder={verdict === "change" ? "What should change?" : "Why remove? (optional)"}
-            className="mt-2 h-8 text-[12.5px]"
+            className="mt-2 h-8 text-body"
           />
         )}
       </div>

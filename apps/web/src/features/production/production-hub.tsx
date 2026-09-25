@@ -106,22 +106,22 @@ export function ProductionHub() {
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search code, title, clip…" className="h-8 w-56 pl-8 text-[13px]" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search code, title, clip…" className="h-8 w-56 pl-8 text-body" />
             </div>
             <Select
-              className="h-8 w-40 text-[13px]"
+              className="h-8 w-40 text-body"
               value={client}
               onValueChange={setClient}
               options={[{ value: "all", label: "All clients" }, ...clients.map((c) => ({ value: c.id, label: c.name }))]}
             />
             <Select
-              className="h-8 w-40 text-[13px]"
+              className="h-8 w-40 text-body"
               value={editor}
               onValueChange={setEditor}
               options={[{ value: "all", label: "All editors" }, ...editors.map((e) => ({ value: e.id, label: e.name }))]}
             />
             <Select
-              className="h-8 w-32 text-[13px]"
+              className="h-8 w-32 text-body"
               value={urgency}
               onValueChange={(u) => setUrgency(u as "all" | Urgency)}
               options={[
@@ -148,7 +148,7 @@ export function ProductionHub() {
           </div>
         </div>
         {filtersOn && (
-          <div className="mt-3 inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
+          <div className="mt-3 inline-flex items-center gap-1.5 text-body text-muted-foreground">
             <Hourglass className="size-3.5" /> Showing {videos.length} of {all.length} videos
           </div>
         )}

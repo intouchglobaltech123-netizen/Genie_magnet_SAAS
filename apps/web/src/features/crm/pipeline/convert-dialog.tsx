@@ -52,7 +52,7 @@ export function ConvertDialog({ lead, onClose }: { lead: Lead | null; onClose: (
               <PartyPopper className="size-5" />
             </motion.div>
             <DialogTitle>Deal won — {lead.company}</DialogTitle>
-            <p className="text-[13px] text-muted-foreground">Convert to agreement. Here&apos;s what Agency OS will set up automatically:</p>
+            <p className="text-body text-muted-foreground">Convert to agreement. Here&apos;s what Agency OS will set up automatically:</p>
           </DialogHeader>
         </div>
         <DialogBody className="space-y-2 pt-2">
@@ -64,12 +64,12 @@ export function ConvertDialog({ lead, onClose }: { lead: Lead | null; onClose: (
               transition={{ delay: 0.05 * i + 0.1 }}
               className="flex items-start gap-3 rounded-xl border border-border p-3"
             >
-              <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
+              <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
                 <r.icon className="size-4" />
               </span>
               <div className="min-w-0">
-                <div className="text-[13px] font-medium">{r.title}</div>
-                <div className="text-[12px] text-muted-foreground">{r.detail}</div>
+                <div className="text-body font-medium">{r.title}</div>
+                <div className="text-body text-muted-foreground">{r.detail}</div>
               </div>
             </motion.div>
           ))}
@@ -100,7 +100,7 @@ export function ConvertDialog({ lead, onClose }: { lead: Lead | null; onClose: (
 
 export function ConvertedNote() {
   return (
-    <Link href="/onboarding" className="text-[11.5px] text-success underline-offset-2 hover:underline">
+    <Link href="/onboarding" className="text-body text-success underline-offset-2 hover:underline">
       Agreement created → onboarding
     </Link>
   );

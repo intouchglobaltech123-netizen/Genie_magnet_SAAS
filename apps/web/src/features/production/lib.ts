@@ -57,19 +57,19 @@ export function relDue(iso: string) {
 // ───────────────────────────── Clients ─────────────────────────────
 
 export const CLIENT_COLOR: Record<string, string> = {
-  "c-kaveri": "var(--chart-1)",
-  "c-lakshmi": "var(--chart-4)",
-  "c-nova": "var(--chart-2)",
-  "c-bright": "var(--chart-3)",
-  "c-urban": "var(--info)",
+  "c-kaveri": "var(--color-chart-1)",
+  "c-lakshmi": "var(--color-chart-4)",
+  "c-nova": "var(--color-chart-2)",
+  "c-bright": "var(--color-chart-3)",
+  "c-urban": "var(--color-info)",
 };
 
 export function clientTint(clientId: string, strength = 14): CSSProperties {
-  const c = CLIENT_COLOR[clientId] ?? "var(--chart-5)";
+  const c = CLIENT_COLOR[clientId] ?? "var(--color-chart-5)";
   return { backgroundColor: `color-mix(in srgb, ${c} ${strength}%, transparent)`, color: c };
 }
 
-export const clientDot = (clientId: string): CSSProperties => ({ backgroundColor: CLIENT_COLOR[clientId] ?? "var(--chart-5)" });
+export const clientDot = (clientId: string): CSSProperties => ({ backgroundColor: CLIENT_COLOR[clientId] ?? "var(--color-chart-5)" });
 
 // ───────────────────────────── Stages & gates ─────────────────────────────
 

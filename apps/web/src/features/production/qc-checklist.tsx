@@ -74,7 +74,7 @@ export function QcChecklist({ v, dense }: { v: Video; dense?: boolean }) {
       <div className={cn("flex flex-wrap items-center justify-between gap-3", dense ? "mb-3" : "mb-4")}>
         <div className="flex min-w-[220px] flex-1 items-center gap-3">
           <Progress value={(counts.pass / QC_CHECKS.length) * 100} tone={counts.fail ? "danger" : counts.pass === QC_CHECKS.length ? "success" : "accent"} className="max-w-56" />
-          <span className="text-[12px] tabular text-muted-foreground">
+          <span className="text-body tabular text-muted-foreground">
             <b className="text-success">{counts.pass}</b> pass · <b className={counts.fail ? "text-danger" : ""}>{counts.fail}</b> fail · {counts.pending} pending
           </span>
         </div>
@@ -84,7 +84,7 @@ export function QcChecklist({ v, dense }: { v: Video; dense?: boolean }) {
       </div>
 
       {corrective.length > 0 && (
-        <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-danger/30 bg-danger-soft p-3 text-[12.5px]">
+        <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-danger/30 bg-danger-soft p-3 text-body">
           <ShieldAlert className="mt-0.5 size-4 shrink-0 text-danger" />
           <div>
             <div className="font-semibold text-danger">Mandatory check failed — stage held, corrective task created</div>
@@ -107,15 +107,15 @@ export function QcChecklist({ v, dense }: { v: Video; dense?: boolean }) {
               <div className="flex flex-wrap items-center gap-3">
                 <span
                   className={cn(
-                    "inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold tabular",
+                    "inline-flex size-6 shrink-0 items-center justify-center rounded-full text-body font-semibold tabular",
                     val === "pass" ? "bg-success-soft text-success" : val === "fail" ? "bg-danger-soft text-danger" : "bg-muted text-muted-foreground",
                   )}
                 >
                   {val === "pass" ? <Check className="size-3.5" /> : val === "fail" ? <X className="size-3.5" /> : i + 1}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[13px] font-medium">{c}</div>
-                  {!dense && <div className="text-[12px] text-muted-foreground">{QC_HINT[c]}</div>}
+                  <div className="text-body font-medium">{c}</div>
+                  {!dense && <div className="text-body text-muted-foreground">{QC_HINT[c]}</div>}
                 </div>
                 <Segmented<QcVal>
                   value={val}
@@ -134,7 +134,7 @@ export function QcChecklist({ v, dense }: { v: Video; dense?: boolean }) {
                     value={notes?.[c] ?? ""}
                     onChange={(e) => setNote(v.id, c, e.target.value)}
                     placeholder="Corrective action — what must be fixed, by whom?"
-                    className="h-8 text-[12.5px]"
+                    className="h-8 text-body"
                   />
                 </div>
               )}

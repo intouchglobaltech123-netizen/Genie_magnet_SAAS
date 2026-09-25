@@ -27,7 +27,7 @@ export function AgreementDetail({ id }: { id: string }) {
   if (!a) {
     return (
       <div className="py-24 text-center">
-        <div className="text-[15px] font-semibold">Agreement not found</div>
+        <div className="text-subheading font-semibold">Agreement not found</div>
         <Button variant="link" asChild>
           <Link href="/agreements">Back to agreements</Link>
         </Button>
@@ -37,7 +37,7 @@ export function AgreementDetail({ id }: { id: string }) {
   const c = clientById(a.clientId);
   return (
     <div>
-      <Link href="/agreements" className="mb-3 inline-flex items-center gap-1 text-[12.5px] text-muted-foreground hover:text-foreground">
+      <Link href="/agreements" className="mb-3 inline-flex items-center gap-1 text-body text-muted-foreground hover:text-foreground">
         <ArrowLeft className="size-3.5" /> Agreements
       </Link>
       <PageHeader
@@ -103,8 +103,8 @@ function Overview({ a }: { a: LiveAgreement }) {
           <CardContent className="grid gap-3 sm:grid-cols-3">
             {a.units.map((u) => (
               <div key={u.label} className="rounded-xl border border-border p-4">
-                <div className="text-[28px] font-semibold leading-none tabular">{u.perCycle}</div>
-                <div className="mt-1.5 text-[12.5px] text-muted-foreground">{u.label}</div>
+                <div className="text-heading font-semibold leading-none tabular">{u.perCycle}</div>
+                <div className="mt-1.5 text-body text-muted-foreground">{u.label}</div>
               </div>
             ))}
           </CardContent>
@@ -123,7 +123,7 @@ function Overview({ a }: { a: LiveAgreement }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-[13px]">
+              <ul className="space-y-2 text-body">
                 {a.responsibilities.map((r) => (
                   <li key={r} className="flex gap-2">
                     <CircleDot className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" /> {r}
@@ -139,14 +139,14 @@ function Overview({ a }: { a: LiveAgreement }) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-[13px]">
+              <ul className="space-y-2 text-body">
                 {a.exclusions.map((r) => (
                   <li key={r} className="flex gap-2">
                     <CircleDot className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" /> {r}
                   </li>
                 ))}
               </ul>
-              <p className="mt-3 text-[12px] text-muted-foreground">Anything excluded is raised as an out-of-scope change request with a price.</p>
+              <p className="mt-3 text-body text-muted-foreground">Anything excluded is raised as an out-of-scope change request with a price.</p>
             </CardContent>
           </Card>
         </div>
@@ -158,15 +158,15 @@ function Overview({ a }: { a: LiveAgreement }) {
           </CardHeader>
           <CardContent>
             <Progress value={periodProgress(a) * 100} />
-            <div className="mt-2 flex justify-between text-[12px] text-muted-foreground tabular">
+            <div className="mt-2 flex justify-between text-body text-muted-foreground tabular">
               <span>{d(a.startDate)}</span>
               <span>{d(a.endDate)}</span>
             </div>
             <div className="mt-4 flex items-center gap-2.5 border-t border-border pt-4">
               <Avatar name={owner.name} />
               <div>
-                <div className="text-[13px] font-medium">{owner.name}</div>
-                <div className="text-[12px] text-muted-foreground">Account owner</div>
+                <div className="text-body font-medium">{owner.name}</div>
+                <div className="text-body text-muted-foreground">Account owner</div>
               </div>
             </div>
           </CardContent>
@@ -183,7 +183,7 @@ function Overview({ a }: { a: LiveAgreement }) {
               <div key={p.email} className="flex items-start gap-2.5">
                 <Avatar name={p.name} size="sm" />
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 text-[13px] font-medium">
+                  <div className="flex items-center gap-1.5 text-body font-medium">
                     {p.name}{" "}
                     {p.approver && (
                       <Badge tone="success">
@@ -191,8 +191,8 @@ function Overview({ a }: { a: LiveAgreement }) {
                       </Badge>
                     )}
                   </div>
-                  <div className="text-[12px] text-muted-foreground">{p.title}</div>
-                  <div className="mt-1 flex flex-wrap gap-x-3 text-[11.5px] text-muted-foreground">
+                  <div className="text-body text-muted-foreground">{p.title}</div>
+                  <div className="mt-1 flex flex-wrap gap-x-3 text-body text-muted-foreground">
                     <span className="inline-flex items-center gap-1">
                       <Phone className="size-3" />
                       {p.phone}
@@ -217,7 +217,7 @@ function Overview({ a }: { a: LiveAgreement }) {
             </div>
             {changed && <Badge tone="warning">Amended</Badge>}
           </CardHeader>
-          <CardContent className="space-y-1.5 text-[12.5px]">
+          <CardContent className="space-y-1.5 text-body">
             <Row k="Package" v={orig.packageName} />
             <Row k="Fee" v={`${inr(orig.monthlyFee)}/mo`} />
             <Row k="Term" v={`${d(orig.startDate)} – ${d(orig.endDate)}`} />
@@ -235,8 +235,8 @@ function Overview({ a }: { a: LiveAgreement }) {
 function Fact({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="text-[11.5px] text-muted-foreground">{label}</div>
-      <div className="mt-0.5 text-[13px] font-medium">{value}</div>
+      <div className="text-body text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-body font-medium">{value}</div>
     </div>
   );
 }
@@ -281,9 +281,9 @@ function CyclesTab({ a }: { a: LiveAgreement }) {
                   <div className="flex items-center gap-3">
                     <div className="flex h-2 flex-1 overflow-hidden rounded-full bg-muted">
                       <div className="bg-success" style={{ width: `${(c.delivered / c.promised) * 100}%` }} />
-                      <div className="bg-accent/50" style={{ width: `${(c.inProgress / c.promised) * 100}%` }} />
+                      <div className="bg-primary/50" style={{ width: `${(c.inProgress / c.promised) * 100}%` }} />
                     </div>
-                    <span className="w-24 text-[12px] tabular">
+                    <span className="w-24 text-body tabular">
                       <b>{c.delivered}</b>/{c.promised} {c.inProgress > 0 && <span className="text-muted-foreground">· {c.inProgress} wip</span>}
                     </span>
                   </div>
@@ -298,7 +298,7 @@ function CyclesTab({ a }: { a: LiveAgreement }) {
           })}
         </TBody>
       </Table>
-      {!list.length && <div className="py-10 text-center text-[13px] text-muted-foreground">No cycles yet.</div>}
+      {!list.length && <div className="py-10 text-center text-body text-muted-foreground">No cycles yet.</div>}
     </Card>
   );
 }
@@ -324,11 +324,11 @@ function DeliverablesTab({ a }: { a: LiveAgreement }) {
               <TD className="pl-5">
                 <div className="flex items-center gap-2">
                   <UrgencyIcon urgency={v.urgency} />
-                  <span className="font-mono text-[12px]">{v.code}</span>
+                  <span className="font-mono text-body">{v.code}</span>
                 </div>
               </TD>
               <TD>
-                <Link href={`/production/${v.id}`} className="font-medium hover:text-accent">
+                <Link href={`/production/${v.id}`} className="font-medium hover:text-primary">
                   {v.title}
                 </Link>
               </TD>
@@ -346,7 +346,7 @@ function DeliverablesTab({ a }: { a: LiveAgreement }) {
           ))}
         </TBody>
       </Table>
-      {!videos.length && <div className="py-10 text-center text-[13px] text-muted-foreground">No deliverables in this cycle yet.</div>}
+      {!videos.length && <div className="py-10 text-center text-body text-muted-foreground">No deliverables in this cycle yet.</div>}
     </Card>
   );
 }
@@ -367,17 +367,17 @@ function BillingTab({ a }: { a: LiveAgreement }) {
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="p-4">
-          <div className="text-[12px] text-muted-foreground">Collected to date</div>
-          <div className="mt-1 text-[20px] font-semibold tabular">{inr(paid)}</div>
+          <div className="text-body text-muted-foreground">Collected to date</div>
+          <div className="mt-1 text-heading font-semibold tabular">{inr(paid)}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-[12px] text-muted-foreground">Outstanding</div>
-          <div className={cn("mt-1 text-[20px] font-semibold tabular", outstanding && "text-danger")}>{inr(outstanding)}</div>
+          <div className="text-body text-muted-foreground">Outstanding</div>
+          <div className={cn("mt-1 text-heading font-semibold tabular", outstanding && "text-danger")}>{inr(outstanding)}</div>
         </Card>
         <Card className="p-4">
-          <div className="text-[12px] text-muted-foreground">Terms</div>
-          <div className="mt-1 text-[15px] font-semibold">{a.billing}</div>
-          <div className="text-[12px] text-muted-foreground">+ 18% GST</div>
+          <div className="text-body text-muted-foreground">Terms</div>
+          <div className="mt-1 text-subheading font-semibold">{a.billing}</div>
+          <div className="text-body text-muted-foreground">+ 18% GST</div>
         </Card>
       </div>
       <Card className="overflow-hidden">
@@ -396,7 +396,7 @@ function BillingTab({ a }: { a: LiveAgreement }) {
           <TBody>
             {invoices.map((i) => (
               <TR key={i.no}>
-                <TD className="pl-5 font-mono text-[12px]">{i.no}</TD>
+                <TD className="pl-5 font-mono text-body">{i.no}</TD>
                 <TD>{i.period}</TD>
                 <TD className="tabular text-muted-foreground">{fmtDate(i.issued)}</TD>
                 <TD className="tabular text-muted-foreground">{fmtDate(i.due)}</TD>
@@ -449,15 +449,15 @@ function ChangesTab({ a }: { a: LiveAgreement }) {
                   className={cn(
                     "relative z-10 inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground",
                     ch.kind === "renew" && "border-success/40 bg-success-soft text-success",
-                    ch.kind === "change" && "border-accent/40 bg-accent-soft text-accent",
+                    ch.kind === "change" && "border-primary/40 bg-primary-soft text-primary",
                     ch.kind === "sign" && "border-info/40 bg-info-soft text-info",
                   )}
                 >
                   <Icon className="size-3.5" />
                 </span>
                 <div className="pt-1">
-                  <div className="text-[13px] font-medium">{ch.text}</div>
-                  <div className="text-[12px] text-muted-foreground">
+                  <div className="text-body font-medium">{ch.text}</div>
+                  <div className="text-body text-muted-foreground">
                     {d(ch.at)} · {ch.kind === "sign" ? "signed by" : ch.by === "System" ? "automated" : "approved by"} {ch.by !== "System" && ch.by}
                   </div>
                 </div>

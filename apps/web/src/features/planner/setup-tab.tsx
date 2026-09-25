@@ -33,13 +33,13 @@ function NumField({
       <div className="flex items-center justify-between">
         <Label>{label}</Label>
         {locked && (
-          <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1 text-body text-muted-foreground">
             <Lock className="size-3" /> Fixed
           </span>
         )}
       </div>
       <div className="relative">
-        {prefix && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{prefix}</span>}
+        {prefix && <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-body text-muted-foreground">{prefix}</span>}
         <Input
           value={value}
           readOnly={locked}
@@ -47,9 +47,9 @@ function NumField({
           onChange={(e) => onChange?.(e.target.value)}
           className={cn("tabular", prefix && "pl-7", suffix && "pr-12", locked && "bg-muted text-muted-foreground")}
         />
-        {suffix && <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">{suffix}</span>}
+        {suffix && <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-body text-muted-foreground">{suffix}</span>}
       </div>
-      {hint && <p className="text-[11.5px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-body text-muted-foreground">{hint}</p>}
     </div>
   );
 }
@@ -114,7 +114,7 @@ export function SetupTab() {
               <NumField label="Return" value={setup.expectedReturn} suffix="%" locked />
               <NumField label="Post-ret." value={setup.postRetirementReturn} suffix="%" locked />
             </div>
-            <p className="mt-2 text-[11.5px] text-muted-foreground">Way To Fortune fixes these so every member plans on the same honest basis.</p>
+            <p className="mt-2 text-body text-muted-foreground">Way To Fortune fixes these so every member plans on the same honest basis.</p>
           </div>
         </CardContent>
       </Card>
@@ -123,21 +123,21 @@ export function SetupTab() {
         <Card className="overflow-hidden">
           <div className="glow-accent grid gap-6 p-6 md:grid-cols-[1.1fr_1fr]">
             <div>
-              <div className="flex items-center gap-2 text-[13px] font-medium text-muted-foreground">
-                <Sparkles className="size-4 text-gold" /> Retirement corpus {setup.name || "you"} needs
+              <div className="flex items-center gap-2 text-body font-medium text-muted-foreground">
+                <Sparkles className="size-4 text-accent-strong" /> Retirement corpus {setup.name || "you"} needs
               </div>
-              <div className="mt-2 text-[40px] font-semibold leading-none tracking-tight tabular">{inr(c.corpus)}</div>
-              <div className="mt-2 text-[13px] text-muted-foreground">
+              <div className="mt-2 text-heading font-semibold leading-none tracking-tight tabular">{inr(c.corpus)}</div>
+              <div className="mt-2 text-body text-muted-foreground">
                 25 × annual expense at retirement · {inrCompact(c.corpus)} by age {setup.retireAge}
               </div>
               <div className="mt-5 grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-border bg-card/70 p-3">
-                  <div className="text-[11.5px] text-muted-foreground">Retire at (with leakage)</div>
-                  <div className="mt-0.5 text-[20px] font-semibold tabular">{Number.isFinite(report.retireAgeWithLeak) ? report.retireAgeWithLeak.toFixed(1) : "—"}</div>
+                  <div className="text-body text-muted-foreground">Retire at (with leakage)</div>
+                  <div className="mt-0.5 text-heading font-semibold tabular">{Number.isFinite(report.retireAgeWithLeak) ? report.retireAgeWithLeak.toFixed(1) : "—"}</div>
                 </div>
                 <div className="rounded-xl border border-success/30 bg-success-soft p-3">
-                  <div className="text-[11.5px] text-success">Retire at (leak stopped)</div>
-                  <div className="mt-0.5 text-[20px] font-semibold text-success tabular">
+                  <div className="text-body text-success">Retire at (leak stopped)</div>
+                  <div className="mt-0.5 text-heading font-semibold text-success tabular">
                     {Number.isFinite(report.retireAgeLeakStopped) ? report.retireAgeLeakStopped.toFixed(1) : "—"}
                   </div>
                 </div>
@@ -147,10 +147,10 @@ export function SetupTab() {
               {rows.map((r) => (
                 <div key={r.label} className="flex items-center justify-between gap-3 px-4 py-2.5">
                   <div>
-                    <div className="text-[13px]">{r.label}</div>
-                    <div className="text-[11px] text-muted-foreground">{r.formula}</div>
+                    <div className="text-body">{r.label}</div>
+                    <div className="text-body text-muted-foreground">{r.formula}</div>
                   </div>
-                  <div className="text-[14px] font-semibold tabular">{r.value}</div>
+                  <div className="text-body font-semibold tabular">{r.value}</div>
                 </div>
               ))}
             </div>
@@ -175,15 +175,15 @@ export function SetupTab() {
                 <AreaChart data={projection} margin={{ left: 4, right: 12, top: 8 }}>
                   <defs>
                     <linearGradient id="gStop" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--chart-2)" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="var(--chart-2)" stopOpacity={0} />
+                      <stop offset="0%" stopColor="var(--color-chart-2)" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="var(--color-chart-2)" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="gSip" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.25} />
-                      <stop offset="100%" stopColor="var(--chart-1)" stopOpacity={0} />
+                      <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+                  <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
                   <XAxis dataKey="age" {...axisProps} tickFormatter={(v) => `${v}`} />
                   <YAxis {...axisProps} width={56} tickFormatter={(v) => inrCompact(v)} />
                   <Tooltip
@@ -191,9 +191,9 @@ export function SetupTab() {
                     labelFormatter={(v) => `Age ${v}`}
                     formatter={(v, n) => [inr(Number(v)), n === "withLeakStopped" ? "Leak stopped → invested" : "Current SIP"]}
                   />
-                  <ReferenceLine y={c.corpus} stroke="var(--gold)" strokeDasharray="5 4" label={{ value: `Target ${inrCompact(c.corpus)}`, fill: "var(--gold)", fontSize: 11, position: "insideTopLeft" }} />
-                  <Area type="monotone" dataKey="withLeakStopped" stroke="var(--chart-2)" strokeWidth={2} fill="url(#gStop)" />
-                  <Area type="monotone" dataKey="invested" stroke="var(--chart-1)" strokeWidth={2} fill="url(#gSip)" />
+                  <ReferenceLine y={c.corpus} stroke="var(--color-chart-3)" strokeDasharray="5 4" label={{ value: `Target ${inrCompact(c.corpus)}`, fill: "var(--color-chart-3)", fontSize: 11, position: "insideTopLeft" }} />
+                  <Area type="monotone" dataKey="withLeakStopped" stroke="var(--color-chart-2)" strokeWidth={2} fill="url(#gStop)" />
+                  <Area type="monotone" dataKey="invested" stroke="var(--color-chart-1)" strokeWidth={2} fill="url(#gSip)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -214,26 +214,26 @@ export function SetupTab() {
               { title: "Leaking", parts: [["Need", 50], ["Want", 25], ["Craving", 25]] as const, note: "Cravings take the rest — savings zero" },
             ].map((s) => (
               <div key={s.title} className="grid items-center gap-3 sm:grid-cols-[110px_1fr_220px]">
-                <div className="text-[13px] font-medium">{s.title}</div>
+                <div className="text-body font-medium">{s.title}</div>
                 <div className="flex h-7 overflow-hidden rounded-lg">
                   {s.parts.map(([k, w]) => (
-                    <div key={k} className="flex items-center justify-center text-[11px] font-medium text-white" style={{ width: `${w}%`, background: kindMeta[k].color }}>
+                    <div key={k} className="flex items-center justify-center text-body font-medium text-white" style={{ width: `${w}%`, background: kindMeta[k].color }}>
                       {k}
                     </div>
                   ))}
                 </div>
-                <div className="text-[12px] text-muted-foreground">{s.note}</div>
+                <div className="text-body text-muted-foreground">{s.note}</div>
               </div>
             ))}
             <div className="mt-2 grid items-center gap-3 border-t border-border pt-4 sm:grid-cols-[110px_1fr_220px]">
-              <div className="text-[13px] font-semibold">Your month</div>
+              <div className="text-body font-semibold">Your month</div>
               <div className="flex h-9 overflow-hidden rounded-lg bg-muted">
                 {actual.map((a) =>
                   a.v > 0 ? (
                     <div
                       key={a.k}
                       title={`${a.k}: ${inr(a.v)}`}
-                      className="flex items-center justify-center overflow-hidden text-[11px] font-medium text-white transition-all duration-500"
+                      className="flex items-center justify-center overflow-hidden text-body font-medium text-white transition-all duration-500"
                       style={{ width: `${(a.v / actualTotal) * 100}%`, background: kindMeta[a.k].color }}
                     >
                       {a.v / actualTotal > 0.09 && `${Math.round((a.v / actualTotal) * 100)}%`}
@@ -241,7 +241,7 @@ export function SetupTab() {
                   ) : null,
                 )}
               </div>
-              <div className="flex flex-wrap gap-x-3 gap-y-1 text-[12px]">
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-body">
                 {actual.map((a) => (
                   <span key={a.k} className="inline-flex items-center gap-1.5">
                     <span className="size-2 rounded-full" style={{ background: kindMeta[a.k].color }} />

@@ -21,7 +21,7 @@ export function ReceiptTile({ expense, className }: { expense: Pick<Expense, "ve
     return (
       <div className={cn("flex h-14 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-md border border-dashed border-danger/50 bg-danger-soft text-danger", className)}>
         <FileX2 className="size-4" />
-        <span className="text-[8px] font-semibold uppercase tracking-wide">No bill</span>
+        <span className="text-body font-semibold uppercase tracking-wide">No bill</span>
       </div>
     );
   }
@@ -30,12 +30,12 @@ export function ReceiptTile({ expense, className }: { expense: Pick<Expense, "ve
       <div style={tornEdge} className="flex h-full w-full flex-col overflow-hidden rounded-t-[5px] border border-border bg-gradient-to-b from-card to-muted">
         <div className={cn("h-1 w-full", style.strip)} />
         <div className="flex flex-1 flex-col items-center px-1 pt-1">
-          <span className={cn("inline-flex size-4 items-center justify-center rounded-full text-[8.5px] font-bold", style.soft, style.text)}>
+          <span className={cn("inline-flex size-4 items-center justify-center rounded-full text-body font-bold", style.soft, style.text)}>
             {expense.vendor.charAt(0).toUpperCase()}
           </span>
           <span className="mt-1 h-px w-6 bg-border" />
           <span className="mt-0.5 h-px w-4 bg-border" />
-          <span className="mt-auto pb-1.5 text-[7.5px] font-semibold tabular text-foreground">{inrCompact(expense.amount).replace("₹", "₹ ")}</span>
+          <span className="mt-auto pb-1.5 text-body font-semibold tabular text-foreground">{inrCompact(expense.amount).replace("₹", "₹ ")}</span>
         </div>
       </div>
     </div>
@@ -48,8 +48,8 @@ export function ReceiptPreview({ expense }: { expense: Expense }) {
     return (
       <div className="flex h-48 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-danger/40 bg-danger-soft text-danger">
         <FileX2 className="size-7" />
-        <div className="text-[13px] font-medium">Receipt not uploaded</div>
-        <div className="text-xs text-muted-foreground">Requester has been reminded on WhatsApp</div>
+        <div className="text-body font-medium">Receipt not uploaded</div>
+        <div className="text-body text-muted-foreground">Requester has been reminded on WhatsApp</div>
       </div>
     );
   }
@@ -57,12 +57,12 @@ export function ReceiptPreview({ expense }: { expense: Expense }) {
   const billNo = `${expense.vendor.replace(/[^A-Z]/g, "").slice(0, 3) || "INV"}/${expense.code.slice(-3)}${expense.date.slice(8, 10)}`;
   return (
     <div className="flex justify-center rounded-xl bg-muted/70 p-5">
-      <div style={tornEdge} className="w-64 bg-gradient-to-b from-card to-card/90 pb-5 font-mono text-[11px] text-foreground shadow-card ring-1 ring-border">
+      <div style={tornEdge} className="w-64 bg-gradient-to-b from-card to-card/90 pb-5 font-mono text-body text-foreground shadow-card ring-1 ring-border">
         <div className={cn("h-1.5 w-full", style.strip)} />
         <div className="px-4 pt-3 text-center">
-          <div className="text-[13px] font-bold uppercase tracking-wide">{expense.vendor}</div>
-          <div className="text-[10px] text-muted-foreground">Tax invoice · {fmtDate(expense.date, { day: "2-digit", month: "short", year: "numeric" })}</div>
-          <div className="text-[10px] text-muted-foreground">Bill no. {billNo}</div>
+          <div className="text-body font-bold uppercase tracking-wide">{expense.vendor}</div>
+          <div className="text-body text-muted-foreground">Tax invoice · {fmtDate(expense.date, { day: "2-digit", month: "short", year: "numeric" })}</div>
+          <div className="text-body text-muted-foreground">Bill no. {billNo}</div>
         </div>
         <div className="mx-4 my-2 border-t border-dashed border-border" />
         <div className="space-y-1 px-4">
@@ -87,11 +87,11 @@ export function ReceiptPreview({ expense }: { expense: Expense }) {
           )}
         </div>
         <div className="mx-4 my-2 border-t border-dashed border-border" />
-        <div className="flex justify-between px-4 text-[13px] font-bold">
+        <div className="flex justify-between px-4 text-body font-bold">
           <span>TOTAL</span>
           <span className="tabular">{inr(expense.amount)}</span>
         </div>
-        <div className="mt-2 px-4 text-center text-[10px] text-muted-foreground">Paid by {expense.mode} · Thank you!</div>
+        <div className="mt-2 px-4 text-center text-body text-muted-foreground">Paid by {expense.mode} · Thank you!</div>
         <div className="mx-auto mt-2 flex h-6 w-40 gap-[2px]">
           {Array.from({ length: 34 }).map((_, i) => (
             <span key={i} className="h-full bg-foreground/80" style={{ width: (i * 7) % 3 === 0 ? 2 : 1 }} />

@@ -27,10 +27,10 @@ export function ScenarioControls({ compact }: { compact?: boolean }) {
     <div className={cn("space-y-4", !compact && "")}>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="flex items-center gap-1.5 text-[13.5px] font-semibold">
-            <FlaskConical className="size-4 text-accent" /> Recalculate scenario
+          <div className="flex items-center gap-1.5 text-body font-semibold">
+            <FlaskConical className="size-4 text-primary" /> Recalculate scenario
           </div>
-          <p className="mt-0.5 text-[12px] text-muted-foreground">What-if layer only — actuals, locked periods and invoices are never touched.</p>
+          <p className="mt-0.5 text-body text-muted-foreground">What-if layer only — actuals, locked periods and invoices are never touched.</p>
         </div>
         <Switch
           checked={on}
@@ -45,7 +45,7 @@ export function ScenarioControls({ compact }: { compact?: boolean }) {
       <div className={cn("space-y-3.5 transition", !on && "pointer-events-none opacity-45")}>
         {sliders.map((s) => (
           <div key={s.key}>
-            <div className="mb-1 flex items-center justify-between text-[12.5px]">
+            <div className="mb-1 flex items-center justify-between text-body">
               <span className="text-muted-foreground">{s.label}</span>
               <span className="font-medium tabular">{s.fmt(sc[s.key])}</span>
             </div>
@@ -56,7 +56,7 @@ export function ScenarioControls({ compact }: { compact?: boolean }) {
               step={s.step}
               value={sc[s.key]}
               onChange={(e) => patch({ [s.key]: Number(e.target.value) })}
-              className="h-1.5 w-full cursor-pointer accent-[var(--accent)]"
+              className="h-1.5 w-full cursor-pointer accent-[var(--color-primary)]"
             />
           </div>
         ))}
@@ -88,20 +88,20 @@ export function CostingSettings() {
             <div key={r.version} className="flex items-start gap-3 rounded-xl border border-border p-3.5">
               <span
                 className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-lg font-mono text-[12px] font-semibold",
-                  r.status === "current" ? "bg-accent-soft text-accent" : "bg-muted text-muted-foreground",
+                  "flex size-8 shrink-0 items-center justify-center rounded-lg font-mono text-body font-semibold",
+                  r.status === "current" ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground",
                 )}
               >
                 {r.version}
               </span>
               <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2 text-[13px] font-medium">
+                <div className="flex flex-wrap items-center gap-2 text-body font-medium">
                   {fmtDate(r.effectiveFrom, { day: "numeric", month: "short", year: "numeric" })} →{" "}
                   {r.effectiveTo ? fmtDate(r.effectiveTo, { day: "numeric", month: "short", year: "numeric" }) : "present"}
                   {r.status === "current" ? <Badge tone="success" dot>Current</Badge> : <Badge tone="neutral"><Lock /> Locked</Badge>}
                 </div>
-                <p className="mt-0.5 text-[12.5px] text-muted-foreground">{r.change}</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">Approved by {r.by}</p>
+                <p className="mt-0.5 text-body text-muted-foreground">{r.change}</p>
+                <p className="mt-1 text-body text-muted-foreground">Approved by {r.by}</p>
               </div>
             </div>
           ))}
@@ -138,10 +138,10 @@ export function CostingSettings() {
               )}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-medium">{p.label}</span>
+                <span className="text-body font-medium">{p.label}</span>
                 {p.status === "locked" ? <Lock className="size-3.5 text-muted-foreground" /> : <LockOpen className="size-3.5 text-success" />}
               </div>
-              <div className="mt-1 text-[11px] text-muted-foreground">
+              <div className="mt-1 text-body text-muted-foreground">
                 {p.status === "locked" ? `Locked ${fmtDate(p.lockedOn!)}` : "Open · recalculates live"}
               </div>
             </button>

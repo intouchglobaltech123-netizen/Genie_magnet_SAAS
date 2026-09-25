@@ -105,13 +105,13 @@ export function HrView() {
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, role, skill" className="h-8 w-60 pl-9 text-[13px]" />
+                <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, role, skill" className="h-8 w-60 pl-9 text-body" />
               </div>
               <Select
                 value={dept}
                 onValueChange={setDept}
                 options={departments.map((d) => ({ value: d, label: d === "All" ? "All departments" : d }))}
-                className="h-8 w-48 text-[13px]"
+                className="h-8 w-48 text-body"
               />
               <div className="inline-flex rounded-lg border border-border bg-card p-0.5">
                 {(["table", "cards"] as const).map((v) => (
@@ -138,7 +138,7 @@ export function HrView() {
             {list.length === 0 ? (
               <Card className="flex flex-col items-center justify-center py-14 text-center">
                 <Search className="mb-2 size-6 text-muted-foreground" />
-                <div className="text-[14px] font-medium">No one matches these filters</div>
+                <div className="text-body font-medium">No one matches these filters</div>
                 <Button variant="link" size="sm" onClick={() => { setQ(""); setDept("All"); }}>
                   Clear filters
                 </Button>
@@ -167,13 +167,13 @@ export function HrView() {
                               <Avatar name={p.name} />
                               <div className="min-w-0">
                                 <div className="font-medium">{p.name}</div>
-                                <div className="text-[12px] text-muted-foreground">{p.email}</div>
+                                <div className="text-body text-muted-foreground">{p.email}</div>
                               </div>
                             </div>
                           </TD>
                           <TD>
                             <div>{p.role}</div>
-                            {t === "employee" && <div className="text-[12px] text-muted-foreground">{p.department}</div>}
+                            {t === "employee" && <div className="text-body text-muted-foreground">{p.department}</div>}
                           </TD>
                           <TD>
                             {t === "employee" ? (
@@ -224,13 +224,13 @@ export function HrView() {
                       tabIndex={0}
                       onClick={() => setSelectedId(p.id)}
                       onKeyDown={(e) => e.key === "Enter" && setSelectedId(p.id)}
-                      className="cursor-pointer p-5 transition hover:-translate-y-0.5 hover:border-accent/40"
+                      className="cursor-pointer p-5 transition hover:-translate-y-0.5 hover:border-primary/40"
                     >
                       <div className="flex items-start gap-3">
                         <Avatar name={p.name} size="lg" />
                         <div className="min-w-0 flex-1">
-                          <div className="truncate text-[14px] font-semibold">{p.name}</div>
-                          <div className="truncate text-[12.5px] text-muted-foreground">{p.role}</div>
+                          <div className="truncate text-body font-semibold">{p.name}</div>
+                          <div className="truncate text-body text-muted-foreground">{p.role}</div>
                         </div>
                         <StatusBadge status={statusOf(p)} />
                       </div>
@@ -241,7 +241,7 @@ export function HrView() {
                           </Badge>
                         ))}
                       </div>
-                      <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-[12px] text-muted-foreground">
+                      <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-body text-muted-foreground">
                         <span>{mgr ? `Reports to ${mgr.name.split(" ")[0]}` : p.department}</span>
                         <span className="tabular">Since {fmtDate(p.joinedOn, { month: "short", year: "numeric" })}</span>
                       </div>

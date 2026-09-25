@@ -80,7 +80,7 @@ export function TodayBoard() {
               </CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search person…" className="h-8 w-40 text-[13px]" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search person…" className="h-8 w-40 text-body" />
               <Button variant="outline" size="sm" onClick={importExcel} disabled={importing}>
                 {importing ? <Loader2 className="animate-spin" /> : <FileSpreadsheet />}
                 Import Excel
@@ -97,21 +97,21 @@ export function TodayBoard() {
                 const person = personById(p.personId);
                 const meta = statusMeta[p.status];
                 return (
-                  <li key={p.personId} className="flex items-center gap-3 px-5 py-3 text-[13px]">
+                  <li key={p.personId} className="flex items-center gap-3 px-5 py-3 text-body">
                     <Avatar name={person.name} />
                     <div className="min-w-0 flex-1">
                       <div className="font-medium">{person.name}</div>
-                      <div className="truncate text-[12px] text-muted-foreground">{todayNotes[p.personId] ?? person.role}</div>
+                      <div className="truncate text-body text-muted-foreground">{todayNotes[p.personId] ?? person.role}</div>
                     </div>
                     <div className="hidden w-24 text-right sm:block">
-                      <div className="text-[11px] uppercase tracking-wider text-muted-foreground">In</div>
+                      <div className="text-body uppercase tracking-wider text-muted-foreground">In</div>
                       <div className={cn("tabular font-medium", p.status === "late" && "text-warning")}>{to12h(p.inTime)}</div>
                     </div>
                     <div className="hidden w-40 md:flex md:justify-end">
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-[11px] text-muted-foreground",
-                          p.source === "Hikvision biometric" && "border-accent/30 text-accent",
+                          "inline-flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-body text-muted-foreground",
+                          p.source === "Hikvision biometric" && "border-primary/30 text-primary",
                         )}
                       >
                         {p.source === "Hikvision biometric" ? <Fingerprint className="size-3" /> : p.source === "Excel import" ? <FileSpreadsheet className="size-3" /> : <Palmtree className="size-3" />}
@@ -126,7 +126,7 @@ export function TodayBoard() {
                   </li>
                 );
               })}
-              {!rows.length && <li className="px-5 py-8 text-center text-[13px] text-muted-foreground">No one matches “{q}”.</li>}
+              {!rows.length && <li className="px-5 py-8 text-center text-body text-muted-foreground">No one matches “{q}”.</li>}
             </ul>
           </CardContent>
         </Card>
@@ -141,21 +141,21 @@ export function TodayBoard() {
           <CardContent>
             <ol className="space-y-3">
               {history.slice(0, 6).map((h, i) => (
-                <li key={`${h.at}-${i}`} className="flex gap-3 text-[13px]">
-                  <span className={cn("mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-lg", h.source === "Excel import" ? "bg-success-soft text-success" : "bg-accent-soft text-accent")}>
+                <li key={`${h.at}-${i}`} className="flex gap-3 text-body">
+                  <span className={cn("mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-lg", h.source === "Excel import" ? "bg-success-soft text-success" : "bg-primary-soft text-primary")}>
                     {h.source === "Excel import" ? <FileSpreadsheet className="size-3.5" /> : <Fingerprint className="size-3.5" />}
                   </span>
                   <div className="min-w-0">
                     <div className="font-medium">
                       {h.records} {h.records === 1 ? "record" : "records"} · {h.source}
                     </div>
-                    <div className="truncate text-[12px] text-muted-foreground">{h.by}</div>
-                    <div className="text-[11.5px] text-muted-foreground">{h.at}</div>
+                    <div className="truncate text-body text-muted-foreground">{h.by}</div>
+                    <div className="text-body text-muted-foreground">{h.at}</div>
                   </div>
                 </li>
               ))}
             </ol>
-            <div className="mt-4 rounded-xl bg-muted/60 p-3 text-[12px] text-muted-foreground">
+            <div className="mt-4 rounded-xl bg-muted/60 p-3 text-body text-muted-foreground">
               Device <span className="font-medium text-foreground">{DEVICE}</span> · online · firmware V3.2.30
             </div>
           </CardContent>

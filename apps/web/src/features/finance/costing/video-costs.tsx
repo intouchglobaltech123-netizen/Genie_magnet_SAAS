@@ -45,7 +45,7 @@ export function VarianceCell({ c }: { c: VideoCost }) {
     return (
       <div className="flex flex-col items-end gap-0.5">
         <Badge tone="outline">WIP</Badge>
-        <span className="text-[11px] text-muted-foreground tabular">{pct(used)} of std used</span>
+        <span className="text-body text-muted-foreground tabular">{pct(used)} of std used</span>
       </div>
     );
   }
@@ -57,7 +57,7 @@ export function VarianceCell({ c }: { c: VideoCost }) {
         {over ? "+" : "−"}
         {inr(Math.abs(c.variance))}
       </span>
-      <span className="text-[11px] text-muted-foreground tabular">
+      <span className="text-body text-muted-foreground tabular">
         {over ? "+" : "−"}
         {pct(Math.abs(rel))} vs std
       </span>
@@ -74,7 +74,7 @@ export function MarginBadge({ c, base }: { c: VideoCost; base?: VideoCost }) {
         {pct(c.marginPct)}
         {!c.complete && <span className="font-normal opacity-70">proj.</span>}
       </Badge>
-      {changed && <span className="text-[10.5px] text-muted-foreground line-through tabular">{pct(base.marginPct)}</span>}
+      {changed && <span className="text-body text-muted-foreground line-through tabular">{pct(base.marginPct)}</span>}
     </div>
   );
 }
@@ -106,12 +106,12 @@ export function VideoCostTable() {
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Code or title" className="h-8 w-36 pl-8 text-[13px]" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Code or title" className="h-8 w-36 pl-8 text-body" />
           </div>
           <Select
             value={client}
             onValueChange={setClient}
-            className="h-8 w-40 text-[13px]"
+            className="h-8 w-40 text-body"
             options={[{ value: "all", label: "All clients" }, ...clients.map((c) => ({ value: c.id, label: c.name }))]}
           />
         </div>
@@ -137,14 +137,14 @@ export function VideoCostTable() {
               <TR
                 key={v.id}
                 onClick={() => select(v.id)}
-                className={cn("cursor-pointer", active && "bg-accent-soft/60 hover:bg-accent-soft/60")}
+                className={cn("cursor-pointer", active && "bg-primary-soft/60 hover:bg-primary-soft/60")}
               >
                 <TD className="pl-5">
                   <div className="flex items-center gap-2">
-                    <span className={cn("h-7 w-0.5 rounded-full", active ? "bg-accent" : "bg-transparent")} />
+                    <span className={cn("h-7 w-0.5 rounded-full", active ? "bg-primary" : "bg-transparent")} />
                     <div className="min-w-0">
-                      <div className="font-mono text-[12px] font-semibold">{v.code}</div>
-                      <div className="max-w-[220px] truncate text-[12px] text-muted-foreground">
+                      <div className="font-mono text-body font-semibold">{v.code}</div>
+                      <div className="max-w-[220px] truncate text-body text-muted-foreground">
                         {clientById(v.clientId).name} · {v.title}
                       </div>
                     </div>

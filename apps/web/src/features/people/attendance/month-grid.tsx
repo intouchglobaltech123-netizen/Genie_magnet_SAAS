@@ -30,8 +30,8 @@ export function MonthGrid({ requests }: { requests: LeaveRequest[] }) {
         </div>
         <div className="flex flex-wrap gap-2">
           {(Object.keys(codeMeta) as AttendanceCode[]).map((c) => (
-            <span key={c} className="inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
-              <span className={cn("inline-flex h-5 min-w-6 items-center justify-center rounded px-1 text-[10px] font-semibold", codeMeta[c].cls)}>{c}</span>
+            <span key={c} className="inline-flex items-center gap-1.5 text-body text-muted-foreground">
+              <span className={cn("inline-flex h-5 min-w-6 items-center justify-center rounded px-1 text-body font-semibold", codeMeta[c].cls)}>{c}</span>
               {codeMeta[c].label}
             </span>
           ))}
@@ -39,25 +39,25 @@ export function MonthGrid({ requests }: { requests: LeaveRequest[] }) {
       </CardHeader>
       <CardContent className="px-0">
         <div className="overflow-x-auto scrollbar-thin">
-          <table className="w-max min-w-full border-separate border-spacing-0 text-[12px]">
+          <table className="w-max min-w-full border-separate border-spacing-0 text-body">
             <thead>
               <tr>
-                <th className="sticky left-0 z-10 min-w-[180px] bg-card px-5 py-2 text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Employee</th>
+                <th className="sticky left-0 z-10 min-w-[180px] bg-card px-5 py-2 text-left text-body font-medium uppercase tracking-wider text-muted-foreground">Employee</th>
                 {sepDays.map((d) => {
                   const dt = new Date(`${d}T00:00:00`);
                   const wk = dt.getDay() === 0 || dt.getDay() === 6;
                   const isToday = d === TODAY;
                   return (
-                    <th key={d} className={cn("w-8 px-0.5 py-1 text-center font-medium", wk && "bg-muted/60", isToday && "rounded-t-md outline-2 -outline-offset-2 outline-accent")}>
-                      <div className="text-[10px] text-muted-foreground">{DOW[dt.getDay()]}</div>
-                      <div className={cn("tabular", isToday ? "text-accent" : "text-foreground")}>{dt.getDate()}</div>
+                    <th key={d} className={cn("w-8 px-0.5 py-1 text-center font-medium", wk && "bg-muted/60", isToday && "rounded-t-md outline-2 -outline-offset-2 outline-primary")}>
+                      <div className="text-body text-muted-foreground">{DOW[dt.getDay()]}</div>
+                      <div className={cn("tabular", isToday ? "text-primary" : "text-foreground")}>{dt.getDate()}</div>
                     </th>
                   );
                 })}
-                <th className="px-2 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">P</th>
-                <th className="px-2 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">L</th>
-                <th className="px-2 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">A</th>
-                <th className="px-3 pr-5 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">LOP</th>
+                <th className="px-2 text-center text-body font-medium uppercase tracking-wider text-muted-foreground">P</th>
+                <th className="px-2 text-center text-body font-medium uppercase tracking-wider text-muted-foreground">L</th>
+                <th className="px-2 text-center text-body font-medium uppercase tracking-wider text-muted-foreground">A</th>
+                <th className="px-3 pr-5 text-center text-body font-medium uppercase tracking-wider text-muted-foreground">LOP</th>
               </tr>
             </thead>
             <tbody>
@@ -84,11 +84,11 @@ export function MonthGrid({ requests }: { requests: LeaveRequest[] }) {
                       const hol = holidayByDate(d);
                       const tip = c ? `${dt.getDate()} Sep · ${codeMeta[c].label}${hol ? ` — ${hol.name}` : ""}` : `${dt.getDate()} Sep · upcoming`;
                       return (
-                        <td key={d} className={cn("border-t border-border px-0.5 py-1 text-center", wk && "bg-muted/60", isToday && "outline-2 -outline-offset-2 outline-accent")}>
+                        <td key={d} className={cn("border-t border-border px-0.5 py-1 text-center", wk && "bg-muted/60", isToday && "outline-2 -outline-offset-2 outline-primary")}>
                           <Tooltip content={tip}>
                             <span
                               className={cn(
-                                "inline-flex h-6 w-7 cursor-default items-center justify-center rounded text-[10px] font-semibold",
+                                "inline-flex h-6 w-7 cursor-default items-center justify-center rounded text-body font-semibold",
                                 c ? codeMeta[c].cls : "border border-dashed border-border text-transparent",
                               )}
                             >
@@ -108,7 +108,7 @@ export function MonthGrid({ requests }: { requests: LeaveRequest[] }) {
             </tbody>
           </table>
         </div>
-        <p className="px-5 pt-3 text-[12px] text-muted-foreground">
+        <p className="px-5 pt-3 text-body text-muted-foreground">
           LOP = unapproved absence (1 day) + half-day (0.5). These figures flow straight into September payroll.
         </p>
       </CardContent>

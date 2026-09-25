@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 export function Table({ className, ...props }: React.HTMLAttributes<HTMLTableElement>) {
   return (
     <div className="w-full overflow-x-auto scrollbar-thin">
-      <table className={cn("w-full caption-bottom text-[13px]", className)} {...props} />
+      <table className={cn("w-full caption-bottom text-body", className)} {...props} />
     </div>
   );
 }
@@ -21,7 +21,7 @@ export function TH({ className, ...props }: React.ThHTMLAttributes<HTMLTableCell
   return (
     <th
       className={cn(
-        "h-10 px-3 text-left align-middle text-[11px] font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap",
+        "h-10 px-3 text-left align-middle text-body font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap",
         className,
       )}
       {...props}

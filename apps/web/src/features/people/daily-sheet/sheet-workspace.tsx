@@ -71,13 +71,13 @@ export function SheetWorkspace({
                   onClick={() => onPerson(sp.personId)}
                   className={cn(
                     "flex cursor-pointer items-center gap-2.5 rounded-xl border px-2.5 py-1.5 text-left transition",
-                    active ? "border-accent/40 bg-accent-soft/60 shadow-sm" : "border-transparent hover:bg-muted",
+                    active ? "border-primary/40 bg-primary-soft/60 shadow-sm" : "border-transparent hover:bg-muted",
                   )}
                 >
                   <Avatar name={p.name} size="md" />
                   <div className="leading-tight">
-                    <div className="text-[13px] font-semibold">{p.name}</div>
-                    <div className="flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+                    <div className="text-body font-semibold">{p.name}</div>
+                    <div className="flex items-center gap-1.5 text-body text-muted-foreground">
                       {templates[sp.kind].short}
                       <StatusDot status={st} />
                     </div>
@@ -90,7 +90,7 @@ export function SheetWorkspace({
             <Button size="icon-sm" variant="outline" onClick={() => onDate(shiftDate(date, -1))} aria-label="Previous day">
               <ChevronLeft />
             </Button>
-            <label className="relative flex h-8 items-center gap-2 rounded-lg border border-input bg-card pl-2.5 pr-2 text-[13px] font-medium">
+            <label className="relative flex h-8 items-center gap-2 rounded-lg border border-input bg-card pl-2.5 pr-2 text-body font-medium">
               <CalendarDays className="size-4 text-muted-foreground" />
               <span className="tabular">{dayLabel(date, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</span>
               <input
@@ -119,16 +119,16 @@ export function SheetWorkspace({
           <Card className="overflow-hidden">
             <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border bg-muted/40 px-5 py-4">
               <div className="flex items-center gap-3">
-                <span className="inline-flex size-10 items-center justify-center rounded-xl bg-accent-soft text-accent">
+                <span className="inline-flex size-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
                   <Icon className="size-5" />
                 </span>
                 <div>
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Genie Magnet · Form DS-{kind.toUpperCase()}</div>
-                  <h2 className="text-[17px] font-semibold tracking-tight">{template.title}</h2>
+                  <div className="text-body font-semibold uppercase tracking-[0.14em] text-muted-foreground">Genie Magnet · Form DS-{kind.toUpperCase()}</div>
+                  <h2 className="text-subheading font-semibold tracking-tight">{template.title}</h2>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="mr-2 hidden text-right text-[12px] leading-5 sm:block">
+                <div className="mr-2 hidden text-right text-body leading-5 sm:block">
                   <div className="font-medium">{person.name}</div>
                   <div className="text-muted-foreground">
                     {person.role} · {dayLabel(date, { day: "numeric", month: "short", year: "numeric" })}
@@ -222,10 +222,10 @@ export function SheetWorkspace({
               <CardContent className="space-y-3">
                 <CounterGrid defs={template.counters} values={sheet?.counters ?? {}} locked={locked} onChange={(k, v) => setCounter(personId, date, k, v)} />
                 <div>
-                  <div className="mb-1.5 text-[12px] font-medium text-muted-foreground">Other works</div>
+                  <div className="mb-1.5 text-body font-medium text-muted-foreground">Other works</div>
                   <Textarea
                     disabled={locked}
-                    className="min-h-14 text-[13px]"
+                    className="min-h-14 text-body"
                     placeholder="Anything else you did today"
                     value={sheet?.otherWorks ?? ""}
                     onChange={(e) => setField(personId, date, { otherWorks: e.target.value })}
@@ -246,7 +246,7 @@ export function SheetWorkspace({
               <CardContent>
                 <Textarea
                   disabled={locked}
-                  className="min-h-16 text-[13px]"
+                  className="min-h-16 text-body"
                   placeholder="e.g. Stayed back 1h to finish Navaratri revision before client’s 10 AM review"
                   value={sheet?.dayReason ?? ""}
                   onChange={(e) => setField(personId, date, { dayReason: e.target.value })}
@@ -260,14 +260,14 @@ export function SheetWorkspace({
           {hasRows && !locked && issues.length > 0 && (
             <Card className={cn("border-warning/30 p-4 transition", showIssues && "ring-2 ring-warning/30")}>
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-warning">
+                <span className="inline-flex items-center gap-1.5 text-body font-semibold text-warning">
                   <AlertTriangle className="size-4" /> {issues.length} to fix before submit
                 </span>
                 <Button size="xs" variant="ghost" onClick={() => setShowIssues((v) => !v)}>
                   {showIssues ? "Hide" : "Highlight"}
                 </Button>
               </div>
-              <ul className="mt-2 space-y-1 text-[12.5px] text-muted-foreground">
+              <ul className="mt-2 space-y-1 text-body text-muted-foreground">
                 {issues.slice(0, 5).map((i, k) => (
                   <li key={k} className="flex gap-1.5">
                     <span className="mt-1.5 size-1 shrink-0 rounded-full bg-warning" />
@@ -316,14 +316,14 @@ function EmptyState({
   action?: React.ReactNode;
   tone: "warning" | "info" | "neutral" | "accent";
 }) {
-  const t = { warning: "bg-warning-soft text-warning", info: "bg-info-soft text-info", neutral: "bg-muted text-muted-foreground", accent: "bg-accent-soft text-accent" }[tone];
+  const t = { warning: "bg-warning-soft text-warning", info: "bg-info-soft text-info", neutral: "bg-muted text-muted-foreground", accent: "bg-primary-soft text-primary" }[tone];
   return (
     <div className="flex flex-col items-center px-6 py-14 text-center">
       <span className={cn("inline-flex size-12 items-center justify-center rounded-2xl", t)}>
         <I className="size-6" />
       </span>
-      <div className="mt-3 text-[15px] font-semibold">{title}</div>
-      <p className="mt-1 max-w-md text-[13px] text-muted-foreground">{text}</p>
+      <div className="mt-3 text-subheading font-semibold">{title}</div>
+      <p className="mt-1 max-w-md text-body text-muted-foreground">{text}</p>
       {action && <div className="mt-4">{action}</div>}
     </div>
   );

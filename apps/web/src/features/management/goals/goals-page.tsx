@@ -79,7 +79,7 @@ export function GoalsPage() {
               status === s ? "border-foreground/40 ring-2 ring-ring/15" : "border-border",
             )}
           >
-            <div className="flex items-center gap-2 text-[12.5px] text-muted-foreground">
+            <div className="flex items-center gap-2 text-body text-muted-foreground">
               <span
                 className={cn(
                   "size-2 rounded-full",
@@ -89,20 +89,20 @@ export function GoalsPage() {
               {GOAL_STATUS[s].label}
             </div>
             <div className="mt-1 flex items-baseline gap-1.5">
-              <span className="text-[24px] font-semibold tracking-tight tabular">{counts[s]}</span>
-              <span className="text-[12px] text-muted-foreground">of {goals.length} goals</span>
+              <span className="text-heading font-semibold tracking-tight tabular">{counts[s]}</span>
+              <span className="text-body text-muted-foreground">of {goals.length} goals</span>
             </div>
           </button>
         ))}
         <Card className="p-4">
-          <div className="flex items-center gap-2 text-[12.5px] text-muted-foreground">
+          <div className="flex items-center gap-2 text-body text-muted-foreground">
             <CalendarClock className="size-3.5" /> Next STOP reviews
           </div>
           <div className="mt-2 grid grid-cols-3 gap-2">
             {(Object.keys(CADENCES) as Cadence[]).map((c) => (
               <div key={c}>
-                <div className="text-[13px] font-medium">{CADENCES[c].label}</div>
-                <div className="text-[11.5px] text-muted-foreground">
+                <div className="text-body font-medium">{CADENCES[c].label}</div>
+                <div className="text-body text-muted-foreground">
                   {CADENCES[c].every} · {c === "operational" ? "9:30 huddle" : fmtStamp(CADENCES[c].next)}
                 </div>
               </div>
@@ -130,19 +130,19 @@ export function GoalsPage() {
               <Select
                 value={dept}
                 onValueChange={setDept}
-                className="h-8 w-[150px] text-[13px]"
+                className="h-8 w-[150px] text-body"
                 options={[{ value: "all", label: "All departments" }, ...GOAL_DEPARTMENTS.map((d) => ({ value: d, label: d }))]}
               />
               <Select
                 value={type}
                 onValueChange={setType}
-                className="h-8 w-[130px] text-[13px]"
+                className="h-8 w-[130px] text-body"
                 options={[{ value: "all", label: "All types" }, ...Object.entries(GOAL_TYPES).map(([k, t]) => ({ value: k, label: t.label }))]}
               />
               <Select
                 value={status}
                 onValueChange={setStatus}
-                className="h-8 w-[130px] text-[13px]"
+                className="h-8 w-[130px] text-body"
                 options={[{ value: "all", label: "Any status" }, ...Object.entries(GOAL_STATUS).map(([k, s]) => ({ value: k, label: s.label }))]}
               />
               {filtering && (
@@ -165,7 +165,7 @@ export function GoalsPage() {
         <TabsContent value="tree">
           <GoalTree goals={goals} matches={matches} />
           {filtering && (
-            <p className="mt-2 text-[12px] text-muted-foreground">
+            <p className="mt-2 text-body text-muted-foreground">
               {filtered.length} matching goals · parent goals are shown faded for context.
             </p>
           )}

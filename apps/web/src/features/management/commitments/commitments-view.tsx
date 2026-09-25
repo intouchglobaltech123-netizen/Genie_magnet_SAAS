@@ -94,7 +94,7 @@ export function CommitmentsView() {
                 key={c.k}
                 onClick={() => setFilter(c.k)}
                 className={cn(
-                  "cursor-pointer rounded-lg px-2.5 py-1 text-[12.5px] font-medium transition",
+                  "cursor-pointer rounded-lg px-2.5 py-1 text-body font-medium transition",
                   filter === c.k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -105,18 +105,18 @@ export function CommitmentsView() {
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <div className="relative">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-8 w-44 pl-8 text-[13px]" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-8 w-44 pl-8 text-body" />
             </div>
             <Select
               value={owner}
               onValueChange={setOwner}
-              className="h-8 w-40 text-[13px]"
+              className="h-8 w-40 text-body"
               options={[{ value: "all", label: "All owners" }, ...employees.map((p) => ({ value: p.id, label: p.name }))]}
             />
             <Select
               value={cad}
               onValueChange={setCad}
-              className="h-8 w-40 text-[13px]"
+              className="h-8 w-40 text-body"
               options={[{ value: "all", label: "All sources" }, ...cadences.map((c) => ({ value: c.id, label: `${c.every} reviews` }))]}
             />
           </div>
@@ -150,7 +150,7 @@ export function CommitmentsView() {
                 <TR key={c.id} className={cn(esc && "bg-danger-soft/30 hover:bg-danger-soft/40")}>
                   <TD className="max-w-md pl-5">
                     <div className={cn("font-medium leading-snug", st === "done" && "text-muted-foreground line-through")}>{c.text}</div>
-                    {c.markNote && <div className="mt-0.5 truncate text-[11.5px] text-muted-foreground">{c.markNote}</div>}
+                    {c.markNote && <div className="mt-0.5 truncate text-body text-muted-foreground">{c.markNote}</div>}
                   </TD>
                   <TD>
                     <div className="flex items-center gap-2 whitespace-nowrap">
@@ -160,13 +160,13 @@ export function CommitmentsView() {
                   </TD>
                   <TD className="whitespace-nowrap">
                     <div className={cn("tabular", st === "overdue" && "font-medium text-danger")}>{fmtDate(c.due, { day: "numeric", month: "short", year: "numeric" })}</div>
-                    {late > 0 && <div className="text-[11px] text-danger">{late} day{late > 1 ? "s" : ""} late</div>}
+                    {late > 0 && <div className="text-body text-danger">{late} day{late > 1 ? "s" : ""} late</div>}
                   </TD>
                   <TD>
                     {src ? (
-                      <Link href={`/reviews/${src.id}`} className="inline-flex items-center gap-1.5 whitespace-nowrap hover:text-accent">
+                      <Link href={`/reviews/${src.id}`} className="inline-flex items-center gap-1.5 whitespace-nowrap hover:text-primary">
                         <Badge tone={cadenceTone[src.cadence]}>{cadenceById(src.cadence).every}</Badge>
-                        <span className="text-[12.5px]">{src.title.replace("45-Day ", "").replace("Weekly Agency Review · ", "Weekly ")}</span>
+                        <span className="text-body">{src.title.replace("45-Day ", "").replace("Weekly Agency Review · ", "Weekly ")}</span>
                       </Link>
                     ) : (
                       "—"

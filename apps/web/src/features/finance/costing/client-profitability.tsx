@@ -36,7 +36,7 @@ export function ClientProfitability() {
               Cycle revenue vs true cost · {period === "Sep 2026" ? "costs to date (cycle open)" : "closed / reconciling cycles"}
             </CardDescription>
           </div>
-          <div className="inline-flex rounded-lg bg-muted p-1 text-[12.5px]">
+          <div className="inline-flex rounded-lg bg-muted p-1 text-body">
             {(["Aug 2026", "Sep 2026"] as const).map((p) => (
               <button
                 key={p}
@@ -52,13 +52,13 @@ export function ClientProfitability() {
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={rows} margin={{ top: 8, right: 8, left: -8, bottom: 0 }} barGap={4}>
-                <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
+                <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
                 <XAxis dataKey="short" {...axisProps} />
                 <YAxis {...axisProps} tickFormatter={(x: number) => inrCompact(x)} width={56} />
-                <Tooltip {...tooltipStyle} cursor={{ fill: "var(--muted)", opacity: 0.5 }} formatter={(x) => inr(Number(x))} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: "var(--muted-foreground)" }} />
-                <Bar dataKey="revenue" name="Revenue" fill="var(--chart-1)" radius={[4, 4, 0, 0]} maxBarSize={34} />
-                <Bar dataKey="cost" name="True cost" fill="var(--chart-3)" radius={[4, 4, 0, 0]} maxBarSize={34} />
+                <Tooltip {...tooltipStyle} cursor={{ fill: "var(--color-muted)", opacity: 0.5 }} formatter={(x) => inr(Number(x))} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: "var(--color-muted-foreground)" }} />
+                <Bar dataKey="revenue" name="Revenue" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]} maxBarSize={34} />
+                <Bar dataKey="cost" name="True cost" fill="var(--color-chart-3)" radius={[4, 4, 0, 0]} maxBarSize={34} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -102,7 +102,7 @@ export function ClientProfitability() {
                     <Badge tone={marginTone(r.marginPct)} className="tabular">
                       {pct(r.marginPct)}
                     </Badge>
-                    <span className="text-[11px] text-muted-foreground tabular">{inr(r.margin)}</span>
+                    <span className="text-body text-muted-foreground tabular">{inr(r.margin)}</span>
                   </div>
                 </TD>
               </TR>
@@ -140,13 +140,13 @@ function FormatInsight() {
           return (
             <div key={f.format} className="rounded-xl border border-border p-3">
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-medium">{f.format}</span>
-                <span className="text-[11px] text-muted-foreground">{f.n} videos</span>
+                <span className="text-body font-medium">{f.format}</span>
+                <span className="text-body text-muted-foreground">{f.n} videos</span>
               </div>
-              <div className={cn("mt-1 text-[22px] font-semibold tabular", tone === "danger" ? "text-danger" : tone === "warning" ? "text-warning" : "text-success")}>
+              <div className={cn("mt-1 text-heading font-semibold tabular", tone === "danger" ? "text-danger" : tone === "warning" ? "text-warning" : "text-success")}>
                 {pct(f.m)}
               </div>
-              <div className="text-[11.5px] text-muted-foreground tabular">
+              <div className="text-body text-muted-foreground tabular">
                 {inr(f.cost / f.n)} cost vs {inr(f.rev / f.n)} revenue
               </div>
             </div>

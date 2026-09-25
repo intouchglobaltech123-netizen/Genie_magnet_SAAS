@@ -78,7 +78,7 @@ function RenewDialog({ open, onClose, a, clientName }: P) {
               <Select value={uplift} onValueChange={setUplift} options={["0", "5", "8", "10", "15"].map((t) => ({ value: t, label: `${t}%` }))} />
             </Field>
           </div>
-          <div className="rounded-xl border border-border bg-muted/40 p-4 text-[13px]">
+          <div className="rounded-xl border border-border bg-muted/40 p-4 text-body">
             <div className="grid grid-cols-2 gap-y-2">
               <span className="text-muted-foreground">Current fee</span>
               <span className="text-right tabular">{inr(a.monthlyFee)}/mo</span>
@@ -89,7 +89,7 @@ function RenewDialog({ open, onClose, a, clientName }: P) {
               <span className="text-muted-foreground">New end date</span>
               <span className="text-right tabular">{format(parseISO(newEnd), "d MMM yyyy")}</span>
             </div>
-            <div className="mt-3 border-t border-border pt-3 text-[12px] text-muted-foreground">
+            <div className="mt-3 border-t border-border pt-3 text-body text-muted-foreground">
               Scope stays {a.units.map((u) => `${u.perCycle} ${u.label.toLowerCase()}`).join(", ")} · {a.revisionsPerDeliverable} revisions each. Renewal letter goes to the approver for e-sign.
             </div>
           </div>

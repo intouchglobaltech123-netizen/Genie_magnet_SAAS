@@ -82,7 +82,7 @@ export function VersionsTab({ v }: { v: Video }) {
 
   const comments = v.comments.filter((c) => !sel || c.versionId === sel.id);
   const c = clientById(v.clientId);
-  const color = CLIENT_COLOR[v.clientId] ?? "var(--accent)";
+  const color = CLIENT_COLOR[v.clientId] ?? "var(--color-primary)";
 
   if (!v.versions.length) {
     return (
@@ -93,7 +93,7 @@ export function VersionsTab({ v }: { v: Video }) {
           </div>
           <div>
             <div className="font-semibold">No versions yet</div>
-            <p className="mt-1 max-w-sm text-[13px] text-muted-foreground">
+            <p className="mt-1 max-w-sm text-body text-muted-foreground">
               The first cut is shared with {c.contacts[0]!.name} after it passes internal QC. Versions, frame comments and voice notes will appear here.
             </p>
           </div>
@@ -123,10 +123,10 @@ export function VersionsTab({ v }: { v: Video }) {
             <div
               className={cn("relative overflow-hidden rounded-xl shadow-pop", frameCls[v.aspect])}
               style={{
-                background: `radial-gradient(120% 80% at 30% 20%, color-mix(in srgb, ${color} 55%, transparent), transparent 60%), radial-gradient(100% 70% at 80% 90%, color-mix(in srgb, var(--chart-3) 35%, transparent), transparent 65%), var(--sidebar)`,
+                background: `radial-gradient(120% 80% at 30% 20%, color-mix(in srgb, ${color} 55%, transparent), transparent 60%), radial-gradient(100% 70% at 80% 90%, color-mix(in srgb, var(--color-chart-3) 35%, transparent), transparent 65%), var(--color-sidebar)`,
               }}
             >
-              <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3 text-[11px] text-white/70">
+              <div className="absolute inset-x-0 top-0 flex items-center justify-between p-3 text-body text-white/70">
                 <span className="rounded bg-black/40 px-1.5 py-0.5 font-mono backdrop-blur">{v.code} · {sel?.label}</span>
                 <span className="rounded bg-black/40 px-1.5 py-0.5 backdrop-blur">{v.aspect}</span>
               </div>
@@ -139,13 +139,13 @@ export function VersionsTab({ v }: { v: Video }) {
                 {active ? <Pause className="size-6" fill="currentColor" /> : <Play className="ml-1 size-6" fill="currentColor" />}
               </button>
               {activeComment && (
-                <div className="absolute inset-x-3 bottom-14 rounded-lg bg-black/60 p-2.5 text-[12px] text-white backdrop-blur">
+                <div className="absolute inset-x-3 bottom-14 rounded-lg bg-black/60 p-2.5 text-body text-white backdrop-blur">
                   {v.comments.find((x) => x.id === activeComment)?.text}
                 </div>
               )}
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-10">
-                <div className="line-clamp-1 text-[13px] font-medium text-white">{v.title}</div>
-                <div className="text-[11px] text-white/60">{c.name}</div>
+                <div className="line-clamp-1 text-body font-medium text-white">{v.title}</div>
+                <div className="text-body text-white/60">{c.name}</div>
               </div>
             </div>
           </div>
@@ -158,7 +158,7 @@ export function VersionsTab({ v }: { v: Video }) {
               >
                 {active ? <Pause /> : <Play />}
               </Button>
-              <span className="w-24 font-mono text-[11.5px] tabular text-muted-foreground">
+              <span className="w-24 font-mono text-body tabular text-muted-foreground">
                 {toMmss(pos)} / {toMmss(duration)}
               </span>
               <div
@@ -169,9 +169,9 @@ export function VersionsTab({ v }: { v: Video }) {
                 }}
               >
                 <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-accent" style={{ width: `${(pos / duration) * 100}%` }} />
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${(pos / duration) * 100}%` }} />
                 </div>
-                <div className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-card bg-accent shadow" style={{ left: `${(pos / duration) * 100}%` }} />
+                <div className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-card bg-primary shadow" style={{ left: `${(pos / duration) * 100}%` }} />
                 {comments
                   .filter((cm) => cm.timestamp)
                   .map((cm) => (
@@ -222,13 +222,13 @@ export function VersionsTab({ v }: { v: Video }) {
                 }}
                 className={cn(
                   "flex w-full cursor-pointer items-center gap-3 rounded-xl border p-3 text-left transition",
-                  sel?.id === ver.id ? "border-accent/50 bg-accent-soft/40" : "border-border hover:bg-muted/50",
+                  sel?.id === ver.id ? "border-primary/50 bg-primary-soft/40" : "border-border hover:bg-muted/50",
                 )}
               >
-                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted font-mono text-[12px] font-semibold">{ver.label}</span>
+                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted font-mono text-body font-semibold">{ver.label}</span>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] font-medium">{ver.notes}</div>
-                  <div className="text-[11.5px] text-muted-foreground">
+                  <div className="truncate text-body font-medium">{ver.notes}</div>
+                  <div className="text-body text-muted-foreground">
                     {ver.by} · {format(parseISO(ver.createdAt), "d MMM, HH:mm")} · {ver.duration}
                   </div>
                 </div>
@@ -237,7 +237,7 @@ export function VersionsTab({ v }: { v: Video }) {
             ))}
             {sel && (sel.status === "sent" || sel.status === "internal") && (
               <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
-                <span className="mr-auto text-[12px] text-muted-foreground">Record client decision on {sel.label}:</span>
+                <span className="mr-auto text-body text-muted-foreground">Record client decision on {sel.label}:</span>
                 <Button
                   size="sm"
                   variant="outline"
@@ -274,25 +274,25 @@ export function VersionsTab({ v }: { v: Video }) {
           </div>
         </CardHeader>
         <CardContent className="flex-1 space-y-2.5">
-          {!comments.length && <div className="py-10 text-center text-[13px] text-muted-foreground">No feedback on this version yet.</div>}
+          {!comments.length && <div className="py-10 text-center text-body text-muted-foreground">No feedback on this version yet.</div>}
           {comments.map((cm) => (
             <div
               key={cm.id}
               className={cn(
                 "rounded-xl border p-3 transition",
-                activeComment === cm.id ? "border-accent/50 bg-accent-soft/30" : "border-border",
+                activeComment === cm.id ? "border-primary/50 bg-primary-soft/30" : "border-border",
                 cm.resolved && "opacity-70",
               )}
             >
               <div className="flex items-center gap-2">
                 <Avatar name={cm.author} size="sm" />
-                <span className="text-[13px] font-medium">{cm.author}</span>
-                <span className="text-[11.5px] text-muted-foreground">{format(parseISO(cm.at), "d MMM, HH:mm")}</span>
+                <span className="text-body font-medium">{cm.author}</span>
+                <span className="text-body text-muted-foreground">{format(parseISO(cm.at), "d MMM, HH:mm")}</span>
                 {cm.timestamp && (
                   <button
                     type="button"
                     onClick={() => seek(toSec(cm.timestamp), cm.id)}
-                    className="ml-auto cursor-pointer rounded-md bg-warning-soft px-1.5 py-0.5 font-mono text-[11px] font-medium text-warning hover:brightness-95"
+                    className="ml-auto cursor-pointer rounded-md bg-warning-soft px-1.5 py-0.5 font-mono text-body font-medium text-warning hover:brightness-95"
                   >
                     {cm.timestamp}
                   </button>
@@ -300,18 +300,18 @@ export function VersionsTab({ v }: { v: Video }) {
               </div>
               {cm.kind === "voice" ? (
                 <div className="mt-2 flex items-center gap-2 rounded-lg bg-muted px-2.5 py-2">
-                  <button type="button" onClick={() => toast("Playing voice note · 0:18")} className="inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-accent text-accent-foreground">
+                  <button type="button" onClick={() => toast("Playing voice note · 0:18")} className="inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground">
                     <Mic className="size-3.5" />
                   </button>
                   <div className="flex h-6 flex-1 items-center gap-[2px]">
                     {Array.from({ length: 36 }).map((_, i) => (
-                      <span key={i} className="w-[3px] rounded-full bg-accent/60" style={{ height: `${25 + Math.abs(Math.sin(i * 1.7) * 75)}%` }} />
+                      <span key={i} className="w-[3px] rounded-full bg-primary/60" style={{ height: `${25 + Math.abs(Math.sin(i * 1.7) * 75)}%` }} />
                     ))}
                   </div>
-                  <span className="font-mono text-[11px] text-muted-foreground">0:18</span>
+                  <span className="font-mono text-body text-muted-foreground">0:18</span>
                 </div>
               ) : null}
-              <p className="mt-2 text-[13px] leading-relaxed text-foreground/90">{cm.kind === "voice" ? <span className="text-muted-foreground">Transcript: </span> : null}{cm.text.replace(/^Voice note: /, "")}</p>
+              <p className="mt-2 text-body leading-relaxed text-foreground/90">{cm.kind === "voice" ? <span className="text-muted-foreground">Transcript: </span> : null}{cm.text.replace(/^Voice note: /, "")}</p>
               <div className="mt-2 flex justify-end">
                 <Button
                   size="xs"
@@ -357,11 +357,11 @@ export function VersionsTab({ v }: { v: Video }) {
           <DialogBody className="space-y-3">
             <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-border bg-muted/40 py-8 text-center">
               <Upload className="size-5 text-muted-foreground" />
-              <div className="text-[13px] font-medium">{v.code}_v{v.versions.length + 1}_final.mp4</div>
-              <div className="text-[12px] text-muted-foreground">{v.aspect === "16:9" ? "1920 × 1080" : v.aspect === "9:16" ? "1080 × 1920" : v.aspect === "4:5" ? "1080 × 1350" : "1080 × 1080"} · H.264 · 184 MB (demo)</div>
+              <div className="text-body font-medium">{v.code}_v{v.versions.length + 1}_final.mp4</div>
+              <div className="text-body text-muted-foreground">{v.aspect === "16:9" ? "1920 × 1080" : v.aspect === "9:16" ? "1080 × 1920" : v.aspect === "4:5" ? "1080 × 1350" : "1080 × 1080"} · H.264 · 184 MB (demo)</div>
             </div>
             {v.revisionsUsed >= allowed && v.versions.length >= 1 && (
-              <div className="rounded-lg bg-warning-soft px-3 py-2 text-[12.5px] text-warning">
+              <div className="rounded-lg bg-warning-soft px-3 py-2 text-body text-warning">
                 All {allowed} included revisions are used — this version will be flagged for an out-of-scope change request.
               </div>
             )}

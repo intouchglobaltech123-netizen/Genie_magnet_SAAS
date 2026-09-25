@@ -12,13 +12,13 @@ export const cadenceTone: Record<CadenceId, BadgeTone> = {
 const letterCls: Record<CadenceId, string> = {
   daily: "bg-info-soft text-info",
   weekly: "bg-muted text-foreground",
-  tactical: "bg-accent-soft text-accent",
-  strategic: "bg-gold-soft text-gold",
+  tactical: "bg-primary-soft text-primary",
+  strategic: "bg-accent-soft text-accent-strong",
 };
 
 export function CadenceLetter({ cadence, letter, className }: { cadence: CadenceId; letter: string; className?: string }) {
   return (
-    <span className={cn("inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-[13px] font-bold", letterCls[cadence], className)}>
+    <span className={cn("inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-body font-bold", letterCls[cadence], className)}>
       {letter}
     </span>
   );

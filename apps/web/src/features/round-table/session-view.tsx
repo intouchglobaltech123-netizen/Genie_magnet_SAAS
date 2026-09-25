@@ -65,7 +65,7 @@ export function SessionView({ id }: { id: string }) {
     return (
       <div className="py-24 text-center text-muted-foreground">
         Round Table not found.{" "}
-        <Link href="/round-table" className="text-accent underline">
+        <Link href="/round-table" className="text-primary underline">
           Back to Round Tables
         </Link>
       </div>
@@ -80,22 +80,22 @@ export function SessionView({ id }: { id: string }) {
     <div className="space-y-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
-          <Link href="/round-table" className="mb-2 inline-flex items-center gap-1 text-[12.5px] text-muted-foreground hover:text-foreground">
+          <Link href="/round-table" className="mb-2 inline-flex items-center gap-1 text-body text-muted-foreground hover:text-foreground">
             <ArrowLeft className="size-3.5" /> Round Tables
           </Link>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-[24px] font-semibold tracking-tight">{session.name}</h1>
+            <h1 className="text-heading font-semibold tracking-tight">{session.name}</h1>
             <Badge tone={meta.tone} dot>
               {meta.label}
             </Badge>
           </div>
-          <p className="mt-1 text-[13.5px] text-muted-foreground">
+          <p className="mt-1 text-body text-muted-foreground">
             {session.reviewTitle} · facilitated by {personById(session.facilitatorId).name} · {session.secondsPerPerson}s per person
           </p>
         </div>
         <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
           <Monitor className="size-4 text-muted-foreground" />
-          <span className="text-[12.5px] text-muted-foreground">This laptop is</span>
+          <span className="text-body text-muted-foreground">This laptop is</span>
           <Select
             className="h-8 w-52"
             value={viewer}
@@ -160,8 +160,8 @@ function Lobby({ session, isManager }: { session: RTSession; isManager: boolean 
                   {isIn && <span className="absolute bottom-0 right-0 size-3.5 rounded-full bg-success ring-2 ring-card" />}
                 </div>
                 <div className="leading-tight">
-                  <div className="text-[13px] font-medium">{p.name}</div>
-                  <div className="text-[11px] text-muted-foreground">{isIn ? "Joined · laptop" : "Waiting…"}</div>
+                  <div className="text-body font-medium">{p.name}</div>
+                  <div className="text-body text-muted-foreground">{isIn ? "Joined · laptop" : "Waiting…"}</div>
                 </div>
                 {pid === session.facilitatorId && <Badge tone="accent">Manager</Badge>}
               </div>
@@ -177,7 +177,7 @@ function Lobby({ session, isManager }: { session: RTSession; isManager: boolean 
           </CardHeader>
           <CardContent className="space-y-2">
             {session.questions.map((q, i) => (
-              <div key={i} className="flex gap-2 rounded-lg bg-muted/60 p-2.5 text-[13px]">
+              <div key={i} className="flex gap-2 rounded-lg bg-muted/60 p-2.5 text-body">
                 <span className="font-mono text-muted-foreground">Q{i + 1}</span>
                 {q.replaceAll("{name}", "…")}
               </div>
@@ -194,8 +194,8 @@ function Lobby({ session, isManager }: { session: RTSession; isManager: boolean 
           <CardContent>
             <ol className="space-y-1.5">
               {session.participantIds.map((pid, i) => (
-                <li key={pid} className="flex items-center gap-2 text-[13px]">
-                  <span className="w-5 text-right font-mono text-[11.5px] text-muted-foreground">{i + 1}</span>
+                <li key={pid} className="flex items-center gap-2 text-body">
+                  <span className="w-5 text-right font-mono text-body text-muted-foreground">{i + 1}</span>
                   <Avatar name={personById(pid).name} size="xs" />
                   {personById(pid).name}
                 </li>
@@ -219,7 +219,7 @@ function Lobby({ session, isManager }: { session: RTSession; isManager: boolean 
             {allIn ? "Start Round Table" : "Waiting for everyone to join…"}
           </Button>
         ) : (
-          <div className="rounded-xl border border-dashed border-border p-4 text-center text-[13px] text-muted-foreground">
+          <div className="rounded-xl border border-dashed border-border p-4 text-center text-body text-muted-foreground">
             Waiting for {personById(session.facilitatorId).name} to start the session…
           </div>
         )}
@@ -350,7 +350,7 @@ function LiveRound({
     <div className="relative grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
       {/* Participant sheet */}
       <Card className="overflow-hidden">
-        <div className="flex items-center justify-between border-b border-border bg-muted/40 px-5 py-2.5 text-[12.5px] text-muted-foreground">
+        <div className="flex items-center justify-between border-b border-border bg-muted/40 px-5 py-2.5 text-body text-muted-foreground">
           <span>
             Round <span className="font-semibold text-foreground">{session.currentIndex + 1}</span> of {total}
           </span>
@@ -366,13 +366,13 @@ function LiveRound({
               animate={{ opacity: 1, scale: 1 }}
               className="flex flex-1 items-center gap-4"
             >
-              <Avatar name={subject.name} size="xl" className="size-20 text-2xl" />
+              <Avatar name={subject.name} size="xl" className="size-20 text-heading" />
               <div>
-                <div className="text-[12px] font-medium uppercase tracking-wider text-muted-foreground">
+                <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">
                   {isSelf ? "Your turn · self-review" : "Now reviewing"}
                 </div>
-                <div className="text-[28px] font-semibold leading-tight tracking-tight">{subject.name}</div>
-                <div className="text-[13px] text-muted-foreground">
+                <div className="text-heading font-semibold leading-tight tracking-tight">{subject.name}</div>
+                <div className="text-body text-muted-foreground">
                   {subject.role} · {subject.department}
                 </div>
               </div>
@@ -382,7 +382,7 @@ function LiveRound({
         </div>
 
         {isSelf && (
-          <div className="mx-5 mb-3 rounded-xl bg-accent-soft px-4 py-2.5 text-[13px] text-accent">
+          <div className="mx-5 mb-3 rounded-xl bg-primary-soft px-4 py-2.5 text-body text-primary">
             It&apos;s your name on everyone&apos;s screen. Answer the same questions about yourself — you&apos;ll compare this with what the team says.
           </div>
         )}
@@ -390,15 +390,15 @@ function LiveRound({
         <CardContent className="space-y-4">
           {session.questions.map((q, i) => (
             <div key={i} className="space-y-1.5">
-              <label className="flex items-baseline gap-2 text-[14px] font-medium">
-                <span className="font-mono text-[12px] text-muted-foreground">Q{i + 1}</span>
+              <label className="flex items-baseline gap-2 text-body font-medium">
+                <span className="font-mono text-body text-muted-foreground">Q{i + 1}</span>
                 {isSelf ? q.replaceAll("{name}", "you") : fillName(q, subjectId)}
               </label>
               <Textarea
                 disabled={!!mine || buzz}
                 value={mine ? mine.answers[i] : draft[i]}
                 placeholder={mine ? "" : "Be specific and kind — describe the behaviour, not the person."}
-                className="min-h-[72px] text-[14px]"
+                className="min-h-[72px] text-body"
                 onChange={(e) => {
                   const d = [...draft] as [string, string, string];
                   d[i] = e.target.value;
@@ -408,7 +408,7 @@ function LiveRound({
             </div>
           ))}
           <div className="flex items-center justify-between gap-3 pt-1">
-            <span className="text-[12px] text-muted-foreground">
+            <span className="text-body text-muted-foreground">
               {mine ? "Submitted — waiting for the buzzer or the rest of the team." : "Your sheet auto-submits when the buzzer goes."}
             </span>
             {mine ? (
@@ -448,7 +448,7 @@ function LiveRound({
               {session.participantIds.map((pid) => {
                 const done = submittedIds.has(pid);
                 return (
-                  <li key={pid} className="flex items-center gap-2 text-[13px]">
+                  <li key={pid} className="flex items-center gap-2 text-body">
                     <Avatar name={personById(pid).name} size="xs" />
                     <span className="flex-1 truncate">
                       {personById(pid).name}
@@ -457,7 +457,7 @@ function LiveRound({
                     {done ? (
                       <CheckCircle2 className="size-4 text-success" />
                     ) : (
-                      <span className="flex items-center gap-1 text-[11.5px] text-muted-foreground">
+                      <span className="flex items-center gap-1 text-body text-muted-foreground">
                         <Loader2 className="size-3 animate-spin" /> writing
                       </span>
                     )}
@@ -507,7 +507,7 @@ function LiveRound({
                 </Button>
               </div>
               <div className="space-y-1.5">
-                <div className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-body text-muted-foreground">
                   <FastForward className="size-3.5" /> Demo speed
                 </div>
                 <div className="flex gap-1.5">
@@ -516,8 +516,8 @@ function LiveRound({
                       key={s}
                       onClick={() => setSpeed(s)}
                       className={cn(
-                        "flex-1 cursor-pointer rounded-md border py-1 text-[12.5px] font-medium transition",
-                        speed === s ? "border-accent bg-accent-soft text-accent" : "border-border hover:bg-muted",
+                        "flex-1 cursor-pointer rounded-md border py-1 text-body font-medium transition",
+                        speed === s ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-muted",
                       )}
                     >
                       {s}×
@@ -532,7 +532,7 @@ function LiveRound({
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
             <SkipForward className="size-4 text-muted-foreground" />
-            <div className="flex-1 text-[13px]">
+            <div className="flex-1 text-body">
               {upNext ? (
                 <>
                   <span className="text-muted-foreground">Up next · </span>
@@ -559,8 +559,8 @@ function LiveRound({
               <div className="mx-auto mb-4 inline-flex size-16 items-center justify-center rounded-full bg-danger text-white shadow-pop">
                 <Bell className="size-8" />
               </div>
-              <div className="text-[32px] font-semibold tracking-tight">Time&apos;s up!</div>
-              <div className="mt-1 text-[15px] text-muted-foreground">
+              <div className="text-heading font-semibold tracking-tight">Time&apos;s up!</div>
+              <div className="mt-1 text-subheading text-muted-foreground">
                 {upNext ? (
                   <>
                     Next on everyone&apos;s screen: <span className="font-semibold text-foreground">{personById(upNext).name}</span>
@@ -583,13 +583,13 @@ function TimerRing({ frac, secs, urgent, paused }: { frac: number; secs: number;
   return (
     <div className="relative size-28 shrink-0">
       <svg viewBox="0 0 100 100" className="size-full -rotate-90">
-        <circle cx="50" cy="50" r={r} fill="none" stroke="var(--muted)" strokeWidth="7" />
+        <circle cx="50" cy="50" r={r} fill="none" stroke="var(--color-muted)" strokeWidth="7" />
         <circle
           cx="50"
           cy="50"
           r={r}
           fill="none"
-          stroke={urgent ? "var(--danger)" : "var(--accent)"}
+          stroke={urgent ? "var(--color-danger)" : "var(--color-primary)"}
           strokeWidth="7"
           strokeLinecap="round"
           strokeDasharray={c}
@@ -598,10 +598,10 @@ function TimerRing({ frac, secs, urgent, paused }: { frac: number; secs: number;
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={cn("text-[26px] font-semibold tabular", urgent && "text-danger")}>
+        <span className={cn("text-heading font-semibold tabular", urgent && "text-danger")}>
           {Math.floor(secs / 60)}:{String(secs % 60).padStart(2, "0")}
         </span>
-        <span className="text-[10.5px] uppercase tracking-wider text-muted-foreground">{paused ? "paused" : "left"}</span>
+        <span className="text-body uppercase tracking-wider text-muted-foreground">{paused ? "paused" : "left"}</span>
       </div>
     </div>
   );
@@ -628,12 +628,12 @@ function Moderation({ session }: { session: RTSession }) {
             <ShieldCheck className="size-5" />
           </span>
           <div className="flex-1">
-            <div className="text-[15px] font-semibold">Manager review before release</div>
-            <p className="text-[13px] text-muted-foreground">
+            <div className="text-subheading font-semibold">Manager review before release</div>
+            <p className="text-body text-muted-foreground">
               You can see who wrote each answer. Hide anything abusive or personal, then release — employees only ever see their feedback anonymously.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2 text-[12.5px]">
+          <div className="flex flex-wrap gap-2 text-body">
             <Badge tone="neutral">{session.answers.length} sheets</Badge>
             <Badge tone={flaggedTotal ? "danger" : "success"}>{flaggedTotal} flagged</Badge>
             <Badge tone="neutral">{hiddenTotal} hidden</Badge>
@@ -662,14 +662,14 @@ function Moderation({ session }: { session: RTSession }) {
                 key={pid}
                 onClick={() => setSubject(pid)}
                 className={cn(
-                  "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] transition",
+                  "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-body transition",
                   subject === pid ? "bg-muted font-medium" : "hover:bg-muted/60",
                 )}
               >
                 <Avatar name={personById(pid).name} size="sm" />
                 <span className="flex-1 truncate">{personById(pid).name}</span>
                 {flagged && <AlertTriangle className="size-3.5 text-danger" />}
-                <span className="text-[11px] text-muted-foreground">{list.length}</span>
+                <span className="text-body text-muted-foreground">{list.length}</span>
               </button>
             );
           })}
@@ -682,7 +682,7 @@ function Moderation({ session }: { session: RTSession }) {
               <Card key={a.id} className={cn("p-4", a.hidden && "opacity-55")}>
                 <div className="mb-3 flex items-center gap-2">
                   <Avatar name={personById(a.authorId).name} size="sm" />
-                  <span className="text-[13px] font-medium">{personById(a.authorId).name}</span>
+                  <span className="text-body font-medium">{personById(a.authorId).name}</span>
                   {a.self && <Badge tone="accent">Self-review</Badge>}
                   {a.missed && <Badge tone="warning">Missed buzzer</Badge>}
                   {flagged && !a.hidden && (
@@ -707,15 +707,15 @@ function Moderation({ session }: { session: RTSession }) {
                   </Tooltip>
                 </div>
                 {a.missed ? (
-                  <p className="text-[13px] italic text-muted-foreground">No answer before the buzzer.</p>
+                  <p className="text-body italic text-muted-foreground">No answer before the buzzer.</p>
                 ) : (
                   <dl className="grid gap-2 sm:grid-cols-3">
                     {a.answers.map((t, i) => (
                       <div key={i} className="rounded-lg bg-muted/50 p-2.5">
-                        <dt className="mb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        <dt className="mb-1 text-body font-medium uppercase tracking-wider text-muted-foreground">
                           {["Does best", "Falls short", "Do better"][i]}
                         </dt>
-                        <dd className="text-[13px] leading-snug">{t || <span className="text-muted-foreground">—</span>}</dd>
+                        <dd className="text-body leading-snug">{t || <span className="text-muted-foreground">—</span>}</dd>
                       </div>
                     ))}
                   </dl>
@@ -733,8 +733,8 @@ function WaitingRelease() {
   return (
     <Card className="p-10 text-center">
       <ShieldCheck className="mx-auto mb-3 size-8 text-warning" />
-      <div className="text-[16px] font-semibold">All rounds are done</div>
-      <p className="mx-auto mt-1 max-w-md text-[13.5px] text-muted-foreground">
+      <div className="text-subheading font-semibold">All rounds are done</div>
+      <p className="mx-auto mt-1 max-w-md text-body text-muted-foreground">
         Your manager is reviewing the sheets. You&apos;ll be notified as soon as your feedback is released.
       </p>
     </Card>
@@ -755,8 +755,8 @@ function ReleasedSummary({ session, isManager, viewerId }: { session: RTSession;
             <CheckCircle2 className="size-5" />
           </span>
           <div className="flex-1">
-            <div className="text-[15px] font-semibold">Results released</div>
-            <p className="text-[13px] text-muted-foreground">
+            <div className="text-subheading font-semibold">Results released</div>
+            <p className="text-body text-muted-foreground">
               {session.releasedAt &&
                 new Date(session.releasedAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}{" "}
               · {Math.round(participation * 100)}% of sheets answered before the buzzer
@@ -788,7 +788,7 @@ function ReleasedSummary({ session, isManager, viewerId }: { session: RTSession;
                 <div key={pid} className="rounded-xl border border-border p-3">
                   <div className="mb-2 flex items-center gap-2">
                     <Avatar name={personById(pid).name} size="sm" />
-                    <span className="text-[13px] font-medium">{personById(pid).name}</span>
+                    <span className="text-body font-medium">{personById(pid).name}</span>
                     {session.commitments[pid] ? (
                       <Badge tone="success" className="ml-auto">
                         Committed
@@ -806,7 +806,7 @@ function ReleasedSummary({ session, isManager, viewerId }: { session: RTSession;
                       </Badge>
                     ))}
                   </div>
-                  {session.commitments[pid] && <p className="mt-2 text-[12.5px] text-muted-foreground">“{session.commitments[pid]}”</p>}
+                  {session.commitments[pid] && <p className="mt-2 text-body text-muted-foreground">“{session.commitments[pid]}”</p>}
                 </div>
               );
             })}

@@ -40,7 +40,7 @@ export function ShootSheet({ id }: { id: string }) {
     return (
       <div className="flex flex-col items-center gap-3 py-24 text-center">
         <Camera className="size-8 text-muted-foreground" />
-        <div className="text-lg font-semibold">Shoot not found</div>
+        <div className="text-subheading font-semibold">Shoot not found</div>
         <Button variant="outline" asChild>
           <Link href="/shoots">
             <ArrowLeft /> Back to shoots
@@ -92,7 +92,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
 
   return (
     <div>
-      <Link href="/shoots" className="mb-4 inline-flex items-center gap-1.5 text-[13px] text-muted-foreground transition hover:text-foreground">
+      <Link href="/shoots" className="mb-4 inline-flex items-center gap-1.5 text-body text-muted-foreground transition hover:text-foreground">
         <ArrowLeft className="size-3.5" /> Shoots & Kit
       </Link>
 
@@ -100,7 +100,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
         <div>
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <ClientTag clientId={shoot.clientId} />
-            <span className="font-mono text-[12.5px] font-semibold">{shoot.batchNo}</span>
+            <span className="font-mono text-body font-semibold">{shoot.batchNo}</span>
             <Badge tone={shootStatusMeta[status].tone} dot>
               {shootStatusMeta[status].label}
             </Badge>
@@ -112,8 +112,8 @@ function Sheet({ shoot }: { shoot: Shoot }) {
               </span>
             </Tooltip>
           </div>
-          <h1 className="text-[26px] font-semibold leading-tight tracking-tight">{shoot.projectName}</h1>
-          <p className="mt-1 text-[13px] text-muted-foreground">Digital shoot sheet · works offline in the field app and syncs when back on network.</p>
+          <h1 className="text-heading font-semibold leading-tight tracking-tight">{shoot.projectName}</h1>
+          <p className="mt-1 text-body text-muted-foreground">Digital shoot sheet · works offline in the field app and syncs when back on network.</p>
         </div>
         <div className="flex gap-2">
           {status === "packed" && (
@@ -142,8 +142,8 @@ function Sheet({ shoot }: { shoot: Shoot }) {
             <div key={s} className="flex items-center gap-1">
               <span
                 className={cn(
-                  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-[12px] font-medium",
-                  i < cur ? "bg-accent-soft text-accent" : i === cur ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground",
+                  "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1 text-body font-medium",
+                  i < cur ? "bg-primary-soft text-primary" : i === cur ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
                 )}
               >
                 {i < cur && <Check className="size-3" />}
@@ -160,8 +160,8 @@ function Sheet({ shoot }: { shoot: Shoot }) {
           {/* Paper form header */}
           <Card className="overflow-hidden">
             <div className="flex items-center justify-between border-b border-border bg-muted/40 px-5 py-2.5">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Genie Magnet · Shoot sheet</span>
-              <span className="font-mono text-[11px] text-muted-foreground">{shoot.id.toUpperCase()}</span>
+              <span className="text-body font-semibold uppercase tracking-[0.18em] text-muted-foreground">Genie Magnet · Shoot sheet</span>
+              <span className="font-mono text-body text-muted-foreground">{shoot.id.toUpperCase()}</span>
             </div>
             <div className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
               {(
@@ -177,8 +177,8 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                 ] as [string, React.ReactNode][]
               ).map(([k, val]) => (
                 <div key={k} className="bg-card px-4 py-3">
-                  <div className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
-                  <div className="mt-1 text-[13px] font-medium">{val}</div>
+                  <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
+                  <div className="mt-1 text-body font-medium">{val}</div>
                 </div>
               ))}
             </div>
@@ -206,8 +206,8 @@ function Sheet({ shoot }: { shoot: Shoot }) {
               <TBody>
                 {videos.map((v) => (
                   <TR key={v.id}>
-                    <TD className="font-mono text-[12px] font-medium">
-                      <Link href={`/production/${v.id}`} className="hover:text-accent">
+                    <TD className="font-mono text-body font-medium">
+                      <Link href={`/production/${v.id}`} className="hover:text-primary">
                         {v.code}
                       </Link>
                     </TD>
@@ -216,7 +216,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                     </TD>
                     <TD className="max-w-[260px] truncate font-medium">{v.title}</TD>
                     <TD>
-                      <Input value={v.clipNo} onChange={(e) => updateVideo(v.id, { clipNo: e.target.value })} className="h-8 w-40 font-mono text-[12px]" />
+                      <Input value={v.clipNo} onChange={(e) => updateVideo(v.id, { clipNo: e.target.value })} className="h-8 w-40 font-mono text-body" />
                     </TD>
                     <TD className="text-center">
                       <Checkbox
@@ -230,7 +230,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                       />
                     </TD>
                     <TD>
-                      <span className="inline-flex items-center gap-1.5 text-[12.5px]">
+                      <span className="inline-flex items-center gap-1.5 text-body">
                         <Avatar name={personById(v.editorId).name} size="xs" />
                         {personById(v.editorId).name}
                       </span>
@@ -280,10 +280,10 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                 {COLS.map((col) => (
                   <div key={col.key} className="rounded-xl border border-border px-3 py-2.5">
                     <div className="flex items-baseline justify-between">
-                      <span className="text-[12px] font-medium text-muted-foreground">{col.label}</span>
-                      <span className="text-[15px] font-semibold tabular">
+                      <span className="text-body font-medium text-muted-foreground">{col.label}</span>
+                      <span className="text-subheading font-semibold tabular">
                         {count(col.key)}
-                        <span className="text-[12px] font-normal text-muted-foreground">/{items.length}</span>
+                        <span className="text-body font-normal text-muted-foreground">/{items.length}</span>
                       </span>
                     </div>
                     <Progress value={(count(col.key) / items.length) * 100} tone={count(col.key) === items.length ? "success" : "accent"} className="mt-2" />
@@ -310,8 +310,8 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                     const miss = t.packed && !t.received && returnPhase;
                     return (
                       <TR key={it} className={cn(miss && status === "returned" && "bg-warning-soft/40")}>
-                        <TD className="text-[12px] tabular text-muted-foreground">{i + 1}</TD>
-                        <TD className="text-[13px]">{it}</TD>
+                        <TD className="text-body tabular text-muted-foreground">{i + 1}</TD>
+                        <TD className="text-body">{it}</TD>
                         {COLS.map((col) => (
                           <TD key={col.key} className="text-center">
                             <Checkbox
@@ -358,10 +358,10 @@ function Sheet({ shoot }: { shoot: Shoot }) {
               />
               {returnPhase && !allReceived && missing.length > 0 && (
                 <div className="rounded-xl border border-warning/30 bg-warning-soft p-3">
-                  <div className="flex items-center gap-2 text-[13px] font-semibold text-warning">
+                  <div className="flex items-center gap-2 text-body font-semibold text-warning">
                     <AlertTriangle className="size-4" /> {missing.length} items not returned
                   </div>
-                  <ul className="mt-1.5 space-y-0.5 text-[12px] text-foreground/80">
+                  <ul className="mt-1.5 space-y-0.5 text-body text-foreground/80">
                     {missing.slice(0, 5).map((m) => (
                       <li key={m}>• {m}</li>
                     ))}
@@ -375,7 +375,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
               {p.incidents
                 .filter((x) => x.shootId === shoot.id)
                 .map((inc) => (
-                  <div key={inc.id} className="rounded-xl border border-danger/30 bg-danger-soft p-3 text-[12px]">
+                  <div key={inc.id} className="rounded-xl border border-danger/30 bg-danger-soft p-3 text-body">
                     <div className="font-semibold text-danger">Incident raised · {format(parseISO(inc.at), "d MMM, HH:mm")}</div>
                     <div className="mt-0.5 text-foreground/80">{inc.items.join(", ")}</div>
                     {inc.note && <div className="mt-1 text-muted-foreground">“{inc.note}”</div>}
@@ -391,7 +391,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                 <CardTitle>Pre-shoot checklist</CardTitle>
                 <CardDescription>Set readiness before the talent arrives</CardDescription>
               </div>
-              <span className="text-[13px] font-semibold tabular">
+              <span className="text-body font-semibold tabular">
                 {preShootItems.filter((x) => pre[x]).length}/{preShootItems.length}
               </span>
             </CardHeader>
@@ -400,8 +400,8 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                 <label
                   key={it}
                   className={cn(
-                    "flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-2 text-[12.5px] transition",
-                    pre[it] ? "border-accent/30 bg-accent-soft/40" : "border-border hover:bg-muted/50",
+                    "flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-2 text-body transition",
+                    pre[it] ? "border-primary/30 bg-primary-soft/40" : "border-border hover:bg-muted/50",
                   )}
                 >
                   <Checkbox checked={!!pre[it]} onCheckedChange={(ch) => p.setPreShoot(shoot.id, it, !!ch)} />
@@ -449,9 +449,9 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={sign.client.dataUrl} alt="Client signature" className="h-20 w-full object-contain" />
                   ) : (
-                    <div className="flex h-20 items-center justify-center font-[cursive] text-[26px] italic text-foreground/80">{sign.client.by}</div>
+                    <div className="flex h-20 items-center justify-center font-[cursive] text-heading italic text-foreground/80">{sign.client.by}</div>
                   )}
-                  <div className="mt-1 flex items-center gap-1.5 border-t border-border pt-2 text-[12px] text-success">
+                  <div className="mt-1 flex items-center gap-1.5 border-t border-border pt-2 text-body text-success">
                     <Check className="size-3.5" /> Signed by {sign.client.by} · {format(parseISO(sign.client.at), "d MMM, HH:mm")}
                   </div>
                 </div>
@@ -471,8 +471,8 @@ function Sheet({ shoot }: { shoot: Shoot }) {
       </div>
 
       <div className="mt-10 flex flex-col items-center gap-1 border-t border-border pt-6 text-center">
-        <div className="text-[13px] font-medium italic tracking-tight text-foreground/80">Shoot with purpose. Edit with precision. Deliver excellence.</div>
-        <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Genie Magnet</div>
+        <div className="text-body font-medium italic tracking-tight text-foreground/80">Shoot with purpose. Edit with precision. Deliver excellence.</div>
+        <div className="text-body uppercase tracking-[0.2em] text-muted-foreground">Genie Magnet</div>
       </div>
 
       <Dialog open={incidentOpen} onOpenChange={setIncidentOpen}>
@@ -530,8 +530,8 @@ function SignBox({ label, sub, sig, enabled, why, onSign }: { label: string; sub
   return (
     <div className={cn("flex items-center gap-3 rounded-xl border p-3", sig ? "border-success/30 bg-success-soft/40" : "border-dashed border-border")}>
       <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-semibold">{label}</div>
-        <div className="truncate text-[11.5px] text-muted-foreground">
+        <div className="text-body font-semibold">{label}</div>
+        <div className="truncate text-body text-muted-foreground">
           {sig ? `${sig.by} · ${format(parseISO(sig.at), "d MMM, HH:mm")}` : enabled ? sub : why}
         </div>
       </div>

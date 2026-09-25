@@ -18,9 +18,9 @@ import type { SheetRow } from "./seed";
 import { spanMinutes } from "./time";
 
 const timeCls =
-  "h-8 w-full rounded-md border border-input bg-card px-2 text-[13px] tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed";
+  "h-8 w-full rounded-md border border-input bg-card px-2 text-body tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed";
 const textCls =
-  "h-8 w-full rounded-md border border-transparent bg-transparent px-2 text-[13px] hover:border-input focus:border-input focus:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 placeholder:text-muted-foreground/60 disabled:hover:border-transparent disabled:cursor-not-allowed";
+  "h-8 w-full rounded-md border border-transparent bg-transparent px-2 text-body hover:border-input focus:border-input focus:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 placeholder:text-muted-foreground/60 disabled:hover:border-transparent disabled:cursor-not-allowed";
 
 export function TaskTable({
   personId,
@@ -61,7 +61,7 @@ export function TaskTable({
     <div className="overflow-x-auto scrollbar-thin">
       <div className={cn("min-w-[960px]")}>
         {/* header */}
-        <div className={cn("grid items-center gap-2 border-b border-border px-4 pb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground", cols)}>
+        <div className={cn("grid items-center gap-2 border-b border-border px-4 pb-2 text-body font-medium uppercase tracking-wider text-muted-foreground", cols)}>
           <span>#</span>
           {isEditor ? (
             <>
@@ -100,14 +100,14 @@ export function TaskTable({
                 className={cn("group border-b border-border px-4 py-2.5 last:border-b-0", flagged && "bg-warning-soft/40")}
               >
                 <div className={cn("grid items-center gap-2", cols)}>
-                  <span className="text-[12px] font-medium text-muted-foreground tabular">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="text-body font-medium text-muted-foreground tabular">{String(i + 1).padStart(2, "0")}</span>
                   {isEditor ? (
                     <>
                       <div className="min-w-0">
                         {locked ? (
-                          <div className="truncate px-1 text-[13px] font-medium">
+                          <div className="truncate px-1 text-body font-medium">
                             {video ? (
-                              <span className="font-mono text-[12.5px]">{video.code}</span>
+                              <span className="font-mono text-body">{video.code}</span>
                             ) : (
                               row.task || "—"
                             )}
@@ -117,14 +117,14 @@ export function TaskTable({
                             value={row.videoId ?? "__none"}
                             onValueChange={(v) => upd(row.id, { videoId: v === "__none" ? undefined : v })}
                             options={videoOptions}
-                            className="h-8 text-[12.5px]"
+                            className="h-8 text-body"
                           />
                         )}
                         {!video && !locked && (
                           <input className={cn(textCls, "mt-1")} placeholder={placeholder} value={row.task} onChange={(e) => upd(row.id, { task: e.target.value })} />
                         )}
                       </div>
-                      <div className="min-w-0 truncate text-[13px]">
+                      <div className="min-w-0 truncate text-body">
                         {client ? client.name : <span className="text-muted-foreground">Internal</span>}
                       </div>
                       <input
@@ -143,7 +143,7 @@ export function TaskTable({
                   )}
                   <input type="time" disabled={locked} className={timeCls} value={row.start} onChange={(e) => upd(row.id, { start: e.target.value })} />
                   <input type="time" disabled={locked} className={timeCls} value={row.end} onChange={(e) => upd(row.id, { end: e.target.value })} />
-                  <span className={cn("text-right text-[13px] font-semibold tabular", mins === null && "text-muted-foreground font-normal")}>
+                  <span className={cn("text-right text-body font-semibold tabular", mins === null && "text-muted-foreground font-normal")}>
                     {mins === null ? (row.start && row.end ? <span className="text-danger">invalid</span> : "—") : hoursLabel(mins)}
                   </span>
                   <StatusToggle
@@ -173,7 +173,7 @@ export function TaskTable({
                   {isEditor && (
                     <input
                       disabled={locked}
-                      className={cn(textCls, "h-7 max-w-md flex-1 text-[12.5px] text-muted-foreground")}
+                      className={cn(textCls, "h-7 max-w-md flex-1 text-body text-muted-foreground")}
                       placeholder="What did you do on this video?"
                       value={row.details}
                       onChange={(e) => upd(row.id, { details: e.target.value })}
@@ -183,7 +183,7 @@ export function TaskTable({
                     disabled={locked}
                     onClick={() => upd(row.id, { productive: !row.productive })}
                     className={cn(
-                      "inline-flex h-6 cursor-pointer items-center gap-1 rounded-md px-2 text-[11px] font-medium transition disabled:cursor-default",
+                      "inline-flex h-6 cursor-pointer items-center gap-1 rounded-md px-2 text-body font-medium transition disabled:cursor-default",
                       row.productive ? "bg-success-soft text-success" : "bg-muted text-muted-foreground",
                     )}
                   >
@@ -196,7 +196,7 @@ export function TaskTable({
                       <AlertTriangle className={cn("size-3.5 shrink-0", row.delayReason ? "text-warning" : "text-danger")} />
                       <input
                         disabled={locked}
-                        className={cn(textCls, "h-7 text-[12.5px]", !row.delayReason && "border-danger/40 bg-danger-soft/40")}
+                        className={cn(textCls, "h-7 text-body", !row.delayReason && "border-danger/40 bg-danger-soft/40")}
                         placeholder="Delay / extra time reason (required for pending)"
                         value={row.delayReason}
                         onChange={(e) => upd(row.id, { delayReason: e.target.value })}
@@ -208,7 +208,7 @@ export function TaskTable({
                 {/* editing steps */}
                 {isEditor && video && (
                   <div className="mt-2 flex flex-wrap items-center gap-1.5 pl-[36px]">
-                    <span className="mr-1 inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+                    <span className="mr-1 inline-flex items-center gap-1 text-body font-medium text-muted-foreground">
                       <Film className="size-3" /> Edit steps <span className="tabular text-foreground">{done}/9</span>
                     </span>
                     {EDIT_STEPS.map((s: EditStep) => {
@@ -222,8 +222,8 @@ export function TaskTable({
                             toast(`${s} ${on ? "unticked" : "done"} on ${video.code}`, { description: "Synced to Video Production board" });
                           }}
                           className={cn(
-                            "inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border px-2 text-[11px] font-medium transition disabled:cursor-default",
-                            on ? "border-transparent bg-accent text-accent-foreground" : "border-border bg-card text-muted-foreground hover:border-accent/50 hover:text-foreground",
+                            "inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border px-2 text-body font-medium transition disabled:cursor-default",
+                            on ? "border-transparent bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground",
                           )}
                         >
                           {on ? <Check className="size-3" strokeWidth={3} /> : <CircleDashed className="size-3" />}
@@ -239,7 +239,7 @@ export function TaskTable({
         </AnimatePresence>
 
         {rows.length === 0 && (
-          <div className="px-4 py-10 text-center text-[13px] text-muted-foreground">No tasks logged yet for this day.</div>
+          <div className="px-4 py-10 text-center text-body text-muted-foreground">No tasks logged yet for this day.</div>
         )}
       </div>
       {!locked && (
@@ -247,7 +247,7 @@ export function TaskTable({
           <Button size="sm" variant="outline" onClick={() => addRow(personId, date)}>
             <Plus /> Add row
           </Button>
-          <span className="text-[12px] text-muted-foreground">Start time auto-continues from the previous row’s end.</span>
+          <span className="text-body text-muted-foreground">Start time auto-continues from the previous row’s end.</span>
           {rows.length > 0 && (
             <Badge tone="outline" className="ml-auto">
               {rows.length} rows
@@ -261,7 +261,7 @@ export function TaskTable({
 
 function StatusToggle({ value, onChange, disabled }: { value: SheetRow["status"]; onChange: (v: SheetRow["status"]) => void; disabled?: boolean }) {
   return (
-    <div className="inline-flex h-8 items-center rounded-md bg-muted p-0.5 text-[11.5px] font-medium">
+    <div className="inline-flex h-8 items-center rounded-md bg-muted p-0.5 text-body font-medium">
       {(["Pending", "Completed"] as const).map((s) => (
         <button
           key={s}

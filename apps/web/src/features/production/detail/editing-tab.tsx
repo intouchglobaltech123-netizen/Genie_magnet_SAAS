@@ -79,7 +79,7 @@ export function EditingTab({ v }: { v: Video }) {
           </Badge>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border text-[12px] sm:grid-cols-4">
+          <div className="mb-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border text-body sm:grid-cols-4">
             {[
               ["Video ID", <span key="c" className="font-mono">{v.code}</span>],
               ["Client", clientById(v.clientId).name],
@@ -87,7 +87,7 @@ export function EditingTab({ v }: { v: Video }) {
               ["End", logs.at(-1) && complete ? `${fmt(logs.at(-1)!.date)} · ${logs.at(-1)!.end}` : "—"],
             ].map(([k, val]) => (
               <div key={k as string} className="bg-card px-3 py-2">
-                <div className="text-[10.5px] font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
+                <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
                 <div className="mt-0.5 truncate font-medium">{val}</div>
               </div>
             ))}
@@ -102,20 +102,20 @@ export function EditingTab({ v }: { v: Video }) {
                   onClick={() => toggle(s)}
                   className={cn(
                     "group flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-left transition",
-                    on ? "border-accent/40 bg-accent-soft/60" : "border-border bg-card hover:border-muted-foreground/30 hover:bg-muted/50",
+                    on ? "border-primary/40 bg-primary-soft/60" : "border-border bg-card hover:border-muted-foreground/30 hover:bg-muted/50",
                   )}
                 >
                   <span
                     className={cn(
-                      "inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-[12px] font-semibold tabular transition",
-                      on ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground group-hover:text-foreground",
+                      "inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-body font-semibold tabular transition",
+                      on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:text-foreground",
                     )}
                   >
                     {on ? <Check className="size-4" strokeWidth={3} /> : String(i + 1).padStart(2, "0")}
                   </span>
                   <div className="min-w-0">
-                    <div className={cn("text-[13.5px] font-medium", on && "text-accent")}>{s}</div>
-                    <div className="text-[11.5px] text-muted-foreground">{on ? "Done" : "Tap to mark done"}</div>
+                    <div className={cn("text-body font-medium", on && "text-primary")}>{s}</div>
+                    <div className="text-body text-muted-foreground">{on ? "Done" : "Tap to mark done"}</div>
                   </div>
                 </button>
               );
@@ -131,20 +131,20 @@ export function EditingTab({ v }: { v: Video }) {
             <CardDescription>Start / End / Total time per editing session</CardDescription>
           </div>
           <div className="text-right">
-            <div className="text-[20px] font-semibold tabular tracking-tight">{hoursLabel(v.loggedMinutes)}</div>
-            <div className="text-[11.5px] text-muted-foreground">of {hoursLabel(v.plannedMinutes)} planned</div>
+            <div className="text-heading font-semibold tabular tracking-tight">{hoursLabel(v.loggedMinutes)}</div>
+            <div className="text-body text-muted-foreground">of {hoursLabel(v.plannedMinutes)} planned</div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <div className="relative h-3 overflow-hidden rounded-full bg-muted">
               <div
-                className={cn("absolute inset-y-0 left-0 rounded-full transition-all", over ? "bg-danger" : "bg-accent")}
+                className={cn("absolute inset-y-0 left-0 rounded-full transition-all", over ? "bg-danger" : "bg-primary")}
                 style={{ width: `${Math.min(100, (v.loggedMinutes / Math.max(v.plannedMinutes, v.loggedMinutes)) * 100)}%` }}
               />
               {over && <div className="absolute inset-y-0 w-0.5 bg-foreground/70" style={{ left: `${(v.plannedMinutes / v.loggedMinutes) * 100}%` }} />}
             </div>
-            <div className="mt-1.5 flex justify-between text-[11.5px] text-muted-foreground">
+            <div className="mt-1.5 flex justify-between text-body text-muted-foreground">
               <span>Logged {hoursLabel(v.loggedMinutes)}</span>
               <span className={cn(over && "font-medium text-danger")}>
                 {over ? `+${hoursLabel(v.loggedMinutes - v.plannedMinutes)} over plan — reason required` : `${hoursLabel(v.plannedMinutes - v.loggedMinutes)} remaining`}
@@ -166,8 +166,8 @@ export function EditingTab({ v }: { v: Video }) {
                 {logs.map((l) => (
                   <TR key={l.id}>
                     <TD className="tabular">{fmt(l.date, "EEE, d MMM")}</TD>
-                    <TD className="font-mono text-[12px]">{l.start}</TD>
-                    <TD className="font-mono text-[12px]">{l.end}</TD>
+                    <TD className="font-mono text-body">{l.start}</TD>
+                    <TD className="font-mono text-body">{l.end}</TD>
                     <TD className="tabular font-medium">{hoursLabel(minutesBetween(l.start, l.end))}</TD>
                     <TD className="text-muted-foreground">{l.note}</TD>
                   </TR>
@@ -181,18 +181,18 @@ export function EditingTab({ v }: { v: Video }) {
                 )}
                 <TR className="bg-muted/40 hover:bg-muted/40">
                   <TD>
-                    <Input type="date" value={row.date} onChange={(e) => setRow({ ...row, date: e.target.value })} className="h-8 w-36 text-[12px]" />
+                    <Input type="date" value={row.date} onChange={(e) => setRow({ ...row, date: e.target.value })} className="h-8 w-36 text-body" />
                   </TD>
                   <TD>
-                    <Input type="time" value={row.start} onChange={(e) => setRow({ ...row, start: e.target.value })} className="h-8 w-24 text-[12px]" />
+                    <Input type="time" value={row.start} onChange={(e) => setRow({ ...row, start: e.target.value })} className="h-8 w-24 text-body" />
                   </TD>
                   <TD>
-                    <Input type="time" value={row.end} onChange={(e) => setRow({ ...row, end: e.target.value })} className="h-8 w-24 text-[12px]" />
+                    <Input type="time" value={row.end} onChange={(e) => setRow({ ...row, end: e.target.value })} className="h-8 w-24 text-body" />
                   </TD>
                   <TD className="tabular text-muted-foreground">{hoursLabel(minutesBetween(row.start, row.end))}</TD>
                   <TD>
                     <div className="flex gap-2">
-                      <Input value={row.note} onChange={(e) => setRow({ ...row, note: e.target.value })} placeholder="What was done?" className="h-8 text-[12px]" />
+                      <Input value={row.note} onChange={(e) => setRow({ ...row, note: e.target.value })} placeholder="What was done?" className="h-8 text-body" />
                       <Button size="sm" variant="outline" onClick={addRow}>
                         <Plus /> Log
                       </Button>
@@ -251,28 +251,28 @@ export function EditingTab({ v }: { v: Video }) {
                 const s = sigs[key];
                 return (
                   <div key={key} className={cn("rounded-xl border p-3", s ? "border-success/30 bg-success-soft/50" : "border-dashed border-border")}>
-                    <div className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
+                    <div className="text-body font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
                     {s ? (
                       <>
-                        <div className="mt-1.5 font-[cursive] text-[17px] italic leading-none text-foreground/90">{s.by === "Editor" ? who : s.by}</div>
-                        <div className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-success">
+                        <div className="mt-1.5 font-[cursive] text-subheading italic leading-none text-foreground/90">{s.by === "Editor" ? who : s.by}</div>
+                        <div className="mt-1.5 inline-flex items-center gap-1 text-body text-success">
                           <Check className="size-3" /> {format(parseISO(s.at), "d MMM · HH:mm")}
                         </div>
                       </>
                     ) : (
                       <>
-                        <div className="mt-1.5 truncate text-[12.5px] text-muted-foreground">{who}</div>
+                        <div className="mt-1.5 truncate text-body text-muted-foreground">{who}</div>
                         <Button size="xs" variant={enabled ? "soft" : "outline"} className="mt-2 w-full" disabled={!enabled} onClick={() => sign(key)} title={enabled ? undefined : why}>
                           <PenLine /> Sign
                         </Button>
-                        {!enabled && <div className="mt-1 text-[10.5px] text-muted-foreground">{why}</div>}
+                        {!enabled && <div className="mt-1 text-body text-muted-foreground">{why}</div>}
                       </>
                     )}
                   </div>
                 );
               })}
             </div>
-            <div className="mt-3 flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
+            <div className="mt-3 flex items-center gap-1.5 text-body text-muted-foreground">
               <Clock className="size-3" /> Signatures are time-stamped and appear in the audit log.
             </div>
           </CardContent>

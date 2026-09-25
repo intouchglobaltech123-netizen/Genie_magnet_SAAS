@@ -58,11 +58,11 @@ export function Topbar() {
     <header className="sticky top-0 z-20 flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-xl lg:px-8">
       <button
         onClick={() => setCmdOpen(true)}
-        className="flex h-9 w-full max-w-md cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 text-[13px] text-muted-foreground transition hover:border-input"
+        className="flex h-9 w-full max-w-md cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 text-body text-muted-foreground transition hover:border-input"
       >
         <Search className="size-4" />
         <span>Search modules, clients, videos…</span>
-        <kbd className="ml-auto rounded border border-border bg-muted px-1.5 font-mono text-[10.5px]">Ctrl K</kbd>
+        <kbd className="ml-auto rounded border border-border bg-muted px-1.5 font-mono text-body">Ctrl K</kbd>
       </button>
 
       <div className="ml-auto flex items-center gap-1.5">
@@ -80,8 +80,8 @@ export function Topbar() {
           </PopoverTrigger>
           <PopoverContent align="end" className="w-96 p-0">
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <span className="text-sm font-semibold">Activity</span>
-              <span className="text-xs text-muted-foreground">Live across modules</span>
+              <span className="text-body font-semibold">Activity</span>
+              <span className="text-body text-muted-foreground">Live across modules</span>
             </div>
             <ul className="scrollbar-thin max-h-96 overflow-y-auto p-2">
               {activity.slice(0, 12).map((a) => (
@@ -89,12 +89,12 @@ export function Topbar() {
                   <span
                     className={cn(
                       "mt-1.5 size-2 shrink-0 rounded-full",
-                      a.tone === "success" ? "bg-success" : a.tone === "danger" ? "bg-danger" : a.tone === "warning" ? "bg-warning" : "bg-accent",
+                      a.tone === "success" ? "bg-success" : a.tone === "danger" ? "bg-danger" : a.tone === "warning" ? "bg-warning" : "bg-primary",
                     )}
                   />
                   <div className="min-w-0">
-                    <p className="text-[13px] leading-snug">{a.text}</p>
-                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                    <p className="text-body leading-snug">{a.text}</p>
+                    <p className="mt-0.5 text-body text-muted-foreground">
                       {new Date(a.at).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
@@ -109,8 +109,8 @@ export function Topbar() {
             <button className="ml-1 flex cursor-pointer items-center gap-2 rounded-lg py-1 pl-1 pr-2 transition hover:bg-muted">
               <Avatar name={me.person} size="md" />
               <div className="hidden text-left leading-tight sm:block">
-                <div className="text-[13px] font-medium">{me.person.split(" · ")[0]}</div>
-                <div className="text-[11px] text-muted-foreground">{me.label}</div>
+                <div className="text-body font-medium">{me.person.split(" · ")[0]}</div>
+                <div className="text-body text-muted-foreground">{me.label}</div>
               </div>
               <ChevronDown className="size-3.5 text-muted-foreground" />
             </button>
@@ -122,7 +122,7 @@ export function Topbar() {
                 <Avatar name={roleLabels[r].person} size="sm" />
                 <div className="min-w-0 leading-tight">
                   <div className="font-medium">{roleLabels[r].label}</div>
-                  <div className="truncate text-[11px] text-muted-foreground">{roleLabels[r].desc}</div>
+                  <div className="truncate text-body text-muted-foreground">{roleLabels[r].desc}</div>
                 </div>
               </DropdownMenuItem>
             ))}

@@ -64,7 +64,7 @@ export function NewLeadDialog({ open, onOpenChange }: { open: boolean; onOpenCha
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UserPlus className="size-5 text-accent" /> New lead
+            <UserPlus className="size-5 text-primary" /> New lead
           </DialogTitle>
           <DialogDescription>Captured leads get an owner and a follow-up date automatically.</DialogDescription>
         </DialogHeader>
@@ -94,7 +94,7 @@ export function NewLeadDialog({ open, onOpenChange }: { open: boolean; onOpenCha
             <Select value={f.ownerId} onValueChange={(v) => set("ownerId", v)} options={OWNERS.map((o) => ({ value: o.id, label: `${o.name} · ${o.role}` }))} />
           </Field>
           {dupes.length > 0 && (
-            <div className="flex gap-2.5 rounded-xl border border-warning/40 bg-warning-soft p-3 text-[12.5px] sm:col-span-2">
+            <div className="flex gap-2.5 rounded-xl border border-warning/40 bg-warning-soft p-3 text-body sm:col-span-2">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
               <div>
                 <div className="font-medium text-foreground">Possible duplicate</div>

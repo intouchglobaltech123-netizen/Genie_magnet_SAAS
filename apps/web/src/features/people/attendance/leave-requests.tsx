@@ -52,7 +52,7 @@ export function LeaveRequests({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-1 rounded-lg bg-muted p-1 text-[13px] w-fit">
+      <div className="flex items-center gap-1 rounded-lg bg-muted p-1 text-body w-fit">
         {(["all", "pending", "decided"] as const).map((f) => (
           <button
             key={f}
@@ -75,13 +75,13 @@ export function LeaveRequests({
               <Avatar name={p.name} size="lg" />
               <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[15px] font-semibold">{p.name}</span>
-                  <span className="text-[13px] text-muted-foreground">{p.role}</span>
+                  <span className="text-subheading font-semibold">{p.name}</span>
+                  <span className="text-body text-muted-foreground">{p.role}</span>
                   <Badge tone={r.status === "approved" ? "success" : r.status === "rejected" ? "danger" : "warning"} dot>
                     {r.status === "approved" ? (r.exceptionReason ? "Approved · exception" : "Approved") : r.status === "rejected" ? "Rejected" : "Pending"}
                   </Badge>
                 </div>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-body">
                   <span className="font-medium">
                     {typeLabel[r.type]} · {range(r)}
                   </span>
@@ -95,9 +95,9 @@ export function LeaveRequests({
                   )}
                   <span className="text-muted-foreground">Applied {fmtDate(r.appliedOn)}</span>
                 </div>
-                <p className="text-[13px] text-muted-foreground">“{r.reason}”</p>
+                <p className="text-body text-muted-foreground">“{r.reason}”</p>
                 {r.status !== "pending" && (
-                  <p className="text-[12px] text-muted-foreground">
+                  <p className="text-body text-muted-foreground">
                     {r.status === "approved" ? "Approved" : "Rejected"} by {r.approver ?? "Janarthanan"}
                     {r.decidedOn ? ` · ${fmtDate(r.decidedOn, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}` : ""}
                     {r.exceptionReason && <> · Exception: “{r.exceptionReason}”</>}
@@ -141,13 +141,13 @@ export function LeaveRequests({
 
             {r.conflicts?.length ? (
               <div className={cn("border-t px-5 py-4", pending ? "border-warning/30 bg-warning-soft" : "border-border bg-muted/50")}>
-                <div className={cn("mb-2 flex items-center gap-2 text-[13px] font-semibold", pending ? "text-warning" : "text-muted-foreground")}>
+                <div className={cn("mb-2 flex items-center gap-2 text-body font-semibold", pending ? "text-warning" : "text-muted-foreground")}>
                   <AlertTriangle className="size-4" />
                   {r.conflicts.length} scheduling conflict{r.conflicts.length > 1 ? "s" : ""} on {range(r)}
                 </div>
                 <ul className="space-y-1.5">
                   {r.conflicts.map((c) => (
-                    <li key={c.label} className="flex items-center gap-2 text-[13px] text-foreground">
+                    <li key={c.label} className="flex items-center gap-2 text-body text-foreground">
                       {c.kind === "shoot" ? <Clapperboard className="size-3.5 text-muted-foreground" /> : c.kind === "review" ? <CalendarClock className="size-3.5 text-muted-foreground" /> : <FileWarning className="size-3.5 text-muted-foreground" />}
                       {c.label}
                       {c.locked && (
@@ -159,7 +159,7 @@ export function LeaveRequests({
                   ))}
                 </ul>
                 {pending && (
-                  <p className="mt-2 text-[12px] text-muted-foreground">
+                  <p className="mt-2 text-body text-muted-foreground">
                     Suggested: move Surya&apos;s edits to Rahul Menon (freelance, 65% utilised) or ask Surya to shift the leave to Thu 1 Oct.
                   </p>
                 )}
@@ -169,7 +169,7 @@ export function LeaveRequests({
         );
       })}
 
-      {!shown.length && <Card className="p-10 text-center text-[13px] text-muted-foreground">Nothing here — all caught up.</Card>}
+      {!shown.length && <Card className="p-10 text-center text-body text-muted-foreground">Nothing here — all caught up.</Card>}
 
       <Dialog open={!!exceptionFor} onOpenChange={(o) => !o && setExceptionFor(null)}>
         <DialogContent>
@@ -180,7 +180,7 @@ export function LeaveRequests({
             </DialogDescription>
           </DialogHeader>
           <DialogBody className="space-y-4">
-            <ul className="space-y-1.5 rounded-xl border border-warning/40 bg-warning-soft p-3 text-[13px]">
+            <ul className="space-y-1.5 rounded-xl border border-warning/40 bg-warning-soft p-3 text-body">
               {exceptionFor?.conflicts?.map((c) => (
                 <li key={c.label} className="flex items-start gap-2">
                   <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-warning" />

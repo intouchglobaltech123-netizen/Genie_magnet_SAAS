@@ -30,7 +30,7 @@ export function CounterGrid({
               warn && "border-danger/30 bg-danger-soft/50",
             )}
           >
-            <div className={cn("text-[11.5px] font-medium text-muted-foreground", warn && "text-danger")}>{d.label}</div>
+            <div className={cn("text-body font-medium text-muted-foreground", warn && "text-danger")}>{d.label}</div>
             <div className="mt-2 flex items-center justify-between gap-1">
               <StepBtn disabled={locked || v <= 0} onClick={() => onChange(d.key, +(v - step).toFixed(1))}>
                 <Minus className="size-3.5" />
@@ -39,10 +39,10 @@ export function CounterGrid({
                 key={v}
                 initial={{ y: -4, opacity: 0.4 }}
                 animate={{ y: 0, opacity: 1 }}
-                className={cn("text-[22px] font-semibold leading-none tracking-tight tabular", warn && "text-danger")}
+                className={cn("text-heading font-semibold leading-none tracking-tight tabular", warn && "text-danger")}
               >
                 {v}
-                {d.unit && <span className="ml-0.5 text-[13px] font-medium text-muted-foreground">{d.unit}</span>}
+                {d.unit && <span className="ml-0.5 text-body font-medium text-muted-foreground">{d.unit}</span>}
               </motion.span>
               <StepBtn disabled={locked} onClick={() => onChange(d.key, +(v + step).toFixed(1))}>
                 <Plus className="size-3.5" />
@@ -60,7 +60,7 @@ function StepBtn({ children, onClick, disabled }: { children: React.ReactNode; o
     <button
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex size-7 cursor-pointer items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition hover:border-accent/40 hover:text-accent active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+      className="inline-flex size-7 cursor-pointer items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition hover:border-primary/40 hover:text-primary active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
     >
       {children}
     </button>

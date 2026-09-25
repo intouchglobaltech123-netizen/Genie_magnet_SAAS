@@ -7,7 +7,7 @@ export const codeMeta: Record<AttendanceCode, { label: string; cls: string }> = 
   P: { label: "Present", cls: "bg-success-soft text-success" },
   L: { label: "Leave", cls: "bg-info-soft text-info" },
   A: { label: "Absent", cls: "bg-danger-soft text-danger" },
-  H: { label: "Holiday", cls: "bg-gold-soft text-gold" },
+  H: { label: "Holiday", cls: "bg-accent-soft text-accent-strong" },
   WO: { label: "Weekly off", cls: "bg-muted text-muted-foreground" },
   HD: { label: "Half day", cls: "bg-warning-soft text-warning" },
 };

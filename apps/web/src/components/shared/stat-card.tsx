@@ -24,27 +24,27 @@ export function StatCard({
   className?: string;
 }) {
   const toneCls = {
-    accent: "bg-accent-soft text-accent",
+    accent: "bg-primary-soft text-primary",
     success: "bg-success-soft text-success",
     warning: "bg-warning-soft text-warning",
     danger: "bg-danger-soft text-danger",
-    gold: "bg-gold-soft text-gold",
+    gold: "bg-accent-soft text-accent-strong",
     info: "bg-info-soft text-info",
   }[tone];
   const up = (delta ?? 0) >= 0;
   return (
     <Card className={cn("p-5", className)}>
       <div className="flex items-start justify-between gap-2">
-        <span className="text-[13px] font-medium text-muted-foreground">{label}</span>
+        <span className="text-body font-medium text-muted-foreground">{label}</span>
         {Icon && (
           <span className={cn("inline-flex size-8 items-center justify-center rounded-lg", toneCls)}>
             <Icon className="size-4" />
           </span>
         )}
       </div>
-      <div className="mt-2 text-[26px] font-semibold tracking-tight tabular">{value}</div>
+      <div className="mt-2 text-heading font-semibold tracking-tight tabular">{value}</div>
       {(delta !== undefined || hint) && (
-        <div className="mt-1 flex items-center gap-2 text-[12px]">
+        <div className="mt-1 flex items-center gap-2 text-body">
           {delta !== undefined && (
             <span className={cn("inline-flex items-center gap-0.5 font-medium", up ? "text-success" : "text-danger")}>
               {up ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}

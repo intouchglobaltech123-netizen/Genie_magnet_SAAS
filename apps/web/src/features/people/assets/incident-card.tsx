@@ -24,11 +24,11 @@ export function IncidentCard({ done, stamps, onAdvance, onOpenAsset }: { done: n
           </span>
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[15px] font-semibold tracking-tight">Incident INC-0922 · Rode NTG4+ shotgun mic</span>
+              <span className="text-subheading font-semibold tracking-tight">Incident INC-0922 · Rode NTG4+ shotgun mic</span>
               <Badge tone="outline">GM-AUD-02</Badge>
               {closed ? <Badge tone="success" dot>Resolved</Badge> : <Badge tone="warning" dot>Open</Badge>}
             </div>
-            <p className="mt-0.5 text-[13px] text-muted-foreground">
+            <p className="mt-0.5 text-body text-muted-foreground">
               Crackling on XLR during Nova Dental shoot · reported by Vignesh Kumar · repair est. ₹3,500
             </p>
           </div>
@@ -53,7 +53,7 @@ export function IncidentCard({ done, stamps, onAdvance, onOpenAsset }: { done: n
               <div className="flex items-center gap-2">
                 <span
                   className={cn(
-                    "inline-flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold",
+                    "inline-flex size-6 shrink-0 items-center justify-center rounded-full text-body font-semibold",
                     state === "done" && "bg-success text-white",
                     state === "current" && "bg-warning text-white",
                     state === "todo" && "bg-muted text-muted-foreground",
@@ -61,10 +61,10 @@ export function IncidentCard({ done, stamps, onAdvance, onOpenAsset }: { done: n
                 >
                   {state === "done" ? <Check className="size-3.5" /> : i + 1}
                 </span>
-                <span className={cn("text-[13px] font-medium", state === "todo" && "text-muted-foreground")}>{s.label}</span>
+                <span className={cn("text-body font-medium", state === "todo" && "text-muted-foreground")}>{s.label}</span>
                 {i < INCIDENT_STEPS.length - 1 && <span className={cn("hidden h-px flex-1 lg:block", i < done ? "bg-success/50" : "bg-border")} />}
               </div>
-              <div className="mt-1.5 pl-8 text-[12px] text-muted-foreground">
+              <div className="mt-1.5 pl-8 text-body text-muted-foreground">
                 {stamps[i] && <span className="font-medium text-foreground/80">{stamps[i]} · </span>}
                 {s.detail}
               </div>

@@ -70,7 +70,7 @@ export function ShootsList() {
             type="button"
             onClick={() => setTab(t)}
             className={cn(
-              "h-7 cursor-pointer rounded-md px-3 text-[13px] font-medium capitalize text-muted-foreground transition",
+              "h-7 cursor-pointer rounded-md px-3 text-body font-medium capitalize text-muted-foreground transition",
               tab === t && "bg-card text-foreground shadow-sm",
             )}
           >
@@ -89,28 +89,28 @@ export function ShootsList() {
           const inDays = daysBetween(TODAY, s.date);
           return (
             <Link key={s.id} href={`/shoots/${s.id}`}>
-              <Card className="group h-full p-5 transition hover:-translate-y-px hover:border-accent/40 hover:shadow-pop">
+              <Card className="group h-full p-5 transition hover:-translate-y-px hover:border-primary/40 hover:shadow-pop">
                 <div className="flex items-start gap-4">
                   <div className="flex w-14 shrink-0 flex-col items-center rounded-xl py-2" style={clientTint(s.clientId, 12)}>
-                    <span className="text-[10.5px] font-semibold uppercase">{fmt(s.date, "MMM")}</span>
-                    <span className="text-[22px] font-semibold leading-none tabular">{fmt(s.date, "d")}</span>
-                    <span className="mt-0.5 text-[10.5px] opacity-80">{fmt(s.date, "EEE")}</span>
+                    <span className="text-body font-semibold uppercase">{fmt(s.date, "MMM")}</span>
+                    <span className="text-heading font-semibold leading-none tabular">{fmt(s.date, "d")}</span>
+                    <span className="mt-0.5 text-body opacity-80">{fmt(s.date, "EEE")}</span>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       <ClientTag clientId={s.clientId} />
-                      <span className="font-mono text-[11px] text-muted-foreground">{s.batchNo}</span>
+                      <span className="font-mono text-body text-muted-foreground">{s.batchNo}</span>
                       <Badge tone={shootStatusMeta[st].tone} dot className="ml-auto">
                         {shootStatusMeta[st].label}
                       </Badge>
                     </div>
-                    <div className="mt-1.5 truncate text-[15px] font-semibold tracking-tight group-hover:text-accent">{s.projectName}</div>
-                    <div className="mt-1 flex items-center gap-1 truncate text-[12.5px] text-muted-foreground">
+                    <div className="mt-1.5 truncate text-subheading font-semibold tracking-tight group-hover:text-primary">{s.projectName}</div>
+                    <div className="mt-1 flex items-center gap-1 truncate text-body text-muted-foreground">
                       <MapPin className="size-3.5 shrink-0" /> {s.location}
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 grid grid-cols-3 gap-2 text-[12px]">
+                <div className="mt-4 grid grid-cols-3 gap-2 text-body">
                   <div className="rounded-lg bg-muted/60 px-2.5 py-1.5">
                     <div className="text-muted-foreground">Call time</div>
                     <div className="mt-0.5 flex items-center gap-1 font-medium">
@@ -129,7 +129,7 @@ export function ShootsList() {
                   </div>
                 </div>
                 <div className="mt-4">
-                  <div className="mb-1 flex justify-between text-[11.5px] text-muted-foreground">
+                  <div className="mb-1 flex justify-between text-body text-muted-foreground">
                     <span>{st === "planned" || st === "packed" ? `Packed ${packed}/${total}` : `Returned ${received}/${total}`}</span>
                     {tab === "upcoming" && <span>{inDays === 0 ? "Today" : `in ${inDays} days`}</span>}
                     {tab === "completed" && received === total && (
@@ -143,7 +143,7 @@ export function ShootsList() {
                     tone={st === "returned" && received < total ? "warning" : st === "closed" ? "success" : "accent"}
                   />
                 </div>
-                <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-[12px] text-muted-foreground">
+                <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-body text-muted-foreground">
                   <span className="inline-flex items-center gap-2">
                     <AvatarStack names={[personById(s.cameraId).name, personById(s.directorId).name]} size="xs" />
                     {personById(s.cameraId).name.split(" ")[0]} · {personById(s.directorId).name.split(" ")[0]}

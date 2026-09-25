@@ -78,7 +78,7 @@ export function SignoffRail({
       action: (
         <div className="space-y-2">
           <input
-            className="h-8 w-full rounded-md border border-input bg-card px-2.5 text-[12.5px] placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+            className="h-8 w-full rounded-md border border-input bg-card px-2.5 text-body placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
             placeholder="GM remark (optional)"
             value={sheet?.gmNote ?? ""}
             onChange={(e) => setField(personId, date, { gmNote: e.target.value })}
@@ -153,11 +153,11 @@ export function SignoffRail({
                 initial={false}
                 animate={{ scale: s.done ? [1.25, 1] : 1 }}
                 className={cn(
-                  "relative z-10 inline-flex size-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-semibold",
+                  "relative z-10 inline-flex size-7 shrink-0 items-center justify-center rounded-full border text-body font-semibold",
                   s.done
                     ? "border-success bg-success text-white"
                     : s.active
-                      ? "border-accent bg-accent-soft text-accent ring-4 ring-accent/10"
+                      ? "border-primary bg-primary-soft text-primary ring-4 ring-primary/10"
                       : "border-border bg-muted text-muted-foreground",
                 )}
               >
@@ -165,19 +165,19 @@ export function SignoffRail({
               </motion.span>
               <div className="min-w-0 flex-1 pt-0.5">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[13px] font-semibold">{s.role}</span>
-                  <span className="truncate text-[12px] text-muted-foreground">{s.name}</span>
+                  <span className="text-body font-semibold">{s.role}</span>
+                  <span className="truncate text-body text-muted-foreground">{s.name}</span>
                 </div>
                 {s.done ? (
                   <div className="mt-1.5 rounded-lg border border-dashed border-success/40 bg-success-soft/40 px-3 py-2">
-                    <div className="font-serif text-[17px] italic leading-tight text-foreground/90">{s.name}</div>
-                    <div className="mt-0.5 text-[11px] text-muted-foreground tabular">Signed digitally · {stampLabel(s.at)}</div>
-                    {s.key === "gm" && sheet?.gmNote && <div className="mt-1 text-[12px] text-muted-foreground">“{sheet.gmNote}”</div>}
+                    <div className="font-serif text-subheading italic leading-tight text-foreground/90">{s.name}</div>
+                    <div className="mt-0.5 text-body text-muted-foreground tabular">Signed digitally · {stampLabel(s.at)}</div>
+                    {s.key === "gm" && sheet?.gmNote && <div className="mt-1 text-body text-muted-foreground">“{sheet.gmNote}”</div>}
                   </div>
                 ) : s.active ? (
                   <div className="mt-2">{s.action}</div>
                 ) : (
-                  <div className="mt-1 text-[12px] text-muted-foreground">Waiting for previous step</div>
+                  <div className="mt-1 text-body text-muted-foreground">Waiting for previous step</div>
                 )}
               </div>
             </li>
@@ -198,7 +198,7 @@ export function SignoffRail({
           </Button>
         )}
         {hr && (
-          <div className="mt-4 flex items-center justify-between gap-2 rounded-lg bg-muted px-3 py-2 text-[12px] text-muted-foreground">
+          <div className="mt-4 flex items-center justify-between gap-2 rounded-lg bg-muted px-3 py-2 text-body text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <Lock className="size-3.5" /> Locked after HR sign-off
             </span>

@@ -40,7 +40,7 @@ export function AttendanceView() {
         </TabsTrigger>
         <TabsTrigger value="leave">
           <Inbox /> Leave requests
-          {pending > 0 && <span className="tabular ml-0.5 rounded-full bg-warning px-1.5 text-[10px] font-semibold text-white">{pending}</span>}
+          {pending > 0 && <span className="tabular ml-0.5 rounded-full bg-warning px-1.5 text-body font-semibold text-white">{pending}</span>}
         </TabsTrigger>
         <TabsTrigger value="balances">
           <Wallet /> Balances & holidays
