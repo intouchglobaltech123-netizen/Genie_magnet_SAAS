@@ -33,16 +33,16 @@ export function StatCard({
   }[tone];
   const up = (delta ?? 0) >= 0;
   return (
-    <Card className={cn("p-5", className)}>
+    <Card className={cn("relative overflow-hidden p-5", className)}>
       <div className="flex items-start justify-between gap-2">
         <span className="text-body font-medium text-muted-foreground">{label}</span>
         {Icon && (
-          <span className={cn("inline-flex size-8 items-center justify-center rounded-lg", toneCls)}>
+          <span className={cn("inline-flex size-8 shrink-0 items-center justify-center rounded-lg", toneCls)}>
             <Icon className="size-4" />
           </span>
         )}
       </div>
-      <div className="mt-2 text-heading font-semibold tracking-tight tabular">{value}</div>
+      <div className="mt-2 text-heading font-semibold text-primary tabular dark:text-text-primary">{value}</div>
       {(delta !== undefined || hint) && (
         <div className="mt-1 flex items-center gap-2 text-body">
           {delta !== undefined && (
@@ -59,3 +59,6 @@ export function StatCard({
     </Card>
   );
 }
+
+/** Executive KPI tile — alias used by dashboards. */
+export { StatCard as KpiCard };

@@ -3,24 +3,33 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+/**
+ * One button system for the whole product.
+ * primary   – Royal Blue, the single main action on a surface (`default` and legacy `accent` alias it)
+ * secondary – light surface, Royal text, subtle border (`outline` aliases it)
+ * ghost     – tertiary / text action
+ * soft      – Sapphire tint for supporting actions
+ * danger    – destructive only
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-body font-medium transition-all cursor-pointer disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-body font-medium transition-colors cursor-pointer select-none disabled:pointer-events-none disabled:opacity-45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 focus-visible:ring-offset-1 focus-visible:ring-offset-background [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:opacity-90 shadow-sm",
-        accent: "bg-primary text-primary-foreground hover:brightness-110 shadow-sm shadow-primary/20",
-        outline: "border border-border bg-card hover:bg-muted text-foreground",
-        ghost: "hover:bg-muted text-foreground",
-        soft: "bg-primary-soft text-primary hover:brightness-95",
-        danger: "bg-danger text-white hover:brightness-110",
-        success: "bg-success text-white hover:brightness-110",
-        link: "text-primary underline-offset-4 hover:underline px-0",
+        default: "bg-primary text-primary-foreground shadow-sm hover:bg-secondary active:bg-primary-active",
+        accent: "bg-primary text-primary-foreground shadow-sm hover:bg-secondary active:bg-primary-active",
+        secondary: "border border-border-strong bg-surface text-primary hover:border-secondary/40 hover:bg-secondary-soft",
+        outline: "border border-border-strong bg-surface text-primary hover:border-secondary/40 hover:bg-secondary-soft",
+        ghost: "text-text-secondary hover:bg-muted hover:text-primary",
+        soft: "bg-secondary-soft text-secondary hover:bg-secondary hover:text-secondary-foreground",
+        danger: "bg-danger text-white shadow-sm hover:bg-danger/90",
+        success: "bg-success text-white shadow-sm hover:bg-success/90",
+        link: "h-auto px-0 text-primary underline-offset-4 hover:underline",
       },
       size: {
         default: "h-9 px-4",
-        sm: "h-8 px-3 text-body",
-        xs: "h-7 px-2.5 text-body rounded-md",
+        sm: "h-8 px-3",
+        xs: "h-7 px-2.5 rounded-md",
         lg: "h-10 px-5",
         icon: "size-9",
         "icon-sm": "size-8",
