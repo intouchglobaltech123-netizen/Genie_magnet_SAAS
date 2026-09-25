@@ -19,23 +19,25 @@ export function ReceiptTile({ expense, className }: { expense: Pick<Expense, "ve
   const style = CATEGORY_STYLE[expense.category] ?? CATEGORY_STYLE.Utilities!;
   if (!expense.receipt) {
     return (
-      <div className={cn("flex h-14 w-11 shrink-0 flex-col items-center justify-center gap-0.5 rounded-md border border-dashed border-danger/50 bg-danger-soft text-danger", className)}>
+      <div className={cn("flex h-16 w-14 shrink-0 flex-col items-center justify-center gap-0.5 rounded-lg border border-dashed border-danger/50 bg-danger-soft text-danger", className)}>
         <FileX2 className="size-4" />
-        <span className="text-body font-semibold uppercase tracking-wide">No bill</span>
+        <span className="text-center text-body font-semibold leading-4">No bill</span>
       </div>
     );
   }
   return (
-    <div className={cn("relative h-14 w-11 shrink-0 drop-shadow-sm", className)}>
-      <div style={tornEdge} className="flex h-full w-full flex-col overflow-hidden rounded-t-[5px] border border-border bg-gradient-to-b from-card to-muted">
+    <div className={cn("relative h-16 w-14 shrink-0 drop-shadow-sm", className)}>
+      <div style={tornEdge} className="flex h-full w-full flex-col overflow-hidden rounded-t-lg border border-border bg-gradient-to-b from-card to-muted">
         <div className={cn("h-1 w-full", style.strip)} />
-        <div className="flex flex-1 flex-col items-center px-1 pt-1">
-          <span className={cn("inline-flex size-4 items-center justify-center rounded-full text-body font-bold", style.soft, style.text)}>
+        <div className="flex min-w-0 flex-1 flex-col items-center px-0.5 pt-1">
+          <span className={cn("inline-flex size-5 items-center justify-center rounded-full text-body font-semibold leading-none", style.soft, style.text)}>
             {expense.vendor.charAt(0).toUpperCase()}
           </span>
           <span className="mt-1 h-px w-6 bg-border" />
           <span className="mt-0.5 h-px w-4 bg-border" />
-          <span className="mt-auto pb-1.5 text-body font-semibold tabular text-foreground">{inrCompact(expense.amount).replace("₹", "₹ ")}</span>
+          <span className="mt-auto max-w-full truncate pb-1 text-body font-semibold leading-4 tabular text-foreground" title={inr(expense.amount)}>
+            {inrCompact(expense.amount)}
+          </span>
         </div>
       </div>
     </div>
@@ -56,11 +58,11 @@ export function ReceiptPreview({ expense }: { expense: Expense }) {
   const taxable = expense.amount - expense.gst;
   const billNo = `${expense.vendor.replace(/[^A-Z]/g, "").slice(0, 3) || "INV"}/${expense.code.slice(-3)}${expense.date.slice(8, 10)}`;
   return (
-    <div className="flex justify-center rounded-xl bg-muted/70 p-5">
+    <div className="flex justify-center rounded-xl bg-surface-secondary p-5">
       <div style={tornEdge} className="w-64 bg-gradient-to-b from-card to-card/90 pb-5 font-mono text-body text-foreground shadow-card ring-1 ring-border">
         <div className={cn("h-1.5 w-full", style.strip)} />
         <div className="px-4 pt-3 text-center">
-          <div className="text-body font-bold uppercase tracking-wide">{expense.vendor}</div>
+          <div className="text-body font-semibold uppercase tracking-wide">{expense.vendor}</div>
           <div className="text-body text-muted-foreground">Tax invoice · {fmtDate(expense.date, { day: "2-digit", month: "short", year: "numeric" })}</div>
           <div className="text-body text-muted-foreground">Bill no. {billNo}</div>
         </div>
@@ -87,7 +89,7 @@ export function ReceiptPreview({ expense }: { expense: Expense }) {
           )}
         </div>
         <div className="mx-4 my-2 border-t border-dashed border-border" />
-        <div className="flex justify-between px-4 text-body font-bold">
+        <div className="flex justify-between px-4 text-body font-semibold">
           <span>TOTAL</span>
           <span className="tabular">{inr(expense.amount)}</span>
         </div>

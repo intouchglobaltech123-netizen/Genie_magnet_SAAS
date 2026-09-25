@@ -45,11 +45,11 @@ export function PaperView({
           <DialogDescription>The same sheet in the familiar paper layout — printable for the physical file if ever needed.</DialogDescription>
         </DialogHeader>
         <DialogBody>
-          <div className="rounded-lg border border-border bg-card p-6 text-foreground shadow-card">
-            <div className="flex items-start justify-between border-b-2 border-foreground/80 pb-3">
+          <div className="rounded-xl border border-border bg-card p-4 sm:p-6 text-foreground shadow-card">
+            <div className="flex flex-wrap items-start justify-between gap-3 border-b-2 border-foreground/80 pb-3">
               <div>
                 <div className="text-body font-semibold tracking-[0.2em] text-muted-foreground">GENIE MAGNET</div>
-                <div className="text-subheading font-bold uppercase tracking-wide">{template.title}</div>
+                <div className="text-subheading font-semibold uppercase tracking-wide">{template.title}</div>
               </div>
               <div className="text-right text-body leading-5">
                 <div>
@@ -61,7 +61,8 @@ export function PaperView({
               </div>
             </div>
 
-            <table className="mt-4 w-full border-collapse text-body">
+            <div className="mt-4 overflow-x-auto scrollbar-thin">
+            <table className="w-full min-w-[640px] border-collapse text-body">
               <thead>
                 <tr className="[&>th]:border [&>th]:border-foreground/40 [&>th]:px-2 [&>th]:py-1.5 [&>th]:text-left [&>th]:font-semibold">
                   <th className="w-10">S.No</th>
@@ -130,9 +131,10 @@ export function PaperView({
                 })}
               </tbody>
             </table>
+            </div>
 
             {template.counters.length > 0 && (
-              <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-1 text-body">
+              <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-1 text-body sm:grid-cols-2">
                 {template.counters.map((c) => (
                   <div key={c.key} className="flex items-baseline justify-between border-b border-dotted border-foreground/40 py-0.5">
                     <span>Total No. of {c.label}</span>
@@ -142,7 +144,7 @@ export function PaperView({
                     </span>
                   </div>
                 ))}
-                <div className="col-span-2 flex items-baseline gap-2 border-b border-dotted border-foreground/40 py-0.5">
+                <div className="flex items-baseline sm:col-span-2 gap-2 border-b border-dotted border-foreground/40 py-0.5">
                   <span>Other works:</span>
                   <span className="font-serif text-body italic">{sheet?.otherWorks}</span>
                 </div>

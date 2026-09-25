@@ -6,6 +6,7 @@ import { ArrowRightLeft, BellRing, CheckCircle2, FileMinus2 } from "lucide-react
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tooltip } from "@/components/ui/tooltip";
 import { CategoryBadge } from "@/components/shared/video-bits";
@@ -99,16 +100,23 @@ export function AgingTab({ invoices }: { invoices: InvoiceView[] }) {
             <TR>
               <TH className="pl-5">Client</TH>
               {AGING_BUCKETS.map((b) => (
-                <TH key={b.key} className="text-right">
+                <TH key={b.key} numeric>
                   {b.label}
                 </TH>
               ))}
-              <TH className="text-right">Total</TH>
+              <TH numeric>Total</TH>
               <TH>Oldest</TH>
-              <TH className="pr-5 text-right">Follow-up</TH>
+              <TH numeric className="pr-5">Follow-up</TH>
             </TR>
           </THead>
           <TBody>
+            {rows.length === 0 && (
+              <TR className="hover:bg-transparent">
+                <TD colSpan={AGING_BUCKETS.length + 4} className="p-5">
+                  <EmptyState compact icon={CheckCircle2} title="Nothing outstanding" description="Every issued invoice is fully collected — no open balances to age." />
+                </TD>
+              </TR>
+            )}
             {rows.map((r) => (
               <TR key={r.key} className={cn(r.key === "UNR" && "bg-danger-soft/60 hover:bg-danger-soft")}>
                 <TD className="pl-5">
@@ -118,29 +126,29 @@ export function AgingTab({ invoices }: { invoices: InvoiceView[] }) {
                   </div>
                 </TD>
                 {r.buckets.map((v, idx) => (
-                  <TD key={idx} className={cn("text-right tabular", v ? AGING_BUCKETS[idx]!.text : "text-muted-foreground/50", idx === 0 && v && "text-foreground")}>
+                  <TD key={idx} numeric className={cn(v ? AGING_BUCKETS[idx]!.text : "text-muted-foreground/50", idx === 0 && v && "text-foreground")}>
                     {v ? inr(v) : "—"}
                   </TD>
                 ))}
-                <TD className="text-right font-semibold tabular">{inr(r.total)}</TD>
+                <TD numeric className="font-semibold">{inr(r.total)}</TD>
                 <TD className="text-body text-muted-foreground">
                   <span className="font-mono">{r.oldest.number.slice(-3)}</span> · {r.oldest.daysOverdue ? `${r.oldest.daysOverdue}d late` : `due ${fmtDate(r.oldest.dueDate)}`}
                 </TD>
-                <TD className="pr-5 text-right">
+                <TD numeric className="pr-5">
                   <Button size="xs" variant="outline" onClick={() => remind(r.oldest)}>
                     <BellRing /> Remind {r.reminders ? `(${r.reminders})` : ""}
                   </Button>
                 </TD>
               </TR>
             ))}
-            <TR className="bg-muted/40 font-semibold hover:bg-muted/40">
+            <TR className="bg-surface-secondary font-semibold hover:bg-surface-secondary [&>td]:border-t [&>td]:border-border-strong">
               <TD className="pl-5">Total</TD>
               {colTotals.map((v, idx) => (
-                <TD key={idx} className="text-right tabular">
+                <TD key={idx} numeric>
                   {inr(v)}
                 </TD>
               ))}
-              <TD className="text-right tabular">{inr(grand)}</TD>
+              <TD numeric>{inr(grand)}</TD>
               <TD colSpan={2} />
             </TR>
           </TBody>
@@ -179,10 +187,10 @@ export function AdvancesTab() {
             <TH className="pl-5">Receipt</TH>
             <TH>Client · purpose</TH>
             <TH>Received</TH>
-            <TH className="text-right">Amount</TH>
+            <TH numeric>Amount</TH>
             <TH>Adjusted against</TH>
-            <TH className="text-right">Balance</TH>
-            <TH className="pr-5 text-right" />
+            <TH numeric>Balance</TH>
+            <TH numeric className="pr-5" />
           </TR>
         </THead>
         <TBody>
@@ -199,7 +207,7 @@ export function AdvancesTab() {
                   {r.mode} · <span className="font-mono">{r.ref}</span>
                 </div>
               </TD>
-              <TD className="text-right tabular">{inr(r.amount)}</TD>
+              <TD numeric>{inr(r.amount)}</TD>
               <TD>
                 {r.adjustments.length ? (
                   <div className="space-y-0.5">
@@ -213,8 +221,8 @@ export function AdvancesTab() {
                   <span className="text-body text-muted-foreground">Not yet adjusted</span>
                 )}
               </TD>
-              <TD className={cn("text-right font-medium tabular", r.balance ? "text-foreground" : "text-muted-foreground")}>{r.balance ? inr(r.balance) : "—"}</TD>
-              <TD className="pr-5 text-right">
+              <TD numeric className={cn("font-medium", r.balance ? "text-foreground" : "text-muted-foreground")}>{r.balance ? inr(r.balance) : "—"}</TD>
+              <TD numeric className="pr-5">
                 {r.balance > 0 ? (
                   <Button
                     size="xs"
@@ -268,10 +276,10 @@ export function CreditNotesTab() {
             <TH className="pl-5">Credit note</TH>
             <TH>Client · against</TH>
             <TH>Reason</TH>
-            <TH className="text-right">Taxable</TH>
-            <TH className="text-right">Incl. GST</TH>
+            <TH numeric>Taxable</TH>
+            <TH numeric>Incl. GST</TH>
             <TH>Status</TH>
-            <TH className="pr-5 text-right" />
+            <TH numeric className="pr-5" />
           </TR>
         </THead>
         <TBody>
@@ -292,14 +300,14 @@ export function CreditNotesTab() {
                   <div className="text-body">{n.reason}</div>
                   <div className="text-body text-muted-foreground">Raised by {n.raisedBy}</div>
                 </TD>
-                <TD className="text-right tabular">{inr(n.taxable)}</TD>
-                <TD className="text-right font-medium tabular">{inr(gross)}</TD>
+                <TD numeric>{inr(n.taxable)}</TD>
+                <TD numeric className="font-medium">{inr(gross)}</TD>
                 <TD>
                   <Badge tone={n.status === "applied" ? "success" : "warning"} dot>
                     {n.status === "applied" ? "Applied" : "Awaiting approval"}
                   </Badge>
                 </TD>
-                <TD className="pr-5 text-right">
+                <TD numeric className="pr-5">
                   {n.status === "draft" && (
                     <Button
                       size="xs"

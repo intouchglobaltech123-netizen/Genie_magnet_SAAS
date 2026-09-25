@@ -2,14 +2,15 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, CircleDot, ClipboardList, Plus, Repeat, RotateCcw, Search, Siren } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CircleDot, ClipboardList, Plus, Repeat, RotateCcw, Search, SearchX, Siren } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Badge, StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -52,6 +53,14 @@ export function CommitmentsView() {
       return rank[commitmentState(a)] - rank[commitmentState(b)] || a.due.localeCompare(b.due);
     });
 
+  const filtering = filter !== "all" || owner !== "all" || cad !== "all" || q.trim() !== "";
+  const clearFilters = () => {
+    setFilter("all");
+    setOwner("all");
+    setCad("all");
+    setQ("");
+  };
+
   const count = (f: (c: (typeof commitments)[number]) => boolean) => commitments.filter(f).length;
   const openN = count((c) => commitmentState(c) === "open");
   const overdueN = count((c) => commitmentState(c) === "overdue");
@@ -79,7 +88,7 @@ export function CommitmentsView() {
         actions={<NewCommitment />}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Open" value={openN} icon={CircleDot} tone="accent" hint="on track, not yet due" />
         <StatCard label="Overdue" value={overdueN} icon={AlertTriangle} tone="danger" hint="past due date, still open" />
         <StatCard label="Carried forward" value={carriedN} icon={Repeat} tone="warning" hint={`${escN} escalated to founder`} />
@@ -92,9 +101,11 @@ export function CommitmentsView() {
             {chips.map((c) => (
               <button
                 key={c.k}
+                type="button"
+                aria-pressed={filter === c.k}
                 onClick={() => setFilter(c.k)}
                 className={cn(
-                  "cursor-pointer rounded-lg px-2.5 py-1 text-body font-medium transition",
+                  "cursor-pointer rounded-lg px-2.5 py-1 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                   filter === c.k ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -102,21 +113,21 @@ export function CommitmentsView() {
               </button>
             ))}
           </div>
-          <div className="ml-auto flex flex-wrap items-center gap-2">
-            <div className="relative">
+          <div className="flex w-full flex-wrap items-center gap-2 sm:ml-auto sm:w-auto">
+            <div className="relative w-full sm:w-44">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" className="h-8 w-44 pl-8 text-body" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search" aria-label="Search commitments" className="h-8 w-full pl-8 text-body" />
             </div>
             <Select
               value={owner}
               onValueChange={setOwner}
-              className="h-8 w-40 text-body"
+              className="h-8 w-full text-body sm:w-40"
               options={[{ value: "all", label: "All owners" }, ...employees.map((p) => ({ value: p.id, label: p.name }))]}
             />
             <Select
               value={cad}
               onValueChange={setCad}
-              className="h-8 w-40 text-body"
+              className="h-8 w-full text-body sm:w-40"
               options={[{ value: "all", label: "All sources" }, ...cadences.map((c) => ({ value: c.id, label: `${c.every} reviews` }))]}
             />
           </div>
@@ -133,13 +144,6 @@ export function CommitmentsView() {
             </TR>
           </THead>
           <TBody>
-            {rows.length === 0 && (
-              <TR>
-                <TD colSpan={6} className="py-10 text-center text-muted-foreground">
-                  Nothing matches these filters.
-                </TD>
-              </TR>
-            )}
             {rows.map((c) => {
               const st = commitmentState(c);
               const p = personById(c.ownerId);
@@ -164,7 +168,7 @@ export function CommitmentsView() {
                   </TD>
                   <TD>
                     {src ? (
-                      <Link href={`/reviews/${src.id}`} className="inline-flex items-center gap-1.5 whitespace-nowrap hover:text-primary">
+                      <Link href={`/reviews/${src.id}`} className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
                         <Badge tone={cadenceTone[src.cadence]}>{cadenceById(src.cadence).every}</Badge>
                         <span className="text-body">{src.title.replace("45-Day ", "").replace("Weekly Agency Review · ", "Weekly ")}</span>
                       </Link>
@@ -174,19 +178,7 @@ export function CommitmentsView() {
                   </TD>
                   <TD>
                     <div className="flex flex-wrap items-center gap-1">
-                      {st === "done" ? (
-                        <Badge tone="success" dot>
-                          Done
-                        </Badge>
-                      ) : st === "overdue" ? (
-                        <Badge tone="danger" dot>
-                          Overdue
-                        </Badge>
-                      ) : (
-                        <Badge tone="accent" dot>
-                          Open
-                        </Badge>
-                      )}
+                      <StatusBadge status={st === "done" ? "Done" : st === "overdue" ? "Overdue" : "Open"} />
                       {c.carried > 0 && st !== "done" && (
                         <Tooltip content={`Not completed in ${c.carried} review${c.carried > 1 ? "s" : ""}; next check: ${c.reviewInMeetingId === "rv-s8" ? FOLLOWING_STRATEGIC_LABEL : meetingOf(c.reviewInMeetingId)?.title ?? "next review"}`}>
                           <span>
@@ -251,6 +243,23 @@ export function CommitmentsView() {
             })}
           </TBody>
         </Table>
+        {rows.length === 0 && (
+          <div className="p-5">
+            <EmptyState
+              compact
+              icon={SearchX}
+              title={filtering ? "No commitments match these filters" : "No commitments yet"}
+              description={filtering ? "Try another status, owner or source, or clear the search." : "Decisions recorded in reviews appear here with an owner and due date."}
+              action={
+                filtering ? (
+                  <Button variant="secondary" size="sm" onClick={clearFilters}>
+                    Clear filters
+                  </Button>
+                ) : undefined
+              }
+            />
+          </div>
+        )}
       </Card>
     </div>
   );
@@ -273,10 +282,10 @@ function NewCommitment() {
             <DialogDescription>One owner, one due date, linked to the meeting where it was decided.</DialogDescription>
           </DialogHeader>
           <DialogBody className="space-y-4">
-            <Field label="Commitment">
+            <Field label="Commitment" required>
               <Textarea value={f.text} onChange={(e) => setF({ ...f, text: e.target.value })} placeholder="e.g. Send revised Balaji Textiles proposal at 10% discount" />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Field label="Owner">
                 <Select value={f.ownerId} onValueChange={(v) => setF({ ...f, ownerId: v })} options={employees.map((p) => ({ value: p.id, label: p.name }))} />
               </Field>

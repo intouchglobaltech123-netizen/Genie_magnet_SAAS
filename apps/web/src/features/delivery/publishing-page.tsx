@@ -8,10 +8,11 @@ import { StatCard } from "@/components/shared/stat-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Alert, EmptyState } from "@/components/ui/feedback";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Field, Input } from "@/components/ui/input";
+import { Field, Input, Label } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDemo } from "@/lib/store";
 import { clientById, personById } from "@/lib/mock/core";
@@ -21,14 +22,9 @@ import { fmtDate } from "@/lib/utils";
 import { Poster } from "@/features/portal/poster";
 import { usePublishing } from "./publish-store";
 
-const platformCls: Record<string, string> = {
-  Instagram: "bg-[#fde7ee] text-[#bb3b62] dark:bg-[#2e1420] dark:text-[#f28cab]",
-  YouTube: "bg-danger-soft text-danger",
-  "YouTube Shorts": "bg-danger-soft text-danger",
-};
-
+/** Platforms are labels, not statuses — one neutral chip style for all of them. */
 function PlatformChip({ p }: { p: string }) {
-  return <span className={`rounded-md px-1.5 py-0.5 text-body font-medium ${platformCls[p] ?? "bg-muted text-muted-foreground"}`}>{p}</span>;
+  return <Badge tone="outline">{p}</Badge>;
 }
 
 function defaultSlot(v: Video) {
@@ -52,19 +48,16 @@ export function PublishingPage() {
         description="Only the client-approved version goes live. Every post is closed with its URL, timestamp and a proof screenshot."
       />
 
-      <div className="mb-6 flex items-start gap-3 rounded-xl border border-info/25 bg-info-soft p-3.5 text-body text-info">
-        <Info className="mt-0.5 size-4 shrink-0" />
-        <span>
-          Phase 1: the social team posts manually and records proof here. <span className="font-medium">Phase 2:</span> direct scheduling &amp; publishing via Meta Graph and YouTube
-          Data APIs, with the URL and timestamp captured automatically.
-        </span>
-      </div>
+      <Alert tone="info" icon={Info} title="Phase 1 · manual posting with proof" className="mb-6">
+        The social team posts manually and records proof here. <span className="font-medium">Phase 2:</span> direct scheduling &amp; publishing via Meta Graph and YouTube
+        Data APIs, with the URL and timestamp captured automatically.
+      </Alert>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Ready to publish" value={queue.length} icon={Send} tone="accent" hint="approved by client" />
         <StatCard label="Published · Sep" value={published.length} icon={CheckCircle2} tone="success" hint="across all clients" />
         <StatCard label="With proof" value={`${proofs.filter((p) => published.some((v) => v.id === p.videoId)).length} / ${published.length}`} icon={ShieldCheck} tone="info" hint="URL + screenshot" />
-        <StatCard label="Version mismatches" value="0" icon={ShieldCheck} tone="gold" hint="posted file = approved file" />
+        <StatCard label="Version mismatches" value="0" icon={ShieldCheck} tone="success" hint="posted file = approved file" />
       </div>
 
       <Tabs defaultValue="queue">
@@ -74,7 +67,7 @@ export function PublishingPage() {
         </TabsList>
 
         <TabsContent value="queue" className="space-y-3">
-          {queue.length === 0 && <Card className="p-10 text-center text-body text-muted-foreground">Queue is clear — nothing approved and waiting.</Card>}
+          {queue.length === 0 && <EmptyState icon={Send} title="Queue is clear" description="Nothing approved and waiting. Videos land here as soon as the client approves a version." />}
           {queue.map((v) => {
             const ver = v.versions.find((x) => x.status === "approved") ?? v.versions.at(-1);
             const client = clientById(v.clientId);
@@ -83,8 +76,8 @@ export function PublishingPage() {
               <Card key={v.id} className="flex flex-col gap-4 p-4 md:flex-row md:items-center">
                 <Poster video={v} className="aspect-video w-full shrink-0 rounded-lg md:w-40" size="sm" showMeta={false} />
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 text-body text-muted-foreground">
-                    <span className="font-mono">{v.code}</span>·<span>{client.name}</span>
+                  <div className="flex min-w-0 items-center gap-2 text-body text-muted-foreground">
+                    <span className="shrink-0 font-mono">{v.code}</span>·<span className="truncate">{client.name}</span>
                   </div>
                   <div className="mt-0.5 truncate text-subheading font-semibold">{v.title}</div>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -138,7 +131,8 @@ export function PublishingPage() {
         </TabsContent>
 
         <TabsContent value="published">
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {published.length === 0 && <EmptyState icon={CheckCircle2} title="Nothing published yet" description="Mark a queued video as published to record its live URL and proof." />}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {published.map((v) => {
               const proof = proofs.find((p) => p.videoId === v.id);
               const ver = v.versions.find((x) => x.status === "approved") ?? v.versions.at(-1);
@@ -146,11 +140,11 @@ export function PublishingPage() {
                 <Card key={v.id} className="overflow-hidden">
                   <div className="relative">
                     <Poster video={v} className="aspect-video" showPlay={false} />
-                    <span className="absolute right-3 top-3 rounded bg-success px-1.5 py-0.5 text-body font-semibold text-white">LIVE</span>
+                    <span className="absolute right-3 top-3 rounded-md bg-success px-1.5 py-0.5 text-body font-semibold text-white">LIVE</span>
                   </div>
                   <div className="space-y-2.5 p-4">
                     <div>
-                      <div className="font-mono text-body text-muted-foreground">
+                      <div className="truncate font-mono text-body text-muted-foreground">
                         {v.code} · {clientById(v.clientId).name}
                       </div>
                       <div className="mt-0.5 truncate text-body font-semibold">{v.title}</div>
@@ -167,13 +161,14 @@ export function PublishingPage() {
                       <dt className="text-muted-foreground">By</dt>
                       <dd>{proof?.by ?? personById("p-meena").name}</dd>
                       <dt className="text-muted-foreground">Proof</dt>
-                      <dd className="flex items-center gap-1">
+                      <dd className="flex min-w-0 items-center gap-1">
                         {proof ? (
                           <button
-                            className="inline-flex cursor-pointer items-center gap-1 text-primary hover:underline"
+                            type="button"
+                            className="inline-flex min-w-0 cursor-pointer items-center gap-1 rounded-sm text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
                             onClick={() => toast("Proof screenshot", { description: `${proof.proofFile} · captured ${fmtDate(proof.publishedAt)}` })}
                           >
-                            <ImageIcon className="size-3" /> {proof.proofFile}
+                            <ImageIcon className="size-3 shrink-0" /> <span className="truncate">{proof.proofFile}</span>
                           </button>
                         ) : (
                           <Badge tone="warning">Missing</Badge>
@@ -181,7 +176,7 @@ export function PublishingPage() {
                       </dd>
                     </dl>
                     {v.publishedUrl && (
-                      <a href={v.publishedUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 truncate text-body text-primary hover:underline">
+                      <a href={v.publishedUrl} target="_blank" rel="noreferrer" className="flex items-center gap-1 truncate rounded-sm text-body text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35">
                         <ExternalLink className="size-3 shrink-0" /> {v.publishedUrl}
                       </a>
                     )}
@@ -237,14 +232,19 @@ function MarkPublishedDialog({ video, onClose }: { video: Video | null; onClose:
           </DialogDescription>
         </DialogHeader>
         <DialogBody className="space-y-4">
-          <Field label="Live post URL">
+          <Field label="Live post URL" required error={url && !urlOk ? "Enter the full link, starting with https://" : undefined}>
             <Input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://instagram.com/reel/…" autoFocus />
           </Field>
-          <Field label="Published at">
+          <Field label="Published at" required>
             <Input type="datetime-local" value={at} onChange={(e) => setAt(e.target.value)} />
           </Field>
           <div className="space-y-1.5">
-            <span className="text-body font-medium">Proof screenshot</span>
+            <Label>
+              Proof screenshot
+              <span className="ml-0.5 text-danger" aria-hidden>
+                *
+              </span>
+            </Label>
             {proof ? (
               <div className="flex items-center gap-3 rounded-xl border border-border p-2.5">
                 {video && <Poster video={video} className="h-12 w-20 shrink-0 rounded-md" size="sm" showMeta={false} showPlay={false} />}
@@ -252,28 +252,30 @@ function MarkPublishedDialog({ video, onClose }: { video: Video | null; onClose:
                   <div className="truncate font-medium">{proof}</div>
                   <div className="text-muted-foreground">412 KB · uploaded</div>
                 </div>
-                <Button size="icon-sm" variant="ghost" onClick={() => setProof(null)} aria-label="Remove">
+                <Button size="icon-sm" variant="ghost" onClick={() => setProof(null)} aria-label="Remove screenshot">
                   <X />
                 </Button>
               </div>
             ) : (
               <button
+                type="button"
                 onClick={() => setProof(`proof_${video?.code}.png`)}
-                className="flex w-full cursor-pointer flex-col items-center gap-1.5 rounded-xl border border-dashed border-input p-5 text-body text-muted-foreground transition hover:border-primary hover:bg-primary-soft/40"
+                className="flex w-full cursor-pointer flex-col items-center gap-1.5 rounded-xl border border-dashed border-border-strong bg-surface-secondary p-5 text-center text-body text-muted-foreground transition hover:border-primary hover:bg-primary-soft/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
               >
                 <Upload className="size-5" />
                 <span>
-                  <span className="font-medium text-foreground">Click to upload</span> a screenshot of the live post
+                  <span className="font-medium text-primary">Click to upload</span> a screenshot of the live post
                 </span>
               </button>
             )}
           </div>
           <label className="flex cursor-pointer items-center gap-2.5 text-body">
-            <Checkbox checked={confirmed} onCheckedChange={(v) => setConfirmed(v === true)} />I posted the client-approved {ver?.label} file, unchanged
+            <Checkbox checked={confirmed} onCheckedChange={(v) => setConfirmed(v === true)} />
+            I posted the client-approved {ver?.label} file, unchanged
           </label>
         </DialogBody>
         <DialogFooter>
-          <Button variant="ghost" onClick={close}>
+          <Button variant="outline" onClick={close}>
             Cancel
           </Button>
           <Button variant="accent" disabled={!valid} onClick={submit}>

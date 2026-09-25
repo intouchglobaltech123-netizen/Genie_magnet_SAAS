@@ -7,6 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Textarea } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { personById } from "@/lib/mock/core";
@@ -59,6 +60,9 @@ export function DailyStandup() {
           <div className="flex items-center gap-2 text-body font-semibold">
             <AlertOctagon className="size-4 text-danger" /> Blockers ({blockers.length})
           </div>
+          {blockers.length === 0 && (
+            <EmptyState compact icon={CheckCircle2} title="No blockers today" description="Anything raised in a stand-up shows up here." className="mt-3" />
+          )}
           <ul className="mt-3 space-y-2.5">
             {blockers.map((b) => {
               const p = personById(b.personId);
@@ -95,7 +99,7 @@ export function DailyStandup() {
         </Card>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
         {standups.map((s) => (
           <StandupCard key={s.personId} entry={s} />
         ))}
@@ -114,9 +118,9 @@ function StandupCard({ entry }: { entry: StandupEntry }) {
   return (
     <Card className={cn("flex flex-col", !entry.submitted && "border-dashed")}>
       <CardHeader className="pb-2">
-        <div className="flex items-center gap-2.5">
+        <div className="flex min-w-0 items-center gap-2.5">
           <Avatar name={p.name} size="md" />
-          <div>
+          <div className="min-w-0">
             <CardTitle className="text-body">{p.name}</CardTitle>
             <CardDescription className="mt-0">{p.role}</CardDescription>
           </div>
@@ -183,7 +187,7 @@ function StandupCard({ entry }: { entry: StandupEntry }) {
 
 function Line({ label, text, danger }: { label: string; text: string; danger?: boolean }) {
   return (
-    <div className="grid grid-cols-[70px_1fr] gap-2">
+    <div className="grid grid-cols-[92px_minmax(0,1fr)] gap-2">
       <span className="text-body font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
       <span className={cn(danger ? "text-danger" : "text-foreground/90", text === "None" && "text-muted-foreground")}>{text}</span>
     </div>

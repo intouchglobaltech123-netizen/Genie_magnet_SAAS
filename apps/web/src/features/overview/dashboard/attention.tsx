@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Check, CircleDollarSign, Clock, PackageX, Percent, UserX, X } from "lucide-react";
+import { AlertTriangle, Check, CheckCircle2, CircleDollarSign, Clock, PackageX, Percent, UserX, X } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/feedback";
 import { clientById, daysBetween, isOverdue, TODAY } from "@/lib/mock/core";
 import { useDemo } from "@/lib/store";
 import { cn, inr } from "@/lib/utils";
@@ -158,7 +159,7 @@ export function AttentionCard() {
   return (
     <Card className="flex flex-col">
       <CardHeader>
-        <div>
+        <div className="min-w-0">
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="size-4 text-warning" /> Needs your attention
           </CardTitle>
@@ -185,12 +186,14 @@ export function AttentionCard() {
                   <div className="truncate text-body font-medium">{i.title}</div>
                   <div className="line-clamp-1 text-body text-muted-foreground">{i.detail}</div>
                 </div>
-                <div className="flex shrink-0 gap-1.5">{i.actions}</div>
+                <div className="flex shrink-0 flex-wrap gap-1.5">{i.actions}</div>
               </motion.li>
             ))}
           </AnimatePresence>
           {!visible.length && (
-            <li className="py-10 text-center text-body text-muted-foreground">Nothing needs you right now. Enjoy the chai.</li>
+            <li>
+              <EmptyState compact icon={CheckCircle2} title="All clear" description="Nothing needs you right now. Enjoy the chai." />
+            </li>
           )}
         </ul>
       </CardContent>

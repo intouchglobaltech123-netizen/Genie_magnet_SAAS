@@ -52,10 +52,10 @@ function Body({ personId, onSubmit, close }: { personId: string; onSubmit: (id: 
         </DialogDescription>
       </DialogHeader>
       <DialogBody className="space-y-4">
-        <Field label="Which measure are you appealing?">
+        <Field label="Which measure are you appealing?" required>
           <Select value={kra} onValueChange={setKra} options={options} />
         </Field>
-        <Field label="Reason & evidence" hint="Link video codes, QC notes or client emails where possible.">
+        <Field label="Reason & evidence" required hint="Link video codes, QC notes or client emails where possible.">
           <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Explain what the score doesn't reflect…" className="min-h-28" />
         </Field>
       </DialogBody>

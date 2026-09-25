@@ -23,7 +23,7 @@ export function MonthGrid({ requests }: { requests: LeaveRequest[] }) {
 
   return (
     <Card>
-      <CardHeader className="flex-col gap-3 md:flex-row md:items-center">
+      <CardHeader className="flex-col gap-3 lg:flex-row lg:items-center">
         <div>
           <CardTitle>September 2026 · attendance register</CardTitle>
           <CardDescription>Biometric punches + approved leave. Future days stay blank until punched.</CardDescription>
@@ -31,7 +31,7 @@ export function MonthGrid({ requests }: { requests: LeaveRequest[] }) {
         <div className="flex flex-wrap gap-2">
           {(Object.keys(codeMeta) as AttendanceCode[]).map((c) => (
             <span key={c} className="inline-flex items-center gap-1.5 text-body text-muted-foreground">
-              <span className={cn("inline-flex h-5 min-w-6 items-center justify-center rounded px-1 text-body font-semibold", codeMeta[c].cls)}>{c}</span>
+              <span className={cn("inline-flex h-6 min-w-7 items-center justify-center rounded-md px-1 text-body font-semibold leading-4", codeMeta[c].cls)}>{c}</span>
               {codeMeta[c].label}
             </span>
           ))}
@@ -48,7 +48,7 @@ export function MonthGrid({ requests }: { requests: LeaveRequest[] }) {
                   const wk = dt.getDay() === 0 || dt.getDay() === 6;
                   const isToday = d === TODAY;
                   return (
-                    <th key={d} className={cn("w-8 px-0.5 py-1 text-center font-medium", wk && "bg-muted/60", isToday && "rounded-t-md outline-2 -outline-offset-2 outline-primary")}>
+                    <th key={d} className={cn("min-w-9 px-0.5 py-1 text-center font-medium leading-4", wk && "bg-muted/60", isToday && "rounded-t-md outline-2 -outline-offset-2 outline-primary")}>
                       <div className="text-body text-muted-foreground">{DOW[dt.getDay()]}</div>
                       <div className={cn("tabular", isToday ? "text-primary" : "text-foreground")}>{dt.getDate()}</div>
                     </th>
@@ -88,7 +88,7 @@ export function MonthGrid({ requests }: { requests: LeaveRequest[] }) {
                           <Tooltip content={tip}>
                             <span
                               className={cn(
-                                "inline-flex h-6 w-7 cursor-default items-center justify-center rounded text-body font-semibold",
+                                "inline-flex h-6 w-8 cursor-default items-center justify-center rounded-md text-body font-semibold leading-4",
                                 c ? codeMeta[c].cls : "border border-dashed border-border text-transparent",
                               )}
                             >

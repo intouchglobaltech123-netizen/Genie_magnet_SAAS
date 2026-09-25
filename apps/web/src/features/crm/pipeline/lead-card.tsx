@@ -22,8 +22,8 @@ export const sourceTone: Record<Lead["source"], BadgeTone> = {
   "Meta Ads": "accent",
   "Google Ads": "info",
   WhatsApp: "success",
-  Referral: "gold",
-  BNI: "gold",
+  Referral: "outline",
+  BNI: "outline",
   Instagram: "accent",
   Event: "warning",
   "Walk-in": "neutral",
@@ -73,7 +73,16 @@ export function LeadCard({
         e.dataTransfer.effectAllowed = "move";
       }}
       onClick={onOpen}
-      className="group cursor-grab rounded-xl border border-border bg-card p-3 shadow-card transition hover:border-primary/40 hover:shadow-pop active:cursor-grabbing"
+      onKeyDown={(e) => {
+        if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          onOpen();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Open ${lead.company}`}
+      className="group cursor-grab rounded-xl border border-border bg-card p-3 shadow-card transition hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 active:cursor-grabbing"
     >
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
@@ -85,7 +94,9 @@ export function LeadCard({
           <DropdownMenuTrigger asChild>
             <button
               onClick={(e) => e.stopPropagation()}
-              className="-mr-1 inline-flex size-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-60 hover:bg-muted hover:text-foreground group-hover:opacity-100"
+              onKeyDown={(e) => e.stopPropagation()}
+              aria-label={`Actions for ${lead.company}`}
+              className="-mr-1 inline-flex size-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-60 hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 group-hover:opacity-100"
             >
               <MoreHorizontal className="size-4" />
             </button>
@@ -107,7 +118,7 @@ export function LeadCard({
 
       <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
         <Badge tone={sourceTone[lead.source]}>{lead.source}</Badge>
-        <span className="truncate text-body text-muted-foreground">{lead.service}</span>
+        <span className="min-w-0 truncate text-body text-muted-foreground">{lead.service}</span>
       </div>
       {discountPending && (
         <div className="mt-2">

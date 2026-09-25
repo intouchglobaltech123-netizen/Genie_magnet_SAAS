@@ -8,13 +8,6 @@ import { Button } from "@/components/ui/button";
 import { cn, fmtDate } from "@/lib/utils";
 import { sourcingChannels, type RoleDoc } from "./data";
 
-const competenceTone: Record<string, string> = {
-  Skills: "bg-primary-soft text-primary",
-  Knowledge: "bg-info-soft text-info",
-  "Self Image": "bg-accent-soft text-accent-strong",
-  Motives: "bg-success-soft text-success",
-  Traits: "bg-warning-soft text-warning",
-};
 
 export function RoleDocPanel({
   role,
@@ -26,16 +19,16 @@ export function RoleDocPanel({
   onToggleSource: (s: string) => void;
 }) {
   return (
-    <div className="grid gap-6 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
       <Card className="xl:col-span-2">
-        <CardHeader className="border-b border-border pb-4">
+        <CardHeader className="flex-wrap border-b border-border pb-4">
           <div className="flex items-start gap-3">
             <span className="inline-flex size-10 items-center justify-center rounded-xl bg-primary-soft text-primary">
               <FileText className="size-5" />
             </span>
             <div>
               <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Role Task Document</div>
-              <CardTitle className="text-subheading">{role.name}</CardTitle>
+              <CardTitle>{role.name}</CardTitle>
               <CardDescription>
                 {role.department} · Hiring manager {role.hiringManager} · Posted {fmtDate(role.postedOn)}
               </CardDescription>
@@ -53,7 +46,7 @@ export function RoleDocPanel({
           <Section icon={Target} title="Role definition">
             <p className="rounded-xl bg-muted/60 px-4 py-3 text-body font-medium">“{role.definition}”</p>
           </Section>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <Section icon={Check} title="Key responsibilities / deliverables">
               <ul className="space-y-2">
                 {role.deliverables.map((d, i) => (
@@ -78,13 +71,15 @@ export function RoleDocPanel({
             </Section>
           </div>
           <Section icon={Gem} title="Competence attributes">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
               {Object.entries(role.competence).map(([k, items]) => (
                 <div key={k} className="rounded-xl border border-border p-3">
-                  <span className={cn("inline-block rounded-md px-2 py-0.5 text-body font-semibold", competenceTone[k])}>{k}</span>
+                  <Badge tone="accent" className="font-semibold">
+                    {k}
+                  </Badge>
                   <ul className="mt-2 space-y-1.5">
                     {items.map((x) => (
-                      <li key={x} className="text-body leading-snug text-muted-foreground">
+                      <li key={x} className="text-body text-muted-foreground">
                         {x}
                       </li>
                     ))}
@@ -118,8 +113,9 @@ export function RoleDocPanel({
                     key={s}
                     type="button"
                     onClick={() => onToggleSource(s)}
+                    aria-pressed={on}
                     className={cn(
-                      "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-body font-medium transition",
+                      "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1.5 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                       on ? "border-primary/40 bg-primary-soft text-primary" : "border-border bg-card text-muted-foreground hover:bg-muted",
                     )}
                   >

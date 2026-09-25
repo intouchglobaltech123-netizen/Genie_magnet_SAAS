@@ -35,7 +35,7 @@ const daysUntil = (iso: string) => Math.round((new Date(`${iso}T00:00:00`).getTi
 
 export function BalancesAndHolidays({ balances }: { balances: Record<string, Bal> }) {
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
+    <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_380px]">
       <Card>
         <CardHeader>
           <div>
@@ -53,7 +53,7 @@ export function BalancesAndHolidays({ balances }: { balances: Record<string, Bal
                 <TH>Casual (CL)</TH>
                 <TH>Sick (SL)</TH>
                 <TH>Earned (EL)</TH>
-                <TH className="pr-5 text-right">Total left</TH>
+                <TH numeric className="pr-5">Total left</TH>
               </TR>
             </THead>
             <TBody>
@@ -80,7 +80,7 @@ export function BalancesAndHolidays({ balances }: { balances: Record<string, Bal
                     <TD>
                       <BalCell left={b.EL} of={leaveEntitlement.EL} />
                     </TD>
-                    <TD className="tabular pr-5 text-right font-semibold">{total}</TD>
+                    <TD numeric className="pr-5 font-semibold">{total}</TD>
                   </TR>
                 );
               })}
@@ -100,7 +100,7 @@ export function BalancesAndHolidays({ balances }: { balances: Record<string, Bal
             size="xs"
             onClick={() => toast.success("Holiday list shared", { description: "Added to 10 employee Google Calendars as all-day events." })}
           >
-            <CalendarPlus className="size-3.5" /> Sync
+            <CalendarPlus /> Sync
           </Button>
         </CardHeader>
         <CardContent>
@@ -111,7 +111,7 @@ export function BalancesAndHolidays({ balances }: { balances: Record<string, Bal
               const past = away < 0;
               return (
                 <li key={h.date} className={cn("flex items-center gap-3 rounded-xl border border-border p-3", past && "opacity-55")}>
-                  <div className="flex w-11 shrink-0 flex-col items-center rounded-lg bg-accent-soft py-1 text-accent-strong">
+                  <div className="flex w-11 shrink-0 flex-col items-center rounded-lg bg-primary-soft py-1 text-primary">
                     <span className="text-body font-semibold uppercase">{d.toLocaleDateString("en-IN", { month: "short" })}</span>
                     <span className="tabular text-subheading font-semibold leading-none">{d.getDate()}</span>
                   </div>

@@ -11,6 +11,7 @@ export default function TimePage() {
         title="Time Tracking"
         description="Every hour classified and linked to a video code, so you can see what each reel really costs and where the week leaked into meetings and waiting."
         depth="preview"
+        className="mb-0"
       />
       <TimeView />
     </div>

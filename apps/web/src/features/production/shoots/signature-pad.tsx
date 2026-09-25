@@ -17,7 +17,7 @@ export function SignaturePad({ onSave, disabled }: { onSave: (dataUrl: string) =
     g.lineWidth = 2.2;
     g.lineCap = "round";
     g.lineJoin = "round";
-    g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--foreground").trim() || "currentColor";
+    g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--color-text-primary").trim() || "black";
     return g;
   };
 
@@ -28,11 +28,13 @@ export function SignaturePad({ onSave, disabled }: { onSave: (dataUrl: string) =
 
   return (
     <div>
-      <div className="relative overflow-hidden rounded-xl border border-dashed border-border bg-muted/30">
+      <div className="relative overflow-hidden rounded-xl border border-dashed border-border-strong bg-surface-secondary">
         <canvas
           ref={ref}
           width={640}
           height={180}
+          aria-label="Signature pad"
+          role="img"
           className="h-[120px] w-full touch-none cursor-crosshair"
           onPointerDown={(e) => {
             if (disabled) return;

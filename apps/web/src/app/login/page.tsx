@@ -19,7 +19,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
 
   return (
-    <div className="grid min-h-screen bg-background lg:grid-cols-[1.05fr_1fr]">
+    <div className="grid grid-cols-1 min-h-screen bg-background lg:grid-cols-[1.05fr_1fr]">
       {/* Brand panel */}
       <section className="relative hidden flex-col justify-between overflow-hidden bg-primary p-12 text-primary-foreground lg:flex">
         <div className="flex items-center gap-3">

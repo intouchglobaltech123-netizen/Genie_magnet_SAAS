@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/feedback";
 import { Field, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -42,14 +43,14 @@ export function VendorsTab() {
   return (
     <Card>
       <CardHeader className="flex-col gap-3 md:flex-row md:items-center">
-        <div>
+        <div className="min-w-0">
           <CardTitle>Vendors & freelancers</CardTitle>
           <CardDescription>
             {vendors.length} active · FY spend {inrCompact(totalYtd)} · GSTINs verified for input credit
           </CardDescription>
         </div>
         <div className="flex w-full gap-2 md:w-auto">
-          <div className="relative flex-1 md:w-64">
+          <div className="relative min-w-0 flex-1 md:w-64">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search vendor, GSTIN…" className="pl-9" />
           </div>
@@ -65,13 +66,30 @@ export function VendorsTab() {
             <TH>Category</TH>
             <TH>GSTIN</TH>
             <TH>Terms</TH>
-            <TH className="text-right">FY spend</TH>
+            <TH numeric>FY spend</TH>
             <TH>Last payment</TH>
             <TH>Rating</TH>
-            <TH className="pr-5 text-right">Payable</TH>
+            <TH numeric className="pr-5">Payable</TH>
           </TR>
         </THead>
         <TBody>
+          {rows.length === 0 && (
+            <TR className="hover:bg-transparent">
+              <TD colSpan={8} className="p-5">
+                <EmptyState
+                  compact
+                  icon={Building2}
+                  title="No vendors match your search"
+                  description="Check the spelling or GSTIN, or add the vendor."
+                  action={
+                    <Button variant="secondary" size="sm" onClick={() => setQ("")}>
+                      Clear search
+                    </Button>
+                  }
+                />
+              </TD>
+            </TR>
+          )}
           {rows.map((v) => {
             const due = payable.get(v.name) ?? 0;
             const style = CATEGORY_STYLE[v.category] ?? CATEGORY_STYLE.Utilities!;
@@ -99,8 +117,8 @@ export function VendorsTab() {
                   {validGstin && <div className="text-body text-muted-foreground">{STATE_CODES[v.gstin.slice(0, 2)] ?? "Other state"}</div>}
                 </TD>
                 <TD className="text-body text-muted-foreground">{v.terms}</TD>
-                <TD className="text-right">
-                  <div className="font-medium tabular">{inr(v.ytdSpend)}</div>
+                <TD numeric>
+                  <div className="whitespace-nowrap font-medium">{inr(v.ytdSpend)}</div>
                   <div className="ml-auto mt-1 h-1 w-20 overflow-hidden rounded-full bg-muted">
                     <div className={cn("h-full rounded-full", style.strip)} style={{ width: `${(v.ytdSpend / maxSpend) * 100}%` }} />
                   </div>
@@ -124,11 +142,11 @@ export function VendorsTab() {
                     <Badge tone="outline">New</Badge>
                   )}
                 </TD>
-                <TD className="pr-5 text-right">
+                <TD numeric className="pr-5">
                   {due > 0 ? (
                     <Button
                       size="xs"
-                      variant="accent"
+                      variant="soft"
                       onClick={() => {
                         const paid = payVendor(v.name);
                         toast.success(`${inr(paid)} paid to ${v.name}`, { description: `NEFT from HDFC current a/c · remittance advice emailed${v.category === "Freelancer" ? " · TDS 1% u/s 194C deducted" : ""}` });
@@ -175,11 +193,11 @@ function AddVendorDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
           <DialogTitle>Add vendor</DialogTitle>
           <DialogDescription>Vendors with a valid GSTIN let us claim input tax credit.</DialogDescription>
         </DialogHeader>
-        <DialogBody className="grid grid-cols-2 gap-3">
-          <Field label="Vendor name" className="col-span-2">
+        <DialogBody className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Vendor name" className="sm:col-span-2" required>
             <Input value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
-          <Field label="Category">
+          <Field label="Category" required>
             <Select value={category} onValueChange={(v) => setCategory(v as ExpenseCategory)} options={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: c }))} />
           </Field>
           <Field label="City">

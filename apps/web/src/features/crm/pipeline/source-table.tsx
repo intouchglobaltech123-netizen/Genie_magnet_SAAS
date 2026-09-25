@@ -37,12 +37,12 @@ export function SourceTable() {
           <THead>
             <TR>
               <TH>Source</TH>
-              <TH className="text-right">Leads</TH>
-              <TH className="text-right">Qualified</TH>
-              <TH className="text-right">Won</TH>
+              <TH numeric>Leads</TH>
+              <TH numeric>Qualified</TH>
+              <TH numeric>Won</TH>
               <TH>Conversion</TH>
-              <TH className="text-right">Open now</TH>
-              <TH className="text-right">Won MRR</TH>
+              <TH numeric>Open now</TH>
+              <TH numeric>Won MRR</TH>
             </TR>
           </THead>
           <TBody>
@@ -51,21 +51,21 @@ export function SourceTable() {
                 <TD>
                   <Badge tone={sourceTone[r.src]}>{r.src}</Badge>
                 </TD>
-                <TD className="text-right tabular">{r.total}</TD>
-                <TD className="text-right tabular">
+                <TD numeric>{r.total}</TD>
+                <TD numeric>
                   {r.q} <span className="text-muted-foreground">({r.total ? pct(r.q / r.total) : "—"})</span>
                 </TD>
-                <TD className="text-right font-medium tabular">{r.w}</TD>
+                <TD numeric className="font-medium">{r.w}</TD>
                 <TD>
                   <div className="flex items-center gap-2">
-                    <div className="h-1.5 w-28 overflow-hidden rounded-full bg-muted">
+                    <div className="h-1.5 w-20 overflow-hidden sm:w-28 rounded-full bg-muted">
                       <div className={cn("h-full rounded-full", r.conv === best ? "bg-success" : "bg-primary")} style={{ width: `${(r.conv / best) * 100}%` }} />
                     </div>
                     <span className={cn("tabular", r.conv === best && "font-semibold text-success")}>{pct(r.conv)}</span>
                   </div>
                 </TD>
-                <TD className="text-right tabular">{r.open}</TD>
-                <TD className="text-right font-medium tabular">{r.revenue ? inrCompact(r.revenue) : "—"}</TD>
+                <TD numeric>{r.open}</TD>
+                <TD numeric className="font-medium">{r.revenue ? inrCompact(r.revenue) : "—"}</TD>
               </TR>
             ))}
           </TBody>

@@ -57,7 +57,7 @@ export function FounderDashboard() {
         }
       />
 
-      <div className="grid gap-4 xl:grid-cols-12 [&>*]:min-w-0">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 [&>*]:min-w-0">
         <div className="xl:col-span-5">
           <RevenueHero />
         </div>
@@ -66,7 +66,7 @@ export function FounderDashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-12 [&>*]:min-w-0">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 [&>*]:min-w-0">
         <div className="xl:col-span-7">
           <AttentionCard />
         </div>
@@ -76,7 +76,7 @@ export function FounderDashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-12 [&>*]:min-w-0">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 [&>*]:min-w-0">
         <div className="xl:col-span-8">
           <RevenueTrendCard />
         </div>
@@ -85,7 +85,7 @@ export function FounderDashboard() {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-12 [&>*]:min-w-0">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-12 [&>*]:min-w-0">
         <div className="xl:col-span-5">
           <PortfolioCard />
         </div>

@@ -33,7 +33,7 @@ export function IncidentCard({ done, stamps, onAdvance, onOpenAsset }: { done: n
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="ghost" size="sm" onClick={onOpenAsset}>
             View asset
           </Button>
@@ -55,7 +55,7 @@ export function IncidentCard({ done, stamps, onAdvance, onOpenAsset }: { done: n
                   className={cn(
                     "inline-flex size-6 shrink-0 items-center justify-center rounded-full text-body font-semibold",
                     state === "done" && "bg-success text-white",
-                    state === "current" && "bg-warning text-white",
+                    state === "current" && "bg-warning-soft text-warning ring-1 ring-inset ring-warning/40",
                     state === "todo" && "bg-muted text-muted-foreground",
                   )}
                 >
@@ -65,7 +65,7 @@ export function IncidentCard({ done, stamps, onAdvance, onOpenAsset }: { done: n
                 {i < INCIDENT_STEPS.length - 1 && <span className={cn("hidden h-px flex-1 lg:block", i < done ? "bg-success/50" : "bg-border")} />}
               </div>
               <div className="mt-1.5 pl-8 text-body text-muted-foreground">
-                {stamps[i] && <span className="font-medium text-foreground/80">{stamps[i]} · </span>}
+                {stamps[i] && <span className="font-medium text-text-primary">{stamps[i]} · </span>}
                 {s.detail}
               </div>
             </li>

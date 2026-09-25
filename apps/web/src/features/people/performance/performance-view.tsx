@@ -59,7 +59,7 @@ export function PerformanceView() {
 
       <RoleScorecards appeals={appeals} onAppeal={setAppealFor} />
 
-      <div className="grid gap-6 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-5">
         <div className="xl:col-span-3">
           <PlayerGrid />
         </div>

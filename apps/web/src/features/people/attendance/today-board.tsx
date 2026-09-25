@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { Camera, CheckCircle2, Clock3, FileSpreadsheet, Fingerprint, Loader2, Palmtree, RefreshCw, UserX } from "lucide-react";
+import { Camera, CheckCircle2, Clock3, FileSpreadsheet, Fingerprint, Loader2, Palmtree, RefreshCw, Search, UserX } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/feedback";
 import { StatCard } from "@/components/shared/stat-card";
 import { personById } from "@/lib/mock/core";
 import { todayPunches, type TodayPunch } from "@/lib/mock/people";
@@ -70,7 +71,7 @@ export function TodayBoard() {
         <StatCard label="On shoot" value={count("on-shoot")} icon={Camera} tone="accent" hint="field attendance" />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_320px]">
         <Card>
           <CardHeader className="flex-col gap-3 sm:flex-row sm:items-center">
             <div>
@@ -80,7 +81,7 @@ export function TodayBoard() {
               </CardDescription>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search person…" className="h-8 w-40 text-body" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search person…" className="h-8 w-full text-body sm:w-40" />
               <Button variant="outline" size="sm" onClick={importExcel} disabled={importing}>
                 {importing ? <Loader2 className="animate-spin" /> : <FileSpreadsheet />}
                 Import Excel
@@ -108,17 +109,12 @@ export function TodayBoard() {
                       <div className={cn("tabular font-medium", p.status === "late" && "text-warning")}>{to12h(p.inTime)}</div>
                     </div>
                     <div className="hidden w-40 md:flex md:justify-end">
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 text-body text-muted-foreground",
-                          p.source === "Hikvision biometric" && "border-primary/30 text-primary",
-                        )}
-                      >
+                      <Badge tone={p.source === "Hikvision biometric" ? "accent" : "outline"}>
                         {p.source === "Hikvision biometric" ? <Fingerprint className="size-3" /> : p.source === "Excel import" ? <FileSpreadsheet className="size-3" /> : <Palmtree className="size-3" />}
                         {p.source}
-                      </span>
+                      </Badge>
                     </div>
-                    <div className="w-20 text-right">
+                    <div className="shrink-0 text-right">
                       <Badge tone={meta.tone} dot>
                         {meta.label}
                       </Badge>
@@ -126,7 +122,11 @@ export function TodayBoard() {
                   </li>
                 );
               })}
-              {!rows.length && <li className="px-5 py-8 text-center text-body text-muted-foreground">No one matches “{q}”.</li>}
+              {!rows.length && (
+                <li className="px-5 py-2">
+                  <EmptyState compact icon={Search} title="No matching employees" description={`No one matches “${q}”. Try another name.`} />
+                </li>
+              )}
             </ul>
           </CardContent>
         </Card>

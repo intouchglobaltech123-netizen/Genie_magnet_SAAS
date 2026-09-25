@@ -85,19 +85,19 @@ export function NewVideoDialog({ open, onOpenChange, defaultDue }: { open: boole
           <DialogDescription>Adds a row to the video list sheet and the production calendar.</DialogDescription>
         </DialogHeader>
         <DialogBody className="space-y-4">
-          <div className="flex items-center justify-between rounded-xl border border-dashed border-border bg-muted/50 px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-border bg-surface-secondary px-4 py-3">
             <div>
               <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Video code (auto)</div>
               <div className="mt-0.5 font-mono text-subheading font-semibold tracking-wide">{code}</div>
             </div>
-            <div className="text-right text-body text-muted-foreground">
+            <div className="text-body text-muted-foreground sm:text-right">
               <div className="inline-flex items-center gap-1">
                 <Sparkles className="size-3.5 text-primary" /> Client · MMYY · sequence
               </div>
               <div className="mt-0.5">Cycle: {cycle.label}</div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Client">
               <Select
                 value={clientId}
@@ -112,10 +112,10 @@ export function NewVideoDialog({ open, onOpenChange, defaultDue }: { open: boole
               <Select value={agreementId} onValueChange={setAgreementId} options={clientAgreements.map((a) => ({ value: a.id, label: a.packageName }))} />
             </Field>
           </div>
-          <Field label="Video name">
+          <Field label="Video name" required>
             <Input autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Sesame oil — why wood-pressed matters" />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Format">
               <Select
                 value={format}
@@ -139,22 +139,23 @@ export function NewVideoDialog({ open, onOpenChange, defaultDue }: { open: boole
                   <button
                     key={u}
                     type="button"
+                    aria-pressed={urgency === u}
                     onClick={() => setUrgency(u)}
                     className={cn(
-                      "flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-left text-body transition",
+                      "flex min-w-0 cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-body transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                       urgency === u ? "border-primary bg-primary-soft/60 ring-2 ring-primary/20" : "border-border hover:bg-muted",
                     )}
                   >
-                    <span className={cn("inline-flex size-6 items-center justify-center rounded-md", m.cls)}>
+                    <span className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-md", m.cls)}>
                       <Icon className="size-3.5" />
                     </span>
-                    {m.label}
+                    <span className="truncate">{m.label}</span>
                   </button>
                 );
               })}
             </div>
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Editor">
               <Select value={editorId} onValueChange={setEditorId} options={editors.map((e) => ({ value: e.id, label: `${e.name}${e.type === "freelancer" ? " (freelance)" : ""}` }))} />
             </Field>

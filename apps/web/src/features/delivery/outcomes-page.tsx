@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Select } from "@/components/ui/select";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { clientById, clients } from "@/lib/mock/core";
@@ -19,8 +20,8 @@ const nf = new Intl.NumberFormat("en-IN");
 const compact = (n: number) => (n >= 100000 ? `${(n / 100000).toFixed(1)}L` : n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n));
 
 const tooltipStyle = {
-  contentStyle: { background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 10, fontSize: 12 },
-  labelStyle: { color: "var(--color-muted-foreground)" },
+  contentStyle: { background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 10, fontSize: 13 },
+  labelStyle: { color: "var(--color-text-muted)" },
 };
 
 export function OutcomesPage() {
@@ -50,7 +51,7 @@ export function OutcomesPage() {
         actions={
           <>
             <Select
-              className="w-56"
+              className="w-full sm:w-56"
               value={clientId}
               onValueChange={setClientId}
               options={clients.map((c) => ({ value: c.id, label: c.name }))}
@@ -62,14 +63,14 @@ export function OutcomesPage() {
         }
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {data.kpis.map((k) => {
           const up = k.delta >= 0;
           const fresh = refreshed[`${clientId}-${k.key}`];
           return (
-            <Card key={k.key} className="p-4">
+            <Card key={k.key} className="min-w-0 p-5">
               <div className="text-body font-medium text-muted-foreground">{k.label}</div>
-              <div className="mt-1.5 flex items-baseline gap-2">
+              <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
                 <span className="text-heading font-semibold tracking-tight tabular">{fmtKpi(k)}</span>
                 <span className={cn("inline-flex items-center text-body font-medium", up ? "text-success" : "text-danger")}>
                   {up ? <ArrowUpRight className="size-3.5" /> : <ArrowDownRight className="size-3.5" />}
@@ -85,8 +86,9 @@ export function OutcomesPage() {
                 </span>
                 {!k.manual && (
                   <button
-                    className="cursor-pointer text-muted-foreground hover:text-foreground"
-                    aria-label="Refresh"
+                    type="button"
+                    className="inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
+                    aria-label={`Refresh ${k.label}`}
                     onClick={() => {
                       setRefreshed((r) => ({ ...r, [`${clientId}-${k.key}`]: true }));
                       toast.success(`${k.label} refreshed`, { description: `${k.source} · synced just now` });
@@ -101,14 +103,14 @@ export function OutcomesPage() {
         })}
       </div>
 
-      <div className="mb-4 grid gap-4 xl:grid-cols-3">
+      <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
             <div>
               <CardTitle>Reach & views · last 12 weeks</CardTitle>
               <CardDescription>{client.name} · weekly, all platforms</CardDescription>
             </div>
-            <div className="flex gap-3 text-body text-muted-foreground">
+            <div className="flex flex-wrap gap-3 text-body text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
                 <span className="size-2 rounded-full bg-chart-1" /> Views
               </span>
@@ -120,22 +122,12 @@ export function OutcomesPage() {
           <CardContent className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.weekly} margin={{ left: -12, right: 8, top: 8 }}>
-                <defs>
-                  <linearGradient id="gViews" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.25} />
-                    <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="gReach" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--color-chart-2)" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="var(--color-chart-2)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="week" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} />
-                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} tickFormatter={compact} />
+                <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
+                <XAxis dataKey="week" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-muted)" }} />
+                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-muted)" }} tickFormatter={compact} />
                 <RTooltip {...tooltipStyle} formatter={(v) => nf.format(Number(v))} />
-                <Area type="monotone" dataKey="views" name="Views" stroke="var(--color-chart-1)" strokeWidth={2} fill="url(#gViews)" />
-                <Area type="monotone" dataKey="reach" name="Reach" stroke="var(--color-chart-2)" strokeWidth={2} fill="url(#gReach)" />
+                <Area type="monotone" dataKey="views" name="Views" stroke="var(--color-chart-1)" strokeWidth={2} fill="var(--color-chart-1)" fillOpacity={0.08} />
+                <Area type="monotone" dataKey="reach" name="Reach" stroke="var(--color-chart-2)" strokeWidth={2} fill="var(--color-chart-2)" fillOpacity={0.06} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
@@ -151,9 +143,9 @@ export function OutcomesPage() {
           <CardContent className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.monthlyLeads} margin={{ left: -20, right: 4, top: 8 }} barGap={2}>
-                <CartesianGrid vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} />
-                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} />
+                <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-muted)" }} />
+                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-muted)" }} />
                 <RTooltip {...tooltipStyle} cursor={{ fill: "var(--color-muted)" }} />
                 <Bar dataKey="leads" name="Leads" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]} maxBarSize={18} />
                 <Bar dataKey="enquiries" name="Enquiries" fill="var(--color-chart-3)" radius={[4, 4, 0, 0]} maxBarSize={18} />
@@ -176,10 +168,10 @@ export function OutcomesPage() {
             <TR>
               <TH className="pl-5">Video</TH>
               <TH>Platform</TH>
-              <TH className="text-right">Views</TH>
-              <TH className="text-right">Engagement</TH>
-              <TH className="text-right">Saves</TH>
-              <TH className="pr-5 text-right">Leads</TH>
+              <TH numeric>Views</TH>
+              <TH numeric>Engagement</TH>
+              <TH numeric>Saves</TH>
+              <TH numeric className="pr-5">Leads</TH>
             </TR>
           </THead>
           <TBody>
@@ -187,20 +179,27 @@ export function OutcomesPage() {
               <TR key={v.code}>
                 <TD className="pl-5">
                   <div className="flex items-center gap-3">
-                    <span className="w-4 text-body text-muted-foreground tabular">{i + 1}</span>
-                    <div>
+                    <span className="w-4 shrink-0 text-body text-muted-foreground tabular">{i + 1}</span>
+                    <div className="min-w-[180px]">
                       <div className="font-medium">{v.title}</div>
                       <div className="font-mono text-body text-muted-foreground">{v.code}</div>
                     </div>
                   </div>
                 </TD>
-                <TD>{v.platform}</TD>
-                <TD className="text-right tabular">{nf.format(v.views)}</TD>
-                <TD className="text-right tabular">{pct(v.er, 1)}</TD>
-                <TD className="text-right tabular">{nf.format(v.saves)}</TD>
-                <TD className="pr-5 text-right font-medium tabular">{v.leads}</TD>
+                <TD className="whitespace-nowrap">{v.platform}</TD>
+                <TD numeric>{nf.format(v.views)}</TD>
+                <TD numeric>{pct(v.er, 1)}</TD>
+                <TD numeric>{nf.format(v.saves)}</TD>
+                <TD numeric className="pr-5 font-medium">{v.leads}</TD>
               </TR>
             ))}
+            {!data.topVideos.length && (
+              <TR className="hover:bg-transparent">
+                <TD colSpan={6} className="px-5 py-4">
+                  <EmptyState compact icon={FileBarChart} title="No published videos yet" description="Performance appears here once this client's videos go live." />
+                </TD>
+              </TR>
+            )}
           </TBody>
         </Table>
       </Card>

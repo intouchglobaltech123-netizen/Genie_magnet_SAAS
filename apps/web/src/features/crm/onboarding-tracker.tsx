@@ -31,7 +31,7 @@ export function OnboardingTracker() {
         description="A won deal isn't ready for production until the basics are in place. The onboarding gate blocks shoots and edits until mandatory items are done."
         depth="preview"
       />
-      <div className="grid gap-4 lg:grid-cols-[300px_1fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
         <div className="space-y-2">
           {onboardingClients.map((c) => {
             const done = doneFor(c.id);
@@ -40,14 +40,15 @@ export function OnboardingTracker() {
               <button
                 key={c.id}
                 onClick={() => setSel(c.id)}
+                aria-pressed={sel === c.id}
                 className={cn(
-                  "w-full cursor-pointer rounded-2xl border bg-card p-4 text-left shadow-card transition hover:border-primary/40",
+                  "w-full cursor-pointer rounded-2xl border bg-card p-4 text-left shadow-card transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                   sel === c.id ? "border-primary ring-2 ring-primary/15" : "border-border",
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-body font-semibold">{c.name}</span>
-                  <Badge tone={complete ? "success" : exceptions[c.id] ? "warning" : "accent"}>{complete ? "Completed" : exceptions[c.id] ? "Exception" : "In progress"}</Badge>
+                  <span className="min-w-0 truncate text-body font-semibold">{c.name}</span>
+                  <Badge tone={complete ? "success" : exceptions[c.id] ? "warning" : "info"}>{complete ? "Completed" : exceptions[c.id] ? "Exception" : "In progress"}</Badge>
                 </div>
                 <div className="mt-1 text-body text-muted-foreground">
                   {c.packageName} · won {format(parseISO(c.wonOn), "d MMM")}
@@ -86,17 +87,17 @@ function Detail({ id }: { id: string }) {
           gateOpen ? "border-success/40" : exception ? "border-warning/40" : "border-danger/30",
         )}
       >
-        <div className={cn("flex flex-col gap-4 p-5 sm:flex-row sm:items-center", gateOpen ? "bg-success-soft/50" : exception ? "bg-warning-soft/50" : "bg-danger-soft/40")}>
+        <div className={cn("flex flex-col gap-4 p-5 sm:flex-row sm:items-center", gateOpen ? "bg-success-soft/40" : exception ? "bg-warning-soft/40" : "bg-danger-soft/40")}>
           <span
             className={cn(
               "inline-flex size-11 shrink-0 items-center justify-center rounded-xl",
-              gateOpen ? "bg-success text-white" : exception ? "bg-warning text-white" : "bg-danger text-white",
+              gateOpen ? "bg-success-soft text-success ring-1 ring-success/30" : exception ? "bg-warning-soft text-warning ring-1 ring-warning/30" : "bg-danger-soft text-danger ring-1 ring-danger/30",
             )}
           >
             {gateOpen ? <LockOpen className="size-5" /> : exception ? <ShieldQuestion className="size-5" /> : <Lock className="size-5" />}
           </span>
-          <div className="flex-1">
-            <div className="text-body font-semibold uppercase tracking-wider text-muted-foreground">Onboarding gate</div>
+          <div className="min-w-0 flex-1">
+            <div className="text-body font-medium text-muted-foreground">Onboarding gate</div>
             <div className="text-subheading font-semibold">
               {gateOpen ? "Clear — production can start" : exception ? "Exception requested — awaiting Janarthanan" : `Production blocked · ${missing.length} mandatory item${missing.length > 1 ? "s" : ""} pending`}
             </div>
@@ -109,7 +110,7 @@ function Detail({ id }: { id: string }) {
             </div>
           </div>
           {!gateOpen && !exception && (
-            <Button variant="outline" size="sm" onClick={() => setExOpen(true)}>
+            <Button variant="outline" size="sm" className="self-start sm:self-auto" onClick={() => setExOpen(true)}>
               <ShieldAlert /> Request exception
             </Button>
           )}
@@ -117,8 +118,8 @@ function Detail({ id }: { id: string }) {
       </Card>
 
       <Card>
-        <CardHeader>
-          <div>
+        <CardHeader className="flex-wrap">
+          <div className="min-w-0">
             <CardTitle>{c.name}</CardTitle>
             <CardDescription>
               {c.contact} · {c.city} · {c.service} · {inr(c.monthlyFee)}/mo · owner {c.ownerName}
@@ -151,7 +152,7 @@ function Detail({ id }: { id: string }) {
                   }}
                 />
                 <div className="min-w-0 flex-1">
-                  <div className={cn("flex items-center gap-2 text-body font-medium", checked && "text-muted-foreground line-through")}>
+                  <div className={cn("flex flex-wrap items-center gap-x-2 gap-y-1 text-body font-medium", checked && "text-muted-foreground line-through")}>
                     {item.label}
                     {item.mandatory && !checked && <Badge tone="danger">Required</Badge>}
                     {!item.mandatory && <Badge tone="neutral">Optional</Badge>}
@@ -177,7 +178,7 @@ function Detail({ id }: { id: string }) {
             <div className="rounded-lg bg-muted/60 p-3 text-body">
               <b>Still missing:</b> {missing.map((m) => m.label).join(", ")}
             </div>
-            <Field label="Reason">
+            <Field label="Reason" required>
               <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Diwali content must be shot by 5 Oct; brand files promised by Monday" />
             </Field>
           </DialogBody>

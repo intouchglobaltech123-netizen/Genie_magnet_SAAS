@@ -32,7 +32,7 @@ export function CounterGrid({
           >
             <div className={cn("text-body font-medium text-muted-foreground", warn && "text-danger")}>{d.label}</div>
             <div className="mt-2 flex items-center justify-between gap-1">
-              <StepBtn disabled={locked || v <= 0} onClick={() => onChange(d.key, +(v - step).toFixed(1))}>
+              <StepBtn label={`Decrease ${d.label}`} disabled={locked || v <= 0} onClick={() => onChange(d.key, +(v - step).toFixed(1))}>
                 <Minus className="size-3.5" />
               </StepBtn>
               <motion.span
@@ -44,7 +44,7 @@ export function CounterGrid({
                 {v}
                 {d.unit && <span className="ml-0.5 text-body font-medium text-muted-foreground">{d.unit}</span>}
               </motion.span>
-              <StepBtn disabled={locked} onClick={() => onChange(d.key, +(v + step).toFixed(1))}>
+              <StepBtn label={`Increase ${d.label}`} disabled={locked} onClick={() => onChange(d.key, +(v + step).toFixed(1))}>
                 <Plus className="size-3.5" />
               </StepBtn>
             </div>
@@ -55,12 +55,13 @@ export function CounterGrid({
   );
 }
 
-function StepBtn({ children, onClick, disabled }: { children: React.ReactNode; onClick: () => void; disabled?: boolean }) {
+function StepBtn({ children, onClick, disabled, label }: { children: React.ReactNode; onClick: () => void; disabled?: boolean; label: string }) {
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className="inline-flex size-7 cursor-pointer items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition hover:border-primary/40 hover:text-primary active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+      aria-label={label}
+      className="inline-flex size-7 cursor-pointer items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition hover:border-primary/40 hover:text-primary active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 disabled:cursor-not-allowed disabled:opacity-40"
     >
       {children}
     </button>

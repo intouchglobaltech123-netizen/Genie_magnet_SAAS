@@ -7,17 +7,17 @@ import { Tooltip } from "@/components/ui/tooltip";
 import type { Intensity, SpendKind } from "@/features/planner/calc";
 import { cn } from "@/lib/utils";
 
-export const kindMeta: Record<SpendKind | "Savings", { color: string; soft: string; text: string; desc: string }> = {
-  Need: { color: "var(--color-chart-2)", soft: "bg-[color-mix(in_srgb,var(--color-chart-2)_14%,transparent)]", text: "text-[var(--color-chart-2)]", desc: "Essential — rent, food, transport, medicine" },
-  Want: { color: "var(--color-chart-3)", soft: "bg-[color-mix(in_srgb,var(--color-chart-3)_16%,transparent)]", text: "text-[var(--color-chart-3)]", desc: "Nice to have — 50% counts as leakage if the 48-hr rule was skipped" },
-  Craving: { color: "var(--color-chart-4)", soft: "bg-[color-mix(in_srgb,var(--color-chart-4)_14%,transparent)]", text: "text-[var(--color-chart-4)]", desc: "Emotional urge — 100% counts as leakage" },
-  Savings: { color: "var(--color-chart-1)", soft: "bg-primary-soft", text: "text-primary", desc: "Money left to invest" },
+export const kindMeta: Record<SpendKind | "Savings", { color: string; fg: string; soft: string; text: string; desc: string }> = {
+  Need: { color: "var(--color-chart-2)", fg: "var(--color-primary-foreground)", soft: "bg-[color-mix(in_srgb,var(--color-chart-2)_14%,transparent)]", text: "text-[var(--color-chart-2)]", desc: "Essential — rent, food, transport, medicine" },
+  Want: { color: "var(--color-chart-3)", fg: "var(--color-accent-foreground)", soft: "bg-[color-mix(in_srgb,var(--color-chart-3)_16%,transparent)]", text: "text-accent-strong", desc: "Nice to have — 50% counts as leakage if the 48-hr rule was skipped" },
+  Craving: { color: "var(--color-chart-4)", fg: "var(--color-accent-foreground)", soft: "bg-[color-mix(in_srgb,var(--color-chart-4)_14%,transparent)]", text: "text-text-primary", desc: "Emotional urge — 100% counts as leakage" },
+  Savings: { color: "var(--color-chart-1)", fg: "var(--color-background)", soft: "bg-primary-soft", text: "text-primary", desc: "Money left to invest" },
 };
 
 export function KindPill({ kind, className }: { kind: SpendKind; className?: string }) {
   const m = kindMeta[kind];
   return (
-    <span className={cn("inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-body font-medium", m.soft, m.text, className)}>
+    <span className={cn("inline-flex items-center gap-1.5 rounded-lg px-2 py-0.5 text-body font-medium", m.soft, m.text, className)}>
       <span className="size-1.5 rounded-full" style={{ background: m.color }} />
       {kind}
     </span>
@@ -58,8 +58,10 @@ export function MoodPicker({ value, onChange }: { value: number; onChange: (v: n
             <button
               type="button"
               onClick={() => onChange(f.v)}
+              aria-label={`Mood ${f.v}: ${f.label}`}
+              aria-pressed={active}
               className={cn(
-                "inline-flex size-7 cursor-pointer items-center justify-center rounded-md transition",
+                "inline-flex size-7 cursor-pointer items-center justify-center rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                 active ? cn("bg-muted", moodTone[f.v]) : "text-muted-foreground/60 hover:text-foreground",
               )}
             >
@@ -100,8 +102,9 @@ export function Segmented<T extends string>({
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
+          aria-pressed={value === o.value}
           className={cn(
-            "h-7 cursor-pointer rounded-md px-2.5 text-body font-medium transition",
+            "h-7 cursor-pointer rounded-lg px-2.5 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
             value === o.value ? (o.activeCls ?? "bg-primary text-primary-foreground") : "text-muted-foreground hover:bg-muted hover:text-foreground",
           )}
         >
@@ -121,18 +124,18 @@ export const tooltipStyle: { contentStyle: CSSProperties; labelStyle: CSSPropert
     background: "var(--color-popover)",
     border: "1px solid var(--color-border)",
     borderRadius: 10,
-    boxShadow: "0 8px 24px -8px rgba(0,0,0,0.18)",
-    fontSize: 12,
+    boxShadow: "var(--shadow-md)",
+    fontSize: 13,
     padding: "8px 10px",
   },
-  labelStyle: { color: "var(--color-muted-foreground)", marginBottom: 4, fontWeight: 500 },
-  itemStyle: { color: "var(--color-foreground)", padding: 0 },
+  labelStyle: { color: "var(--color-text-muted)", marginBottom: 4, fontWeight: 500 },
+  itemStyle: { color: "var(--color-text-primary)", padding: 0 },
 };
 
 export const axisProps = {
   tickLine: false,
   axisLine: false,
-  tick: { fill: "var(--color-muted-foreground)", fontSize: 11 },
+  tick: { fill: "var(--color-text-muted)", fontSize: 12 },
 } as const;
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {

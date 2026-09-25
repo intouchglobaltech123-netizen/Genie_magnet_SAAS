@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { Tooltip } from "@/components/ui/tooltip";
 import type { Depth } from "@/lib/nav";
@@ -19,9 +20,9 @@ type Filter = "all" | Depth;
 type FbFilter = "any" | "pending" | Verdict;
 
 const verdictMeta: Record<Verdict, { label: string; icon: typeof Check; on: string }> = {
-  approve: { label: "Approve", icon: Check, on: "bg-success text-white border-success" },
-  change: { label: "Change needed", icon: PencilLine, on: "bg-warning text-white border-warning" },
-  remove: { label: "Remove", icon: Trash2, on: "bg-danger text-white border-danger" },
+  approve: { label: "Approve", icon: Check, on: "border-success/40 bg-success-soft text-success" },
+  change: { label: "Change needed", icon: PencilLine, on: "border-warning/40 bg-warning-soft text-warning" },
+  remove: { label: "Remove", icon: Trash2, on: "border-danger/40 bg-danger-soft text-danger" },
 };
 
 export function ModuleMap() {
@@ -111,17 +112,18 @@ export function ModuleMap() {
         }
       />
 
-      <div className="mb-5 grid gap-3 sm:grid-cols-3">
+      <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {(["demo", "preview", "planned"] as Depth[]).map((d) => (
           <button
             key={d}
             onClick={() => setFilter(filter === d ? "all" : d)}
+            aria-pressed={filter === d}
             className={cn(
-              "flex cursor-pointer items-center justify-between rounded-2xl border bg-card p-4 text-left shadow-card transition hover:border-primary/40",
+              "flex cursor-pointer items-center justify-between gap-3 rounded-2xl border bg-card p-5 text-left shadow-card transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
               filter === d ? "border-primary ring-2 ring-primary/15" : "border-border",
             )}
           >
-            <div>
+            <div className="min-w-0">
               <Badge tone={depthMeta[d].tone}>{depthMeta[d].label}</Badge>
               <div className="mt-2 text-body text-muted-foreground">{depthMeta[d].desc}</div>
             </div>
@@ -132,13 +134,14 @@ export function ModuleMap() {
 
       <div className="sticky top-14 z-10 -mx-4 mb-5 border-b border-border bg-background/85 px-4 py-3 backdrop-blur-xl lg:-mx-8 lg:px-8">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="inline-flex h-9 items-center gap-0.5 rounded-lg bg-muted p-1">
+          <div className="scrollbar-thin inline-flex h-9 max-w-full items-center gap-0.5 self-start overflow-x-auto rounded-lg bg-muted p-1 lg:self-auto" role="group" aria-label="Filter by depth">
             {(["all", "demo", "preview", "planned"] as Filter[]).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
+                aria-pressed={filter === f}
                 className={cn(
-                  "h-7 cursor-pointer rounded-md px-3 text-body font-medium capitalize text-muted-foreground transition hover:text-foreground",
+                  "h-7 shrink-0 cursor-pointer rounded-md px-3 text-body font-medium capitalize text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                   filter === f && "bg-card text-foreground shadow-sm",
                 )}
               >
@@ -152,7 +155,7 @@ export function ModuleMap() {
           </div>
           <div className="flex flex-1 flex-wrap items-center gap-2 lg:justify-end">
             <div className="flex items-center gap-2 text-body">
-              <div className="flex h-2 w-40 overflow-hidden rounded-full bg-muted">
+              <div className="flex h-2 w-28 overflow-hidden rounded-full bg-muted sm:w-40" aria-hidden>
                 <div className="bg-success transition-all" style={{ width: `${(tally.approve / 47) * 100}%` }} />
                 <div className="bg-warning transition-all" style={{ width: `${(tally.change / 47) * 100}%` }} />
                 <div className="bg-danger transition-all" style={{ width: `${(tally.remove / 47) * 100}%` }} />
@@ -171,9 +174,10 @@ export function ModuleMap() {
               <button
                 key={k}
                 onClick={() => setFb(fb === k ? "any" : k)}
+                aria-pressed={fb === k}
                 className={cn(
-                  "h-7 cursor-pointer rounded-full border px-2.5 text-body font-medium transition tabular",
-                  fb === k ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground",
+                  "h-7 cursor-pointer rounded-full border px-2.5 text-body font-medium transition tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+                  fb === k ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface text-muted-foreground hover:border-primary/40 hover:text-primary",
                 )}
               >
                 {label}
@@ -189,13 +193,13 @@ export function ModuleMap() {
           if (!list.length) return null;
           return (
             <section key={g.id}>
-              <div className="mb-3 flex items-baseline gap-3">
+              <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
                 <h2 className="text-subheading font-semibold tracking-tight">{g.title}</h2>
                 <span className="text-body text-muted-foreground">
                   Modules {g.range} · {g.desc}
                 </span>
               </div>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {list.map((m) => (
                   <ModuleCard
                     key={m.no}
@@ -214,7 +218,26 @@ export function ModuleMap() {
             </section>
           );
         })}
-        {!visible.length && <div className="py-20 text-center text-body text-muted-foreground">No modules match these filters.</div>}
+        {!visible.length && (
+          <EmptyState
+            icon={Search}
+            title="No modules match these filters"
+            description="Try a different search term, depth or feedback filter."
+            action={
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setFilter("all");
+                  setFb("any");
+                  setQ("");
+                }}
+              >
+                Clear filters
+              </Button>
+            }
+          />
+        )}
       </div>
     </div>
   );
@@ -237,7 +260,7 @@ function ModuleCard({
   return (
     <Card
       className={cn(
-        "flex flex-col p-4 transition",
+        "flex flex-col p-5 transition",
         verdict === "approve" && "border-success/40",
         verdict === "change" && "border-warning/50",
         verdict === "remove" && "border-danger/40 opacity-75",
@@ -256,7 +279,7 @@ function ModuleCard({
           <div className="flex items-start justify-between gap-2">
             <h3 className={cn("text-body font-semibold leading-snug", verdict === "remove" && "line-through")}>{m.name}</h3>
             <Tooltip content={dm.desc}>
-              <span>
+              <span className="shrink-0">
                 <Badge tone={dm.tone}>{dm.label}</Badge>
               </span>
             </Tooltip>
@@ -271,7 +294,7 @@ function ModuleCard({
             <Link
               key={r.href}
               href={r.href}
-              className="inline-flex items-center gap-0.5 rounded-md border border-border px-1.5 py-0.5 text-body text-muted-foreground transition hover:border-primary/40 hover:text-primary"
+              className="inline-flex items-center gap-0.5 rounded-md border border-border px-1.5 py-0.5 text-body text-muted-foreground transition hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
             >
               {r.title} <ArrowUpRight className="size-3" />
             </Link>
@@ -290,13 +313,14 @@ function ModuleCard({
               <button
                 key={v}
                 onClick={() => onVerdict(v)}
+                aria-pressed={on}
                 className={cn(
-                  "inline-flex h-7 flex-1 cursor-pointer items-center justify-center gap-1 rounded-md border text-body font-medium transition",
+                  "inline-flex h-7 min-w-0 flex-1 cursor-pointer items-center justify-center gap-1 rounded-md border px-1.5 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                   on ? vm.on : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
-                <vm.icon className="size-3.5" />
-                {vm.label}
+                <vm.icon className="size-3.5 shrink-0" />
+                <span className="truncate">{vm.label}</span>
               </button>
             );
           })}

@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { EmptyState } from "@/components/ui/feedback";
 import { useDemo } from "@/lib/store";
 import { cn, inr } from "@/lib/utils";
 import { evaluate, roles, seedCandidates, sourceTone, stageMeta, stages, type Candidate, type Scorecard, type Stage } from "./data";
@@ -111,12 +112,12 @@ export function RecruitmentView() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Open roles" value={roles.length} icon={Briefcase} hint="Video Editor · Sales Exec" tone="accent" />
         <StatCard label="Active candidates" value={active.length} icon={Users} hint={`${candidates.length} total applied`} tone="info" />
-        <StatCard label="Awaiting founder" value={awaitingApproval.length} icon={Star} hint={awaitingApproval.map((c) => c.name.split(" ")[0]).join(", ") || "None"} tone="gold" />
+        <StatCard label="Awaiting founder" value={awaitingApproval.length} icon={Star} hint={awaitingApproval.map((c) => c.name.split(" ")[0]).join(", ") || "None"} tone="warning" />
         <StatCard label="Avg. time to hire" value="18 days" icon={Clock} delta={-0.22} deltaLabel="faster vs last hire" tone="success" />
       </div>
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="inline-flex rounded-xl border border-border bg-card p-1 shadow-card">
+        <div role="group" aria-label="Open role" className="scrollbar-thin inline-flex max-w-full overflow-x-auto rounded-xl border border-border bg-card p-1 shadow-card">
           {roles.map((r) => {
             const count = candidates.filter((c) => c.roleId === r.id && c.stage !== "Rejected").length;
             return (
@@ -124,13 +125,14 @@ export function RecruitmentView() {
                 key={r.id}
                 type="button"
                 onClick={() => setRoleId(r.id)}
+                aria-pressed={roleId === r.id}
                 className={cn(
-                  "inline-flex cursor-pointer items-center gap-2 rounded-lg px-3.5 py-1.5 text-body font-medium transition",
-                  roleId === r.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                  "inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg px-3.5 py-1.5 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+                  roleId === r.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-text-primary",
                 )}
               >
                 {r.name}
-                <span className={cn("rounded-md px-1.5 text-body tabular", roleId === r.id ? "bg-white/15" : "bg-muted")}>{count}</span>
+                <span className={cn("rounded-md px-1.5 text-body tabular", roleId === r.id ? "bg-primary-foreground/15" : "bg-muted")}>{count}</span>
               </button>
             );
           })}
@@ -169,9 +171,7 @@ export function RecruitmentView() {
                         <CandidateCard key={c.id} c={c} onOpen={() => setOpenId(c.id)} onMove={move} />
                       ))}
                       {!col.length && (
-                        <div className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-border py-8 text-body text-muted-foreground">
-                          No candidates
-                        </div>
+                        <EmptyState compact icon={Users} title="No candidates" description="Move a candidate here from the card menu." className="flex-1" />
                       )}
                     </div>
                   </div>
@@ -212,7 +212,7 @@ function CandidateCard({ c, onOpen, onMove }: { c: Candidate; onOpen: () => void
       onClick={onOpen}
       onKeyDown={(e) => e.key === "Enter" && onOpen()}
       className={cn(
-        "group cursor-pointer rounded-xl border border-border bg-card p-3 shadow-card transition hover:border-primary/40",
+        "group cursor-pointer rounded-xl border border-border bg-card p-3 shadow-card transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
         c.stage === "Rejected" && "opacity-70",
       )}
     >
@@ -229,8 +229,8 @@ function CandidateCard({ c, onOpen, onMove }: { c: Candidate; onOpen: () => void
             <button
               type="button"
               onClick={(e) => e.stopPropagation()}
-              aria-label="Move candidate"
-              className="-mr-1 -mt-1 inline-flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
+              aria-label={`Actions for ${c.name}`}
+              className="-mr-1 -mt-1 inline-flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
             >
               <MoreHorizontal className="size-4" />
             </button>
@@ -248,7 +248,7 @@ function CandidateCard({ c, onOpen, onMove }: { c: Candidate; onOpen: () => void
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <p className="mt-2 line-clamp-2 text-body leading-snug text-muted-foreground">{c.highlight}</p>
+      <p className="mt-2 line-clamp-2 text-body text-muted-foreground">{c.highlight}</p>
       <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
         <Badge tone={sourceTone[c.source]}>{c.source}</Badge>
         <Badge tone="outline" className="tabular">
@@ -270,7 +270,7 @@ function CandidateCard({ c, onOpen, onMove }: { c: Candidate; onOpen: () => void
             <Button
               size="xs"
               variant="ghost"
-              className="h-6 px-2 text-body"
+              className="h-6 px-2"
               onClick={(e) => {
                 e.stopPropagation();
                 onMove(c.id, next);

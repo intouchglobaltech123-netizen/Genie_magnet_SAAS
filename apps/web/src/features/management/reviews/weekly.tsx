@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { ListChecks, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EmptyState } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { employees, personById } from "@/lib/mock/core";
@@ -38,7 +39,7 @@ export function WeeklyReview() {
         </div>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {weeklyTemplate.map((sec, i) => (
           <Card key={sec.title}>
             <CardHeader className="pb-2">
@@ -60,7 +61,7 @@ export function WeeklyReview() {
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <div>
@@ -72,6 +73,7 @@ export function WeeklyReview() {
             </div>
           </CardHeader>
           <CardContent className="space-y-1">
+            {last.length === 0 && <EmptyState compact icon={ListChecks} title="No commitments from last week" description="Commitments made in W39 will appear here to tick off." />}
             {last.map((c) => {
               const st = commitmentState(c);
               return (
@@ -84,7 +86,9 @@ export function WeeklyReview() {
                       {personById(c.ownerId).name} · due {fmtDate(c.due)}
                     </div>
                   </div>
-                  <Badge tone={st === "done" ? "success" : st === "overdue" ? "danger" : "outline"}>{st}</Badge>
+                  <Badge tone={st === "done" ? "success" : st === "overdue" ? "danger" : "outline"} dot className="capitalize">
+                    {st}
+                  </Badge>
                 </label>
               );
             })}
@@ -111,20 +115,20 @@ export function WeeklyReview() {
                 setText("");
               }}
             >
-              <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="e.g. Deliver all 5 Kaveri Oct reels scripts" className="h-8 min-w-48 flex-1 text-body" />
-              <Select value={owner} onValueChange={setOwner} className="h-8 w-36 text-body" options={employees.map((p) => ({ value: p.id, label: p.name }))} />
+              <Input value={text} onChange={(e) => setText(e.target.value)} placeholder="e.g. Deliver all 5 Kaveri Oct reels scripts" className="h-8 min-w-0 flex-1 basis-48 text-body" />
+              <Select value={owner} onValueChange={setOwner} className="h-8 w-full text-body sm:w-36" options={employees.map((p) => ({ value: p.id, label: p.name }))} />
               <Button type="submit" size="sm" variant="outline">
                 <Plus /> Add
               </Button>
             </form>
             {next.length === 0 ? (
-              <p className="rounded-lg border border-dashed border-border p-4 text-center text-body text-muted-foreground">No priorities yet — add the top 3–5 for next week.</p>
+              <EmptyState compact icon={ListChecks} title="No priorities yet" description="Add the top 3–5 for next week." />
             ) : (
               <ul className="space-y-1.5">
                 {next.map((c) => (
                   <li key={c.id} className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-body">
                     <Avatar name={personById(c.ownerId).name} size="xs" />
-                    <span className="flex-1">{c.text}</span>
+                    <span className="min-w-0 flex-1">{c.text}</span>
                     <span className="text-body text-muted-foreground">{fmtDate(c.due)}</span>
                   </li>
                 ))}

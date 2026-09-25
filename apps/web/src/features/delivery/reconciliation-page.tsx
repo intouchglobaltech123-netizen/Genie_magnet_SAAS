@@ -9,6 +9,7 @@ import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, EmptyState } from "@/components/ui/feedback";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -81,14 +82,14 @@ export function ReconciliationPage() {
         }
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Units delivered" value={`${delivered} / ${promised}`} icon={PackageCheck} tone="accent" hint={projected ? "month in progress" : `${promised - delivered} short`} />
         <StatCard label={projected ? "Revenue (contracted)" : "Revenue"} value={inr(revenue)} icon={IndianRupee} tone="success" hint={`${rows.length} cycles`} />
         <StatCard label={projected ? "Cost to date" : "Delivery cost"} value={inr(cost)} icon={Layers} tone="warning" hint="labour + equipment + rework" />
-        <StatCard label="Gross margin" value={pct(margin)} icon={Percent} tone={margin < 0.3 ? "danger" : "gold"} hint={projected ? "projected, will move" : "before overheads"} />
+        <StatCard label="Gross margin" value={pct(margin)} icon={Percent} tone={margin < 0.3 ? "danger" : "success"} hint={projected ? "projected, will move" : "before overheads"} />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <Card>
           <CardHeader>
             <div>
@@ -100,17 +101,26 @@ export function ReconciliationPage() {
             <THead>
               <TR>
                 <TH className="pl-5">Client · package</TH>
-                <TH className="text-right">Promised</TH>
-                <TH className="text-right">Delivered</TH>
+                <TH numeric>Promised</TH>
+                <TH numeric>Delivered</TH>
                 <TH>Shortfall decision</TH>
-                <TH className="text-right">Revenue</TH>
-                <TH className="text-right">Cost</TH>
+                <TH numeric>Revenue</TH>
+                <TH numeric>Cost</TH>
                 <TH>Margin</TH>
                 <TH>Status</TH>
-                <TH className="pr-5 text-right" />
+                <TH className="pr-5 text-right">
+                  <span className="sr-only">Actions</span>
+                </TH>
               </TR>
             </THead>
             <TBody>
+              {!rows.length && (
+                <TR className="hover:bg-transparent">
+                  <TD colSpan={9} className="px-5 py-4">
+                    <EmptyState compact icon={Layers} title={`No cycles in ${period}`} description="Agreement cycles for this month will appear here once they start." />
+                  </TD>
+                </TR>
+              )}
               {rows.map((c) => {
                 const client = clientById(c.clientId);
                 const ag = agreementById(c.agreementId);
@@ -120,13 +130,13 @@ export function ReconciliationPage() {
                 return (
                   <TR key={c.id}>
                     <TD className="pl-5">
-                      <div className="font-medium">{client.name}</div>
-                      <div className="text-body text-muted-foreground">{ag.packageName}</div>
+                      <div className="whitespace-nowrap font-medium">{client.name}</div>
+                      <div className="whitespace-nowrap text-body text-muted-foreground">{ag.packageName}</div>
                     </TD>
-                    <TD className="text-right tabular">{c.promised}</TD>
-                    <TD className="text-right tabular">
+                    <TD numeric>{c.promised}</TD>
+                    <TD numeric>
                       <span className={cn(short > 0 && !projected && "font-semibold text-warning")}>{c.delivered}</span>
-                      {c.inProgress > 0 && <div className="text-body text-muted-foreground">+{c.inProgress} in progress</div>}
+                      {c.inProgress > 0 && <div className="whitespace-nowrap text-body text-muted-foreground">+{c.inProgress} in progress</div>}
                     </TD>
                     <TD className="min-w-[220px]">
                       {short === 0 ? (
@@ -145,7 +155,7 @@ export function ReconciliationPage() {
                             }}
                             options={decisionOptions(c)}
                             placeholder={`Decide ${short} unit shortfall…`}
-                            className="h-8 text-body"
+                            className="h-8"
                           />
                           {note && (
                             <Tooltip content={note.reason}>
@@ -161,8 +171,8 @@ export function ReconciliationPage() {
                         </span>
                       )}
                     </TD>
-                    <TD className="text-right tabular">{inr(c.revenue)}</TD>
-                    <TD className="text-right tabular">{inr(c.cost)}</TD>
+                    <TD numeric>{inr(c.revenue)}</TD>
+                    <TD numeric>{inr(c.cost)}</TD>
                     <TD className="min-w-[110px]">
                       <div className="flex items-center gap-2">
                         <div className="h-1.5 w-14 overflow-hidden rounded-full bg-muted">
@@ -181,12 +191,12 @@ export function ReconciliationPage() {
                         <Tooltip content={short > 0 && !decisions[c.id] ? "Decide the shortfall first — nothing carries forward silently" : "Lock this period"}>
                           <span>
                             <Button size="xs" variant="accent" disabled={short > 0 && !decisions[c.id]} onClick={() => setClosing(c)}>
-                              <Lock className="!size-3" /> Close period
+                              <Lock /> Close period
                             </Button>
                           </span>
                         </Tooltip>
                       ) : c.status === "closed" ? (
-                        <Lock className="ml-auto size-3.5 text-muted-foreground" />
+                        <Lock className="ml-auto size-3.5 text-muted-foreground" aria-label="Period locked" />
                       ) : (
                         <Button
                           size="xs"
@@ -219,6 +229,7 @@ export function ReconciliationPage() {
                   <div className="text-body text-muted-foreground">{r.desc}</div>
                 </div>
                 <Switch
+                  aria-label={r.label}
                   checked={r.enabled}
                   onCheckedChange={(v) => {
                     setRules((rs) => rs.map((x) => (x.id === r.id ? { ...x, enabled: v } : x)));
@@ -228,10 +239,9 @@ export function ReconciliationPage() {
                 />
               </div>
             ))}
-            <div className="flex gap-2 rounded-xl bg-primary-soft p-3 text-body text-primary">
-              <ShieldCheck className="mt-0.5 size-4 shrink-0" />
-              No silent carry-forward. Every unit that moves between cycles has an owner, a reason and a timestamp.
-            </div>
+            <Alert tone="info" icon={ShieldCheck} title="No silent carry-forward">
+              Every unit that moves between cycles has an owner, a reason and a timestamp.
+            </Alert>
           </CardContent>
         </Card>
       </div>
@@ -254,7 +264,7 @@ export function ReconciliationPage() {
           </DialogHeader>
           {closing && (
             <DialogBody className="space-y-4">
-              <div className="grid grid-cols-3 gap-2 rounded-xl border border-border p-3 text-center">
+              <div className="grid grid-cols-1 gap-3 rounded-xl border border-border p-3 text-center sm:grid-cols-3 sm:gap-2">
                 <div>
                   <div className="text-body text-muted-foreground">Delivered</div>
                   <div className="text-subheading font-semibold tabular">
@@ -275,7 +285,7 @@ export function ReconciliationPage() {
                   Shortfall decision: <span className="font-medium">{decisionOptions(closing).find((o) => o.value === decisions[closing.id])?.label}</span>
                 </p>
               )}
-              <div className="space-y-1.5 rounded-xl bg-muted p-3.5 text-body text-muted-foreground">
+              <div className="space-y-1.5 rounded-xl bg-surface-secondary p-3.5 text-body text-muted-foreground">
                 <p className="flex gap-2">
                   <Lock className="mt-0.5 size-3.5 shrink-0" /> Delivered units, revenue, cost and margin for this period are frozen.
                 </p>
@@ -284,12 +294,13 @@ export function ReconciliationPage() {
                 </p>
               </div>
               <label className="flex cursor-pointer items-center gap-2.5 text-body">
-                <Checkbox checked={ack} onCheckedChange={(v) => setAck(v === true)} />I understand this period will be locked
+                <Checkbox checked={ack} onCheckedChange={(v) => setAck(v === true)} />
+                I understand this period will be locked
               </label>
             </DialogBody>
           )}
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setClosing(null)}>
+            <Button variant="outline" onClick={() => setClosing(null)}>
               Cancel
             </Button>
             <Button variant="accent" disabled={!ack} onClick={confirmClose}>

@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input, Field } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { EmptyState } from "@/components/ui/feedback";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { people as seedPeople, personById, TODAY } from "@/lib/mock/core";
@@ -103,26 +104,27 @@ export function HrView() {
           </TabsList>
           {tab !== "org" && (
             <div className="flex flex-wrap items-center gap-2">
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, role, skill" className="h-8 w-60 pl-9 text-body" />
+                <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, role, skill" className="h-8 w-full pl-9 text-body sm:w-60" />
               </div>
               <Select
                 value={dept}
                 onValueChange={setDept}
                 options={departments.map((d) => ({ value: d, label: d === "All" ? "All departments" : d }))}
-                className="h-8 w-48 text-body"
+                className="h-8 w-full text-body sm:w-48"
               />
-              <div className="inline-flex rounded-lg border border-border bg-card p-0.5">
+              <div role="group" aria-label="Layout" className="inline-flex rounded-lg border border-border bg-card p-0.5">
                 {(["table", "cards"] as const).map((v) => (
                   <button
                     key={v}
                     type="button"
                     aria-label={v === "table" ? "Table view" : "Card view"}
                     onClick={() => setView(v)}
+                    aria-pressed={view === v}
                     className={cn(
-                      "inline-flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition",
-                      view === v && "bg-muted text-foreground",
+                      "inline-flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+                      view === v && "bg-primary-soft text-primary",
                     )}
                   >
                     {v === "table" ? <List className="size-4" /> : <LayoutGrid className="size-4" />}
@@ -136,13 +138,23 @@ export function HrView() {
         {(["employee", "freelancer"] as const).map((t) => (
           <TabsContent key={t} value={t}>
             {list.length === 0 ? (
-              <Card className="flex flex-col items-center justify-center py-14 text-center">
-                <Search className="mb-2 size-6 text-muted-foreground" />
-                <div className="text-body font-medium">No one matches these filters</div>
-                <Button variant="link" size="sm" onClick={() => { setQ(""); setDept("All"); }}>
-                  Clear filters
-                </Button>
-              </Card>
+              <EmptyState
+                icon={Search}
+                title="No one matches these filters"
+                description="Try a different name, role or skill, or reset the department filter."
+                action={
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setQ("");
+                      setDept("All");
+                    }}
+                  >
+                    Clear filters
+                  </Button>
+                }
+              />
             ) : view === "table" ? (
               <Card>
                 <Table>
@@ -154,7 +166,9 @@ export function HrView() {
                       <TH>Skills</TH>
                       <TH>Status</TH>
                       <TH>Joined</TH>
-                      <TH className="w-8" />
+                      <TH className="w-8">
+                        <span className="sr-only">Open</span>
+                      </TH>
                     </TR>
                   </THead>
                   <TBody>
@@ -214,7 +228,7 @@ export function HrView() {
                 </Table>
               </Card>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {list.map((p) => {
                   const mgr = p.managerId ? personById(p.managerId) : null;
                   return (
@@ -224,7 +238,7 @@ export function HrView() {
                       tabIndex={0}
                       onClick={() => setSelectedId(p.id)}
                       onKeyDown={(e) => e.key === "Enter" && setSelectedId(p.id)}
-                      className="cursor-pointer p-5 transition hover:-translate-y-0.5 hover:border-primary/40"
+                      className="cursor-pointer p-5 transition hover:-translate-y-0.5 hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
                     >
                       <div className="flex items-start gap-3">
                         <Avatar name={p.name} size="lg" />
@@ -241,7 +255,7 @@ export function HrView() {
                           </Badge>
                         ))}
                       </div>
-                      <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-body text-muted-foreground">
+                      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-body text-muted-foreground">
                         <span>{mgr ? `Reports to ${mgr.name.split(" ")[0]}` : p.department}</span>
                         <span className="tabular">Since {fmtDate(p.joinedOn, { month: "short", year: "numeric" })}</span>
                       </div>
@@ -341,13 +355,13 @@ function AddMemberDialog({
           <DialogDescription>Creates the profile and kicks off the onboarding checklist.</DialogDescription>
         </DialogHeader>
         <DialogBody className="space-y-4">
-          <Field label="Full name">
+          <Field label="Full name" required>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Aravind Shankar" autoFocus />
           </Field>
-          <Field label="Role / title">
+          <Field label="Role / title" required>
             <Input value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. Junior Video Editor" />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Department">
               <Select
                 value={department}

@@ -80,23 +80,23 @@ function NewExpenseForm({ onDone }: { onDone: () => void }) {
         <DialogDescription>Goes to {personById(approverId).name} for approval{amt > 10000 ? " (above ₹10,000)" : ""}</DialogDescription>
       </DialogHeader>
       <DialogBody className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Requested by">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Requested by" required>
             <Select value={requesterId} onValueChange={setRequesterId} options={employees.map((p) => ({ value: p.id, label: p.name }))} />
           </Field>
-          <Field label="Category">
+          <Field label="Category" required>
             <Select value={category} onValueChange={(v) => setCategory(v as ExpenseCategory)} options={EXPENSE_CATEGORIES.map((c) => ({ value: c, label: c }))} />
           </Field>
-          <Field label="Vendor / payee">
+          <Field label="Vendor / payee" required>
             <Input value={vendor} onChange={(e) => setVendor(e.target.value)} />
           </Field>
-          <Field label="Amount incl. GST (₹)">
+          <Field label="Amount incl. GST (₹)" required>
             <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="tabular" />
           </Field>
-          <Field label="Description" className="col-span-2">
+          <Field label="Description" className="sm:col-span-2">
             <Input value={description} onChange={(e) => setDescription(e.target.value)} />
           </Field>
-          <Field label="Allocate to">
+          <Field label="Allocate to" required>
             <Select
               value={alloc}
               onValueChange={(v) => {
@@ -127,13 +127,13 @@ function NewExpenseForm({ onDone }: { onDone: () => void }) {
             />
           </Field>
           <div className="flex items-end">
-            <label className="flex h-9 cursor-pointer items-center gap-2 text-body">
+            <label className="flex min-h-9 cursor-pointer flex-wrap items-center gap-2 text-body">
               <Checkbox checked={gstBill} onCheckedChange={(v) => setGstBill(v === true)} />
               GST tax invoice {gstBill && <span className="text-muted-foreground tabular">· GST {inr(gst)}</span>}
             </label>
           </div>
         </div>
-        <div className="flex items-center gap-3 rounded-xl border border-dashed border-border p-3">
+        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-dashed border-border-strong p-3">
           <ReceiptTile expense={{ vendor: vendor || "?", amount: amt, category, receipt }} />
           <div className="min-w-0 flex-1 text-body">
             {receipt ? (
@@ -144,7 +144,7 @@ function NewExpenseForm({ onDone }: { onDone: () => void }) {
               <span className="text-muted-foreground">Attach a photo of the bill — required for approval</span>
             )}
           </div>
-          <Button variant="outline" size="xs" onClick={() => setReceipt((r) => !r)}>
+          <Button variant="secondary" size="xs" onClick={() => setReceipt((r) => !r)}>
             <Paperclip /> {receipt ? "Remove" : "Attach receipt"}
           </Button>
         </div>

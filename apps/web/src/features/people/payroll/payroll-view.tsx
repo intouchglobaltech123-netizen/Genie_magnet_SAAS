@@ -59,7 +59,7 @@ export function PayrollView() {
   const m = (v: number, className?: string) => (
     <span className={cn("tabular", blur && "blur-[5px] select-none", className)}>{inr(v)}</span>
   );
-  const dash = <span className="text-muted-foreground/60">—</span>;
+  const dash = <span className="text-muted-foreground">—</span>;
 
   return (
     <div className="space-y-6">
@@ -71,6 +71,7 @@ export function PayrollView() {
           </Badge>
         }
         title="Payroll"
+        className="mb-0"
         description={`${PAY_PERIOD.label} run · ${PAY_PERIOD.days} days · 10 employees. LOP is pulled directly from the attendance register.`}
         actions={
           <>
@@ -185,23 +186,23 @@ export function PayrollView() {
           <THead>
             <TR>
               <TH className="pl-5">Employee</TH>
-              <TH className="text-right">Monthly CTC</TH>
-              <TH className="text-right">Gross</TH>
-              <TH className="text-right">LOP days</TH>
-              <TH className="text-right">LOP ded.</TH>
-              <TH className="text-right">
+              <TH numeric>Monthly CTC</TH>
+              <TH numeric>Gross</TH>
+              <TH numeric>LOP days</TH>
+              <TH numeric>LOP ded.</TH>
+              <TH numeric>
                 <StatHead label="PF" />
               </TH>
-              <TH className="text-right">
+              <TH numeric>
                 <StatHead label="ESI" />
               </TH>
-              <TH className="text-right">
+              <TH numeric>
                 <StatHead label="PT" />
               </TH>
-              <TH className="text-right">
+              <TH numeric>
                 <StatHead label="TDS" />
               </TH>
-              <TH className="text-right">Net pay</TH>
+              <TH numeric>Net pay</TH>
               <TH className="pr-5 text-right">Payslip</TH>
             </TR>
           </THead>
@@ -219,9 +220,9 @@ export function PayrollView() {
                     </div>
                   </div>
                 </TD>
-                <TD className="text-right">{m(r.ctc)}</TD>
-                <TD className="text-right">{m(r.gross)}</TD>
-                <TD className="text-right tabular">
+                <TD numeric>{m(r.ctc)}</TD>
+                <TD numeric>{m(r.gross)}</TD>
+                <TD numeric>
                   {r.lopDays ? (
                     <Tooltip content="From attendance register (absent = 1, half-day = 0.5)">
                       <span className="cursor-help font-medium text-warning">{r.lopDays}</span>
@@ -230,12 +231,12 @@ export function PayrollView() {
                     dash
                   )}
                 </TD>
-                <TD className="text-right">{r.lop ? m(r.lop, "text-warning") : dash}</TD>
-                <TD className="text-right">{m(r.pf)}</TD>
-                <TD className="text-right">{r.esi ? m(r.esi) : <Tooltip content="Gross above ₹21,000 — not ESI-eligible"><span className="cursor-help text-muted-foreground/60">n/a</span></Tooltip>}</TD>
-                <TD className="text-right">{m(r.pt)}</TD>
-                <TD className="text-right">{r.tds ? m(r.tds) : <Tooltip content="Below ₹12L taxable — 87A rebate (estimate)"><span className="cursor-help text-muted-foreground/60">Nil</span></Tooltip>}</TD>
-                <TD className="text-right font-semibold">{calculated ? m(r.net) : <span className="text-muted-foreground">Pending</span>}</TD>
+                <TD numeric>{r.lop ? m(r.lop, "text-warning") : dash}</TD>
+                <TD numeric>{m(r.pf)}</TD>
+                <TD numeric>{r.esi ? m(r.esi) : <Tooltip content="Gross above ₹21,000 — not ESI-eligible"><span className="cursor-help text-muted-foreground">n/a</span></Tooltip>}</TD>
+                <TD numeric>{m(r.pt)}</TD>
+                <TD numeric>{r.tds ? m(r.tds) : <Tooltip content="Below ₹12L taxable — 87A rebate (estimate)"><span className="cursor-help text-muted-foreground">Nil</span></Tooltip>}</TD>
+                <TD numeric className="font-semibold">{calculated ? m(r.net) : <span className="text-muted-foreground">Pending</span>}</TD>
                 <TD className="pr-5 text-right">
                   <div className="flex items-center justify-end gap-2">
                     {released && (
@@ -252,15 +253,15 @@ export function PayrollView() {
             ))}
             <TR className="bg-muted/50 font-semibold hover:bg-muted/50">
               <TD className="pl-5">Total · 10 employees</TD>
-              <TD className="text-right">{m(payrollTotals.ctc)}</TD>
-              <TD className="text-right">{m(payrollTotals.gross)}</TD>
-              <TD className="text-right tabular">{payrollTotals.lopDays}</TD>
-              <TD className="text-right">{m(payrollTotals.lop)}</TD>
-              <TD className="text-right">{m(payrollTotals.pf)}</TD>
-              <TD className="text-right">{m(payrollTotals.esi)}</TD>
-              <TD className="text-right">{m(payrollTotals.pt)}</TD>
-              <TD className="text-right">{m(payrollTotals.tds)}</TD>
-              <TD className="text-right">{calculated ? m(payrollTotals.net) : "—"}</TD>
+              <TD numeric>{m(payrollTotals.ctc)}</TD>
+              <TD numeric>{m(payrollTotals.gross)}</TD>
+              <TD numeric>{payrollTotals.lopDays}</TD>
+              <TD numeric>{m(payrollTotals.lop)}</TD>
+              <TD numeric>{m(payrollTotals.pf)}</TD>
+              <TD numeric>{m(payrollTotals.esi)}</TD>
+              <TD numeric>{m(payrollTotals.pt)}</TD>
+              <TD numeric>{m(payrollTotals.tds)}</TD>
+              <TD numeric>{calculated ? m(payrollTotals.net) : "—"}</TD>
               <TD className="pr-5" />
             </TR>
           </TBody>
@@ -279,7 +280,7 @@ export function PayrollView() {
             <DialogDescription>Once approved, amounts are frozen and HR can release payslips.</DialogDescription>
           </DialogHeader>
           <DialogBody className="space-y-3">
-            <div className="grid grid-cols-2 gap-3 rounded-xl border border-border p-4 text-body">
+            <div className="grid grid-cols-1 gap-3 rounded-xl border border-border p-4 text-body sm:grid-cols-2">
               <Summary label="Employees" value="10" />
               <Summary label="Total gross" value={inr(payrollTotals.gross)} />
               <Summary label="LOP deductions" value={inr(payrollTotals.lop)} />
@@ -291,12 +292,11 @@ export function PayrollView() {
             </div>
           </DialogBody>
           <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setConfirmOpen(false)}>
+            <Button variant="ghost" onClick={() => setConfirmOpen(false)}>
               Cancel
             </Button>
             <Button
               variant="accent"
-              size="sm"
               onClick={() => {
                 setConfirmOpen(false);
                 complete(2);
@@ -317,7 +317,7 @@ function StatHead({ label }: { label: string }) {
   return (
     <span className="inline-flex items-center gap-1">
       {label}
-      <AlertTriangle className="size-3 text-warning" />
+      <AlertTriangle className="size-3 text-warning" aria-label="Placeholder rule" />
     </span>
   );
 }

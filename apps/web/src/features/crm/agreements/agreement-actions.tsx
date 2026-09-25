@@ -183,7 +183,7 @@ function CrDialog({ open, onClose, a, clientName }: P) {
           <Field label="Type of change">
             <Select value={type} onValueChange={setType} options={Object.entries(labels).map(([value, label]) => ({ value, label }))} />
           </Field>
-          <Field label="What changes">
+          <Field label="What changes" required>
             <Textarea value={detail} onChange={(e) => setDetail(e.target.value)} placeholder="e.g. Reels 8 → 10 per cycle from Nov 2026" />
           </Field>
           <Field label="New monthly fee (optional)" hint={`Current: ${inr(a.monthlyFee)}`}>

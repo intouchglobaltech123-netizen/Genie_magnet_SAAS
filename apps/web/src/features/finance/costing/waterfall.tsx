@@ -64,7 +64,7 @@ export function CostWaterfall() {
             {pct(c.marginPct)} margin{!c.complete && " (proj.)"}
           </Badge>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <Select
             value={c.video.id}
             onValueChange={select}
@@ -78,8 +78,8 @@ export function CostWaterfall() {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 18, right: 4, left: -14, bottom: 0 }}>
-              <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
-              <XAxis dataKey="name" {...axisProps} interval={0} tick={{ ...axisProps.tick, fontSize: 10 }} />
+              <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
+              <XAxis dataKey="name" {...axisProps} interval={0} tick={{ ...axisProps.tick, fontSize: 11 }} />
               <YAxis {...axisProps} tickFormatter={(x: number) => inrCompact(x)} width={52} />
               <Tooltip
                 cursor={{ fill: "var(--color-muted)", opacity: 0.5 }}
@@ -88,7 +88,7 @@ export function CostWaterfall() {
                   if (!active || !p) return null;
                   return (
                     <div style={tooltipStyle.contentStyle}>
-                      <div className="font-medium">
+                      <div className="font-medium text-text-primary">
                         {p.name} · {inr(p.value)}
                       </div>
                       <div className="mt-0.5 max-w-56 text-body text-muted-foreground">{p.formula}</div>
@@ -105,7 +105,7 @@ export function CostWaterfall() {
                   dataKey="value"
                   position="top"
                   className="fill-muted-foreground"
-                  style={{ fontSize: 10 }}
+                  style={{ fontSize: 11 }}
                   formatter={(x) => inrCompact(Number(x))}
                 />
               </Bar>
@@ -135,7 +135,7 @@ export function CostWaterfall() {
           <Section title="Rework" total={a.rework} std={0} danger={a.rework > 0}>
             <Muted>{a.reworkMinutes ? `${a.reworkMinutes} min of free agency corrections — not billable` : "No agency corrections logged"}</Muted>
           </Section>
-          <div className="flex items-center justify-between rounded-lg bg-muted/60 px-3 py-2">
+          <div className="flex items-center justify-between gap-3 rounded-xl border-t border-border-strong bg-surface-secondary px-3 py-2">
             <span className="text-muted-foreground">
               Revenue share <span className="text-body">({c.revenueInfo.packageName})</span>
             </span>
@@ -150,7 +150,7 @@ export function CostWaterfall() {
 function Section({ title, total, std, danger, children }: { title: string; total: number; std: number; danger?: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between">
+      <div className="mb-1 flex items-center justify-between gap-2">
         <span className={cn("font-medium", danger && "text-danger")}>{title}</span>
         <span className="flex items-baseline gap-2 tabular">
           <span className="text-body text-muted-foreground">std {inr(std)}</span>

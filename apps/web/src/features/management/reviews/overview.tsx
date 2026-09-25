@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CalendarClock, CheckCircle2, Circle, Lock, MapPin, Repeat } from "lucide-react";
+import { ArrowRight, CalendarClock, CalendarX2, CheckCircle2, Circle, History, Lock, MapPin, Repeat } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Progress } from "@/components/ui/progress";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { daysBetween, personById, TODAY } from "@/lib/mock/core";
@@ -34,9 +35,9 @@ export function StrategicHero() {
 
   return (
     <Card className="relative overflow-hidden">
-      <div className="glow-accent pointer-events-none absolute inset-0 opacity-70" />
-      <div className="relative grid gap-6 p-6 lg:grid-cols-[auto_1fr_minmax(280px,360px)]">
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-accent/30 bg-card/80 px-7 py-5 text-center backdrop-blur">
+      <div className="glow-accent pointer-events-none absolute inset-0" />
+      <div className="relative grid grid-cols-1 gap-6 p-5 lg:grid-cols-[auto_1fr_minmax(280px,360px)]">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-accent/40 bg-card px-7 py-5 text-center">
           <div className="text-body font-medium uppercase tracking-wider text-accent-strong">{locked ? "Locked" : "Starts in"}</div>
           <div className="mt-1 text-heading font-semibold leading-none tracking-tight tabular">{locked ? "✓" : days}</div>
           <div className="mt-1 text-body text-muted-foreground">{locked ? "record sealed" : days === 1 ? "day" : "days"}</div>
@@ -74,7 +75,7 @@ export function StrategicHero() {
             </Button>
           </div>
         </div>
-        <div className="rounded-2xl border border-border bg-card/80 p-4 backdrop-blur">
+        <div className="rounded-xl border border-border bg-card p-4">
           <div className="mb-2 flex items-center justify-between text-body">
             <span className="font-medium">Preparation</span>
             <span className="text-muted-foreground tabular">{Math.round(prepPct)}%</span>
@@ -94,8 +95,8 @@ export function StrategicHero() {
         </div>
       </div>
       {toReview.some((c) => commitmentState(c) === "overdue") && (
-        <div className="relative flex items-center gap-2 border-t border-border bg-warning-soft/60 px-6 py-2 text-body text-warning">
-          <Repeat className="size-3.5" />
+        <div className="relative flex items-start gap-2 border-t border-border bg-warning-soft/60 px-5 py-2 text-body text-warning">
+          <Repeat className="mt-0.5 size-3.5 shrink-0" />
           {toReview.filter((c) => commitmentState(c) === "overdue").length} commitments from #6 are overdue — they will auto-carry to Strategic #8 if still open when #7 is locked.
         </div>
       )}
@@ -115,7 +116,10 @@ export function UpcomingSchedule() {
         </div>
       </CardHeader>
       <div className="px-5 pb-5">
-        <ol className="relative space-y-1 border-l border-border pl-5">
+        {upcoming.length === 0 && (
+          <EmptyState compact icon={CalendarX2} title="Nothing scheduled" description="Use Schedule review to add the next meeting." />
+        )}
+        <ol className={cn("relative space-y-1 border-l border-border pl-5", upcoming.length === 0 && "hidden")}>
           {upcoming.map((m) => {
             const c = cadenceById(m.cadence);
             const d = daysBetween(TODAY, m.date.slice(0, 10));
@@ -127,7 +131,7 @@ export function UpcomingSchedule() {
                     m.cadence === "strategic" ? "bg-accent" : m.cadence === "tactical" ? "bg-primary" : m.cadence === "daily" ? "bg-info" : "bg-chart-5",
                   )}
                 />
-                <Link href={`/reviews/${m.id}`} className="group flex items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-muted/60">
+                <Link href={`/reviews/${m.id}`} className="group flex items-center gap-3 rounded-lg px-2 py-2 transition hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
                   <CadenceLetter cadence={m.cadence} letter={c.letter} className="size-7 text-body" />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-body font-medium">{m.title}</div>
@@ -163,8 +167,8 @@ export function PastReviews() {
           <TR>
             <TH className="pl-5">Review</TH>
             <TH>Date</TH>
-            <TH className="text-right">Attended</TH>
-            <TH className="text-right">Decisions</TH>
+            <TH numeric>Attended</TH>
+            <TH numeric>Decisions</TH>
             <TH>BT / BD</TH>
             <TH className="pr-5 text-right">Record</TH>
           </TR>
@@ -176,16 +180,16 @@ export function PastReviews() {
             return (
               <TR key={m.id}>
                 <TD className="pl-5">
-                  <Link href={`/reviews/${m.id}`} className="flex items-center gap-2 font-medium hover:text-primary">
+                  <Link href={`/reviews/${m.id}`} className="flex items-center gap-2 rounded-lg font-medium hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
                     <Badge tone={cadenceTone[m.cadence]}>{cadenceById(m.cadence).every}</Badge>
                     {m.title}
                   </Link>
                 </TD>
                 <TD className="text-muted-foreground">{fmtLong(m.date)}</TD>
-                <TD className="text-right tabular">
+                <TD numeric>
                   {s?.attended ?? "—"}/{m.attendeeIds.length}
                 </TD>
-                <TD className="text-right tabular">{s?.decisions ?? 0}</TD>
+                <TD numeric>{s?.decisions ?? 0}</TD>
                 <TD>
                   {total ? (
                     <div className="flex w-32 items-center gap-2">
@@ -202,8 +206,10 @@ export function PastReviews() {
                   )}
                 </TD>
                 <TD className="pr-5 text-right">
-                  <Link href={`/reviews/${m.id}`} className="inline-flex items-center gap-1 text-body text-muted-foreground hover:text-foreground">
-                    <Lock className="size-3" /> Locked
+                  <Link href={`/reviews/${m.id}`} aria-label={`Open locked record: ${m.title}`} className="inline-flex rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
+                    <Badge tone="neutral" className="hover:text-text-primary">
+                      <Lock /> Locked
+                    </Badge>
                   </Link>
                 </TD>
               </TR>
@@ -211,6 +217,11 @@ export function PastReviews() {
           })}
         </TBody>
       </Table>
+      {past.length === 0 && (
+        <div className="px-5 pb-5">
+          <EmptyState compact icon={History} title="No locked reviews yet" description="Records appear here once a review is closed and locked." />
+        </div>
+      )}
     </Card>
   );
 }

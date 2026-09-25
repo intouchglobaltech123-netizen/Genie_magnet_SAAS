@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { StatCard } from "@/components/shared/stat-card";
+import { EmptyState } from "@/components/ui/feedback";
 import { monthlyReport, weeklySummary } from "@/features/planner/calc";
 import { usePlanner } from "@/features/planner/store";
 import { axisProps, kindMeta, SectionLabel, tooltipStyle, years } from "@/features/planner/ui";
@@ -22,11 +23,11 @@ export function WeeklyTab() {
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {weeks.map((w) => (
           <Card key={w.label} className={cn("p-4", w.spend === 0 && "opacity-60")}>
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="min-w-0">
                 <div className="text-body font-semibold">{w.label}</div>
                 <div className="text-body text-muted-foreground">{w.period}</div>
               </div>
@@ -51,7 +52,7 @@ export function WeeklyTab() {
         ))}
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[1.3fr_1fr]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1.3fr_1fr]">
         <Card>
           <CardHeader>
             <div>
@@ -63,12 +64,12 @@ export function WeeklyTab() {
             <THead>
               <TR>
                 <TH>Week</TH>
-                <TH className="text-right">Total spend</TH>
-                <TH className="text-right">Leakage</TH>
-                <TH className="text-right">15-yr @ 12%</TH>
-                <TH className="text-right">Score</TH>
+                <TH numeric>Total spend</TH>
+                <TH numeric>Leakage</TH>
+                <TH numeric>15-yr @ 12%</TH>
+                <TH numeric>Score</TH>
                 <TH>Top emotion</TH>
-                <TH className="text-right">Mood avg</TH>
+                <TH numeric>Mood avg</TH>
               </TR>
             </THead>
             <TBody>
@@ -78,12 +79,12 @@ export function WeeklyTab() {
                     <div className="font-medium">{w.label}</div>
                     <div className="text-body text-muted-foreground">{w.period}</div>
                   </TD>
-                  <TD className="text-right tabular">{inr(w.spend)}</TD>
-                  <TD className="text-right font-medium text-danger tabular">{inr(w.leak)}</TD>
-                  <TD className="text-right tabular">{inrCompact(w.opp)}</TD>
-                  <TD className="text-right tabular">{w.leakScore}%</TD>
+                  <TD numeric>{inr(w.spend)}</TD>
+                  <TD numeric className="font-medium text-danger">{inr(w.leak)}</TD>
+                  <TD numeric>{inrCompact(w.opp)}</TD>
+                  <TD numeric>{w.leakScore}%</TD>
                   <TD className="text-body">{w.topEmotion ?? "—"}</TD>
-                  <TD className="text-right tabular">{w.mood ?? "—"}</TD>
+                  <TD numeric>{w.mood ?? "—"}</TD>
                 </TR>
               ))}
             </TBody>
@@ -100,12 +101,12 @@ export function WeeklyTab() {
             <div className="h-60">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chart} barGap={4}>
-                  <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
+                  <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
                   <XAxis dataKey="name" {...axisProps} />
                   <YAxis {...axisProps} width={48} tickFormatter={(v) => inrCompact(v)} />
                   <Tooltip {...tooltipStyle} cursor={{ fill: "var(--color-muted)" }} formatter={(v) => inr(Number(v))} />
-                  <Bar dataKey="Spend" fill="var(--color-chart-5)" radius={[4, 4, 0, 0]} maxBarSize={28} />
-                  <Bar dataKey="Leakage" fill="var(--color-chart-4)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                  <Bar dataKey="Spend" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                  <Bar dataKey="Leakage" fill="var(--color-danger)" radius={[4, 4, 0, 0]} maxBarSize={28} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -135,7 +136,7 @@ export function MonthlyTab() {
     <div className="space-y-5">
       {/* Headline */}
       <Card className="overflow-hidden">
-        <div className="grid gap-6 bg-[radial-gradient(600px_circle_at_0%_0%,color-mix(in_srgb,var(--color-danger)_12%,transparent),transparent_60%)] p-6 lg:grid-cols-[1.2fr_1fr]">
+        <div className="grid grid-cols-1 gap-6 p-5 lg:grid-cols-[1.2fr_1fr]">
           <div>
             <div className="flex items-center gap-2 text-body font-medium text-danger">
               <Flame className="size-4" /> This month&apos;s leakage
@@ -149,7 +150,7 @@ export function MonthlyTab() {
               <span className="font-semibold text-foreground">{inr(r.fv15)}</span>.
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-card/80 p-5">
+          <div className="rounded-xl border border-border bg-surface-secondary p-5">
             <div className="text-body font-semibold uppercase tracking-wider text-muted-foreground">The retirement freedom calculation</div>
             <div className="mt-3 grid grid-cols-2 gap-4">
               <div>
@@ -169,14 +170,14 @@ export function MonthlyTab() {
       </Card>
 
       {/* Section 1 */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Total spent" value={inr(r.total)} icon={Wallet} tone="info" hint={`${log.length} entries`} />
         <StatCard label="Leakage score" value={`${(r.leakScore * 100).toFixed(1)}%`} icon={TrendingDown} tone="danger" hint="Leakage ÷ total spend" />
         <StatCard label="48-hr rule used" value={`${r.ruleUsed}×`} icon={Hourglass} tone="success" hint="Wants you paused on" />
         <StatCard label="Avg mood after" value={r.mood ?? "—"} icon={Smile} tone="gold" hint="1 = regret · 5 = happy" />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
         <Card>
           <CardHeader>
             <div>
@@ -228,21 +229,21 @@ export function MonthlyTab() {
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {emotions.length === 0 && <div className="py-10 text-center text-body text-muted-foreground">No entries yet</div>}
+            {emotions.length === 0 && <EmptyState compact icon={Smile} title="No entries yet" description="Log spends in the Daily Log to see which feelings drive them." />}
             {emotions.map((e) => (
               <div key={e.emotion}>
                 <div className="flex items-center justify-between text-body">
                   <span>
                     {e.emotion} <span className="text-muted-foreground">· {e.count}×</span>
                   </span>
-                  <span className="tabular">
+                  <span className="shrink-0 tabular">
                     {inr(e.spent)}
                     {e.leak > 0 && <span className="text-danger"> · {inrCompact(e.leak)} leaked</span>}
                   </span>
                 </div>
                 <div className="relative mt-1 h-2 overflow-hidden rounded-full bg-muted">
-                  <div className="absolute inset-y-0 left-0 rounded-full bg-[var(--color-chart-5)]/60" style={{ width: `${(e.spent / maxEmotion) * 100}%` }} />
-                  <div className="absolute inset-y-0 left-0 rounded-full bg-[var(--color-chart-4)]" style={{ width: `${(e.leak / maxEmotion) * 100}%` }} />
+                  <div className="absolute inset-y-0 left-0 rounded-full bg-primary/25" style={{ width: `${(e.spent / maxEmotion) * 100}%` }} />
+                  <div className="absolute inset-y-0 left-0 rounded-full bg-danger" style={{ width: `${(e.leak / maxEmotion) * 100}%` }} />
                 </div>
               </div>
             ))}
@@ -257,17 +258,21 @@ export function MonthlyTab() {
             </div>
           </CardHeader>
           <CardContent>
+            {leakTypes.length === 0 ? (
+              <EmptyState compact icon={TrendingDown} title="No leaks logged" description="Leak types appear once a Want or Craving counts as leakage." />
+            ) : (
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={leakTypes} layout="vertical" margin={{ left: 8, right: 12 }}>
                   <XAxis type="number" hide />
                   <YAxis type="category" dataKey="type" {...axisProps} width={92} />
                   <Tooltip {...tooltipStyle} cursor={{ fill: "var(--color-muted)" }} formatter={(v, n) => [inr(Number(v)), n === "leak" ? "Leakage" : "Spent"]} />
-                  <Bar dataKey="spent" fill="var(--color-chart-5)" radius={[0, 4, 4, 0]} barSize={8} />
-                  <Bar dataKey="leak" fill="var(--color-chart-4)" radius={[0, 4, 4, 0]} barSize={8} />
+                  <Bar dataKey="spent" fill="var(--color-chart-1)" radius={[0, 4, 4, 0]} barSize={8} />
+                  <Bar dataKey="leak" fill="var(--color-danger)" radius={[0, 4, 4, 0]} barSize={8} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -281,7 +286,7 @@ export function MonthlyTab() {
           </div>
           <CalendarClock className="size-4 text-muted-foreground" />
         </CardHeader>
-        <CardContent className="grid gap-6 lg:grid-cols-2">
+        <CardContent className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="divide-y divide-border rounded-xl border border-border">
             {[
               ["Your monthly leakage", inr(r.leak)],
@@ -293,8 +298,8 @@ export function MonthlyTab() {
               ["Corpus required (25× annual expense)", inr(r.setup.corpus)],
             ].map(([k, v]) => (
               <div key={k} className="flex items-center justify-between gap-3 px-4 py-2.5 text-body">
-                <span className="text-muted-foreground">{k}</span>
-                <span className="font-medium tabular">{v}</span>
+                <span className="min-w-0 text-muted-foreground">{k}</span>
+                <span className="shrink-0 font-medium tabular">{v}</span>
               </div>
             ))}
           </div>
@@ -310,7 +315,7 @@ export function MonthlyTab() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="rounded-xl border border-border p-4">
                 <div className="text-body text-muted-foreground">Years to corpus — without stopping leakage</div>
                 <div className="mt-1 text-heading font-semibold tabular">{years(r.yearsWithLeak, 2)}</div>

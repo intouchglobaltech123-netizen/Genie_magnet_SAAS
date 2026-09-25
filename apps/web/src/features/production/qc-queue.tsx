@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Progress } from "@/components/ui/progress";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -53,7 +54,7 @@ export function QcQueue() {
       />
 
       <div className="mb-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <StatCard label="Waiting for QC" value={queue.length} icon={ClipboardCheck} tone="gold" hint={`${queue.filter((v) => v.urgency === "rush").length} rush`} />
+        <StatCard label="Waiting for QC" value={queue.length} icon={ClipboardCheck} tone="accent" hint={`${queue.filter((v) => v.urgency === "rush").length} rush`} />
         <StatCard label="Corrective tasks open" value={openCorrective} icon={ShieldAlert} tone={openCorrective ? "danger" : "success"} hint={openCorrective ? "stage held" : "none open"} />
         <StatCard label="First-pass yield" value="82%" icon={Gauge} tone="success" delta={0.06} deltaLabel="vs Aug" />
         <StatCard label="Avg QC time" value="38m" icon={Timer} tone="info" hint="per video, this month" />
@@ -64,11 +65,7 @@ export function QcQueue() {
           Queue <span className="rounded-md bg-muted px-1.5 text-body font-medium tabular text-muted-foreground">{queue.length}</span>
         </h2>
         {!queue.length && (
-          <Card className="flex flex-col items-center gap-2 py-12 text-center">
-            <CheckCheck className="size-6 text-success" />
-            <div className="font-semibold">QC queue is clear</div>
-            <p className="text-body text-muted-foreground">Videos appear here when an editor completes all 9 edit steps.</p>
-          </Card>
+          <EmptyState icon={CheckCheck} title="QC queue is clear" description="Videos appear here when an editor completes all 9 edit steps." />
         )}
         <div className="space-y-2.5">
           {queue.map((v) => (
@@ -90,15 +87,16 @@ export function QcQueue() {
 
       <section className="mt-8">
         <h2 className="mb-3 text-body font-semibold">Recently passed</h2>
-        <Card className="divide-y divide-border">
+        {!passed.length && <EmptyState compact icon={ClipboardCheck} title="Nothing passed yet" description="Videos that clear all eleven checks will be listed here." />}
+        <Card className={cn("divide-y divide-border overflow-hidden", !passed.length && "hidden")}>
           {passed.map((v) => (
-            <Link key={v.id} href={`/production/${v.id}`} className="flex items-center gap-4 px-5 py-3 transition hover:bg-muted/40">
+            <Link key={v.id} href={`/production/${v.id}`} className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/35 sm:gap-4 sm:px-5">
               <CheckCheck className="size-4 shrink-0 text-success" />
-              <span className="w-28 shrink-0 font-mono text-body text-muted-foreground">{v.code}</span>
+              <span className="hidden w-28 shrink-0 font-mono text-body text-muted-foreground sm:inline">{v.code}</span>
               <span className="min-w-0 flex-1 truncate text-body font-medium">{v.title}</span>
               <span className="hidden text-body text-muted-foreground md:inline">QC by Karthik S.</span>
               <StageBadge stage={v.stage} />
-              <ArrowUpRight className="size-4 text-muted-foreground" />
+              <ArrowUpRight className="size-4 shrink-0 text-muted-foreground" />
             </Link>
           ))}
         </Card>
@@ -130,9 +128,9 @@ function QueueRow({ v, open, onToggle }: { v: Video; open: boolean; onToggle: ()
 
   return (
     <Card className={cn("overflow-hidden transition", open && "ring-1 ring-primary/30", q.fail > 0 && "border-danger/30")}>
-      <button type="button" onClick={onToggle} className="flex w-full cursor-pointer items-center gap-4 px-5 py-3.5 text-left transition hover:bg-muted/30">
+      <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full cursor-pointer items-center gap-3 px-4 py-3.5 text-left transition hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/35 sm:gap-4 sm:px-5">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-body font-medium text-muted-foreground">{v.code}</span>
             <UrgencyIcon urgency={v.urgency} />
             {q.fail > 0 && (
@@ -151,19 +149,19 @@ function QueueRow({ v, open, onToggle }: { v: Video; open: boolean; onToggle: ()
             </span>
             {q.fail > 0 && <span className="font-medium text-danger">{q.fail} failed</span>}
           </div>
-          <Progress value={(q.pass / QC_CHECKS.length) * 100} tone={q.fail ? "danger" : allPass ? "success" : "gold"} />
+          <Progress value={(q.pass / QC_CHECKS.length) * 100} tone={q.fail ? "danger" : allPass ? "success" : "accent"} />
         </div>
         <div className="hidden items-center gap-2 text-body lg:flex">
           <Avatar name={editor.name} size="sm" />
           <span className="w-24 truncate">{editor.name}</span>
         </div>
-        <DueLabel v={v} className="w-14 text-right" />
-        <ChevronDown className={cn("size-4 text-muted-foreground transition", open && "rotate-180")} />
+        <DueLabel v={v} className="w-16 shrink-0 whitespace-nowrap text-right" />
+        <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition", open && "rotate-180")} />
       </button>
       <AnimatePresence initial={false}>
         {open && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-            <div className="border-t border-border bg-muted/20 px-5 py-4">
+            <div className="border-t border-border bg-surface-secondary px-4 py-4 sm:px-5">
               <QcChecklist v={v} dense />
               <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
                 <Button variant="ghost" size="sm" asChild>

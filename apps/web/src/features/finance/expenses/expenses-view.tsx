@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -74,7 +75,7 @@ export function ExpensesView() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Pending approval" value={inr(stats.pendingAmt)} icon={Hourglass} tone="warning" hint={`${stats.pendingCount} requests waiting`} />
         <StatCard label="Approved this month" value={inr(stats.approvedAmt)} icon={Check} tone="success" hint={`${stats.approvedCount} expenses · ITC ${inrCompact(stats.itc)}`} />
         <StatCard label="Reimbursements due" value={inr(stats.reimbAmt)} icon={Wallet} tone="info" hint={`${stats.reimbPeople} employee${stats.reimbPeople === 1 ? "" : "s"} · Friday payroll batch`} />
@@ -82,10 +83,10 @@ export function ExpensesView() {
       </div>
 
       <Tabs defaultValue="requests">
-        <TabsList>
+        <TabsList className="scrollbar-thin max-w-full justify-start overflow-x-auto">
           <TabsTrigger value="requests">
             <Receipt /> Expense requests
-            {stats.pendingCount > 0 && <Badge tone="warning" className="px-1.5 py-0 text-body">{stats.pendingCount}</Badge>}
+            {stats.pendingCount > 0 && <Badge tone="warning" className="px-1.5 py-0">{stats.pendingCount}</Badge>}
           </TabsTrigger>
           <TabsTrigger value="vendors">
             <CircleDollarSign /> Vendors
@@ -94,19 +95,19 @@ export function ExpensesView() {
 
         <TabsContent value="requests">
           <Card>
-            <div className="flex flex-col gap-3 border-b border-border p-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-3 border-b border-border px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex flex-wrap gap-1.5">
                 {FILTERS.map((f) => (
                   <button
                     key={f.key}
                     onClick={() => setFilter(f.key)}
                     className={cn(
-                      "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-body font-medium transition",
-                      filter === f.key ? "border-foreground bg-foreground text-background" : "border-border bg-card text-muted-foreground hover:text-foreground",
+                      "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                      filter === f.key ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:border-border-strong hover:text-foreground",
                     )}
                   >
                     {f.label}
-                    <span className="tabular text-body opacity-70">{counts[f.key]}</span>
+                    <span className="tabular opacity-70">{counts[f.key]}</span>
                   </button>
                 ))}
               </div>
@@ -130,10 +131,10 @@ export function ExpensesView() {
                   <TH>Category</TH>
                   <TH>Requester → approver</TH>
                   <TH>Allocation</TH>
-                  <TH className="text-right">Amount</TH>
+                  <TH numeric>Amount</TH>
                   <TH>Payment</TH>
                   <TH>Approval</TH>
-                  <TH className="pr-5 text-right">Actions</TH>
+                  <TH numeric className="pr-5">Actions</TH>
                 </TR>
               </THead>
               <TBody>
@@ -141,9 +142,27 @@ export function ExpensesView() {
                   <ExpenseRow key={e.id} e={e} onOpen={() => setOpenId(e.id)} onApprove={() => actions.approve(e)} onReject={() => setRejectId(e.id)} onSettle={() => actions.settle(e)} />
                 ))}
                 {rows.length === 0 && (
-                  <TR>
-                    <TD colSpan={8} className="py-10 text-center text-muted-foreground">
-                      No expenses match these filters.
+                  <TR className="hover:bg-transparent">
+                    <TD colSpan={8} className="p-5">
+                      <EmptyState
+                        compact
+                        icon={Receipt}
+                        title="No expenses match these filters"
+                        description="Try another status or category, or clear the search."
+                        action={
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => {
+                              setFilter("all");
+                              setCat("all");
+                              setQ("");
+                            }}
+                          >
+                            Clear filters
+                          </Button>
+                        }
+                      />
                     </TD>
                   </TR>
                 )}
@@ -182,10 +201,10 @@ function ExpenseRow({ e, onOpen, onApprove, onReject, onSettle }: { e: Expense; 
         </div>
       </TD>
       <TD>
-        <span className={cn("inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-body font-medium", style.soft, style.text)}>
+        <Badge tone="neutral">
           <span className={cn("size-1.5 rounded-full", style.strip)} />
           {e.category}
-        </span>
+        </Badge>
       </TD>
       <TD>
         <div className="flex items-center gap-1.5 text-body">
@@ -209,11 +228,11 @@ function ExpenseRow({ e, onOpen, onApprove, onReject, onSettle }: { e: Expense; 
           </div>
         )}
       </TD>
-      <TD className="text-right">
-        <div className="font-medium tabular">{inr(e.amount)}</div>
+      <TD numeric>
+        <div className="whitespace-nowrap font-medium">{inr(e.amount)}</div>
         {e.gst > 0 ? (
           <Tooltip content={e.itc ? "GST input tax credit claimable" : "GST paid — credit blocked under Sec 17(5)"}>
-            <span className={cn("text-body", e.itc ? "text-success" : "text-muted-foreground")}>
+            <span className={cn("whitespace-nowrap text-body", e.itc ? "text-success" : "text-muted-foreground")}>
               {e.itc ? "ITC" : "GST"} {inr(e.gst)}
             </span>
           </Tooltip>

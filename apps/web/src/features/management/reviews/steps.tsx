@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ClipboardList, Goal, Hand, Lock, Plus, RefreshCw, Repeat, Sparkles, Target, Trophy } from "lucide-react";
+import { Check, ClipboardList, Goal, Hand, Inbox, Lock, Plus, RefreshCw, Repeat, Sparkles, Target, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EmptyState } from "@/components/ui/feedback";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Select } from "@/components/ui/select";
@@ -39,7 +40,7 @@ export function CompletionStep({ meeting, locked }: { meeting: Meeting; locked: 
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Tally label="Breakthrough (BT)" value={bt} tone="success" />
         <Tally label="Breakdown (BD)" value={bd} tone="danger" />
         <Tally label="Not yet marked" value={open} tone="neutral" />
@@ -93,14 +94,21 @@ function CommitmentReviewRow({ c, locked }: { c: Commitment; locked: boolean }) 
             {(["BT", "BD"] as const).map((m) => (
               <button
                 key={m}
+                type="button"
+                aria-pressed={c.mark === m}
+                aria-label={m === "BT" ? "Mark as Breakthrough" : "Mark as Breakdown"}
                 onClick={() => {
                   const next = c.mark === m ? undefined : m;
                   mark(c.id, next, note);
                   if (next === "BT") toast.success("Marked Breakthrough", { description: c.text });
                 }}
                 className={cn(
-                  "cursor-pointer rounded-md px-3 py-1 text-body font-semibold transition",
-                  c.mark === m ? (m === "BT" ? "bg-success text-white shadow-sm" : "bg-danger text-white shadow-sm") : "text-muted-foreground hover:text-foreground",
+                  "cursor-pointer rounded-lg px-3 py-1 text-body font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                  c.mark === m
+                    ? m === "BT"
+                      ? "bg-success-soft text-success shadow-sm ring-1 ring-inset ring-success/40"
+                      : "bg-danger-soft text-danger shadow-sm ring-1 ring-inset ring-danger/40"
+                    : "text-muted-foreground hover:bg-card hover:text-foreground",
                 )}
               >
                 {m}
@@ -170,14 +178,16 @@ export function NumbersStep({ meeting, locked }: { meeting: Meeting; locked: boo
           </Button>
         )}
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {data.map((m) => (
           <div key={m.key} className="rounded-xl border border-border bg-card p-4">
             <div className="flex items-start justify-between gap-2">
               <span className="text-body font-medium text-muted-foreground">{m.label}</span>
-              <span className="rounded-md bg-muted px-1.5 py-0.5 text-body text-muted-foreground">{m.source}</span>
+              <Badge tone="neutral" className="shrink-0">
+                {m.source}
+              </Badge>
             </div>
-            <div className="mt-1.5 flex items-baseline gap-2">
+            <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2">
               <span className={cn("text-heading font-semibold tracking-tight tabular", metricTone[m.tone].text)}>{m.value}</span>
               {m.target && <span className="text-body text-muted-foreground">target {m.target}</span>}
             </div>
@@ -210,7 +220,7 @@ export function CompetenceStep({ meeting, locked }: { meeting: Meeting; locked: 
                   {p.name} · {c.plan}
                 </div>
               </div>
-              <div className="w-40">
+              <div className="w-full sm:w-40">
                 <div className="mb-1 flex justify-between text-body text-muted-foreground">
                   <span>by {fmtDate(c.due)}</span>
                   <span className="tabular">{c.progress}%</span>
@@ -222,13 +232,13 @@ export function CompetenceStep({ meeting, locked }: { meeting: Meeting; locked: 
         })}
       </div>
       {!locked && (
-        <Card className="space-y-3 p-4">
+        <Card className="space-y-3 p-5">
           <div className="text-body font-medium">Add development plan</div>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Person">
               <Select value={f.personId} onValueChange={(v) => setF({ ...f, personId: v })} options={people} />
             </Field>
-            <Field label="Skill / competence">
+            <Field label="Skill / competence" required>
               <Input value={f.skill} onChange={(e) => setF({ ...f, skill: e.target.value })} placeholder="e.g. Motion text in After Effects" />
             </Field>
             <Field label="Plan" className="sm:col-span-2">
@@ -264,7 +274,7 @@ export function CelebrationStep({ meeting, locked }: { meeting: Meeting; locked:
   const [f, setF] = useState({ personId: "p-meena", title: "", story: "" });
   return (
     <div className="space-y-4">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {ws.recognitions.map((r, i) => {
           const p = personById(r.personId);
           const n = claps[r.id] ?? 0;
@@ -274,24 +284,26 @@ export function CelebrationStep({ meeting, locked }: { meeting: Meeting; locked:
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="relative overflow-hidden rounded-2xl border border-accent/30 bg-gradient-to-br from-accent-soft to-card p-4"
+              className="relative overflow-hidden rounded-xl border border-accent/40 bg-card p-4"
             >
               <Trophy className="absolute -right-3 -top-3 size-20 text-accent-strong/10" />
               <div className="flex items-center gap-2.5">
                 <Avatar name={p.name} size="md" />
-                <div>
+                <div className="min-w-0">
                   <div className="text-body font-semibold">{p.name}</div>
                   <div className="text-body text-muted-foreground">{p.role}</div>
                 </div>
               </div>
               <div className="mt-3 text-body font-semibold text-accent-strong">{r.title}</div>
               <p className="mt-1 text-body leading-relaxed text-foreground/80">{r.story}</p>
-              <div className="mt-3 flex items-center justify-between text-body text-muted-foreground">
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-body text-muted-foreground">
                 <span>Nominated by {r.by}</span>
                 <motion.button
                   whileTap={{ scale: 1.25 }}
+                  type="button"
+                  aria-label={`Applaud ${p.name}${n > 0 ? ` (${n})` : ""}`}
                   onClick={() => setClaps({ ...claps, [r.id]: n + 1 })}
-                  className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-card px-2 py-1 font-medium text-foreground shadow-card hover:text-accent-strong"
+                  className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-border bg-card px-2 py-1 font-medium text-foreground transition hover:border-accent hover:text-accent-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
                 >
                   <Hand className="size-3.5" /> {n > 0 ? n : "Applaud"}
                 </motion.button>
@@ -301,15 +313,21 @@ export function CelebrationStep({ meeting, locked }: { meeting: Meeting; locked:
         })}
       </div>
       {!locked && (
-        <Card className="space-y-3 p-4">
+        <Card className="space-y-3 p-5">
           <div className="flex items-center gap-2 text-body font-medium">
             <Sparkles className="size-4 text-accent-strong" /> Nominate a recognition
           </div>
-          <div className="grid gap-3 sm:grid-cols-[200px_1fr]">
-            <Select value={f.personId} onValueChange={(v) => setF({ ...f, personId: v })} options={people} />
-            <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="Headline — e.g. Oct calendar approved early" />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[200px_minmax(0,1fr)]">
+            <Field label="Person">
+              <Select value={f.personId} onValueChange={(v) => setF({ ...f, personId: v })} options={people} />
+            </Field>
+            <Field label="Headline" required>
+              <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="e.g. Oct calendar approved early" />
+            </Field>
           </div>
-          <Textarea value={f.story} onChange={(e) => setF({ ...f, story: e.target.value })} placeholder="What happened and why it matters" className="min-h-16" />
+          <Field label="Story">
+            <Textarea value={f.story} onChange={(e) => setF({ ...f, story: e.target.value })} placeholder="What happened and why it matters" className="min-h-16" />
+          </Field>
           <div className="flex justify-end">
             <Button
               size="sm"
@@ -351,7 +369,9 @@ export function CreationStep({ meeting, locked }: { meeting: Meeting; locked: bo
             <div className="min-w-0 flex-1">
               <div className="text-body font-medium">{g.title}</div>
               <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-body text-muted-foreground">
-                <Badge tone={typeTone[g.type]}>{g.type}</Badge>
+                <Badge tone={typeTone[g.type]} className="capitalize">
+                  {g.type}
+                </Badge>
                 {personById(g.ownerId).name} · measured by {g.measure} · by {fmtDate(g.due)}
               </div>
             </div>
@@ -373,18 +393,28 @@ export function CreationStep({ meeting, locked }: { meeting: Meeting; locked: bo
         ))}
       </div>
       {!locked && (
-        <Card className="space-y-3 p-4">
+        <Card className="space-y-3 p-5">
           <div className="text-body font-medium">New goal / strategy</div>
-          <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="e.g. Launch ₹25K/month starter reel package for clinics" />
-          <div className="grid gap-3 sm:grid-cols-4">
-            <Select value={f.ownerId} onValueChange={(v) => setF({ ...f, ownerId: v })} options={people} />
-            <Input value={f.measure} onChange={(e) => setF({ ...f, measure: e.target.value })} placeholder="Measure" />
-            <Input type="date" value={f.due} onChange={(e) => setF({ ...f, due: e.target.value })} />
-            <Select
-              value={f.type}
-              onValueChange={(v) => setF({ ...f, type: v as CreationGoal["type"] })}
-              options={["financial", "functional", "learning", "operational"].map((t) => ({ value: t, label: t[0]!.toUpperCase() + t.slice(1) }))}
-            />
+          <Field label="Goal / strategy" required>
+            <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="e.g. Launch ₹25K/month starter reel package for clinics" />
+          </Field>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Field label="Owner">
+              <Select value={f.ownerId} onValueChange={(v) => setF({ ...f, ownerId: v })} options={people} />
+            </Field>
+            <Field label="Measure">
+              <Input value={f.measure} onChange={(e) => setF({ ...f, measure: e.target.value })} placeholder="Measure" />
+            </Field>
+            <Field label="Due">
+              <Input type="date" value={f.due} onChange={(e) => setF({ ...f, due: e.target.value })} />
+            </Field>
+            <Field label="Type">
+              <Select
+                value={f.type}
+                onValueChange={(v) => setF({ ...f, type: v as CreationGoal["type"] })}
+                options={["financial", "functional", "learning", "operational"].map((t) => ({ value: t, label: t[0]!.toUpperCase() + t.slice(1) }))}
+              />
+            </Field>
           </div>
           <div className="flex justify-end">
             <Button
@@ -419,13 +449,19 @@ export function DecisionsStep({ meeting, locked }: { meeting: Meeting; locked: b
   return (
     <div className="space-y-4">
       {!locked && (
-        <Card className="space-y-3 p-4">
+        <Card className="space-y-3 p-5">
           <div className="text-body font-medium">Add decision</div>
-          <Textarea value={f.text} onChange={(e) => setF({ ...f, text: e.target.value })} placeholder="Decision — becomes a commitment with an owner and due date" className="min-h-16" />
-          <div className="flex flex-wrap items-center gap-3">
-            <Select value={f.ownerId} onValueChange={(v) => setF({ ...f, ownerId: v })} options={people} className="w-44" />
-            <Input type="date" value={f.due} onChange={(e) => setF({ ...f, due: e.target.value })} className="w-40" />
-            <label className="flex cursor-pointer items-center gap-2 text-body">
+          <Field label="Decision" required>
+            <Textarea value={f.text} onChange={(e) => setF({ ...f, text: e.target.value })} placeholder="Becomes a commitment with an owner and due date" className="min-h-16" />
+          </Field>
+          <div className="flex flex-wrap items-end gap-3">
+            <Field label="Owner" className="w-full sm:w-44">
+              <Select value={f.ownerId} onValueChange={(v) => setF({ ...f, ownerId: v })} options={people} />
+            </Field>
+            <Field label="Due" className="w-full sm:w-40">
+              <Input type="date" value={f.due} onChange={(e) => setF({ ...f, due: e.target.value })} />
+            </Field>
+            <label className="flex h-9 cursor-pointer items-center gap-2 text-body">
               <Checkbox checked={f.task} onCheckedChange={(v) => setF({ ...f, task: !!v })} />
               Create task in Projects & Tasks
             </label>
@@ -522,5 +558,5 @@ function Tally({ label, value, tone }: { label: string; value: number; tone: "su
 }
 
 function Empty({ text }: { text: string }) {
-  return <div className="rounded-xl border border-dashed border-border p-6 text-center text-body text-muted-foreground">{text}</div>;
+  return <EmptyState compact icon={Inbox} title={text} />;
 }

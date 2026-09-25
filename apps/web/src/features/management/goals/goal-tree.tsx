@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { ChevronRight, Link2, PenLine } from "lucide-react";
+import { ChevronRight, Link2, PenLine, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn, fmtDate } from "@/lib/utils";
 import { CadenceChip, GoalProgressBar, OwnerAvatars, StatusBadge, TypeBadge, ownerLabel } from "./goal-bits";
@@ -21,7 +22,7 @@ interface Row {
 
 const INDENT = 22;
 
-export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal) => boolean }) {
+export function GoalTree({ goals, matches, onClearFilters }: { goals: Goal[]; matches: (g: Goal) => boolean; onClearFilters?: () => void }) {
   const setOpen = useGoals((s) => s.setOpen);
   const [collapsed, setCollapsed] = React.useState<Set<string>>(new Set());
 
@@ -94,8 +95,6 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
             <span className="text-right">Due</span>
           </div>
 
-          {rows.length === 0 && <div className="px-5 py-12 text-center text-body text-muted-foreground">No goals match these filters.</div>}
-
           {rows.map(({ goal: g, depth, guides, isLast, hasChildren, dim }) => {
             const st = goalStatus(g);
             const left = daysLeft(g);
@@ -108,7 +107,7 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
                 onClick={() => setOpen(g.id)}
                 onKeyDown={(e) => e.key === "Enter" && setOpen(g.id)}
                 className={cn(
-                  "group grid cursor-pointer grid-cols-[minmax(0,1fr)_84px_170px_170px_104px_96px] items-stretch gap-4 border-b border-border px-5 transition-colors last:border-b-0 hover:bg-muted/50",
+                  "group grid cursor-pointer grid-cols-[minmax(0,1fr)_84px_170px_170px_104px_96px] items-stretch gap-4 border-b border-border px-5 transition-colors last:border-b-0 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/30",
                   g.level === "company" && "bg-primary-soft/25",
                   dim && "opacity-55",
                 )}
@@ -135,7 +134,7 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
                           e.stopPropagation();
                           toggle(g.id);
                         }}
-                        className="inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
+                        className="inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
                       >
                         <ChevronRight className={cn("size-3.5 transition-transform", open && "rotate-90")} />
                       </button>
@@ -198,6 +197,23 @@ export function GoalTree({ goals, matches }: { goals: Goal[]; matches: (g: Goal)
           })}
         </div>
       </div>
+      {rows.length === 0 && (
+        <div className="p-5">
+          <EmptyState
+            compact
+            icon={SearchX}
+            title="No goals match these filters"
+            description="Try a different department, type or status."
+            action={
+              onClearFilters && (
+                <Button variant="secondary" size="sm" onClick={onClearFilters}>
+                  Clear filters
+                </Button>
+              )
+            }
+          />
+        </div>
+      )}
     </Card>
   );
 }

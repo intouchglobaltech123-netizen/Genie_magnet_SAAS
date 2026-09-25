@@ -60,7 +60,7 @@ export const CLIENT_COLOR: Record<string, string> = {
   "c-kaveri": "var(--color-chart-1)",
   "c-lakshmi": "var(--color-chart-4)",
   "c-nova": "var(--color-chart-2)",
-  "c-bright": "var(--color-chart-3)",
+  "c-bright": "var(--color-accent-strong)", // gold client — the readable tone, since it is also used as text
   "c-urban": "var(--color-info)",
 };
 

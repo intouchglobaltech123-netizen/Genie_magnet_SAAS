@@ -71,7 +71,7 @@ export function GateNotice({ gate, className }: { gate: Gate; className?: string
       <Icon className={cn("mt-0.5 size-4 shrink-0", danger ? "text-danger" : "text-warning")} />
       <div className="min-w-0">
         <div className={cn("text-body font-semibold", danger ? "text-danger" : "text-warning")}>{gate.title}</div>
-        <p className="mt-0.5 text-body text-foreground/80">{gate.reason}</p>
+        <p className="mt-0.5 text-body text-text-secondary">{gate.reason}</p>
         {gate.missing.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {gate.missing.map((m) => (
@@ -90,7 +90,7 @@ export function VideoLink({ v, className }: { v: Video; className?: string }) {
   return (
     <Link href={`/production/${v.id}`} className={cn("group min-w-0", className)}>
       <div className="font-mono text-body font-medium tracking-wide text-muted-foreground">{v.code}</div>
-      <div className="truncate text-body font-medium group-hover:text-primary">{v.title}</div>
+      <div className="truncate text-body font-medium text-text-primary group-hover:text-primary">{v.title}</div>
     </Link>
   );
 }
@@ -112,10 +112,11 @@ export function Segmented<T extends string>({
         <button
           key={o.value}
           type="button"
+          aria-pressed={value === o.value}
           onClick={() => onChange(o.value)}
           className={cn(
-            "inline-flex h-7 cursor-pointer items-center gap-1 rounded-md px-2.5 text-body font-medium text-muted-foreground transition hover:text-foreground [&_svg]:size-3.5",
-            value === o.value && (o.activeCls ?? "bg-card text-foreground shadow-sm"),
+            "inline-flex h-7 cursor-pointer items-center gap-1 rounded-md px-2.5 text-body font-medium text-muted-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 [&_svg]:size-3.5",
+            value === o.value && (o.activeCls ?? "bg-card text-text-primary shadow-sm"),
           )}
         >
           {o.label}

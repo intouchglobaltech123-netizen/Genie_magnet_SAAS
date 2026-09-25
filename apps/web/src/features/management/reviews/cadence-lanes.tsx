@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Clock, Database, Plus, ShieldAlert, Trash2, Users } from "lucide-react";
+import { ArrowDown, ArrowUp, Clock, Database, ListPlus, Plus, ShieldAlert, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { AvatarStack } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { personById } from "@/lib/mock/core";
 import { cadences, type AgendaItem, type Cadence } from "@/lib/mock/management";
@@ -21,7 +22,7 @@ export function CadenceLanes() {
   const agendas = useMgmt((s) => s.agendas);
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
         {cadences.map((c) => {
           const next = meetings
             .filter((m) => m.cadence === c.id && m.status !== "locked")
@@ -50,9 +51,9 @@ export function CadenceLanes() {
               </div>
               <div className="mt-3 flex flex-wrap gap-1">
                 {c.focus.map((f) => (
-                  <span key={f} className="rounded-md bg-muted px-1.5 py-0.5 text-body font-medium">
+                  <Badge key={f} tone="neutral">
                     {f}
-                  </span>
+                  </Badge>
                 ))}
               </div>
               <div className="mt-4 space-y-1.5 border-t border-border pt-3 text-body">
@@ -135,26 +136,27 @@ function TemplateEditor({ cadence: c, onClose }: { cadence: Cadence; onClose: ()
           </h4>
           <div className="flex flex-wrap gap-1.5">
             {c.participantIds.map((p) => (
-              <span key={p} className="rounded-md border border-border px-2 py-0.5 text-body">
+              <Badge key={p} tone="outline">
                 {personById(p).name}
-              </span>
+              </Badge>
             ))}
           </div>
         </section>
 
         <section>
-          <div className="mb-2 flex items-center justify-between">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3">
             <h4 className="text-body font-medium uppercase tracking-wider text-muted-foreground">Agenda template</h4>
             <span className="text-body text-muted-foreground tabular">{total} min total</span>
           </div>
           <div className="space-y-1.5">
+            {items.length === 0 && <EmptyState compact icon={ListPlus} title="No agenda items" description="Add the first item below." />}
             {items.map((it, i) => (
               <div key={it.title + i} className="group flex items-center gap-2 rounded-lg border border-border bg-card px-2.5 py-2">
                 <span className="w-5 text-center text-body font-semibold text-muted-foreground tabular">{i + 1}</span>
                 <Input
                   value={it.title}
                   onChange={(e) => setItems(items.map((x, k) => (k === i ? { ...x, title: e.target.value } : x)))}
-                  className="h-7 flex-1 border-transparent bg-transparent px-1.5 text-body hover:border-input"
+                  className="h-7 min-w-0 flex-1 border-transparent bg-transparent px-1.5 text-body hover:border-input"
                 />
                 <Input
                   type="number"
@@ -163,7 +165,7 @@ function TemplateEditor({ cadence: c, onClose }: { cadence: Cadence; onClose: ()
                   className="h-7 w-16 px-1.5 text-right text-body tabular"
                 />
                 <span className="text-body text-muted-foreground">min</span>
-                <div className="flex opacity-50 transition group-hover:opacity-100">
+                <div className="flex shrink-0 opacity-50 transition group-focus-within:opacity-100 group-hover:opacity-100">
                   <Button variant="ghost" size="icon-sm" className="size-7" onClick={() => move(i, -1)} aria-label="Move up">
                     <ArrowUp className="!size-3.5" />
                   </Button>
@@ -204,10 +206,12 @@ function TemplateEditor({ cadence: c, onClose }: { cadence: Cadence; onClose: ()
               return (
                 <button
                   key={b}
+                  type="button"
+                  aria-pressed={on}
                   onClick={() => setBlocks(on ? blocks.filter((x) => x !== b) : [...blocks, b])}
                   className={cn(
-                    "cursor-pointer rounded-lg border px-2.5 py-1 text-body transition",
-                    on ? "border-primary/40 bg-primary-soft text-primary" : "border-border text-muted-foreground line-through",
+                    "cursor-pointer rounded-lg border px-2.5 py-1 text-body transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                    on ? "border-primary/40 bg-primary-soft text-primary hover:bg-primary-soft/70" : "border-border text-muted-foreground line-through hover:bg-muted",
                   )}
                 >
                   {b}

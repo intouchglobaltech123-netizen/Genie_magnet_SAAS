@@ -76,13 +76,13 @@ export function NewGoalDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           <DialogDescription>Add it under a company or department goal. You can complete the S.M.A.R.T. fields next.</DialogDescription>
         </DialogHeader>
         <DialogBody className="space-y-4">
-          <Field label="Goal">
+          <Field label="Goal" required>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Deliver all Diwali campaign reels by 20 Oct" autoFocus />
           </Field>
           <Field label="Rolls up to">
             <Select value={parentId} onValueChange={setParentId} options={parents.map((p) => ({ value: p.id, label: p.title }))} />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Owner">
               <Select value={owner} onValueChange={setOwner} options={employees.map((p) => ({ value: p.id, label: p.name }))} />
             </Field>
@@ -94,8 +94,8 @@ export function NewGoalDialog({ open, onOpenChange }: { open: boolean; onOpenCha
               />
             </Field>
           </div>
-          <div className="grid grid-cols-[1fr_120px] gap-3">
-            <Field label="Metric">
+          <div className="grid grid-cols-[minmax(0,1fr)_110px] gap-3">
+            <Field label="Metric" required>
               <Input value={metric} onChange={(e) => setMetric(e.target.value)} placeholder="e.g. Reels delivered on time" />
             </Field>
             <Field label="Unit">
@@ -116,7 +116,7 @@ export function NewGoalDialog({ open, onOpenChange }: { open: boolean; onOpenCha
             <Field label="Baseline">
               <Input value={baseline} onChange={(e) => setBaseline(e.target.value)} inputMode="decimal" />
             </Field>
-            <Field label="Target">
+            <Field label="Target" required>
               <Input value={target} onChange={(e) => setTarget(e.target.value)} inputMode="decimal" placeholder="—" />
             </Field>
             <Field label="Due" className="col-span-2">

@@ -19,7 +19,7 @@ import { AdvancesTab, AgingBar, AgingTab, CreditNotesTab } from "./tabs";
 export function BillingHeaderActions() {
   return (
     <Button
-      variant="outline"
+      variant="secondary"
       size="sm"
       onClick={() => toast.success("GSTR-1 export ready", { description: "Sep 2026 B2B invoices · 10 invoices · JSON for GST portal" })}
     >
@@ -54,12 +54,12 @@ export function BillingView() {
     <div className="space-y-6">
       <UrbanNestCallout invoices={invoices} onRecordPayment={openPay} onOpen={(i) => setSheetId(i.id)} />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard label="Invoiced this FY" value={inrCompact(invoiced)} icon={FileText} tone="accent" hint={`${issued.length} invoices · ${inrCompact(invoicedGross)} incl. GST`} />
         <StatCard label="Collected" value={inrCompact(collected)} icon={Wallet} tone="success" hint={`${pct(collected / invoicedGross)} of billed · incl. TDS`} />
         <StatCard label="Outstanding" value={inrCompact(outstanding)} icon={Hourglass} tone="info" hint={`${openCount} open invoices`} />
         <StatCard label="Overdue > 30 days" value={inrCompact(overdue30Amt)} icon={AlertOctagon} tone="danger" hint={`${overdue30.length} invoices · ${new Set(overdue30.map((i) => i.partyKey)).size} clients`} />
-        <StatCard label="DSO" value={`${dso} days`} icon={CalendarClock} tone={dso > 45 ? "warning" : "gold"} hint="Target ≤ 30 days · rolling 90d" />
+        <StatCard label="DSO" value={`${dso} days`} icon={CalendarClock} tone={dso > 45 ? "warning" : "info"} hint="Target ≤ 30 days · rolling 90d" />
       </div>
 
       <Tabs defaultValue="invoices">
@@ -68,7 +68,7 @@ export function BillingView() {
             <TabsTrigger value="invoices">Invoices</TabsTrigger>
             <TabsTrigger value="aging">Aging</TabsTrigger>
             <TabsTrigger value="advances">
-              Advances {unadjustedAdv > 0 && <Badge tone="accent" className="px-1.5 py-0 text-body">{inrCompact(unadjustedAdv)}</Badge>}
+              Advances {unadjustedAdv > 0 && <Badge tone="accent" className="px-1.5 py-0">{inrCompact(unadjustedAdv)}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="credit">Credit notes</TabsTrigger>
           </TabsList>
@@ -130,7 +130,7 @@ function UrbanNestCallout({
 
   if (inv.balance <= 0) {
     return (
-      <Card className="flex items-center gap-3 border-success/30 bg-success-soft p-4">
+      <Card className="flex items-center gap-3 border-success/30 bg-success-soft p-5">
         <CheckCircle2 className="size-5 text-success" />
         <div className="text-body">
           <span className="font-semibold">Urban Nest Realty cleared GM/26-27/041.</span>{" "}
@@ -144,7 +144,7 @@ function UrbanNestCallout({
     <Card className="overflow-hidden border-danger/30">
       <div className="flex flex-col gap-4 bg-danger-soft p-5 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-3.5">
-          <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-danger text-white">
+          <span className="mt-0.5 inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-danger text-primary-foreground">
             <AlertOctagon className="size-5" />
           </span>
           <div>
@@ -157,7 +157,7 @@ function UrbanNestCallout({
               </Badge>
             </div>
             <p className="mt-1 text-body text-muted-foreground">
-              <button className="cursor-pointer font-mono text-foreground underline-offset-2 hover:underline" onClick={() => onOpen(inv)}>
+              <button className="cursor-pointer rounded font-mono text-foreground underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30" onClick={() => onOpen(inv)}>
                 {inv.number}
               </button>{" "}
               · {inv.period} walkthroughs · due {fmtDate(inv.dueDate, { day: "numeric", month: "short" })} · last reminder{" "}

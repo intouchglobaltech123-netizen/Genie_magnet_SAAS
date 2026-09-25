@@ -22,6 +22,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Field, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -61,16 +62,17 @@ export function SettingsView() {
   return (
     <>
       <PageHeader depth="preview" title="Settings" description="Organisation, roles & permissions, packages, workflow gates, thresholds and notifications." />
-      <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
-        <nav className="flex gap-1 overflow-x-auto lg:flex-col">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr]">
+        <nav aria-label="Settings sections" className="scrollbar-thin flex min-w-0 gap-1 overflow-x-auto pb-1 lg:flex-col lg:pb-0">
           {sections.map((s) => {
             const Icon = s.icon;
             return (
               <button
                 key={s.id}
                 onClick={() => setSection(s.id)}
+                aria-current={section === s.id ? "page" : undefined}
                 className={cn(
-                  "flex shrink-0 cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-body font-medium transition",
+                  "flex shrink-0 cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-left text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                   section === s.id ? "bg-card text-foreground shadow-card ring-1 ring-border" : "text-muted-foreground hover:bg-muted hover:text-foreground",
                 )}
               >
@@ -113,7 +115,7 @@ function OrgSection() {
             <CardDescription>Shown on proposals, invoices and the client portal</CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="grid gap-4 md:grid-cols-2">
+        <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Field label="Agency name">
             <Input defaultValue="Genie Magnet" onBlur={() => saved("Agency name")} />
           </Field>
@@ -137,6 +139,9 @@ function OrgSection() {
           </div>
         </CardHeader>
         <CardContent>
+          {depts.length === 0 && (
+            <EmptyState compact icon={Building2} title="No departments" description="Add one below to use it for goals, capacity and reporting lines." className="mb-3" />
+          )}
           <div className="flex flex-wrap gap-2">
             {depts.map((d) => (
               <span key={d} className="group inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1 text-body">
@@ -146,7 +151,8 @@ function OrgSection() {
                     setDepts((x) => x.filter((y) => y !== d));
                     toast("Department removed", { description: d });
                   }}
-                  className="cursor-pointer text-muted-foreground opacity-0 transition hover:text-danger group-hover:opacity-100"
+                  aria-label={`Remove ${d}`}
+                  className="cursor-pointer rounded-full text-muted-foreground opacity-0 transition hover:text-danger focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 group-hover:opacity-100"
                 >
                   <X className="size-3.5" />
                 </button>
@@ -162,8 +168,8 @@ function OrgSection() {
                 setNewDept("");
               }}
             >
-              <Input value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="Add department" className="h-8 w-40" />
-              <Button type="submit" size="icon-sm" variant="outline">
+              <Input value={newDept} onChange={(e) => setNewDept(e.target.value)} placeholder="Add department" aria-label="New department name" className="h-8 w-40" />
+              <Button type="submit" size="icon-sm" variant="secondary" aria-label="Add department">
                 <Plus />
               </Button>
             </form>
@@ -178,7 +184,7 @@ function OrgSection() {
             <CardDescription>Turn modules on for your team. Phase 2 modules can be switched on once released.</CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="grid gap-x-8 gap-y-5 md:grid-cols-2">
+        <CardContent className="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2">
           {moduleItems.map((s) => (
             <div key={s.title}>
               <div className="mb-1 text-body font-semibold uppercase tracking-wider text-muted-foreground">{s.title}</div>
@@ -188,10 +194,11 @@ function OrgSection() {
                   const planned = i.depth === "planned";
                   return (
                     <div key={i.href} className="flex items-center gap-3 py-2">
-                      <Icon className="size-4 text-muted-foreground" />
-                      <span className="flex-1 text-body">{i.title}</span>
+                      <Icon className="size-4 shrink-0 text-muted-foreground" />
+                      <span className="min-w-0 flex-1 truncate text-body">{i.title}</span>
                       {planned && <Badge>Phase 2</Badge>}
                       <Switch
+                        aria-label={`${i.title} module`}
                         checked={enabled[i.href]}
                         disabled={planned}
                         onCheckedChange={(c) => {
@@ -248,7 +255,7 @@ function UsersSection() {
               {people.filter((p) => p.type === "employee").length} employees · {people.filter((p) => p.type === "freelancer").length} freelancers
             </CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => toast.success("Invite sent", { description: "Invitation link emailed (demo)" })}>
+          <Button size="sm" variant="secondary" onClick={() => toast.success("Invite sent", { description: "Invitation link emailed (demo)" })}>
             <Plus /> Invite user
           </Button>
         </CardHeader>
@@ -289,8 +296,7 @@ function UsersSection() {
                         setRoles((r) => ({ ...r, [p.id]: v as SettingsRole }));
                         saved(`${p.name} is now ${v}`);
                       }}
-                      options={ROLES.filter((r) => r !== "Client").map((r) => ({ value: r, label: r }))}
-                      className="h-8"
+                      options={ROLES.filter((r) => r !== "Client").map((r) => ({ value: r, label: r }))}                      className="h-8"
                     />
                   </TD>
                 </TR>
@@ -316,12 +322,13 @@ function UsersSection() {
               <button
                 key={r}
                 onClick={() => setRole(r)}
+                aria-pressed={role === r}
                 className={cn(
-                  "cursor-pointer rounded-lg border px-3 py-1.5 text-body font-medium transition",
-                  role === r ? "border-primary bg-primary-soft text-primary" : "border-border text-muted-foreground hover:text-foreground",
+                  "cursor-pointer rounded-lg border px-3 py-1.5 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                  role === r ? "border-primary bg-primary-soft text-primary" : "border-border text-muted-foreground hover:border-secondary/40 hover:text-foreground",
                 )}
               >
-                {r} <span className="ml-1 text-body opacity-70 tabular">{count}</span>
+                {r} <span className="ml-1 opacity-70 tabular">{count}</span>
               </button>
             );
           })}
@@ -362,8 +369,10 @@ function UsersSection() {
                       <TD key={a} className="text-center">
                         <button
                           onClick={() => toggle(rec, a)}
+                          aria-pressed={on}
+                          aria-label={`${role}: ${a} on ${rec}`}
                           className={cn(
-                            "inline-flex size-7 cursor-pointer items-center justify-center rounded-md transition",
+                            "inline-flex size-7 cursor-pointer items-center justify-center rounded-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                             on ? "bg-success-soft text-success hover:brightness-95" : "text-muted-foreground/40 hover:bg-muted hover:text-muted-foreground",
                           )}
                         >
@@ -395,7 +404,7 @@ function PackagesSection() {
         </div>
         <Button
           size="sm"
-          variant="outline"
+          variant="secondary"
           onClick={() => {
             setList((l) => [...l, { name: "New package", service: "Video Production", fee: 0, units: "Define units", revisions: 2, turnaround: 5, clients: 0, active: false }]);
             saved("Draft package added");
@@ -409,11 +418,11 @@ function PackagesSection() {
           <TR>
             <TH className="pl-5">Package</TH>
             <TH>Units per cycle</TH>
-            <TH className="text-center">Revisions</TH>
-            <TH className="text-center">Turnaround</TH>
-            <TH className="text-right">Monthly fee</TH>
-            <TH className="text-center">Clients</TH>
-            <TH className="text-center">Active</TH>
+            <TH numeric>Revisions</TH>
+            <TH numeric>Turnaround</TH>
+            <TH numeric>Monthly fee</TH>
+            <TH numeric>Clients</TH>
+            <TH className="pr-5 text-center">Active</TH>
           </TR>
         </THead>
         <TBody>
@@ -424,12 +433,17 @@ function PackagesSection() {
                 <div className="text-body text-muted-foreground">{p.service}</div>
               </TD>
               <TD className="text-muted-foreground">{p.units}</TD>
-              <TD className="text-center tabular">{p.revisions}</TD>
-              <TD className="text-center tabular">{p.turnaround} days</TD>
-              <TD className="text-right font-medium tabular">{p.fee ? inr(p.fee) : "—"}</TD>
-              <TD className="text-center tabular">{p.clients}</TD>
-              <TD className="text-center">
+              <TD numeric>{p.revisions}</TD>
+              <TD numeric className="whitespace-nowrap">
+                {p.turnaround} days
+              </TD>
+              <TD numeric className="whitespace-nowrap font-medium">
+                {p.fee ? inr(p.fee) : "—"}
+              </TD>
+              <TD numeric>{p.clients}</TD>
+              <TD className="pr-5 text-center">
                 <Switch
+                  aria-label={`${p.name} active`}
                   checked={p.active}
                   onCheckedChange={(c) => {
                     setList((l) => l.map((x, j) => (j === i ? { ...x, active: c } : x)));
@@ -497,6 +511,7 @@ function WorkflowSection() {
                 <TD>{g.gate}</TD>
                 <TD className="text-center">
                   <Switch
+                    aria-label={`Enforce gate ${g.from} to ${g.to}`}
                     checked={g.enforced}
                     onCheckedChange={(c) => {
                       setGates((x) => x.map((y, j) => (j === i ? { ...y, enforced: c } : y)));
@@ -540,7 +555,7 @@ function ThresholdsSection() {
         </CardHeader>
         <CardContent className="divide-y divide-border">
           {items.map((i) => (
-            <div key={i.key} className="grid items-center gap-3 py-4 first:pt-0 md:grid-cols-[1fr_260px_80px]">
+            <div key={i.key} className="grid grid-cols-1 items-center gap-3 py-4 first:pt-0 md:grid-cols-[1fr_260px_80px]">
               <div>
                 <div className="text-body font-medium">{i.label}</div>
                 <div className="text-body text-muted-foreground">{i.desc}</div>
@@ -554,9 +569,10 @@ function ThresholdsSection() {
                 onChange={(e) => setVals((v) => ({ ...v, [i.key]: Number(e.target.value) }))}
                 onPointerUp={() => saved(`${i.label}: ${vals[i.key]} ${i.unit}`)}
                 onKeyUp={() => saved(`${i.label}: ${vals[i.key]} ${i.unit}`)}
-                className="w-full cursor-pointer accent-[var(--color-primary)]"
+                aria-label={i.label}
+                className="w-full cursor-pointer rounded-lg accent-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
               />
-              <div className="text-right text-subheading font-semibold tabular">
+              <div className="text-subheading font-semibold tabular md:text-right">
                 {vals[i.key]} <span className="text-body font-normal text-muted-foreground">{i.unit}</span>
               </div>
             </div>
@@ -570,6 +586,7 @@ function ThresholdsSection() {
             <CardDescription>No WhatsApp or email alerts to staff during these hours — except rush items</CardDescription>
           </div>
           <Switch
+            aria-label="Quiet hours"
             checked={quiet}
             onCheckedChange={(c) => {
               setQuiet(c);
@@ -659,7 +676,7 @@ function GroupRows({
           <TD className="pl-5">{r.event}</TD>
           {channels.map((c) => (
             <TD key={c.key} className="text-center">
-              <Switch checked={r[c.key]} onCheckedChange={(v) => onToggle(r.event, c.key, v)} />
+              <Switch aria-label={`${r.event}: ${c.label}`} checked={r[c.key]} onCheckedChange={(v) => onToggle(r.event, c.key, v)} />
             </TD>
           ))}
         </TR>

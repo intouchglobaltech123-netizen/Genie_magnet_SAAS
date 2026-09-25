@@ -36,9 +36,20 @@ export function Field({
   children: React.ReactNode;
   className?: string;
 }) {
+  const autoId = React.useId();
+  // Link the label to a single form control child so screen readers announce it.
+  let control = children;
+  let controlId: string | undefined;
+  if (React.isValidElement<{ id?: string; "aria-describedby"?: string }>(children)) {
+    controlId = children.props.id ?? autoId;
+    control = React.cloneElement(children, {
+      id: controlId,
+      "aria-describedby": error || hint ? `${controlId}-help` : children.props["aria-describedby"],
+    });
+  }
   return (
     <div className={cn("space-y-1.5", className)}>
-      <Label>
+      <Label htmlFor={controlId}>
         {label}
         {required && (
           <span className="ml-0.5 text-danger" aria-hidden>
@@ -46,13 +57,17 @@ export function Field({
           </span>
         )}
       </Label>
-      {children}
+      {control}
       {error ? (
-        <p className="text-body text-danger" role="alert">
+        <p id={controlId ? `${controlId}-help` : undefined} className="text-body text-danger" role="alert">
           {error}
         </p>
       ) : (
-        hint && <p className="text-body text-muted-foreground">{hint}</p>
+        hint && (
+          <p id={controlId ? `${controlId}-help` : undefined} className="text-body text-muted-foreground">
+            {hint}
+          </p>
+        )
       )}
     </div>
   );

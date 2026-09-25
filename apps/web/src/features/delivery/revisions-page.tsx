@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Alert, EmptyState } from "@/components/ui/feedback";
 import { Field, Input } from "@/components/ui/input";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -131,7 +132,7 @@ export function RevisionsPage() {
       />
 
       {/* Explanation strip */}
-      <div className="mb-6 grid gap-3 md:grid-cols-3">
+      <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
         {KINDS.map((k) => {
           const m = kindMeta[k];
           const Icon = m.icon;
@@ -150,16 +151,16 @@ export function RevisionsPage() {
         })}
       </div>
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Open requests" value={openCount} icon={GitPullRequestArrow} tone="info" hint="need classification or action" />
         <StatCard label="Awaiting client" value={awaiting.length} icon={Hourglass} tone="warning" hint={`${inr(awaitingValue)} in estimates`} />
         <StatCard label="Allowance consumed · Sep" value={`${consumed} / ${allowanceTotal}`} icon={Undo2} tone="accent" hint="included rounds across reviewed videos" />
         <StatCard label="Rework cost · Sep" value={inr(rework)} icon={IndianRupee} tone="danger" hint="agency corrections, internal only" />
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <Card>
-          <CardHeader className="items-center">
+          <CardHeader className="flex-wrap items-center">
             <div>
               <CardTitle>Change requests</CardTitle>
               <CardDescription>Joined to video and client · status changes are logged</CardDescription>
@@ -178,7 +179,7 @@ export function RevisionsPage() {
                 <TH className="pl-5">Video · client</TH>
                 <TH>Class</TH>
                 <TH>Change</TH>
-                <TH className="text-right">Estimate</TH>
+                <TH numeric>Estimate</TH>
                 <TH>Status</TH>
                 <TH className="pr-5 text-right">Action</TH>
               </TR>
@@ -186,8 +187,18 @@ export function RevisionsPage() {
             <TBody>
               {rows.length === 0 && (
                 <TR>
-                  <TD colSpan={6} className="py-10 text-center text-muted-foreground">
-                    Nothing here.
+                  <TD colSpan={6} className="px-5 py-4">
+                    <EmptyState
+                      compact
+                      icon={GitPullRequestArrow}
+                      title={filter === "closed" ? "No closed requests yet" : "No change requests"}
+                      description="Classify client feedback to log it here with its allowance and billing impact."
+                      action={
+                        <Button size="sm" variant="outline" onClick={() => setClassifyOpen(true)}>
+                          <Plus /> Classify feedback
+                        </Button>
+                      }
+                    />
                   </TD>
                 </TR>
               )}
@@ -199,21 +210,21 @@ export function RevisionsPage() {
                   <TR key={cr.id}>
                     <TD className="pl-5">
                       <div className="font-mono text-body text-muted-foreground">{video?.code ?? "New request"}</div>
-                      <div className="max-w-[200px] truncate font-medium">{video?.title ?? "Client portal request"}</div>
+                      <div className="max-w-[200px] truncate font-medium" title={video?.title}>{video?.title ?? "Client portal request"}</div>
                       <div className="text-body text-muted-foreground">{client?.name}</div>
                     </TD>
                     <TD>
                       <Badge tone={km.tone}>{km.short}</Badge>
                     </TD>
-                    <TD className="max-w-[280px]">
+                    <TD className="min-w-[220px] max-w-[280px]">
                       <div className="line-clamp-2 text-body">{cr.summary}</div>
                       <div className="mt-0.5 text-body text-muted-foreground">Logged {fmtDate(cr.createdAt)}</div>
                     </TD>
-                    <TD className="text-right tabular">
+                    <TD numeric>
                       {cr.estimate !== undefined ? (
                         <div>
                           <div className="font-medium">{inr(cr.estimate)}</div>
-                          <div className="text-body text-muted-foreground">
+                          <div className="whitespace-nowrap text-body text-muted-foreground">
                             {cr.kind === "agency-correction" ? "rework cost" : `+${cr.dateImpactDays ?? 0} days`}
                           </div>
                         </div>
@@ -230,17 +241,17 @@ export function RevisionsPage() {
                       <div className="flex items-center justify-end gap-1">
                         {cr.status === "open" && cr.kind === "out-of-scope" && (
                           <Button size="xs" variant="soft" onClick={() => openEstimate(cr)}>
-                            <Send className="!size-3" /> Send estimate
+                            <Send /> Send estimate
                           </Button>
                         )}
                         {cr.status === "awaiting-client" && (
                           <Button size="xs" variant="outline" onClick={() => setStatus(cr, "approved", "Client approved the estimate — work unblocked", "success")}>
-                            <CheckCheck className="!size-3.5" /> Mark approved
+                            <CheckCheck /> Mark approved
                           </Button>
                         )}
                         {(cr.status === "approved" || (cr.status === "open" && cr.kind !== "out-of-scope")) && (
                           <Button size="xs" variant="outline" onClick={() => setStatus(cr, "done", "Change completed", "success")}>
-                            <CheckCheck className="!size-3.5" /> Done
+                            <CheckCheck /> Done
                           </Button>
                         )}
                         <DropdownMenu>
@@ -293,8 +304,8 @@ export function RevisionsPage() {
                       ))}
                     </Pie>
                     <RTooltip
-                      contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 10, fontSize: 12 }}
-                      itemStyle={{ color: "var(--color-foreground)" }}
+                      contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 10, fontSize: 13 }}
+                      itemStyle={{ color: "var(--color-text-primary)" }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -306,7 +317,7 @@ export function RevisionsPage() {
               <div className="mt-3 space-y-1.5">
                 {donut.map((d) => (
                   <div key={d.kind} className="flex items-center gap-2 text-body">
-                    <span className="size-2 rounded-full" style={{ background: d.color }} />
+                    <span className="size-2 shrink-0 rounded-full" style={{ background: d.color }} />
                     <span className="flex-1">{d.name}</span>
                     <span className="tabular text-muted-foreground">{Math.round((d.value / donutTotal) * 100)}%</span>
                     <span className="w-6 text-right font-medium tabular">{d.value}</span>
@@ -336,7 +347,7 @@ export function RevisionsPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-2.5">
-              {inRevision.length === 0 && <p className="text-body text-muted-foreground">No videos in revision.</p>}
+              {inRevision.length === 0 && <EmptyState compact icon={CheckCheck} title="No videos in revision" description="Videos with requested changes will appear here, ready to send back." />}
               {inRevision.map((v) => {
                 const allow = agreementById(v.agreementId).revisionsPerDeliverable;
                 return (
@@ -347,10 +358,10 @@ export function RevisionsPage() {
                     </div>
                     <div className="mt-1 truncate text-body font-medium">{v.title}</div>
                     <div className="mt-1 flex items-center gap-2 text-body text-muted-foreground">
-                      <Clock className="size-3" /> Due {fmtDate(v.dueDate)} · rounds {v.revisionsUsed}/{allow}
+                      <Clock className="size-3 shrink-0" /> Due {fmtDate(v.dueDate)} · rounds {v.revisionsUsed}/{allow}
                     </div>
                     <Button size="xs" variant="soft" className="mt-2.5 w-full" onClick={() => sendNextVersion(v.id)}>
-                      <Send className="!size-3" /> Send {v.versions.at(-1)?.status === "internal" ? v.versions.at(-1)?.label : `v${v.versions.length + 1}`} to client
+                      <Send /> Send {v.versions.at(-1)?.status === "internal" ? v.versions.at(-1)?.label : `v${v.versions.length + 1}`} to client
                     </Button>
                   </div>
                 );
@@ -369,20 +380,18 @@ export function RevisionsPage() {
             <DialogDescription>{estimateFor?.summary}</DialogDescription>
           </DialogHeader>
           <DialogBody className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Estimate (₹, excl. GST)">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Field label="Estimate (₹, excl. GST)" required>
                 <Input type="number" value={estAmount} onChange={(e) => setEstAmount(e.target.value)} />
               </Field>
-              <Field label="Date impact (days)">
+              <Field label="Date impact (days)" required>
                 <Input type="number" value={estDays} onChange={(e) => setEstDays(e.target.value)} />
               </Field>
             </div>
-            <p className="rounded-xl bg-warning-soft p-3 text-body text-warning">
-              The client sees this in their Client Hub and must approve it. No billable work starts until they do.
-            </p>
+            <Alert tone="warning">The client sees this in their Client Hub and must approve it. No billable work starts until they do.</Alert>
           </DialogBody>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEstimateFor(null)}>
+            <Button variant="outline" onClick={() => setEstimateFor(null)}>
               Cancel
             </Button>
             <Button variant="accent" onClick={sendEstimate}>

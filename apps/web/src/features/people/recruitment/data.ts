@@ -5,8 +5,8 @@ export const stageMeta: Record<Stage, { label: string; tone: "neutral" | "info" 
   Lead: { label: "Lead / Candidate", tone: "neutral" },
   Screening: { label: "Screening", tone: "info" },
   Interview: { label: "Interview", tone: "accent" },
-  Scorecard: { label: "Scorecard", tone: "warning" },
-  Approval: { label: "Founder approval", tone: "gold" },
+  Scorecard: { label: "Scorecard", tone: "info" },
+  Approval: { label: "Founder approval", tone: "warning" },
   Offer: { label: "Offer", tone: "success" },
   Joined: { label: "Joined", tone: "success" },
   Rejected: { label: "Rejected", tone: "danger" },
@@ -169,13 +169,13 @@ export const seedCandidates: Candidate[] = [
 ];
 
 export const sourceTone: Record<Source, "accent" | "info" | "gold" | "success" | "neutral" | "warning"> = {
-  "Employee referral": "success",
-  Naukri: "info",
-  LinkedIn: "info",
-  "Instagram campaign": "accent",
-  "Campus — PSG": "gold",
-  "Campus — Kumaraguru": "gold",
-  "Train-to-hire": "warning",
+  "Employee referral": "accent",
+  Naukri: "neutral",
+  LinkedIn: "neutral",
+  "Instagram campaign": "neutral",
+  "Campus — PSG": "neutral",
+  "Campus — Kumaraguru": "neutral",
+  "Train-to-hire": "neutral",
   "HR consultant": "neutral",
 };
 

@@ -145,7 +145,7 @@ export const statusMeta: Record<InvoiceStatus, { label: string; tone: "neutral" 
   draft: { label: "Draft", tone: "outline" },
   paid: { label: "Paid", tone: "success" },
   partial: { label: "Partially paid", tone: "warning" },
-  due: { label: "Due", tone: "info" },
+  due: { label: "Due", tone: "warning" },
   overdue: { label: "Overdue", tone: "danger" },
 };
 

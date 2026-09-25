@@ -93,7 +93,7 @@ export function Leaderboard({
                 <div className="flex items-center gap-1.5">
                   <span className="truncate text-body font-medium">{p.name}</span>
                   {appeal && (
-                    <Badge tone="warning" className="text-body">
+                    <Badge tone="warning">
                       Under review
                     </Badge>
                   )}
@@ -103,16 +103,16 @@ export function Leaderboard({
               <Badge tone={playerMeta[r.player].tone} className="hidden sm:inline-flex">
                 {r.player === "A" ? "A" : r.player === "C" ? "C" : r.player.replace("-", " · ")}
               </Badge>
-              <span className={cn("flex w-10 items-center justify-end gap-0.5 text-body tabular", r.trend >= 0 ? "text-success" : "text-danger")}>
+              <span className={cn("flex w-10 shrink-0 items-center justify-end gap-0.5 text-body tabular", r.trend >= 0 ? "text-success" : "text-danger")}>
                 {r.trend >= 0 ? <TrendingUp className="size-3" /> : <TrendingDown className="size-3" />}
                 {Math.abs(r.trend)}
               </span>
-              <span className="w-10 text-right text-body font-semibold tabular">{r.score.toFixed(0)}</span>
+              <span className="w-10 shrink-0 text-right text-body font-semibold tabular">{r.score.toFixed(0)}</span>
               <Tooltip content={appeal ? "Appeal already filed" : "Appeal this score"}>
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  className="size-7 opacity-60 group-hover:opacity-100"
+                  className="size-7 opacity-60 group-hover:opacity-100 focus-visible:opacity-100"
                   disabled={!!appeal}
                   onClick={() => onAppeal(r.id)}
                   aria-label={`Appeal score for ${p.name}`}
@@ -140,7 +140,7 @@ export function IncentivePool() {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex-wrap">
         <div className="flex items-start gap-3">
           <span className="inline-flex size-10 items-center justify-center rounded-xl bg-accent-soft text-accent-strong">
             <Wallet className="size-5" />
@@ -173,7 +173,7 @@ export function IncentivePool() {
         )}
       </CardHeader>
       <CardContent>
-        <div className="grid gap-x-10 gap-y-3 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-10 gap-y-3 md:grid-cols-2">
           {shares.map((s) => {
             const p = personById(s.id);
             return (
@@ -201,8 +201,9 @@ export function IncentivePool() {
         {excluded.length > 0 && (
           <div className="mt-5 rounded-xl border border-dashed border-border px-4 py-3 text-body text-muted-foreground">
             Not eligible this quarter:{" "}
-            {excluded.map((e) => (
-              <span key={e.id} className="font-medium text-foreground">
+            {excluded.map((e, i) => (
+              <span key={e.id} className="font-medium text-text-primary">
+                {i > 0 && ", "}
                 {personById(e.id).name} ({e.score.toFixed(0)})
               </span>
             ))}{" "}

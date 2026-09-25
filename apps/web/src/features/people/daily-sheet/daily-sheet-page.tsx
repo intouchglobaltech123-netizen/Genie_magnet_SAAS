@@ -56,7 +56,7 @@ export function DailySheetPage() {
         }
       />
 
-      <div className="mb-5 flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 shadow-card glow-accent">
+      <div className="mb-5 flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 shadow-card">
         <Badge tone="gold" className="mr-1">
           Paper → digital
         </Badge>

@@ -18,7 +18,7 @@ export function RevenueTrendCard() {
   const totalContracted = revenueTrend.reduce((s, r) => s + r.contracted, 0);
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex-wrap">
         <div>
           <CardTitle>Revenue trend</CardTitle>
           <CardDescription>Contracted vs collected · Apr – Sep 2026</CardDescription>
@@ -42,22 +42,12 @@ export function RevenueTrendCard() {
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={revenueTrend} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-              <defs>
-                <linearGradient id="gContracted" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gCollected" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-chart-2)" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="var(--color-chart-2)" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
+              <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
               <XAxis dataKey="month" {...axisProps} />
               <YAxis {...axisProps} tickFormatter={(v: number) => inrCompact(v)} width={56} />
               <Tooltip {...tooltipStyle} cursor={{ stroke: "var(--color-border)" }} formatter={(v) => inr(Number(v))} />
-              <Area type="monotone" dataKey="contracted" name="Contracted" stroke="var(--color-chart-1)" strokeWidth={2} fill="url(#gContracted)" />
-              <Area type="monotone" dataKey="collected" name="Collected" stroke="var(--color-chart-2)" strokeWidth={2} fill="url(#gCollected)" />
+              <Area type="monotone" dataKey="contracted" name="Contracted" stroke="var(--color-chart-1)" strokeWidth={2} fill="var(--color-chart-1)" fillOpacity={0.06} />
+              <Area type="monotone" dataKey="collected" name="Collected" stroke="var(--color-chart-2)" strokeWidth={2} fill="var(--color-chart-2)" fillOpacity={0.06} />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -96,8 +86,8 @@ export function PipelineByStageCard() {
       </CardHeader>
       <CardContent className="flex-1 space-y-2">
         {counts.map(({ stage, count }) => (
-          <Link key={stage} href="/production" className="group grid grid-cols-[112px_1fr_24px] items-center gap-3 text-body">
-            <span className="truncate text-muted-foreground group-hover:text-foreground">{stage}</span>
+          <Link key={stage} href="/production" className="group grid grid-cols-[112px_1fr_24px] items-center gap-3 rounded-md text-body focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
+            <span className="truncate text-muted-foreground group-hover:text-text-primary">{stage}</span>
             <div className="h-5 rounded-md bg-muted/60">
               <div
                 className={cn("h-full rounded-md transition-all duration-500", stageBar[stageTone[stage]])}
@@ -137,7 +127,7 @@ export function PortfolioCard() {
         </Button>
       </CardHeader>
       <CardContent>
-        <div className="flex items-center gap-5">
+        <div className="flex flex-col items-center gap-5 sm:flex-row">
           <div className="relative size-32 shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -154,7 +144,7 @@ export function PortfolioCard() {
               <span className="text-body text-muted-foreground">/ month</span>
             </div>
           </div>
-          <div className="min-w-0 flex-1 space-y-2.5">
+          <div className="w-full min-w-0 flex-1 space-y-2.5">
             {clients
               .slice()
               .sort((a, b) => b.monthlyValue - a.monthlyValue)

@@ -4,12 +4,13 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Info, MessageSquareWarning, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Film, Info, MessageSquareWarning, ShieldCheck, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, EmptyState } from "@/components/ui/feedback";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useDemo } from "@/lib/store";
@@ -57,13 +58,17 @@ export function ReviewPage() {
 
   if (!video || video.clientId !== PORTAL_CLIENT_ID || !version) {
     return (
-      <Card className="mx-auto max-w-md p-8 text-center">
-        <div className="text-subheading font-semibold">This video isn&apos;t available</div>
-        <p className="mt-1 text-body text-muted-foreground">It may not be shared with your account yet.</p>
-        <Button className="mt-4" variant="outline" asChild>
-          <Link href="/portal">Back to overview</Link>
-        </Button>
-      </Card>
+      <EmptyState
+        className="mx-auto max-w-md"
+        icon={Film}
+        title="This video isn't available"
+        description="It may not be shared with your account yet."
+        action={
+          <Button variant="outline" asChild>
+            <Link href="/portal">Back to overview</Link>
+          </Button>
+        }
+      />
     );
   }
 
@@ -131,7 +136,7 @@ export function ReviewPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div className="min-w-0">
-          <Link href="/portal" className="inline-flex items-center gap-1 text-body text-muted-foreground hover:text-foreground">
+          <Link href="/portal" className="inline-flex items-center gap-1 rounded-md text-body text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35">
             <ArrowLeft className="size-3.5" /> Overview
           </Link>
           <h1 className="mt-2 truncate text-heading font-semibold tracking-tight">{video.title}</h1>
@@ -140,14 +145,16 @@ export function ReviewPage() {
             <span>{video.platform.join(", ")}</span>
           </div>
         </div>
-        <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1">
+        <div className="scrollbar-thin flex max-w-full items-center gap-1 overflow-x-auto rounded-xl border border-border bg-card p-1" role="group" aria-label="Versions">
           {video.versions.map((v) => (
             <button
               key={v.id}
+              type="button"
+              aria-pressed={v.id === version.id}
               onClick={() => switchVersion(v.id)}
               className={cn(
-                "flex cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-body font-medium transition",
-                v.id === version.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                "flex shrink-0 cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-body font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+                v.id === version.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted hover:text-text-primary",
               )}
             >
               {v.label}
@@ -163,7 +170,7 @@ export function ReviewPage() {
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="space-y-4">
           <ReviewPlayer
             video={video}
@@ -185,7 +192,7 @@ export function ReviewPage() {
           <Card className="p-4">
             <div className="flex flex-col gap-4 md:flex-row md:items-center">
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 text-body">
+                <div className="flex flex-wrap items-center gap-2 text-body">
                   <span className="font-medium">
                     Revisions used {video.revisionsUsed} of {allowance}
                   </span>
@@ -195,13 +202,13 @@ export function ReviewPage() {
                     ))}
                   </span>
                 </div>
-                <p className="mt-1 flex items-center gap-1.5 text-body text-muted-foreground">
-                  <ShieldCheck className="size-3.5 text-success" /> Corrections of our own mistakes never count against your allowance.
+                <p className="mt-1 flex items-start gap-1.5 text-body text-muted-foreground [&>svg]:mt-[3px]">
+                  <ShieldCheck className="size-3.5 shrink-0 text-success" /> Corrections of our own mistakes never count against your allowance.
                 </p>
               </div>
 
               {reviewable ? (
-                <div className="flex shrink-0 gap-2">
+                <div className="flex shrink-0 flex-wrap gap-2">
                   <Tooltip content={openNotes.length ? `Send ${openNotes.length} note(s) to the team` : "Add at least one comment describing what to change"}>
                     <span>
                       <Button variant="outline" onClick={() => setChangesOpen(true)} disabled={openNotes.length === 0}>
@@ -235,7 +242,7 @@ export function ReviewPage() {
           {version.status === "approved" && (
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
               <Card className="flex items-start gap-3 border-success/30 bg-success-soft p-4">
-                <Sparkles className="mt-0.5 size-4 text-success" />
+                <Sparkles className="mt-0.5 size-4 shrink-0 text-success" />
                 <div className="text-body">
                   <div className="font-medium text-success">Approval recorded</div>
                   <div className="mt-0.5 text-muted-foreground">
@@ -247,7 +254,7 @@ export function ReviewPage() {
             </motion.div>
           )}
 
-          <div className="flex gap-2 rounded-xl bg-muted/60 p-3 text-body text-muted-foreground">
+          <div className="flex gap-2 rounded-xl border border-border-subtle bg-surface-secondary p-3 text-body text-muted-foreground">
             <Info className="mt-0.5 size-3.5 shrink-0" />
             <span>
               {version.notes} · uploaded {fmtDate(version.createdAt, { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" })}. Click the timeline to jump, or click a
@@ -281,7 +288,7 @@ export function ReviewPage() {
             <DialogDescription>{video.title}</DialogDescription>
           </DialogHeader>
           <DialogBody className="space-y-4">
-            <div className="rounded-xl border border-border bg-muted/50 p-4 text-body leading-relaxed">
+            <div className="rounded-xl border border-border bg-surface-secondary p-4 text-body leading-relaxed">
               You are approving <span className="font-semibold">{version.label}</span> exactly as shown.{" "}
               <span className="font-semibold">Silence is not approval</span> — only this action publishes the video.
             </div>
@@ -293,11 +300,12 @@ export function ReviewPage() {
               {openNotes.length > 0 && <li className="text-warning">• {openNotes.length} open comment(s) on this version — approving means you accept it without those changes.</li>}
             </ul>
             <label className="flex cursor-pointer items-center gap-2.5 text-body">
-              <Checkbox checked={watched} onCheckedChange={(v) => setWatched(v === true)} />I have watched the full video
+              <Checkbox checked={watched} onCheckedChange={(v) => setWatched(v === true)} />
+              I have watched the full video
             </label>
           </DialogBody>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setApproveOpen(false)}>
+            <Button variant="outline" onClick={() => setApproveOpen(false)}>
               Not yet
             </Button>
             <Button variant="success" onClick={approve} disabled={!watched}>
@@ -325,7 +333,7 @@ export function ReviewPage() {
                 </li>
               ))}
             </ul>
-            <div className={cn("rounded-xl p-3 text-body", exceeds ? "bg-warning-soft text-warning" : "bg-primary-soft text-primary")}>
+            <Alert tone={exceeds ? "warning" : "info"}>
               {exceeds ? (
                 <>You&apos;ve used all {allowance} included rounds. We&apos;ll check your notes and send an estimate before doing any billable work.</>
               ) : (
@@ -333,10 +341,10 @@ export function ReviewPage() {
                   If these are new preferences, this uses round {usedAfter} of {allowance}. If anything is our mistake, we fix it free and it won&apos;t count.
                 </>
               )}
-            </div>
+            </Alert>
           </DialogBody>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setChangesOpen(false)}>
+            <Button variant="outline" onClick={() => setChangesOpen(false)}>
               Keep reviewing
             </Button>
             <Button variant="default" onClick={sendChanges}>
@@ -359,7 +367,7 @@ function daysLabel(date: string) {
 
 function StatusPill({ tone, text }: { tone: "success" | "warning" | "neutral"; text: string }) {
   return (
-    <Badge tone={tone} className="h-8 shrink-0 px-3 text-body" dot>
+    <Badge tone={tone} className="min-h-8 whitespace-normal px-3 py-1 md:max-w-sm" dot>
       {text}
     </Badge>
   );

@@ -83,7 +83,7 @@ export function EventDetailsDialog({
                 </p>
               )}
               {moving && (
-                <Field label="Move to date">
+                <Field label="Move to date" required>
                   <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
                 </Field>
               )}
@@ -181,27 +181,27 @@ export function NewEventDialog({
           <DialogDescription>Adds to the company calendar and notifies attendees on WhatsApp.</DialogDescription>
         </DialogHeader>
         <DialogBody className="space-y-4">
-          <Field label="Title">
+          <Field label="Title" required>
             <Input autoFocus value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Kaveri Diwali campaign — script read-through" />
           </Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Type">
+            <Field label="Type" required>
               <Select value={type} onValueChange={(v) => setType(v as EventType)} options={typeOptions} />
             </Field>
-            <Field label="Date">
+            <Field label="Date" required>
               <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
             </Field>
           </div>
           <label className="flex cursor-pointer items-center gap-2 text-body">
-            <input type="checkbox" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} className="accent-[var(--color-primary)]" />
+            <input type="checkbox" checked={allDay} onChange={(e) => setAllDay(e.target.checked)} className="size-4 accent-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35" />
             All-day event
           </label>
           {!allDay && (
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Start">
+              <Field label="Start" required>
                 <Input type="time" value={start} onChange={(e) => setStart(e.target.value)} />
               </Field>
-              <Field label="End">
+              <Field label="End" required>
                 <Input type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
               </Field>
             </div>

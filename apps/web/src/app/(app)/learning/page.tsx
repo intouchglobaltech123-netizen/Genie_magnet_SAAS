@@ -11,6 +11,7 @@ export default function LearningPage() {
         title="Learning"
         description="Role-based training paths hosted on the Genie Magnet LMS, assignments with due dates, and a live skill matrix to spot single points of failure."
         depth="preview"
+        className="mb-0"
       />
       <LearningView />
     </div>

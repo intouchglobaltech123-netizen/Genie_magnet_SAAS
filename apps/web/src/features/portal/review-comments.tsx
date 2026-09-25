@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Clock, FileImage, Mic, Paperclip, Pause, Play, Send, Square, X } from "lucide-react";
+import { Clock, FileImage, MessageSquare, Mic, Paperclip, Pause, Play, Send, Square, X } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/feedback";
 import { Textarea } from "@/components/ui/input";
 import type { ClientComment } from "@/lib/types";
 import { cn, fmtDate } from "@/lib/utils";
@@ -89,9 +90,9 @@ export function ReviewComments({
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
         <div>
-          <div className="text-body font-semibold">Comments on {versionLabel}</div>
+          <div className="text-subheading font-semibold">Comments on {versionLabel}</div>
           <div className="text-body text-muted-foreground">
             {comments.length} total · {open} open
           </div>
@@ -103,9 +104,13 @@ export function ReviewComments({
 
       <div ref={listRef} className="scrollbar-thin min-h-[220px] flex-1 space-y-1 overflow-y-auto p-2 lg:max-h-[440px]">
         {sorted.length === 0 && (
-          <div className="px-4 py-10 text-center text-body text-muted-foreground">
-            No comments yet. Pause anywhere and leave a note — it will be pinned to that exact moment.
-          </div>
+          <EmptyState
+            compact
+            icon={MessageSquare}
+            title="No comments yet"
+            description="Pause anywhere and leave a note — it will be pinned to that exact moment."
+            className="m-2"
+          />
         )}
         <AnimatePresence initial={false}>
           {sorted.map((c) => (
@@ -117,21 +122,21 @@ export function ReviewComments({
               animate={{ opacity: 1, y: 0 }}
               onClick={() => onSelect(c)}
               className={cn(
-                "flex w-full cursor-pointer gap-3 rounded-xl p-3 text-left transition",
+                "flex w-full cursor-pointer gap-3 rounded-xl p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                 c.id === activeId ? "bg-primary-soft ring-1 ring-primary/30" : "hover:bg-muted/70",
                 c.resolved && "opacity-70",
               )}
             >
               <Avatar name={c.author} size="sm" className="mt-0.5" />
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span className="text-body font-medium">{c.author}</span>
                   {c.timestamp && (
-                    <span className="rounded bg-muted px-1.5 font-mono text-body text-primary">{c.timestamp}</span>
+                    <span className="rounded-md bg-muted px-1.5 font-mono text-body text-primary">{c.timestamp}</span>
                   )}
                   <span className="ml-auto text-body text-muted-foreground">{fmtDate(c.at)}</span>
                 </div>
-                {c.kind === "voice" ? <VoiceNote text={c.text} /> : <p className="mt-1 text-body leading-relaxed">{c.text}</p>}
+                {c.kind === "voice" ? <VoiceNote text={c.text} /> : <p className="mt-1 break-words text-body leading-relaxed text-text-primary">{c.text}</p>}
                 {c.resolved && (
                   <Badge tone="success" className="mt-1.5">
                     Addressed in next version
@@ -150,9 +155,12 @@ export function ReviewComments({
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <button
+                type="button"
+                aria-pressed={pinTime}
+                aria-label={pinTime ? "Unpin from current frame" : "Pin to current frame"}
                 onClick={() => setPinTime((p) => !p)}
                 className={cn(
-                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 font-mono text-body transition",
+                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 font-mono text-body transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                   pinTime ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground line-through",
                 )}
               >
@@ -170,7 +178,7 @@ export function ReviewComments({
                 <span className="font-mono text-body text-danger">0:0{recording}</span>
                 <Bars active className="text-danger" />
                 <Button size="xs" variant="ghost" className="ml-auto" onClick={cancelRecording}>
-                  <Square className="!size-3" /> Cancel
+                  <Square /> Cancel
                 </Button>
               </div>
             ) : (
@@ -180,6 +188,7 @@ export function ReviewComments({
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) post();
                 }}
+                aria-label="Your comment"
                 placeholder="What should change at this moment?"
                 className="min-h-[76px] resize-none"
               />
@@ -200,12 +209,12 @@ export function ReviewComments({
               </div>
             )}
 
-            <div className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center gap-1">
               <Button size="xs" variant="ghost" onClick={startRecording} disabled={recording !== null || !!voice}>
-                <Mic className="!size-3.5" /> Record voice note
+                <Mic /> Record voice note
               </Button>
               <Button size="xs" variant="ghost" onClick={attach} disabled={!!attachment}>
-                <Paperclip className="!size-3.5" /> Attach
+                <Paperclip /> Attach
               </Button>
               <Button size="sm" variant="accent" className="ml-auto" onClick={post} disabled={!text.trim() && !voice}>
                 <Send /> Post
@@ -220,9 +229,9 @@ export function ReviewComments({
 
 function Chip({ children, onRemove }: { children: React.ReactNode; onRemove: () => void }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-body">
+    <span className="inline-flex max-w-full items-center gap-1.5 rounded-md bg-muted px-2 py-1 text-body text-text-secondary">
       {children}
-      <button onClick={onRemove} className="cursor-pointer text-muted-foreground hover:text-foreground" aria-label="Remove">
+      <button type="button" onClick={onRemove} className="shrink-0 cursor-pointer rounded-sm text-muted-foreground hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35" aria-label="Remove">
         <X className="size-3" />
       </button>
     </span>
@@ -262,10 +271,18 @@ function VoiceNote({ text }: { text: string }) {
       <span
         role="button"
         tabIndex={0}
+        aria-label={playing ? "Pause voice note" : "Play voice note"}
         onClick={toggle}
-        className="inline-flex items-center gap-2 rounded-full bg-muted py-1 pl-1 pr-3 text-primary"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            e.stopPropagation();
+            setPlaying((p) => !p);
+          }
+        }}
+        className="inline-flex items-center gap-2 rounded-full bg-muted py-1 pl-1 pr-3 text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
       >
-        <span className="flex size-6 items-center justify-center rounded-full bg-primary text-white">
+        <span className="flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground">
           {playing ? <Pause className="size-3 fill-current" /> : <Play className="ml-0.5 size-3 fill-current" />}
         </span>
         <Bars active={playing} />

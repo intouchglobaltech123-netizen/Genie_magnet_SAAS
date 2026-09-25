@@ -8,20 +8,20 @@ import { AvatarStack } from "@/components/ui/avatar";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Progress } from "@/components/ui/progress";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
 import { clientById, daysBetween, kitItems, personById, shoots, TODAY } from "@/lib/mock/core";
 import type { Shoot } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import { ClientTag } from "../bits";
+import { ClientTag, Segmented } from "../bits";
 import { clientTint, fmt } from "../lib";
 import { defaultKit, useProduction, useProductionHydration } from "../store";
 
 export const shootStatusMeta: Record<Shoot["status"], { label: string; tone: BadgeTone }> = {
   planned: { label: "Planned", tone: "neutral" },
   packed: { label: "Kit packed", tone: "info" },
-  "on-shoot": { label: "On shoot", tone: "accent" },
+  "on-shoot": { label: "On shoot", tone: "info" },
   returned: { label: "Kit returned", tone: "warning" },
   closed: { label: "Closed", tone: "success" },
 };
@@ -63,23 +63,29 @@ export function ShootsList() {
         <StatCard label="Open kit incidents" value={incidents.length} icon={AlertOctagon} tone={incidents.length ? "danger" : "success"} hint={incidents.length ? "missing on return" : "all items accounted"} />
       </div>
 
-      <div className="mb-4 inline-flex rounded-lg bg-muted p-1">
-        {(["upcoming", "completed"] as const).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setTab(t)}
-            className={cn(
-              "h-7 cursor-pointer rounded-md px-3 text-body font-medium capitalize text-muted-foreground transition",
-              tab === t && "bg-card text-foreground shadow-sm",
-            )}
-          >
-            {t} <span className="ml-1 tabular text-muted-foreground">{t === "upcoming" ? upcoming.length : completed.length}</span>
-          </button>
-        ))}
-      </div>
+      <Segmented
+        className="mb-4"
+        value={tab}
+        onChange={setTab}
+        options={(["upcoming", "completed"] as const).map((t) => ({
+          value: t,
+          label: (
+            <span className="capitalize">
+              {t} <span className="ml-1 tabular text-muted-foreground">{t === "upcoming" ? upcoming.length : completed.length}</span>
+            </span>
+          ),
+        }))}
+      />
 
-      <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+      {!list.length && (
+        <EmptyState
+          icon={Camera}
+          title={tab === "upcoming" ? "No upcoming shoots" : "No completed shoots yet"}
+          description={tab === "upcoming" ? "Schedule a shoot to generate its shoot sheet and kit checklist." : "Shoots move here once their date has passed."}
+        />
+      )}
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 2xl:grid-cols-3">
         {list.map((s) => {
           const k = kit[s.id] ?? defaultKit(s);
           const total = kitItems[s.kit].length;
@@ -88,8 +94,8 @@ export function ShootsList() {
           const st = statusOf(s);
           const inDays = daysBetween(TODAY, s.date);
           return (
-            <Link key={s.id} href={`/shoots/${s.id}`}>
-              <Card className="group h-full p-5 transition hover:-translate-y-px hover:border-primary/40 hover:shadow-pop">
+            <Link key={s.id} href={`/shoots/${s.id}`} className="rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35">
+              <Card className="group h-full p-5 transition-colors hover:border-primary/40">
                 <div className="flex items-start gap-4">
                   <div className="flex w-14 shrink-0 flex-col items-center rounded-xl py-2" style={clientTint(s.clientId, 12)}>
                     <span className="text-body font-semibold uppercase">{fmt(s.date, "MMM")}</span>
@@ -97,7 +103,7 @@ export function ShootsList() {
                     <span className="mt-0.5 text-body opacity-80">{fmt(s.date, "EEE")}</span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <ClientTag clientId={s.clientId} />
                       <span className="font-mono text-body text-muted-foreground">{s.batchNo}</span>
                       <Badge tone={shootStatusMeta[st].tone} dot className="ml-auto">
@@ -110,18 +116,18 @@ export function ShootsList() {
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 grid grid-cols-3 gap-2 text-body">
-                  <div className="rounded-lg bg-muted/60 px-2.5 py-1.5">
+                <div className="mt-4 grid grid-cols-3 gap-2 text-body [&>div]:min-w-0">
+                  <div className="rounded-lg bg-surface-secondary px-2.5 py-1.5">
                     <div className="text-muted-foreground">Call time</div>
                     <div className="mt-0.5 flex items-center gap-1 font-medium">
                       <Clock className="size-3" /> {s.callTime}
                     </div>
                   </div>
-                  <div className="rounded-lg bg-muted/60 px-2.5 py-1.5">
+                  <div className="rounded-lg bg-surface-secondary px-2.5 py-1.5">
                     <div className="text-muted-foreground">Kit</div>
-                    <div className="mt-0.5 font-medium">{s.kit === "dual" ? "Dual cam" : "Single cam"}</div>
+                    <div className="mt-0.5 truncate font-medium">{s.kit === "dual" ? "Dual cam" : "Single cam"}</div>
                   </div>
-                  <div className="rounded-lg bg-muted/60 px-2.5 py-1.5">
+                  <div className="rounded-lg bg-surface-secondary px-2.5 py-1.5">
                     <div className="text-muted-foreground">Videos</div>
                     <div className="mt-0.5 flex items-center gap-1 font-medium">
                       <VideoIcon className="size-3" /> {s.videoIds.length}
@@ -143,12 +149,12 @@ export function ShootsList() {
                     tone={st === "returned" && received < total ? "warning" : st === "closed" ? "success" : "accent"}
                   />
                 </div>
-                <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-body text-muted-foreground">
-                  <span className="inline-flex items-center gap-2">
+                <div className="mt-4 flex items-center justify-between gap-2 border-t border-border pt-3 text-body text-muted-foreground">
+                  <span className="inline-flex min-w-0 items-center gap-2 truncate">
                     <AvatarStack names={[personById(s.cameraId).name, personById(s.directorId).name]} size="xs" />
                     {personById(s.cameraId).name.split(" ")[0]} · {personById(s.directorId).name.split(" ")[0]}
                   </span>
-                  <span>{clientById(s.clientId).city}</span>
+                  <span className="shrink-0">{clientById(s.clientId).city}</span>
                 </div>
               </Card>
             </Link>

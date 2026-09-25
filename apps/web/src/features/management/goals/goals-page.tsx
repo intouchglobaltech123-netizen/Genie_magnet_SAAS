@@ -36,6 +36,12 @@ export function GoalsPage() {
   const filtered = goals.filter(matches);
   const filtering = dept !== "all" || type !== "all" || status !== "all";
 
+  const clearFilters = () => {
+    setDept("all");
+    setType("all");
+    setStatus("all");
+  };
+
   const counts: Record<GoalStatus, number> = { "on-track": 0, "at-risk": 0, "off-track": 0 };
   goals.forEach((g) => counts[goalStatus(g)]++);
 
@@ -65,18 +71,19 @@ export function GoalsPage() {
       <AspirationHero />
 
       {/* Health + STOP cadence strip */}
-      <div className="mt-4 grid gap-3 md:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.6fr)]">
+      <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.6fr)]">
         {(Object.keys(GOAL_STATUS) as GoalStatus[]).map((s) => (
           <button
             key={s}
             type="button"
+            aria-pressed={status === s}
             onClick={() => {
               setStatus((cur) => (cur === s ? "all" : s));
               if (tab === "revenue") setTab("tree");
             }}
             className={cn(
-              "cursor-pointer rounded-2xl border bg-card p-4 text-left shadow-card transition hover:border-foreground/20",
-              status === s ? "border-foreground/40 ring-2 ring-ring/15" : "border-border",
+              "cursor-pointer rounded-2xl border bg-card p-5 text-left shadow-card transition hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+              status === s ? "border-primary/40 ring-2 ring-ring/15" : "border-border",
             )}
           >
             <div className="flex items-center gap-2 text-body text-muted-foreground">
@@ -94,11 +101,11 @@ export function GoalsPage() {
             </div>
           </button>
         ))}
-        <Card className="p-4">
+        <Card className="p-5">
           <div className="flex items-center gap-2 text-body text-muted-foreground">
             <CalendarClock className="size-3.5" /> Next STOP reviews
           </div>
-          <div className="mt-2 grid grid-cols-3 gap-2">
+          <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
             {(Object.keys(CADENCES) as Cadence[]).map((c) => (
               <div key={c}>
                 <div className="text-body font-medium">{CADENCES[c].label}</div>
@@ -149,11 +156,7 @@ export function GoalsPage() {
                 <Button
                   variant="ghost"
                   size="xs"
-                  onClick={() => {
-                    setDept("all");
-                    setType("all");
-                    setStatus("all");
-                  }}
+                  onClick={clearFilters}
                 >
                   <X /> Clear
                 </Button>
@@ -163,7 +166,7 @@ export function GoalsPage() {
         </div>
 
         <TabsContent value="tree">
-          <GoalTree goals={goals} matches={matches} />
+          <GoalTree goals={goals} matches={matches} onClearFilters={clearFilters} />
           {filtering && (
             <p className="mt-2 text-body text-muted-foreground">
               {filtered.length} matching goals · parent goals are shown faded for context.
@@ -174,7 +177,7 @@ export function GoalsPage() {
           <RevenueBreakdown />
         </TabsContent>
         <TabsContent value="owner">
-          <ByOwner goals={filtered} />
+          <ByOwner goals={filtered} onClearFilters={clearFilters} />
         </TabsContent>
       </Tabs>
 

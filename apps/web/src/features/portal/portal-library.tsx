@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Download, ExternalLink, Link2 } from "lucide-react";
+import { Download, ExternalLink, Film, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useDemo } from "@/lib/store";
 import { publishTimes } from "@/lib/mock/portal";
@@ -37,19 +38,28 @@ export function PortalLibrary() {
       </div>
 
       {shown.length === 0 ? (
-        <Card className="p-10 text-center text-body text-muted-foreground">Nothing here yet.</Card>
+        <EmptyState
+          icon={Film}
+          title={tab === "published" ? "Nothing live yet" : tab === "approved" ? "Nothing scheduled" : "Your library is empty"}
+          description="Videos appear here as soon as you approve them, with the exact version and where they went live."
+          action={
+            <Button variant="outline" asChild>
+              <Link href="/portal">Back to overview</Link>
+            </Button>
+          }
+        />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((v) => {
             const ver = v.versions.find((x) => x.status === "approved") ?? v.versions.at(-1);
             return (
               <Card key={v.id} className="group overflow-hidden">
-                <Link href={`/portal/review/${v.id}`}>
+                <Link href={`/portal/review/${v.id}`} aria-label={`Open ${v.title}`} className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 focus-visible:ring-inset">
                   <Poster video={v} className="aspect-video" />
                 </Link>
                 <div className="space-y-3 p-4">
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-body text-muted-foreground">{v.code}</span>
                       {v.stage === "Published" ? (
                         <Badge tone="success" dot>
@@ -66,11 +76,11 @@ export function PortalLibrary() {
                       {ver?.label} approved · {ver?.duration} · {v.platform.join(", ")}
                     </div>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {v.publishedUrl ? (
                       <Button size="xs" variant="outline" asChild>
                         <a href={v.publishedUrl} target="_blank" rel="noreferrer">
-                          <ExternalLink className="!size-3.5" /> View post
+                          <ExternalLink /> View post
                         </a>
                       </Button>
                     ) : (
@@ -79,7 +89,7 @@ export function PortalLibrary() {
                         variant="outline"
                         onClick={() => toast("Link copied", { description: `Private preview link for ${v.code} copied to clipboard` })}
                       >
-                        <Link2 className="!size-3.5" /> Copy preview link
+                        <Link2 /> Copy preview link
                       </Button>
                     )}
                     <Button
@@ -87,7 +97,7 @@ export function PortalLibrary() {
                       variant="ghost"
                       onClick={() => toast.success("Download started", { description: `${v.code}_${ver?.label}_master.mp4 · ${v.format === "Long-form" ? "1.2 GB" : "86 MB"}` })}
                     >
-                      <Download className="!size-3.5" /> Master file
+                      <Download /> Master file
                     </Button>
                   </div>
                 </div>

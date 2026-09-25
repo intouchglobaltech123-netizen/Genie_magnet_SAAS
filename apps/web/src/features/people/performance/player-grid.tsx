@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { classify, playerMeta, playerParams, type Params, type Player } from "./data";
 
 const quadrants: { key: Player; pos: string; bg: string }[] = [
-  { key: "B-Commitment", pos: "col-start-1 row-start-1", bg: "bg-accent-soft/50" },
+  { key: "B-Commitment", pos: "col-start-1 row-start-1", bg: "bg-warning-soft/40" },
   { key: "A", pos: "col-start-2 row-start-1", bg: "bg-success-soft/60" },
   { key: "C", pos: "col-start-1 row-start-2", bg: "bg-danger-soft/40" },
   { key: "B-Competence", pos: "col-start-2 row-start-2", bg: "bg-info-soft/50" },
@@ -43,18 +43,18 @@ export function PlayerGrid() {
                 return (
                   <div key={q.key} className={cn("min-h-40 rounded-xl border border-border p-3.5", q.pos, q.bg)}>
                     <div className="flex items-start justify-between gap-2">
-                      <div>
+                      <div className="min-w-0">
                         <Badge tone={meta.tone}>{meta.label}</Badge>
                         <div className="mt-1 text-body text-muted-foreground">{meta.desc}</div>
                       </div>
-                      <span className="text-subheading font-semibold tabular text-muted-foreground/70">{people.length}</span>
+                      <span className="text-subheading font-semibold tabular text-muted-foreground">{people.length}</span>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {people.map((e) => (
                         <PersonChip key={e.id} id={e.id} p={e.p} player={e.player} />
                       ))}
                     </div>
-                    <div className="mt-3 text-body font-medium text-foreground/70">→ {meta.action}</div>
+                    <div className="mt-3 text-body font-medium text-text-secondary">→ {meta.action}</div>
                   </div>
                 );
               })}
@@ -75,7 +75,8 @@ function PersonChip({ id, p, player }: { id: string; p: Params; player: Player }
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-card py-0.5 pl-0.5 pr-2.5 text-body font-medium shadow-card transition hover:border-primary/50"
+          aria-label={`${person.name} — view scores`}
+          className="flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-card py-0.5 pl-0.5 pr-2.5 text-body font-medium shadow-card transition hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
         >
           <Avatar name={person.name} size="sm" className="ring-0" />
           {person.name.split(" ")[0]}
@@ -106,7 +107,7 @@ function PersonChip({ id, p, player }: { id: string; p: Params; player: Player }
 function ParamGroup({ title, keys, p }: { title: string; keys: (keyof Params)[]; p: Params }) {
   return (
     <div>
-      <div className="mb-1.5 text-body font-medium uppercase tracking-wider text-muted-foreground">{title}</div>
+      <div className="mb-1.5 text-body font-medium text-muted-foreground">{title}</div>
       <div className="space-y-1.5">
         {keys.map((k) => (
           <div key={k} className="flex items-center justify-between text-body">

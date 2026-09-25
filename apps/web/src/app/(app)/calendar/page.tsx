@@ -11,6 +11,7 @@ export default function CalendarPage() {
         title="Company calendar"
         description="Shoots, reviews, leave, publish dates and holidays in one place. Locked events can't be moved — leave that collides with them needs a founder exception."
         depth="preview"
+        className="mb-0"
       />
       <CalendarView />
     </div>

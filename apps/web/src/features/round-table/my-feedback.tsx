@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, EyeOff, Handshake, Lock, Quote, Sparkles, Target, ThumbsUp, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowLeft, EyeOff, Handshake, Lock, MessagesSquare, Quote, Sparkles, Target, ThumbsUp, TrendingDown, TrendingUp, UserX } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { Avatar } from "@/components/ui/avatar";
@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/feedback";
 import { Select } from "@/components/ui/select";
 import { personById } from "@/lib/mock/core";
 import { useDemo } from "@/lib/store";
@@ -56,15 +57,15 @@ export function MyFeedback({ initialPerson, initialSession }: { initialPerson?: 
         description="Anonymous feedback from your Round Table. Nobody's name is shown — focus on the patterns, not on who said it."
         className="mb-0"
         actions={
-          <div className="flex flex-wrap gap-2">
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
             <Select
-              className="h-9 w-52"
+              className="h-9 w-full sm:w-52"
               value={personId}
               onValueChange={setPersonId}
               options={(session?.participantIds ?? []).map((pid) => ({ value: pid, label: personById(pid).name }))}
             />
             <Select
-              className="h-9 w-56"
+              className="h-9 w-full sm:w-56"
               value={session?.id}
               onValueChange={setSessionId}
               options={released.map((s) => ({ value: s.id, label: `${s.name}` }))}
@@ -74,9 +75,26 @@ export function MyFeedback({ initialPerson, initialSession }: { initialPerson?: 
       />
 
       {!session ? (
-        <Card className="p-10 text-center text-muted-foreground">No released Round Table yet.</Card>
+        <Card className="p-5">
+          <EmptyState
+            icon={MessagesSquare}
+            title="No released Round Table yet"
+            description="Feedback appears here once the manager has reviewed and released a session."
+            action={
+              <Button variant="secondary" size="sm" asChild>
+                <Link href="/round-table">View Round Tables</Link>
+              </Button>
+            }
+          />
+        </Card>
       ) : !session.participantIds.includes(personId) ? (
-        <Card className="p-10 text-center text-muted-foreground">{personById(personId).name} was not part of this Round Table.</Card>
+        <Card className="p-5">
+          <EmptyState
+            icon={UserX}
+            title={`${personById(personId).name} was not part of this Round Table`}
+            description="Pick another person or another released session above."
+          />
+        </Card>
       ) : (
         <FeedbackBody key={`${session.id}-${personId}`} session={session} personId={personId} previous={previous} />
       )}
@@ -108,7 +126,7 @@ function FeedbackBody({ session, personId, previous }: { session: RTSession; per
       <Card className="glow-accent overflow-hidden">
         <CardContent className="flex flex-col gap-5 p-6 md:flex-row md:items-center">
           <Avatar name={person.name} size="xl" className="size-16 text-heading" />
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <div className="text-heading font-semibold tracking-tight">{person.name}</div>
             <div className="text-body text-muted-foreground">
               {person.role} · {session.reviewTitle}
@@ -132,6 +150,7 @@ function FeedbackBody({ session, personId, previous }: { session: RTSession; per
               <Sparkles className="size-3.5" /> Top themes to work on
             </div>
             <div className="flex flex-wrap gap-1.5">
+              {themes.length === 0 && <span className="text-body text-muted-foreground">No recurring themes this time.</span>}
               {themes.slice(0, 4).map((t) => {
                 const before = prevThemes.find((p) => p.name === t.name)?.count;
                 return (
@@ -148,7 +167,7 @@ function FeedbackBody({ session, personId, previous }: { session: RTSession; per
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         {session.questions.map((q, i) => {
           const M = Q_META[i]!;
           const counts = new Map<string, number>();
@@ -161,7 +180,7 @@ function FeedbackBody({ session, personId, previous }: { session: RTSession; per
                   <span className={cn("inline-flex size-8 shrink-0 items-center justify-center rounded-lg", M.tone)}>
                     <M.icon className="size-4" />
                   </span>
-                  <div>
+                  <div className="min-w-0">
                     <CardTitle>{M.short}</CardTitle>
                     <CardDescription>{fillName(q, personId)}</CardDescription>
                   </div>
@@ -189,14 +208,14 @@ function FeedbackBody({ session, personId, previous }: { session: RTSession; per
         })}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <div className="flex items-start gap-3">
-              <span className="inline-flex size-8 items-center justify-center rounded-lg bg-accent-soft text-accent-strong">
+              <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-strong">
                 <Target className="size-4" />
               </span>
-              <div>
+              <div className="min-w-0">
                 <CardTitle>My commitment for the next 45 days</CardTitle>
                 <CardDescription>One specific change. It is checked at the next Round Table.</CardDescription>
               </div>
@@ -206,6 +225,7 @@ function FeedbackBody({ session, personId, previous }: { session: RTSession; per
             <Textarea
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
+              aria-label="My commitment for the next 45 days"
               placeholder="e.g. Flag overload to Ashwin before accepting a 4th rush job in a week."
               className="min-h-20"
             />

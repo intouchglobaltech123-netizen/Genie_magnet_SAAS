@@ -104,24 +104,24 @@ export function ProductionHub() {
             </TabsTrigger>
           </TabsList>
           <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
+            <div className="relative w-full sm:w-56">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search code, title, clip…" className="h-8 w-56 pl-8 text-body" />
+              <Input aria-label="Search videos" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search code, title, clip…" className="h-8 w-full pl-8" />
             </div>
             <Select
-              className="h-8 w-40 text-body"
+              className="h-8 w-40"
               value={client}
               onValueChange={setClient}
               options={[{ value: "all", label: "All clients" }, ...clients.map((c) => ({ value: c.id, label: c.name }))]}
             />
             <Select
-              className="h-8 w-40 text-body"
+              className="h-8 w-40"
               value={editor}
               onValueChange={setEditor}
               options={[{ value: "all", label: "All editors" }, ...editors.map((e) => ({ value: e.id, label: e.name }))]}
             />
             <Select
-              className="h-8 w-32 text-body"
+              className="h-8 w-32"
               value={urgency}
               onValueChange={(u) => setUrgency(u as "all" | Urgency)}
               options={[

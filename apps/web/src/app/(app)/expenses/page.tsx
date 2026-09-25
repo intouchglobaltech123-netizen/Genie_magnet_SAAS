@@ -18,7 +18,7 @@ export default function ExpensesPage() {
         actions={
           <>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => toast.success("September expense register exported", { description: "Expenses_Sep-2026.xlsx · with GST input credit summary for GSTR-3B" })}
             >

@@ -10,24 +10,34 @@ export function Select({
   options,
   placeholder,
   className,
+  id,
+  "aria-label": ariaLabel,
+  disabled,
 }: {
   value?: string;
   onValueChange?: (v: string) => void;
   options: { value: string; label: React.ReactNode }[];
   placeholder?: string;
   className?: string;
+  id?: string;
+  "aria-label"?: string;
+  disabled?: boolean;
 }) {
   return (
-    <SP.Root value={value} onValueChange={onValueChange}>
+    <SP.Root value={value} onValueChange={onValueChange} disabled={disabled}>
       <SP.Trigger
+        id={id}
+        aria-label={ariaLabel}
         className={cn(
-          "flex h-9 w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-input bg-surface px-3 text-body transition-colors hover:border-secondary/40 focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 data-[placeholder]:text-muted-foreground",
+          "flex h-9 w-full min-w-0 cursor-pointer items-center justify-between gap-2 whitespace-nowrap rounded-lg border border-input bg-surface px-3 text-body transition-colors hover:border-secondary/40 focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/15 data-[placeholder]:text-muted-foreground",
           className,
         )}
       >
-        <SP.Value placeholder={placeholder} />
+        <span className="min-w-0 truncate text-left">
+          <SP.Value placeholder={placeholder} />
+        </span>
         <SP.Icon>
-          <ChevronDown className="size-4 opacity-60" />
+          <ChevronDown className="size-4 shrink-0 opacity-60" />
         </SP.Icon>
       </SP.Trigger>
       <SP.Portal>

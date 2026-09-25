@@ -1,11 +1,12 @@
 "use client";
 
-import { AlertTriangle, Check, CircleDashed, Film, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, Check, CircleDashed, ClipboardList, Film, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
+import { EmptyState } from "@/components/ui/feedback";
 import { Tooltip } from "@/components/ui/tooltip";
 import { StageBadge } from "@/components/shared/video-bits";
 import { clientById } from "@/lib/mock/core";
@@ -18,9 +19,9 @@ import type { SheetRow } from "./seed";
 import { spanMinutes } from "./time";
 
 const timeCls =
-  "h-8 w-full rounded-md border border-input bg-card px-2 text-body tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed";
+  "h-8 w-full rounded-lg border border-input bg-card px-2 text-body tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 disabled:opacity-60 disabled:cursor-not-allowed";
 const textCls =
-  "h-8 w-full rounded-md border border-transparent bg-transparent px-2 text-body hover:border-input focus:border-input focus:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 placeholder:text-muted-foreground/60 disabled:hover:border-transparent disabled:cursor-not-allowed";
+  "h-8 w-full rounded-lg border border-transparent bg-transparent px-2 text-body hover:border-input focus:border-input focus:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 placeholder:text-muted-foreground/60 disabled:hover:border-transparent disabled:cursor-not-allowed";
 
 export function TaskTable({
   personId,
@@ -52,16 +53,16 @@ export function TaskTable({
   ];
 
   const cols = isEditor
-    ? "grid-cols-[28px_minmax(210px,1.7fr)_minmax(110px,0.9fr)_74px_96px_96px_70px_150px_32px]"
-    : "grid-cols-[28px_minmax(170px,1.1fr)_minmax(200px,1.6fr)_96px_96px_70px_150px_32px]";
+    ? "grid-cols-[28px_minmax(210px,1.7fr)_minmax(110px,0.9fr)_74px_96px_96px_70px_164px_32px]"
+    : "grid-cols-[28px_minmax(170px,1.1fr)_minmax(200px,1.6fr)_96px_96px_70px_164px_32px]";
 
   const upd = (id: string, patch: Partial<SheetRow>) => updateRow(personId, date, id, patch);
 
   return (
     <div className="overflow-x-auto scrollbar-thin">
-      <div className={cn("min-w-[960px]")}>
+      <div className={cn("min-w-[980px]")}>
         {/* header */}
-        <div className={cn("grid items-center gap-2 border-b border-border px-4 pb-2 text-body font-medium uppercase tracking-wider text-muted-foreground", cols)}>
+        <div className={cn("grid items-center gap-2 border-b border-border px-4 pb-2 text-body font-medium text-muted-foreground", cols)}>
           <span>#</span>
           {isEditor ? (
             <>
@@ -159,7 +160,8 @@ export function TaskTable({
                       <Tooltip content="Remove row">
                         <button
                           onClick={() => removeRow(personId, date, row.id)}
-                          className="cursor-pointer rounded-md p-1 text-muted-foreground opacity-0 transition hover:bg-danger-soft hover:text-danger group-hover:opacity-100"
+                          aria-label={`Remove row ${i + 1}`}
+                          className="cursor-pointer rounded-md p-1 text-muted-foreground opacity-0 transition hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 group-hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
                         >
                           <Trash2 className="size-3.5" />
                         </button>
@@ -182,8 +184,9 @@ export function TaskTable({
                   <button
                     disabled={locked}
                     onClick={() => upd(row.id, { productive: !row.productive })}
+                    aria-pressed={row.productive}
                     className={cn(
-                      "inline-flex h-6 cursor-pointer items-center gap-1 rounded-md px-2 text-body font-medium transition disabled:cursor-default",
+                      "inline-flex h-6 cursor-pointer items-center gap-1 rounded-md px-2 text-body font-medium leading-4 transition hover:brightness-95 disabled:cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                       row.productive ? "bg-success-soft text-success" : "bg-muted text-muted-foreground",
                     )}
                   >
@@ -221,8 +224,9 @@ export function TaskTable({
                             toggleEditStep(video.id, s);
                             toast(`${s} ${on ? "unticked" : "done"} on ${video.code}`, { description: "Synced to Video Production board" });
                           }}
+                          aria-pressed={on}
                           className={cn(
-                            "inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border px-2 text-body font-medium transition disabled:cursor-default",
+                            "inline-flex h-6 cursor-pointer items-center gap-1 rounded-full border px-2 text-body font-medium leading-4 transition disabled:cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                             on ? "border-transparent bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-foreground",
                           )}
                         >
@@ -239,7 +243,14 @@ export function TaskTable({
         </AnimatePresence>
 
         {rows.length === 0 && (
-          <div className="px-4 py-10 text-center text-body text-muted-foreground">No tasks logged yet for this day.</div>
+          <div className="px-4 py-4">
+            <EmptyState
+              compact
+              icon={ClipboardList}
+              title="No tasks logged yet"
+              description={locked ? "Nothing was logged for this day." : "Use “Add row” below to log your first task for this day."}
+            />
+          </div>
         )}
       </div>
       {!locked && (
@@ -261,19 +272,20 @@ export function TaskTable({
 
 function StatusToggle({ value, onChange, disabled }: { value: SheetRow["status"]; onChange: (v: SheetRow["status"]) => void; disabled?: boolean }) {
   return (
-    <div className="inline-flex h-8 items-center rounded-md bg-muted p-0.5 text-body font-medium">
+    <div role="group" aria-label="Row status" className="inline-flex h-8 items-center rounded-lg bg-muted p-0.5 text-body font-medium">
       {(["Pending", "Completed"] as const).map((s) => (
         <button
           key={s}
           disabled={disabled}
           onClick={() => onChange(s)}
+          aria-pressed={value === s}
           className={cn(
-            "h-7 cursor-pointer rounded-[5px] px-2 transition disabled:cursor-default",
+            "h-7 cursor-pointer rounded-md px-2 transition disabled:cursor-default focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
             value === s
               ? s === "Completed"
-                ? "bg-success text-white shadow-sm"
-                : "bg-warning text-white shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
+                ? "bg-card text-success shadow-sm ring-1 ring-inset ring-success/35"
+                : "bg-card text-warning shadow-sm ring-1 ring-inset ring-warning/35"
+              : "text-muted-foreground hover:text-text-primary",
           )}
         >
           {s}

@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, ArrowRight } from "lucide-react";
+import { AlertTriangle, ArrowRight, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Field, Input, Textarea } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/feedback";
+import { Field, Input, Label, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useDemo, type RevisionKind } from "@/lib/store";
 import { agreementById, clientById } from "@/lib/mock/core";
@@ -109,25 +110,27 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 
           {video && (
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-body font-medium">2 · Client comment</span>
+              <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+                <Label>2 · Client comment</Label>
                 <span className="text-body text-muted-foreground">
                   {clientById(video.clientId).name} · {video.stage}
                 </span>
               </div>
               <div className="max-h-44 space-y-1.5 overflow-y-auto scrollbar-thin">
-                {comments.length === 0 && <p className="text-body text-muted-foreground">No comments yet — type the feedback below.</p>}
+                {comments.length === 0 && <EmptyState compact icon={MessageSquare} title="No comments yet" description="Type the feedback below instead." />}
                 {comments.map((c) => (
                   <button
                     key={c.id}
+                    type="button"
+                    aria-pressed={c.id === commentId}
                     onClick={() => pickComment(c.id)}
                     className={cn(
-                      "flex w-full cursor-pointer gap-2 rounded-lg border p-2.5 text-left text-body transition",
+                      "flex w-full cursor-pointer gap-2 rounded-lg border p-2.5 text-left text-body transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                       c.id === commentId ? "border-primary bg-primary-soft" : "border-border hover:bg-muted/60",
                     )}
                   >
                     <span className="shrink-0 font-mono text-body text-primary">{c.timestamp ?? "—"}</span>
-                    <span className="flex-1">
+                    <span className="min-w-0 flex-1">
                       {c.text}
                       <span className="mt-0.5 block text-body text-muted-foreground">
                         {c.author} · {video.versions.find((v) => v.id === c.versionId)?.label} · {fmtDate(c.at)}
@@ -137,12 +140,14 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                   </button>
                 ))}
               </div>
-              <Textarea value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Summary of the change to be made" className="min-h-16" />
+              <Field label="Change summary" required>
+                <Textarea value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Summary of the change to be made" className="min-h-16" />
+              </Field>
             </div>
           )}
 
           <div className="space-y-2">
-            <span className="text-body font-medium">3 · Class</span>
+            <Label>3 · Class</Label>
             <div className="grid gap-2">
               {KINDS.map((k) => {
                 const m = kindMeta[k];
@@ -150,10 +155,12 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                 return (
                   <button
                     key={k}
+                    type="button"
+                    aria-pressed={kind === k}
                     onClick={() => setKind(k)}
                     className={cn(
-                      "flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-left transition",
-                      kind === k ? "border-primary ring-2 ring-primary/15" : "border-border hover:bg-muted/50",
+                      "flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+                      kind === k ? "border-primary bg-primary-soft/40 ring-2 ring-primary/15" : "border-border hover:bg-muted/50",
                     )}
                   >
                     <span className={cn("mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg", m.iconCls)}>
@@ -170,16 +177,16 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           </div>
 
           {video && (
-            <div className="rounded-xl border border-border bg-muted/40 p-4">
+            <div className="rounded-xl border border-border bg-surface-secondary p-4">
               <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Impact preview</div>
-              <div className="mt-3 flex items-center gap-3">
+              <div className="mt-3 flex items-center gap-2 sm:gap-3">
                 <AllowanceMeter used={before} allowance={allowance} label="Before" />
-                <ArrowRight className="size-4 text-muted-foreground" />
+                <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                 <AllowanceMeter used={after} allowance={allowance} label="After" highlight={after !== before} danger={exceeds} />
               </div>
 
               {kind === "agency-correction" && (
-                <div className="mt-4 grid grid-cols-2 items-end gap-3">
+                <div className="mt-4 grid grid-cols-1 items-end gap-3 sm:grid-cols-2">
                   <Field label="Rework hours (est.)">
                     <Input type="number" min={0} value={hours} onChange={(e) => setHours(e.target.value)} />
                   </Field>
@@ -191,7 +198,7 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
               )}
               {kind === "out-of-scope" && (
                 <div className="mt-4 space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <Field label="Estimate to client (₹)">
                       <Input type="number" min={0} value={estimate} onChange={(e) => setEstimate(e.target.value)} />
                     </Field>
@@ -200,7 +207,7 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                     </Field>
                   </div>
                   <p className="text-body text-muted-foreground">
-                    Delivery moves {fmtDate(video.dueDate)} → <span className="font-medium text-foreground">{fmtDate(addDays(video.dueDate, Number(days) || 0))}</span>{" "}
+                    Delivery moves {fmtDate(video.dueDate)} → <span className="font-medium text-text-primary">{fmtDate(addDays(video.dueDate, Number(days) || 0))}</span>{" "}
                     if approved. Work is blocked until the client approves the estimate.
                   </p>
                 </div>
@@ -215,7 +222,7 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                   <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
                   <span>
                     Allowance exhausted. Agreement rules say extra rounds are out-of-scope.{" "}
-                    <button className="cursor-pointer font-medium underline" onClick={() => setKind("out-of-scope")}>
+                    <button type="button" className="cursor-pointer rounded-sm font-medium underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35" onClick={() => setKind("out-of-scope")}>
                       Reclassify
                     </button>
                   </span>
@@ -225,7 +232,7 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           )}
         </DialogBody>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button variant="accent" onClick={submit} disabled={!video || !summary.trim() || exceeds}>
@@ -239,8 +246,8 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
 
 function AllowanceMeter({ used, allowance, label, highlight, danger }: { used: number; allowance: number; label: string; highlight?: boolean; danger?: boolean }) {
   return (
-    <div className="flex-1 rounded-lg border border-border bg-card p-2.5">
-      <div className="flex items-center justify-between text-body text-muted-foreground">
+    <div className="min-w-0 flex-1 rounded-lg border border-border bg-card p-2.5">
+      <div className="flex items-center justify-between gap-2 text-body text-muted-foreground">
         {label}
         {highlight && <Badge tone={danger ? "danger" : "accent"}>+1</Badge>}
       </div>

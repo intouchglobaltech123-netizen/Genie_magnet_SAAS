@@ -53,7 +53,7 @@ export function CostingView() {
               </PopoverContent>
             </Popover>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => toast.success("Costing export ready", { description: "true-cost-sep-2026.xlsx · 20 videos, 5 cycles, rate card v3" })}
             >
@@ -80,7 +80,7 @@ export function CostingView() {
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Avg true cost · Reel" value={inr(avgReel)} icon={Scale} tone="accent" hint={`${reels.length} delivered reels · package share ₹4–5.3K each`} />
         <StatCard label="Margin on delivered work" value={pct(rev ? margin / rev : 0)} icon={TrendingUp} tone="success" hint={`${inr(margin)} on ${inr(rev)}`} />
         <StatCard

@@ -65,8 +65,8 @@ function Pill({ ev, onClick, compact }: { ev: CalEvent; onClick: () => void; com
     <button
       onClick={onClick}
       className={cn(
-        "flex w-full cursor-pointer items-center gap-1 truncate rounded-md px-1.5 text-left text-body font-medium transition hover:brightness-95",
-        compact ? "h-5" : "h-6",
+        "flex w-full cursor-pointer items-center gap-1 truncate rounded-md px-1.5 text-left text-body font-medium leading-4 transition hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+        compact ? "h-6" : "h-7",
         ev.status === "pending" && "border border-dashed",
       )}
       style={{ background: tint(c, 16), color: "var(--color-foreground)", borderColor: c }}
@@ -134,12 +134,16 @@ export function CalendarView() {
             </Button>
           </div>
           <h2 className="min-w-44 text-subheading font-semibold tracking-tight">{rangeLabel}</h2>
-          <div className="inline-flex rounded-lg bg-muted p-0.5 text-body">
+          <div role="group" aria-label="Calendar view" className="inline-flex rounded-lg bg-muted p-0.5 text-body">
             {(["week", "month"] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className={cn("cursor-pointer rounded-md px-3 py-1 font-medium capitalize text-muted-foreground", view === v && "bg-card text-foreground shadow-sm")}
+                aria-pressed={view === v}
+                className={cn(
+                  "cursor-pointer rounded-md px-3 py-1 font-medium capitalize text-muted-foreground transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+                  view === v && "bg-card text-text-primary shadow-sm",
+                )}
               >
                 {v}
               </button>
@@ -151,9 +155,10 @@ export function CalendarView() {
             <button
               key={t}
               onClick={() => setEnabled((e) => ({ ...e, [t]: !e[t] }))}
+              aria-pressed={enabled[t]}
               className={cn(
-                "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-body font-medium transition",
-                enabled[t] ? "border-border bg-card text-foreground" : "border-dashed border-border text-muted-foreground opacity-60",
+                "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-2.5 py-1 text-body font-medium transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+                enabled[t] ? "border-border bg-card text-text-primary" : "border-dashed border-border text-muted-foreground",
               )}
             >
               <span className="size-2 rounded-full" style={{ background: enabled[t] ? typeMeta[t].color : "var(--color-muted-foreground)" }} />
@@ -172,7 +177,7 @@ export function CalendarView() {
           <div className="overflow-x-auto scrollbar-thin">
             <div className="min-w-[860px]">
               {/* Day headers */}
-              <div className="grid grid-cols-[64px_repeat(7,1fr)] border-b border-border">
+              <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border">
                 <div />
                 {weekDays.map((d) => {
                   const today = iso(d) === TODAY;
@@ -192,8 +197,8 @@ export function CalendarView() {
                 })}
               </div>
               {/* All-day row */}
-              <div className="grid grid-cols-[64px_repeat(7,1fr)] border-b border-border">
-                <div className="px-2 py-2 text-right text-body uppercase tracking-wider text-muted-foreground">All day</div>
+              <div className="grid grid-cols-[72px_repeat(7,1fr)] border-b border-border">
+                <div className="px-2 py-2 text-right text-body leading-4 text-muted-foreground">All day</div>
                 {weekDays.map((d) => {
                   const list = (byDate.get(iso(d)) ?? []).filter((e) => !e.start);
                   return (
@@ -206,7 +211,7 @@ export function CalendarView() {
                 })}
               </div>
               {/* Time grid */}
-              <div className="grid grid-cols-[64px_repeat(7,1fr)]">
+              <div className="grid grid-cols-[72px_repeat(7,1fr)]">
                 <div className="relative" style={{ height: (END_H - START_H) * HOUR_PX }}>
                   {Array.from({ length: END_H - START_H }, (_, i) => (
                     <div key={i} className="tabular absolute right-2 -translate-y-1/2 text-body text-muted-foreground" style={{ top: i * HOUR_PX }}>
@@ -243,7 +248,7 @@ export function CalendarView() {
                           <button
                             key={ev.id}
                             onClick={() => setSelected(ev)}
-                            className="absolute z-10 cursor-pointer overflow-hidden rounded-md border-l-[3px] px-1.5 py-0.5 text-left text-body leading-tight transition hover:z-30 hover:shadow-pop"
+                            className="absolute z-10 cursor-pointer overflow-hidden rounded-md border-l-[3px] px-1.5 py-0.5 text-left text-body leading-4 transition hover:z-30 hover:shadow-pop focus-visible:z-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
                             style={{
                               top: top + 1,
                               height,
@@ -257,14 +262,14 @@ export function CalendarView() {
                               {ev.locked && <Lock className="size-3 shrink-0" />}
                               <span className="truncate">{ev.title}</span>
                             </div>
-                            {height > 34 && (
+                            {height > 38 && (
                               <div className="tabular truncate text-body text-muted-foreground">
                                 {early ? `Call ${to12(ev.start!)}` : to12(ev.start!)} – {to12(ev.end!)}
                               </div>
                             )}
                             {height > 60 && ev.location && (
                               <div className="flex items-center gap-0.5 truncate text-body text-muted-foreground">
-                                <MapPin className="size-2.5 shrink-0" />
+                                <MapPin className="size-3 shrink-0" />
                                 <span className="truncate">{ev.location}</span>
                               </div>
                             )}
@@ -302,7 +307,7 @@ export function CalendarView() {
                     <div
                       key={iso(d)}
                       className={cn(
-                        "min-h-[118px] space-y-1 border-border p-1.5",
+                        "min-h-36 space-y-1 border-border p-1.5",
                         i % 7 !== 0 && "border-l",
                         i >= 7 && "border-t",
                         !inMonth && "bg-muted/40",
@@ -313,7 +318,7 @@ export function CalendarView() {
                         <span
                           className={cn(
                             "tabular inline-flex size-6 items-center justify-center rounded-full text-body font-medium",
-                            !inMonth && "text-muted-foreground/60",
+                            !inMonth && "text-muted-foreground",
                             isToday && "bg-primary text-primary-foreground",
                           )}
                         >
@@ -326,7 +331,7 @@ export function CalendarView() {
                       {more > 0 && (
                         <Popover>
                           <PopoverTrigger asChild>
-                            <button className="cursor-pointer px-1.5 text-body font-medium text-muted-foreground hover:text-foreground">+{more} more</button>
+                            <button className="cursor-pointer rounded-md px-1.5 text-body font-medium text-muted-foreground hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35">+{more} more</button>
                           </PopoverTrigger>
                           <PopoverContent className="w-64 space-y-1">
                             <div className="mb-1 text-body font-semibold">{format(d, "EEEE, d MMM")}</div>

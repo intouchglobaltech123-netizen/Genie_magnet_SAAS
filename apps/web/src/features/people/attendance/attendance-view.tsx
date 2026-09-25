@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CalendarDays, CalendarRange, Inbox, Wallet } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { leaveBalances, leaveRequests, type LeaveRequest } from "@/lib/mock/people";
 import { TodayBoard } from "./today-board";
@@ -40,7 +41,7 @@ export function AttendanceView() {
         </TabsTrigger>
         <TabsTrigger value="leave">
           <Inbox /> Leave requests
-          {pending > 0 && <span className="tabular ml-0.5 rounded-full bg-warning px-1.5 text-body font-semibold text-white">{pending}</span>}
+          {pending > 0 && <Badge tone="warning" className="tabular ml-0.5 px-1.5">{pending}</Badge>}
         </TabsTrigger>
         <TabsTrigger value="balances">
           <Wallet /> Balances & holidays

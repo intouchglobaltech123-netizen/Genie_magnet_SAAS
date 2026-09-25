@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import { EmptyState } from "@/components/ui/feedback";
 import { assets, personById, TODAY } from "@/lib/mock/core";
 import { useDemo } from "@/lib/store";
 import type { Person } from "@/lib/types";
@@ -81,7 +82,7 @@ function ProfileBody({
             </DialogDescription>
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
               <StatusBadge status={status} />
-              <Badge tone={person.type === "employee" ? "accent" : "gold"}>
+              <Badge tone={person.type === "employee" ? "accent" : "neutral"}>
                 {person.type === "employee" ? "Employee" : "Freelancer"}
               </Badge>
               {manager && <Badge tone="outline">Reports to {manager.name}</Badge>}
@@ -126,7 +127,7 @@ function ProfileBody({
 export function StatusBadge({ status }: { status: Person["status"] }) {
   if (status === "on-leave")
     return (
-      <Badge tone="warning" dot>
+      <Badge tone="info" dot>
         On leave
       </Badge>
     );
@@ -156,7 +157,7 @@ function OverviewTab({ person }: { person: Person }) {
   const manager = person.managerId ? personById(person.managerId) : null;
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <a
           href={`mailto:${person.email}`}
           onClick={(e) => {
@@ -164,7 +165,7 @@ function OverviewTab({ person }: { person: Person }) {
             navigator.clipboard?.writeText(person.email).catch(() => {});
             toast.success("Email copied", { description: person.email });
           }}
-          className="flex items-center gap-2.5 rounded-xl border border-border p-3 text-body hover:bg-muted"
+          className="flex min-w-0 items-center gap-2.5 rounded-xl border border-border p-3 text-body hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
         >
           <Mail className="size-4 text-muted-foreground" />
           <span className="truncate">{person.email}</span>
@@ -172,7 +173,7 @@ function OverviewTab({ person }: { person: Person }) {
         <button
           type="button"
           onClick={() => toast.success("Calling via WhatsApp", { description: person.phone })}
-          className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-border p-3 text-left text-body hover:bg-muted"
+          className="flex cursor-pointer items-center gap-2.5 rounded-xl border border-border p-3 text-left text-body hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
         >
           <Phone className="size-4 text-muted-foreground" />
           <span className="tabular">{person.phone}</span>
@@ -204,7 +205,7 @@ function OverviewTab({ person }: { person: Person }) {
         </InfoRow>
       </div>
       <div>
-        <div className="mb-2 text-body font-medium uppercase tracking-wider text-muted-foreground">Skills</div>
+        <div className="mb-2 text-body font-medium text-muted-foreground">Skills</div>
         <div className="flex flex-wrap gap-1.5">
           {person.skills.map((s) => (
             <Badge key={s} tone="neutral" className="px-2.5 py-1 text-body">
@@ -231,7 +232,7 @@ function DocumentsTab({ person }: { person: Person }) {
       </div>
       <div className="divide-y divide-border rounded-xl border border-border">
         {docs.map((d) => (
-          <div key={d.key} className="flex items-center gap-3 px-4 py-3">
+          <div key={d.key} className="flex flex-wrap items-center gap-3 px-4 py-3">
             <span className="inline-flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
               <FileText className="size-4" />
             </span>
@@ -273,11 +274,7 @@ function AssetsTab({ person }: { person: Person }) {
   const mine = assets.filter((a) => a.custodianId === person.id);
   if (!mine.length)
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-10 text-center">
-        <Boxes className="mb-2 size-6 text-muted-foreground" />
-        <div className="text-body font-medium">No assets in custody</div>
-        <div className="text-body text-muted-foreground">Checked-out equipment will appear here.</div>
-      </div>
+      <EmptyState compact icon={Boxes} title="No assets in custody" description="Checked-out equipment will appear here." />
     );
   const total = mine.reduce((s, a) => s + a.purchaseValue, 0);
   return (
@@ -356,11 +353,11 @@ function TrainingTab({ person }: { person: Person }) {
 function PerformanceTab({ person }: { person: Person }) {
   const p = performanceFor(person);
   if (!p.score)
-    return <div className="rounded-xl border border-dashed border-border p-8 text-center text-body text-muted-foreground">{p.note}</div>;
+    return <EmptyState compact icon={TrendingUp} title="No scorecard yet" description={p.note} />;
   const tone = p.score >= 80 ? "success" : p.score >= 70 ? "warning" : "danger";
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-border p-4">
           <div className="text-body text-muted-foreground">Q3 composite</div>
           <div className="mt-1 text-heading font-semibold tabular">{p.score}</div>
@@ -454,7 +451,7 @@ function LifecycleTab({
               <s.icon className="size-4" />
             </span>
             <div className="pt-1">
-              <div className="flex items-center gap-2 text-body font-medium">
+              <div className="flex flex-wrap items-center gap-x-2 text-body font-medium">
                 {s.label}
                 <span className="text-body font-normal text-muted-foreground tabular">{fmtDate(s.date, longDate)}</span>
               </div>
@@ -465,15 +462,15 @@ function LifecycleTab({
       </ol>
 
       {!exitStarted ? (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-dashed border-border p-4">
+        <div className="flex flex-col gap-3 rounded-xl border border-dashed border-border p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="text-body">
             <div className="font-medium">Offboarding</div>
             <div className="text-muted-foreground">Starts a guided exit checklist with asset return and access revocation.</div>
           </div>
           <Button
-            variant="outline"
+            variant="danger"
             size="sm"
-            className="text-danger"
+            className="shrink-0"
             onClick={() => {
               onExitStarted(person.id);
               log(`Exit initiated for ${person.name} — offboarding checklist created`, "danger");

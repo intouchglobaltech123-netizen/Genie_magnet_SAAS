@@ -88,10 +88,10 @@ export function QcChecklist({ v, dense }: { v: Video; dense?: boolean }) {
           <ShieldAlert className="mt-0.5 size-4 shrink-0 text-danger" />
           <div>
             <div className="font-semibold text-danger">Mandatory check failed — stage held, corrective task created</div>
-            <ul className="mt-1 space-y-0.5 text-foreground/80">
+            <ul className="mt-1 space-y-0.5 text-text-secondary">
               {corrective.map((c) => (
                 <li key={c.id} className="flex items-center gap-1.5">
-                  <Wrench className="size-3 text-muted-foreground" /> Fix “{c.check}” — owner {personById(c.ownerId).name}
+                  <Wrench className="size-3 shrink-0 text-muted-foreground" /> Fix “{c.check}” — owner {personById(c.ownerId).name}
                 </li>
               ))}
             </ul>
@@ -134,7 +134,8 @@ export function QcChecklist({ v, dense }: { v: Video; dense?: boolean }) {
                     value={notes?.[c] ?? ""}
                     onChange={(e) => setNote(v.id, c, e.target.value)}
                     placeholder="Corrective action — what must be fixed, by whom?"
-                    className="h-8 text-body"
+                    aria-label={`Corrective action for ${c}`}
+                    className="h-8"
                   />
                 </div>
               )}

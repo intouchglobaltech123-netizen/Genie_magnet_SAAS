@@ -5,16 +5,16 @@ export const tooltipStyle: { contentStyle: CSSProperties; labelStyle: CSSPropert
     background: "var(--color-popover)",
     border: "1px solid var(--color-border)",
     borderRadius: 10,
-    boxShadow: "0 8px 24px -8px rgba(0,0,0,0.18)",
-    fontSize: 12,
+    boxShadow: "var(--shadow-md)",
+    fontSize: 13,
     padding: "8px 10px",
   },
-  labelStyle: { color: "var(--color-muted-foreground)", marginBottom: 4, fontWeight: 500 },
-  itemStyle: { color: "var(--color-foreground)", padding: 0 },
+  labelStyle: { color: "var(--color-text-muted)", marginBottom: 4, fontWeight: 500 },
+  itemStyle: { color: "var(--color-text-primary)", padding: 0 },
 };
 
 export const axisProps = {
   tickLine: false,
   axisLine: false,
-  tick: { fill: "var(--color-muted-foreground)", fontSize: 11 },
+  tick: { fill: "var(--color-text-muted)", fontSize: 12 },
 } as const;

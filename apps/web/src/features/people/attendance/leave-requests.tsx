@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, Check, Clapperboard, Lock, ShieldAlert, X, CalendarClock, FileWarning } from "lucide-react";
+import { AlertTriangle, Check, Clapperboard, Lock, ShieldAlert, X, CalendarClock, FileWarning, Inbox } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, Textarea } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/feedback";
 import { Tooltip } from "@/components/ui/tooltip";
 import { personById } from "@/lib/mock/core";
 import { leaveBalances, type LeaveRequest } from "@/lib/mock/people";
@@ -52,12 +53,16 @@ export function LeaveRequests({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-1 rounded-lg bg-muted p-1 text-body w-fit">
+      <div role="group" aria-label="Filter leave requests" className="flex w-fit items-center gap-1 rounded-lg bg-muted p-1 text-body">
         {(["all", "pending", "decided"] as const).map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
-            className={cn("cursor-pointer rounded-md px-3 py-1 font-medium capitalize text-muted-foreground", filter === f && "bg-card text-foreground shadow-sm")}
+            aria-pressed={filter === f}
+            className={cn(
+              "cursor-pointer rounded-md px-3 py-1 font-medium capitalize text-muted-foreground transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+              filter === f && "bg-card text-text-primary shadow-sm",
+            )}
           >
             {f} {f === "pending" && <span className="tabular ml-1 text-warning">{requests.filter((r) => r.status === "pending").length}</span>}
           </button>
@@ -169,7 +174,20 @@ export function LeaveRequests({
         );
       })}
 
-      {!shown.length && <Card className="p-10 text-center text-body text-muted-foreground">Nothing here — all caught up.</Card>}
+      {!shown.length && (
+        <EmptyState
+          icon={Inbox}
+          title={filter === "pending" ? "No pending requests" : "No leave requests"}
+          description="Nothing here — all caught up."
+          action={
+            filter !== "all" ? (
+              <Button variant="outline" size="sm" onClick={() => setFilter("all")}>
+                Show all requests
+              </Button>
+            ) : undefined
+          }
+        />
+      )}
 
       <Dialog open={!!exceptionFor} onOpenChange={(o) => !o && setExceptionFor(null)}>
         <DialogContent>
@@ -188,7 +206,7 @@ export function LeaveRequests({
                 </li>
               ))}
             </ul>
-            <Field label="Reason for exception" hint={`${reason.trim().length}/${MIN_REASON} characters minimum`}>
+            <Field label="Reason for exception" required hint={`${reason.trim().length}/${MIN_REASON} characters minimum`}>
               <Textarea
                 autoFocus
                 value={reason}

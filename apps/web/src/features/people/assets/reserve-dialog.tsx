@@ -68,7 +68,7 @@ function ReserveForm({
         <DialogDescription>Hold gear for a shoot. Clashes with existing bookings are blocked automatically.</DialogDescription>
       </DialogHeader>
       <DialogBody className="space-y-4">
-        <Field label="Asset">
+        <Field label="Asset" required>
           <Select
             value={tag}
             onValueChange={setTag}
@@ -77,15 +77,15 @@ function ReserveForm({
               .map((a) => ({ value: a.tag, label: `${a.tag} · ${a.name}` }))}
           />
         </Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Date">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Date" required>
             <Input type="date" value={date} min="2026-09-25" onChange={(e) => setDate(e.target.value)} />
           </Field>
-          <Field label="Reserved for">
+          <Field label="Reserved for" required>
             <Select value={personId} onValueChange={setPersonId} options={RESERVE_PEOPLE.map((id) => ({ value: id, label: personById(id).name }))} />
           </Field>
         </div>
-        <Field label="Shoot / purpose">
+        <Field label="Shoot / purpose" required>
           <Input value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="e.g. Nova Dental — Testimonials" />
         </Field>
 
@@ -95,7 +95,7 @@ function ReserveForm({
               <AlertOctagon className="mt-0.5 size-4 shrink-0" />
               <div>
                 <div className="font-semibold">Conflict — {tag} is already booked on {fmtDate(date, { day: "numeric", month: "short" })}</div>
-                <div className="mt-0.5 text-foreground/80">
+                <div className="mt-0.5 text-text-secondary">
                   {conflict.purpose}
                   {conflict.location ? ` · ${conflict.location}` : ""} · {personById(conflict.personId).name}
                 </div>
@@ -124,12 +124,11 @@ function ReserveForm({
         ) : null}
       </DialogBody>
       <DialogFooter>
-        <Button variant="outline" size="sm" onClick={onCancel}>
+        <Button variant="ghost" onClick={onCancel}>
           Cancel
         </Button>
         <Button
           variant="accent"
-          size="sm"
           disabled={!canConfirm}
           onClick={() => onConfirm({ tag, date, purpose: purpose.trim(), personId })}
         >

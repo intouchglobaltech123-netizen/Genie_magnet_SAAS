@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BellRing, IndianRupee, Search, Send } from "lucide-react";
+import { BellRing, FileSearch, IndianRupee, Search, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -58,19 +59,19 @@ export function InvoicesTable({
 
   return (
     <Card>
-      <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-3 border-b border-border px-5 py-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-wrap gap-1.5">
           {FILTERS.map((f) => (
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
               className={cn(
-                "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-body font-medium transition",
-                filter === f.key ? "border-foreground bg-foreground text-background" : "border-border bg-card text-muted-foreground hover:text-foreground",
+                "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                filter === f.key ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:border-border-strong hover:text-foreground",
               )}
             >
               {f.label}
-              <span className={cn("tabular text-body", filter === f.key ? "opacity-70" : "text-muted-foreground/70")}>{counts[f.key] ?? 0}</span>
+              <span className={cn("tabular", filter === f.key ? "opacity-70" : "text-muted-foreground")}>{counts[f.key] ?? 0}</span>
             </button>
           ))}
         </div>
@@ -84,13 +85,13 @@ export function InvoicesTable({
           <TR>
             <TH className="pl-5">Invoice</TH>
             <TH>Client · cycle</TH>
-            <TH className="text-right">Taxable</TH>
-            <TH className="text-right">GST 18%</TH>
-            <TH className="text-right">Total</TH>
+            <TH numeric>Taxable</TH>
+            <TH numeric>GST 18%</TH>
+            <TH numeric>Total</TH>
             <TH>Due</TH>
             <TH>Status</TH>
-            <TH className="text-right">Balance</TH>
-            <TH className="pr-5 text-right">Actions</TH>
+            <TH numeric>Balance</TH>
+            <TH numeric className="pr-5">Actions</TH>
           </TR>
         </THead>
         <TBody>
@@ -112,15 +113,15 @@ export function InvoicesTable({
                     {i.period} · {i.description}
                   </div>
                 </TD>
-                <TD className="text-right tabular">{inr(i.taxable)}</TD>
-                <TD className="text-right">
-                  <div className="tabular">{inr(i.gst)}</div>
+                <TD numeric className="whitespace-nowrap">{inr(i.taxable)}</TD>
+                <TD numeric className="whitespace-nowrap">
+                  <div>{inr(i.gst)}</div>
                   <div className="text-body text-muted-foreground">
                     {i.interState ? "IGST 18%" : "CGST 9% + SGST 9%"}
                   </div>
                 </TD>
-                <TD className="text-right font-medium tabular">{inr(i.total)}</TD>
-                <TD>
+                <TD numeric className="whitespace-nowrap font-medium">{inr(i.total)}</TD>
+                <TD className="whitespace-nowrap">
                   <div className="tabular">{fmtDate(i.dueDate)}</div>
                   {i.daysOverdue > 0 && <div className="text-body font-medium text-danger">{i.daysOverdue}d overdue</div>}
                 </TD>
@@ -132,7 +133,7 @@ export function InvoicesTable({
                     {i.status === "overdue" && i.received > 0 && <span className="text-body text-muted-foreground">part-paid</span>}
                   </div>
                 </TD>
-                <TD className={cn("text-right font-medium tabular", i.balance > 0 ? (i.daysOverdue > 0 ? "text-danger" : "text-foreground") : "text-muted-foreground")}>
+                <TD numeric className={cn("whitespace-nowrap font-medium", i.balance > 0 ? (i.daysOverdue > 0 ? "text-danger" : "text-foreground") : "text-muted-foreground")}>
                   {i.balance > 0 ? inr(i.balance) : "—"}
                   {i.reminders > 0 && i.balance > 0 && (
                     <div className="text-body font-normal text-muted-foreground">
@@ -177,18 +178,35 @@ export function InvoicesTable({
           })}
           {visible.length === 0 && (
             <TR>
-              <TD colSpan={9} className="py-10 text-center text-muted-foreground">
-                No invoices match these filters.
+              <TD colSpan={9} className="p-5">
+                <EmptyState
+                  compact
+                  icon={FileSearch}
+                  title="No invoices match these filters"
+                  description="Try another status or clear the search to see all invoices."
+                  action={
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setFilter("all");
+                        setQ("");
+                      }}
+                    >
+                      Clear filters
+                    </Button>
+                  }
+                />
               </TD>
             </TR>
           )}
         </TBody>
       </Table>
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-5 py-3 text-body text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-strong bg-surface-secondary px-5 py-3 text-body text-muted-foreground">
         <span>
-          Showing {visible.length} of {rows.length} · taxable <span className="font-medium text-foreground tabular">{inr(totals.taxable)}</span> · billed{" "}
-          <span className="font-medium text-foreground tabular">{inr(totals.total)}</span> · open{" "}
-          <span className="font-medium text-foreground tabular">{inr(totals.balance)}</span>
+          Showing {visible.length} of {rows.length} · taxable <span className="font-semibold text-foreground tabular">{inr(totals.taxable)}</span> · billed{" "}
+          <span className="font-semibold text-foreground tabular">{inr(totals.total)}</span> · open{" "}
+          <span className="font-semibold text-foreground tabular">{inr(totals.balance)}</span>
         </span>
         {filter === "all" && !q && rows.length > 16 && (
           <Button variant="ghost" size="xs" onClick={() => setShowAll((v) => !v)}>

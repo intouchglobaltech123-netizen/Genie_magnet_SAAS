@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Inbox } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
+import { EmptyState } from "@/components/ui/feedback";
 import { stageTone, UrgencyIcon, VPBadge } from "@/components/shared/video-bits";
 import { personById } from "@/lib/mock/core";
 import { useDemo } from "@/lib/store";
@@ -77,16 +78,14 @@ export function BoardView({ videos }: { videos: Video[] }) {
                   <span className={cn("size-2 rounded-full", toneDot[stageTone[stage]])} />
                   {stage}
                 </div>
-                <span className="rounded-md bg-card px-1.5 text-body font-medium tabular text-muted-foreground">{items.length}</span>
+                <span className="rounded-md bg-card px-1.5 text-body font-medium tabular text-text-secondary">{items.length}</span>
               </div>
               <div className="flex min-h-24 flex-col gap-2">
                 {items.map((v) => (
                   <BoardCard key={v.id} v={v} onDragStart={() => setDragId(v.id)} onDragEnd={() => setDragId(null)} />
                 ))}
                 {!items.length && (
-                  <div className="flex h-20 items-center justify-center rounded-xl border border-dashed border-border text-body text-muted-foreground">
-                    Drop here
-                  </div>
+                  <EmptyState compact icon={Inbox} title="No videos" description="Drag a card here to move it." className="py-5" />
                 )}
               </div>
             </div>
@@ -112,7 +111,13 @@ function BoardCard({ v, onDragStart, onDragEnd }: { v: Video; onDragStart: () =>
       }}
       onDragEnd={onDragEnd}
       onClick={() => router.push(`/production/${v.id}`)}
-      className="group relative cursor-pointer rounded-xl border border-border bg-card p-3 shadow-card transition hover:-translate-y-px hover:border-primary/40 hover:shadow-pop active:cursor-grabbing"
+      onKeyDown={(e) => {
+        if (e.key === "Enter") router.push(`/production/${v.id}`);
+      }}
+      role="link"
+      tabIndex={0}
+      aria-label={`${v.code} · ${v.title}`}
+      className="group relative cursor-pointer rounded-xl border border-border bg-card p-3 shadow-card transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 active:cursor-grabbing"
     >
       <GripVertical className="absolute right-1.5 top-3 size-3.5 text-muted-foreground/0 transition group-hover:text-muted-foreground/60" />
       <div className="flex items-center justify-between gap-2 pr-3">

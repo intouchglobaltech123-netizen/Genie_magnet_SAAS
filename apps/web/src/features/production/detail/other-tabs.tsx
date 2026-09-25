@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { personById } from "@/lib/mock/core";
 import { useDemo } from "@/lib/store";
@@ -20,7 +21,7 @@ import { useProduction } from "../store";
 export function BriefTab({ v }: { v: Video }) {
   const b = briefFor(v);
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
       <div className="space-y-4">
         <Card>
           <CardContent className="pt-5">
@@ -89,12 +90,12 @@ export function BriefTab({ v }: { v: Video }) {
                 key={r.label}
                 type="button"
                 onClick={() => toast(`Opening ${r.label}`, { description: `${r.kind} link (demo)` })}
-                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg border border-border px-3 py-2 text-left text-body transition hover:bg-muted"
+                className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg border border-border px-3 py-2 text-left text-body transition hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
               >
-                <FileText className="size-4 text-muted-foreground" />
+                <FileText className="size-4 shrink-0 text-muted-foreground" />
                 <span className="flex-1 truncate">{r.label}</span>
                 <Badge tone="outline">{r.kind}</Badge>
-                <ExternalLink className="size-3.5 text-muted-foreground" />
+                <ExternalLink className="size-3.5 shrink-0 text-muted-foreground" />
               </button>
             ))}
           </CardContent>
@@ -115,20 +116,18 @@ export function ShootTab({ v }: { v: Video }) {
 
   if (!shoot) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-          <div className="inline-flex size-12 items-center justify-center rounded-2xl bg-muted">
-            <Camera className="size-5 text-muted-foreground" />
-          </div>
-          <div className="font-semibold">Not assigned to a shoot yet</div>
-          <p className="max-w-sm text-body text-muted-foreground">Once the script is approved, add this video to a shoot batch so it gets a clip range and VP tracking.</p>
+      <EmptyState
+        icon={Camera}
+        title="Not assigned to a shoot yet"
+        description="Once the script is approved, add this video to a shoot batch so it gets a clip range and VP tracking."
+        action={
           <Button variant="outline" size="sm" asChild>
             <Link href="/shoots">
               <Camera /> Open shoot schedule
             </Link>
           </Button>
-        </CardContent>
-      </Card>
+        }
+      />
     );
   }
 
@@ -141,7 +140,7 @@ export function ShootTab({ v }: { v: Video }) {
   ];
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       <Card>
         <CardHeader>
           <div>
@@ -157,7 +156,7 @@ export function ShootTab({ v }: { v: Video }) {
           </Button>
         </CardHeader>
         <CardContent className="space-y-3 text-body">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Shooting date</div>
               <div className="mt-0.5">{fmt(shoot.date, "EEE, d MMM yyyy")} · {shoot.callTime}</div>
@@ -264,7 +263,7 @@ export function CostTab({ v }: { v: Video }) {
   const c = costBreakdown(v);
   const marginPct = c.revenue ? c.margin / c.revenue : 0;
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.4fr_1fr]">
       <Card>
         <CardHeader>
           <div>
@@ -281,7 +280,7 @@ export function CostTab({ v }: { v: Video }) {
           <div className="divide-y divide-border">
             {c.lines.map((l, i) => (
               <div key={l.label} className="flex items-center gap-3 py-2.5">
-                <span className="size-2.5 shrink-0 rounded-sm" style={{ backgroundColor: lineColors[i] }} />
+                <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: lineColors[i] }} />
                 <div className="min-w-0 flex-1">
                   <div className="text-body font-medium">{l.label}</div>
                   <div className="text-body text-muted-foreground">{l.detail}</div>

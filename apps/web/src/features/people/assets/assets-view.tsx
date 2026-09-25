@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/feedback";
 import { Select } from "@/components/ui/select";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { assets as seedAssets, personById } from "@/lib/mock/core";
@@ -87,6 +88,7 @@ export function AssetsView() {
       <PageHeader
         depth="preview"
         title="Equipment & Assets"
+        className="mb-0"
         description="Every camera, lens, light and workstation — who has it, what it's worth, and what each hour of use costs a project."
         actions={
           <>
@@ -103,7 +105,7 @@ export function AssetsView() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Total asset value" value={inrCompact(totalValue)} icon={IndianRupee} hint={`${assets.length} items at cost`} />
         <StatCard label="Current book value" value={inrCompact(totalBook)} icon={TrendingDown} tone="info" hint={`${Math.round((1 - totalBook / totalValue) * 100)}% depreciated`} />
-        <StatCard label="Checked out" value={checkedOut} icon={PackageOpen} tone="gold" hint="On shoots or at desks" />
+        <StatCard label="Checked out" value={checkedOut} icon={PackageOpen} tone="accent" hint="On shoots or at desks" />
         <StatCard label="In maintenance" value={inMaint} icon={Wrench} tone={inMaint ? "warning" : "success"} hint={inMaint ? "1 open incident" : "All gear in service"} />
       </div>
 
@@ -115,7 +117,7 @@ export function AssetsView() {
         <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center">
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search tag, item or custodian…" className="pl-9" />
+            <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search tag, item or custodian…" aria-label="Search assets" className="pl-9" />
           </div>
           <Select
             className="md:w-44"
@@ -138,10 +140,10 @@ export function AssetsView() {
               <TH>Status</TH>
               <TH>Custodian</TH>
               <TH>Condition</TH>
-              <TH className="text-right">Hours</TH>
-              <TH className="text-right">Book value</TH>
-              <TH className="text-right">Depr. / yr</TH>
-              <TH className="pr-5 text-right">Cost / hr</TH>
+              <TH numeric>Hours</TH>
+              <TH numeric>Book value</TH>
+              <TH numeric>Depr. / yr</TH>
+              <TH numeric className="pr-5">Cost / hr</TH>
             </TR>
           </THead>
           <TBody>
@@ -174,24 +176,41 @@ export function AssetsView() {
                   <TD>
                     <Badge tone={CONDITION_TONE[a.condition]}>{a.condition}</Badge>
                   </TD>
-                  <TD className="text-right tabular">{a.hoursUsed ? a.hoursUsed.toLocaleString("en-IN") : <span className="text-muted-foreground/60">—</span>}</TD>
-                  <TD className="text-right tabular">{inr(bookValue(a))}</TD>
-                  <TD className="text-right tabular">{inr(annualDepreciation(a))}</TD>
-                  <TD className="pr-5 text-right tabular font-medium">{hourly === null ? <span className="font-normal text-muted-foreground/60">n/a</span> : `${inr(hourly)}`}</TD>
+                  <TD numeric>{a.hoursUsed ? a.hoursUsed.toLocaleString("en-IN") : <span className="text-muted-foreground">—</span>}</TD>
+                  <TD numeric>{inr(bookValue(a))}</TD>
+                  <TD numeric>{inr(annualDepreciation(a))}</TD>
+                  <TD numeric className="pr-5 font-medium">{hourly === null ? <span className="font-normal text-muted-foreground">n/a</span> : `${inr(hourly)}`}</TD>
                 </TR>
               );
             })}
             {filtered.length === 0 && (
-              <TR>
-                <TD colSpan={9} className="py-10 text-center text-muted-foreground">
-                  <Boxes className="mx-auto mb-2 size-5" />
-                  No assets match these filters.
+              <TR className="hover:bg-transparent">
+                <TD colSpan={9} className="px-5">
+                  <EmptyState
+                    compact
+                    icon={Boxes}
+                    title="No assets match these filters"
+                    description="Try another search term, category or status."
+                    action={
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setQ("");
+                          setCat("all");
+                          setStatus("all");
+                        }}
+                      >
+                        Clear filters
+                      </Button>
+                    }
+                  />
                 </TD>
               </TR>
             )}
           </TBody>
         </Table>
-        <div className="flex items-center justify-between border-t border-border px-5 py-3 text-body text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-5 py-3 text-body text-muted-foreground">
           <span>
             Showing {filtered.length} of {assets.length} items · click a row for depreciation, custody & reservations
           </span>

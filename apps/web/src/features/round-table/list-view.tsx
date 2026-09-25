@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/feedback";
 import { employees, personById } from "@/lib/mock/core";
 import { useDemo } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -64,7 +65,7 @@ export function RoundTableList() {
       />
 
       <Card className="glow-accent overflow-hidden">
-        <CardContent className="grid gap-4 p-5 md:grid-cols-5">
+        <CardContent className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 xl:grid-cols-5">
           {rules.map((r) => (
             <div key={r.title} className="space-y-1.5">
               <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary-soft text-primary">
@@ -77,7 +78,22 @@ export function RoundTableList() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      {sessions.length === 0 && (
+        <EmptyState
+          icon={MessagesSquare}
+          title="No Round Tables yet"
+          description="Start one to run the team feedback circle for this 45-day review."
+          action={
+            (role === "founder" || role === "manager") && (
+              <Button size="sm" onClick={() => setOpen(true)}>
+                <Play /> Start Round Table
+              </Button>
+            )
+          }
+        />
+      )}
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {sessions.map((s) => {
           const meta = statusMeta[s.status];
           const total = s.participantIds.length;
@@ -85,8 +101,8 @@ export function RoundTableList() {
           return (
             <Card key={s.id} className="flex flex-col">
               <CardHeader>
-                <div>
-                  <div className="flex items-center gap-2">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
                     <CardTitle>{s.name}</CardTitle>
                     <Badge tone={meta.tone} dot>
                       {meta.label}
@@ -161,7 +177,7 @@ function SetupDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: 
           <DialogDescription>Pick the team, set the three questions and the time each person gets. Everyone joins from their own laptop.</DialogDescription>
         </DialogHeader>
         <DialogBody className="space-y-5">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Session name">
               <Input value={name} onChange={(e) => setName(e.target.value)} />
             </Field>
@@ -171,11 +187,11 @@ function SetupDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: 
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-baseline justify-between">
-              <span className="text-body font-medium">Team members ({selected.length})</span>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+              <span className="text-body font-medium text-text-secondary">Team members ({selected.length})</span>
               <span className="text-body text-muted-foreground">The manager is reviewed too</span>
             </div>
-            <div className="grid gap-1.5 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
               {pool.map((p) => (
                 <label
                   key={p.id}
@@ -196,12 +212,13 @@ function SetupDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: 
           </div>
 
           <div className="space-y-2">
-            <span className="text-body font-medium">The three questions</span>
+            <span className="block text-body font-medium text-text-secondary">The three questions</span>
             {questions.map((q, i) => (
               <div key={i} className="flex items-center gap-2">
                 <span className="w-6 font-mono text-body text-muted-foreground">Q{i + 1}</span>
                 <Input
                   value={q}
+                  aria-label={`Question ${i + 1}`}
                   onChange={(e) => {
                     const nq = [...questions] as [string, string, string];
                     nq[i] = e.target.value;
@@ -214,14 +231,16 @@ function SetupDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: 
           </div>
 
           <div className="space-y-2">
-            <span className="text-body font-medium">Time per person</span>
+            <span className="block text-body font-medium text-text-secondary">Time per person</span>
             <div className="flex flex-wrap gap-2">
               {[60, 90, 120].map((s) => (
                 <button
                   key={s}
+                  type="button"
+                  aria-pressed={seconds === s}
                   onClick={() => setSeconds(s)}
                   className={cn(
-                    "cursor-pointer rounded-lg border px-4 py-2 text-body font-medium transition",
+                    "cursor-pointer rounded-lg border px-4 py-2 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                     seconds === s ? "border-primary bg-primary text-primary-foreground" : "border-border hover:bg-muted",
                   )}
                 >

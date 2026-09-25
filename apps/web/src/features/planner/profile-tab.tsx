@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip } from "@/components/ui/tooltip";
+import { Alert, EmptyState } from "@/components/ui/feedback";
 import { PROFILE_BANDS, RAW_MAX, RAW_MIN, scoreDiagnostic } from "@/features/planner/calc";
 import { usePlanner } from "@/features/planner/store";
 import { IntensityChip } from "@/features/planner/ui";
@@ -16,26 +17,25 @@ import { cn } from "@/lib/utils";
 
 type Row = ReturnType<typeof scoreDiagnostic>["rows"][number];
 
-function ScoreDial({ score }: { score: number }) {
+const bandColor: Record<string, string> = {
+  bucket: "var(--color-danger)",
+  builder: "var(--color-warning)",
+  grower: "var(--color-chart-2)",
+  architect: "var(--color-success)",
+};
+
+function ScoreDial({ score, color }: { score: number; color: string }) {
   const r = 84;
   const c = Math.PI * r; // half circle
   const pctv = Math.max(0, Math.min(100, score)) / 100;
   return (
     <div className="relative mx-auto h-[120px] w-[220px]">
       <svg viewBox="0 0 200 110" className="h-full w-full">
-        <defs>
-          <linearGradient id="dialGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--color-danger)" />
-            <stop offset="40%" stopColor="var(--color-warning)" />
-            <stop offset="70%" stopColor="var(--color-chart-2)" />
-            <stop offset="100%" stopColor="var(--color-success)" />
-          </linearGradient>
-        </defs>
         <path d="M 16 100 A 84 84 0 0 1 184 100" fill="none" stroke="var(--color-muted)" strokeWidth="14" strokeLinecap="round" />
         <motion.path
           d="M 16 100 A 84 84 0 0 1 184 100"
           fill="none"
-          stroke="url(#dialGrad)"
+          stroke={color}
           strokeWidth="14"
           strokeLinecap="round"
           strokeDasharray={c}
@@ -70,12 +70,17 @@ function GroupList({ rows, title, desc, icon: Icon }: { rows: Row[]; title: stri
           const tone = g.intensity === "HIGH" ? "bg-danger" : g.intensity === "MEDIUM" ? "bg-warning" : "bg-success";
           return (
             <div key={g.key} className={cn("rounded-xl transition", isOpen && "bg-muted/60")}>
-              <button onClick={() => setOpen(isOpen ? null : g.key)} className="grid w-full cursor-pointer grid-cols-[150px_1fr_44px_84px_16px] items-center gap-3 rounded-xl px-2 py-2 text-left hover:bg-muted/60">
+              <button
+                type="button"
+                onClick={() => setOpen(isOpen ? null : g.key)}
+                aria-expanded={isOpen}
+                className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_44px_auto_16px] items-center gap-2 rounded-xl px-2 py-2 text-left hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 sm:grid-cols-[150px_1fr_44px_92px_16px] sm:gap-3"
+              >
                 <div className="min-w-0">
                   <div className="truncate text-body font-medium">{g.label}</div>
                   <div className="truncate text-body text-muted-foreground">{g.subtitle}</div>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-muted">
+                <div className="hidden h-2 overflow-hidden rounded-full bg-muted sm:block">
                   <motion.div className={cn("h-full rounded-full", tone)} initial={{ width: 0 }} animate={{ width: `${(g.score / 15) * 100}%` }} transition={{ duration: 0.6 }} />
                 </div>
                 <div className="text-right text-body font-semibold tabular">
@@ -90,7 +95,7 @@ function GroupList({ rows, title, desc, icon: Icon }: { rows: Row[]; title: stri
                 <ChevronDown className={cn("size-4 text-muted-foreground transition", isOpen && "rotate-180")} />
               </button>
               {isOpen && (
-                <div className="grid gap-3 px-3 pb-3 pt-1 text-body md:grid-cols-[1fr_1fr]">
+                <div className="grid grid-cols-1 gap-3 px-3 pb-3 pt-1 text-body md:grid-cols-[1fr_1fr]">
                   <div>
                     <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">What this means</div>
                     <p className="mt-1">{g.meaning}</p>
@@ -121,28 +126,25 @@ export function ProfileTab({ onStartQuiz }: { onStartQuiz: () => void }) {
 
   if (d.answered === 0) {
     return (
-      <Card className="bg-grid">
-        <div className="mx-auto flex max-w-md flex-col items-center px-6 py-20 text-center">
-          <span className="inline-flex size-12 items-center justify-center rounded-2xl bg-primary-soft text-primary">
-            <Brain className="size-6" />
-          </span>
-          <h3 className="mt-4 text-subheading font-semibold">Your Money Profile appears here</h3>
-          <p className="mt-1.5 text-body text-muted-foreground">Answer the 54-question Money Behaviour Diagnostic, or load the sample answers to preview a completed profile.</p>
-          <div className="mt-5 flex gap-2">
-            <Button variant="accent" onClick={onStartQuiz}>
-              Start the diagnostic
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
+      <Card className="p-5">
+        <EmptyState
+          icon={Brain}
+          title="Your Money Profile appears here"
+          description="Answer the 54-question Money Behaviour Diagnostic, or load the sample answers to preview a completed profile."
+          action={
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button variant="outline" onClick={() => {
                 applySample();
                 toast.success("Sample answers loaded");
-              }}
-            >
-              <Wand2 /> Use sample answers
-            </Button>
-          </div>
-        </div>
+              }}>
+                <Wand2 /> Use sample answers
+              </Button>
+              <Button variant="accent" onClick={onStartQuiz}>
+                Start the diagnostic
+              </Button>
+            </div>
+          }
+        />
       </Card>
     );
   }
@@ -153,20 +155,17 @@ export function ProfileTab({ onStartQuiz }: { onStartQuiz: () => void }) {
   return (
     <div className="space-y-5">
       {incomplete > 0 && (
-        <div className="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning-soft px-4 py-2.5 text-body text-warning">
-          <Info className="mt-0.5 size-4 shrink-0" />
-          <span>
-            {incomplete} question{incomplete > 1 ? "s" : ""} unanswered. As in the workbook, a pattern with any blank or invalid answer scores 0 until completed.
-          </span>
-        </div>
+        <Alert tone="warning" icon={Info}>
+          {incomplete} question{incomplete > 1 ? "s" : ""} unanswered. As in the workbook, a pattern with any blank or invalid answer scores 0 until completed.
+        </Alert>
       )}
 
-      <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[360px_1fr]">
         <Card className="overflow-hidden">
-          <div className="glow-accent px-6 pb-6 pt-7 text-center">
+          <div className="px-6 pb-6 pt-7 text-center">
             <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Money Behaviour Score</div>
             <div className="mt-4">
-              <ScoreDial score={d.score} />
+              <ScoreDial score={d.score} color={bandColor[band.key] ?? "var(--color-chart-1)"} />
             </div>
             <div className="mt-5 text-heading font-semibold tracking-tight">
               {band.emoji} {band.label}
@@ -177,7 +176,7 @@ export function ProfileTab({ onStartQuiz }: { onStartQuiz: () => void }) {
                 <div
                   key={b.key}
                   className={cn("h-full flex-1", b.key === band.key ? "opacity-100" : "opacity-25")}
-                  style={{ background: { bucket: "var(--color-danger)", builder: "var(--color-warning)", grower: "var(--color-chart-2)", architect: "var(--color-success)" }[b.key] }}
+                  style={{ background: bandColor[b.key] }}
                 />
               ))}
             </div>
@@ -196,14 +195,13 @@ export function ProfileTab({ onStartQuiz }: { onStartQuiz: () => void }) {
           </div>
         </Card>
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {[
             { kind: "Dominant flow pattern", g: d.dominantFlow, icon: Droplets, tone: "accent" as const },
             { kind: "Dominant belief block", g: d.dominantBelief, icon: Brain, tone: "gold" as const },
           ].map(({ kind, g, icon: Icon, tone }) => (
-            <Card key={kind} className="relative overflow-hidden p-6">
-              <div className={cn("absolute -right-10 -top-10 size-40 rounded-full blur-2xl", tone === "accent" ? "bg-primary/15" : "bg-accent/20")} />
-              <div className="relative">
+            <Card key={kind} className="p-5">
+              <div>
                 <div className="flex items-center justify-between">
                   <span className={cn("inline-flex size-9 items-center justify-center rounded-xl", tone === "accent" ? "bg-primary-soft text-primary" : "bg-accent-soft text-accent-strong")}>
                     <Icon className="size-4" />
@@ -228,14 +226,14 @@ export function ProfileTab({ onStartQuiz }: { onStartQuiz: () => void }) {
         </div>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <GroupList rows={d.flows} title="Money flow patterns" desc="How money moves through your hands · score out of 15" icon={Droplets} />
         <GroupList rows={d.beliefs} title="Money belief profile" desc="The beliefs steering those patterns · score out of 15" icon={Brain} />
       </div>
 
       {/* Remedy */}
       <Card className="overflow-hidden">
-        <div className="grid gap-6 bg-[radial-gradient(700px_circle_at_100%_0%,color-mix(in_srgb,var(--color-chart-3)_16%,transparent),transparent_60%)] p-6 lg:grid-cols-[1fr_1.4fr]">
+        <div className="grid grid-cols-1 gap-6 p-5 lg:grid-cols-[1fr_1.4fr]">
           <div>
             <Badge tone="gold">
               <Sunrise /> The remedy
@@ -265,7 +263,7 @@ export function ProfileTab({ onStartQuiz }: { onStartQuiz: () => void }) {
               <span className="text-body text-muted-foreground">{WTF_TOOL.site}</span>
             </div>
           </div>
-          <div className="grid gap-2 sm:grid-cols-5">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-5">
             {detoxDays.map((day) => {
               const hit = [d.dominantFlow, d.dominantBelief].some((g) => g.dayToFix.includes(day.day.split(" ")[1]));
               return (

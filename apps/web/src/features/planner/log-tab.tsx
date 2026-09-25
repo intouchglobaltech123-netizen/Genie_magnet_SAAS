@@ -6,7 +6,8 @@ import { Hourglass, Plus, Trash2, TriangleAlert } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Field, Input, Label } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/feedback";
 import { Select } from "@/components/ui/select";
 import { Tooltip } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -98,55 +99,48 @@ export function LogTab() {
       {/* Quick add */}
       <Card className="p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <div className="w-[88px] space-y-1.5">
-            <div className="text-body font-medium text-muted-foreground">Day</div>
+          <Field label="Day" className="w-[88px]">
             <Select
               value={String(day)}
               onValueChange={(v) => setDay(Number(v))}
               options={Array.from({ length: 30 }, (_, i) => ({ value: String(i + 1), label: `Day ${i + 1}` }))}
             />
-          </div>
-          <div className="min-w-[200px] flex-1 space-y-1.5">
-            <div className="text-body font-medium text-muted-foreground">What did I spend on?</div>
+          </Field>
+          <Field label="What did I spend on?" required className="min-w-[200px] flex-1">
             <Input value={item} onChange={(e) => setItem(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} placeholder="e.g. Swiggy biryani at 11 pm" />
-          </div>
-          <div className="w-[120px] space-y-1.5">
-            <div className="text-body font-medium text-muted-foreground">Amount</div>
+          </Field>
+          <Field label="Amount" required className="w-[120px]">
             <div className="relative">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-body text-muted-foreground">₹</span>
               <Input value={amount} inputMode="numeric" onChange={(e) => setAmount(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} className="pl-7 tabular" placeholder="0" />
             </div>
-          </div>
-          <div className="space-y-1.5">
-            <div className="text-body font-medium text-muted-foreground">Need / Want / Craving</div>
+          </Field>
+          <Field label="Need / Want / Craving">
             <Segmented
               value={kind}
               onChange={setKindSmart}
               options={KINDS.map((k) => ({ value: k, label: k, activeCls: cn(kindMeta[k].soft, kindMeta[k].text) }))}
             />
-          </div>
+          </Field>
         </div>
         <div className="mt-3 flex flex-wrap items-end gap-3">
-          <div className="w-[170px] space-y-1.5">
-            <div className="text-body font-medium text-muted-foreground">Leak type</div>
+          <Field label="Leak type" className="w-[170px]">
             <Select
               value={leakType}
               onValueChange={(v) => setLeakType(v as LeakType)}
               options={LEAK_TYPES.map((t) => ({ value: t, label: `${t} · ${leakHint[t]}` }))}
             />
-          </div>
-          <div className="w-[200px] space-y-1.5">
-            <div className="text-body font-medium text-muted-foreground">Emotion before spend</div>
+          </Field>
+          <Field label="Emotion before spend" className="w-[200px]">
             <Select value={emotion} onValueChange={(v) => setEmotion(v as Emotion)} options={EMOTIONS.map((e) => ({ value: e, label: e }))} />
-          </div>
-          <div className="space-y-1.5">
-            <div className="text-body font-medium text-muted-foreground">Mood after</div>
+          </Field>
+          <Field label="Mood after">
             <MoodPicker value={mood} onChange={setMood} />
-          </div>
+          </Field>
           <div className="space-y-1.5">
-            <div className="flex items-center gap-1 text-body font-medium text-muted-foreground">
+            <Label className="flex items-center gap-1">
               <Hourglass className="size-3" /> 48-hr rule used?
-            </div>
+            </Label>
             <Segmented
               value={rule48}
               onChange={setRule48}
@@ -157,7 +151,7 @@ export function LogTab() {
               ]}
             />
           </div>
-          <div className="ml-auto flex items-end gap-3">
+          <div className="ml-auto flex flex-wrap items-end justify-end gap-3">
             <div className="text-right">
               <div className="text-body text-muted-foreground">Leakage · 15-yr cost</div>
               <div className={cn("text-body font-semibold tabular", previewLeak > 0 ? "text-danger" : "text-success")}>
@@ -172,7 +166,12 @@ export function LogTab() {
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           <span className="text-body text-muted-foreground">Quick:</span>
           {quickPicks.map((q) => (
-            <button key={q} onClick={() => setItem(q)} className="cursor-pointer rounded-full border border-border px-2.5 py-0.5 text-body text-muted-foreground transition hover:border-primary/40 hover:text-foreground">
+            <button
+              key={q}
+              type="button"
+              onClick={() => setItem(q)}
+              className="cursor-pointer rounded-full border border-border px-2.5 py-0.5 text-body text-muted-foreground transition hover:border-primary/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+            >
               {q}
             </button>
           ))}
@@ -210,7 +209,7 @@ export function LogTab() {
 
       {/* Day groups */}
       <Card className="overflow-hidden">
-        <div className="hidden grid-cols-[1fr_96px_92px_120px_170px_48px_72px_96px_96px_36px] gap-3 border-b border-border px-4 py-2.5 text-body font-medium uppercase tracking-wider text-muted-foreground lg:grid">
+        <div className="hidden grid-cols-[1fr_96px_92px_120px_170px_48px_72px_96px_96px_36px] gap-3 border-b border-border px-4 py-2.5 text-body font-medium uppercase tracking-wider text-muted-foreground xl:grid">
           <span>Spend</span>
           <span className="text-right">Amount</span>
           <span>Type</span>
@@ -223,7 +222,23 @@ export function LogTab() {
           <span />
         </div>
         {byDay.length === 0 && (
-          <div className="px-4 py-16 text-center text-body text-muted-foreground">No spends here yet. Add your first one above — be 100% honest with yourself.</div>
+          <div className="p-5">
+            <EmptyState
+              compact
+              icon={Plus}
+              title={rows.length === 0 ? "No spends here yet" : "Nothing matches this filter"}
+              description={
+                rows.length === 0 ? "Add your first one above — be 100% honest with yourself." : "Try another filter to see the rest of your month."
+              }
+              action={
+                rows.length > 0 && filter !== "all" ? (
+                  <Button variant="secondary" size="sm" onClick={() => setFilter("all")}>
+                    Show all spends
+                  </Button>
+                ) : undefined
+              }
+            />
+          </div>
         )}
         {byDay.map(([d, entries]) => {
           const dayLeak = entries.reduce((s, e) => s + e.leak, 0);
@@ -250,7 +265,7 @@ export function LogTab() {
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="group grid grid-cols-2 items-center gap-x-3 gap-y-1.5 px-4 py-2.5 text-body lg:grid-cols-[1fr_96px_92px_120px_170px_48px_72px_96px_96px_36px]"
+                    className="group grid grid-cols-2 items-center gap-x-3 gap-y-1.5 px-4 py-2.5 text-body xl:grid-cols-[1fr_96px_92px_120px_170px_48px_72px_96px_96px_36px]"
                   >
                     <div className="min-w-0">
                       <div className="truncate font-medium">{e.item}</div>
@@ -268,12 +283,14 @@ export function LogTab() {
                     <div>
                       <Tooltip content="Click to change · only 'No' on a Want counts as leakage">
                         <button
+                          type="button"
+                          aria-label={`48-hour rule used: ${e.rule48}. Click to change`}
                           onClick={() => {
                             const next: RuleUsed = e.rule48 === "Yes" ? "No" : e.rule48 === "No" ? "NA" : "Yes";
                             updateEntry(e.id, { rule48: next });
                           }}
                           className={cn(
-                            "cursor-pointer rounded-md px-1.5 py-0.5 text-body font-medium",
+                            "cursor-pointer rounded-lg px-1.5 py-0.5 text-body font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                             e.rule48 === "Yes" ? "bg-success-soft text-success" : e.rule48 === "No" ? "bg-danger-soft text-danger" : "bg-muted text-muted-foreground",
                           )}
                         >
@@ -287,11 +304,13 @@ export function LogTab() {
                     <div className="text-right tabular text-muted-foreground">{e.opp > 0 ? inrCompact(e.opp) : "—"}</div>
                     <div className="text-right">
                       <button
+                        type="button"
+                        aria-label={`Remove ${e.item}`}
                         onClick={() => {
                           removeEntry(e.id);
                           toast("Entry removed", { description: e.item });
                         }}
-                        className="inline-flex size-7 cursor-pointer items-center justify-center rounded-md text-muted-foreground opacity-0 transition hover:bg-danger-soft hover:text-danger group-hover:opacity-100"
+                        className="inline-flex size-7 cursor-pointer items-center justify-center rounded-lg text-muted-foreground transition hover:bg-danger-soft hover:text-danger focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 xl:opacity-0 xl:group-hover:opacity-100"
                       >
                         <Trash2 className="size-3.5" />
                       </button>

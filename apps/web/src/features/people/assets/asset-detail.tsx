@@ -6,6 +6,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/feedback";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { personById, TODAY } from "@/lib/mock/core";
@@ -29,7 +30,7 @@ const tooltipStyle = {
   background: "var(--color-popover)",
   border: "1px solid var(--color-border)",
   borderRadius: 10,
-  fontSize: 12,
+  fontSize: 13,
   padding: "8px 10px",
 };
 
@@ -65,7 +66,7 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
 
   return (
     <div>
-      <div className="border-b border-border p-6 pr-12">
+      <div className="border-b border-border p-4 pr-12 sm:p-6 sm:pr-12">
         <div className="flex items-center gap-2 text-body text-muted-foreground">
           <Badge tone="outline">{a.tag}</Badge>
           <span>{a.category}</span>
@@ -97,9 +98,9 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         <Tabs defaultValue="overview">
-          <TabsList>
+          <TabsList className="scrollbar-thin max-w-full justify-start overflow-x-auto">
             <TabsTrigger value="overview">
               <LayoutGrid /> Overview
             </TabsTrigger>
@@ -111,7 +112,11 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
             </TabsTrigger>
             <TabsTrigger value="reservations">
               <CalendarDays /> Reservations
-              {reservations.length > 0 && <span className="rounded bg-primary-soft px-1 text-body text-primary">{reservations.length}</span>}
+              {reservations.length > 0 && (
+                <Badge tone="accent" className="tabular px-1.5">
+                  {reservations.length}
+                </Badge>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -124,19 +129,13 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
               <div className="h-48">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={series} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="bvFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="var(--color-chart-1)" stopOpacity={0.25} />
-                        <stop offset="100%" stopColor="var(--color-chart-1)" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
-                    <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }} minTickGap={24} />
+                    <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} minTickGap={24} />
                     <YAxis
                       tickLine={false}
                       axisLine={false}
-                      width={52}
-                      tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+                      width={56}
+                      tick={{ fill: "var(--color-text-muted)", fontSize: 12 }}
                       tickFormatter={(v: number) => inrCompact(v)}
                     />
                     <RTooltip
@@ -145,8 +144,8 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
                       itemStyle={{ color: "var(--color-foreground)" }}
                       formatter={(v) => [inr(Number(v)), "Book value"]}
                     />
-                    {todayInSeries && <ReferenceLine x={todayLabel} stroke="var(--color-primary)" strokeDasharray="4 4" label={{ value: "Today", fill: "var(--color-primary)", fontSize: 11, position: "top" }} />}
-                    <Area type="linear" dataKey="value" stroke="var(--color-chart-1)" strokeWidth={2} fill="url(#bvFill)" />
+                    {todayInSeries && <ReferenceLine x={todayLabel} stroke="var(--color-primary)" strokeDasharray="4 4" label={{ value: "Today", fill: "var(--color-primary)", fontSize: 12, position: "top" }} />}
+                    <Area type="linear" dataKey="value" stroke="var(--color-chart-1)" strokeWidth={2} fill="var(--color-chart-1)" fillOpacity={0.08} />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -158,9 +157,9 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
                   <TR>
                     <TH>Year</TH>
                     <TH>Period</TH>
-                    <TH className="text-right">Opening</TH>
-                    <TH className="text-right">Depreciation</TH>
-                    <TH className="text-right">Closing</TH>
+                    <TH numeric>Opening</TH>
+                    <TH numeric>Depreciation</TH>
+                    <TH numeric>Closing</TH>
                   </TR>
                 </THead>
                 <TBody>
@@ -172,15 +171,15 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
                       <TD className="text-muted-foreground">
                         {fmtDate(y.from, { month: "short", year: "numeric" })} – {fmtDate(y.to, { month: "short", year: "numeric" })}
                       </TD>
-                      <TD className="text-right tabular">{inr(y.opening)}</TD>
-                      <TD className="text-right tabular text-danger">−{inr(y.depreciation)}</TD>
-                      <TD className="text-right tabular font-medium">{inr(y.closing)}</TD>
+                      <TD numeric>{inr(y.opening)}</TD>
+                      <TD numeric className="text-danger">−{inr(y.depreciation)}</TD>
+                      <TD numeric className="font-medium">{inr(y.closing)}</TD>
                     </TR>
                   ))}
                 </TBody>
               </Table>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-body">
+            <div className="grid grid-cols-1 gap-3 text-body sm:grid-cols-2">
               <Metric label="Hours used" value={`${a.hoursUsed.toLocaleString("en-IN")} h`} sub={a.hoursUsed ? "Logged via checkout" : "Not hour-tracked"} />
               <Metric
                 label="Depreciation recovered"
@@ -214,7 +213,7 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
                         <span className="text-muted-foreground">· {h.at}</span>
                       </div>
                       <div className="text-body text-muted-foreground">{h.purpose}</div>
-                      {h.note && <div className="mt-1 text-body text-muted-foreground/80">{h.note}</div>}
+                      {h.note && <div className="mt-1 text-body text-muted-foreground">{h.note}</div>}
                     </li>
                   );
                 })}
@@ -223,6 +222,7 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
           </TabsContent>
 
           <TabsContent value="maintenance" className="space-y-2">
+            {maint.length === 0 && <Empty text="No maintenance or repairs logged for this asset." />}
             {maint.map((m, i) => (
               <div key={i} className="flex items-start justify-between gap-3 rounded-xl border border-border p-3.5">
                 <div>
@@ -232,7 +232,7 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
                     {m.note ? ` · ${m.note}` : ""}
                   </div>
                 </div>
-                <span className="text-body tabular">{m.cost ? inr(m.cost) : <span className="text-muted-foreground">No cost</span>}</span>
+                <span className="shrink-0 text-body tabular">{m.cost ? inr(m.cost) : <span className="text-muted-foreground">No cost</span>}</span>
               </div>
             ))}
           </TabsContent>
@@ -245,7 +245,7 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
                 .slice()
                 .sort((x, y) => x.date.localeCompare(y.date))
                 .map((r) => (
-                  <div key={r.id} className="flex items-center gap-3 rounded-xl border border-border p-3.5">
+                  <div key={r.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-border p-3.5">
                     <div className="flex size-11 shrink-0 flex-col items-center justify-center rounded-lg bg-muted text-center leading-none">
                       <span className="text-body uppercase text-muted-foreground">{fmtDate(r.date, { month: "short" })}</span>
                       <span className="text-subheading font-semibold">{fmtDate(r.date, { day: "numeric" })}</span>
@@ -274,7 +274,7 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
 function Metric({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="rounded-xl border border-border p-3">
-      <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="text-body font-medium text-muted-foreground">{label}</div>
       <div className="mt-1 text-subheading font-semibold tabular">{value}</div>
       {sub && <div className="mt-0.5 text-body text-muted-foreground">{sub}</div>}
     </div>
@@ -282,5 +282,5 @@ function Metric({ label, value, sub }: { label: string; value: string; sub?: str
 }
 
 function Empty({ text }: { text: string }) {
-  return <div className="rounded-xl border border-dashed border-border p-6 text-center text-body text-muted-foreground">{text}</div>;
+  return <EmptyState compact icon={CalendarDays} title="Nothing here yet" description={text} />;
 }

@@ -10,6 +10,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Progress } from "@/components/ui/progress";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,18 +27,25 @@ export function AgreementDetail({ id }: { id: string }) {
   const a = useAgreements().find((x) => x.id === id);
   if (!a) {
     return (
-      <div className="py-24 text-center">
-        <div className="text-subheading font-semibold">Agreement not found</div>
-        <Button variant="link" asChild>
-          <Link href="/agreements">Back to agreements</Link>
-        </Button>
-      </div>
+      <EmptyState
+        className="mt-10"
+        icon={FileSignature}
+        title="Agreement not found"
+        description="It may have been removed, or the link is incorrect."
+        action={
+          <Button variant="secondary" size="sm" asChild>
+            <Link href="/agreements">
+              <ArrowLeft /> Back to agreements
+            </Link>
+          </Button>
+        }
+      />
     );
   }
   const c = clientById(a.clientId);
   return (
     <div>
-      <Link href="/agreements" className="mb-3 inline-flex items-center gap-1 text-body text-muted-foreground hover:text-foreground">
+      <Link href="/agreements" className="mb-3 inline-flex items-center gap-1 rounded-md text-body text-muted-foreground hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35">
         <ArrowLeft className="size-3.5" /> Agreements
       </Link>
       <PageHeader
@@ -91,7 +99,7 @@ function Overview({ a }: { a: LiveAgreement }) {
   const orig = originalTerms[a.id] ?? { ...a.original, units: unitsTotal(a.original) };
   const changed = a.monthlyFee !== orig.monthlyFee || a.endDate !== orig.endDate || unitsTotal(a) !== orig.units;
   return (
-    <div className="grid gap-4 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
       <div className="space-y-4 xl:col-span-2">
         <Card>
           <CardHeader>
@@ -100,7 +108,7 @@ function Overview({ a }: { a: LiveAgreement }) {
               <CardDescription>{unitsTotal(a)} deliverables every month</CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-3">
+          <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {a.units.map((u) => (
               <div key={u.label} className="rounded-xl border border-border p-4">
                 <div className="text-heading font-semibold leading-none tabular">{u.perCycle}</div>
@@ -115,7 +123,7 @@ function Overview({ a }: { a: LiveAgreement }) {
             <Fact label="Monthly fee" value={inr(a.monthlyFee)} />
           </CardContent>
         </Card>
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -183,7 +191,7 @@ function Overview({ a }: { a: LiveAgreement }) {
               <div key={p.email} className="flex items-start gap-2.5">
                 <Avatar name={p.name} size="sm" />
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 text-body font-medium">
+                  <div className="flex flex-wrap items-center gap-1.5 text-body font-medium">
                     {p.name}{" "}
                     {p.approver && (
                       <Badge tone="success">
@@ -197,8 +205,8 @@ function Overview({ a }: { a: LiveAgreement }) {
                       <Phone className="size-3" />
                       {p.phone}
                     </span>
-                    <span className="inline-flex items-center gap-1">
-                      <Mail className="size-3" />
+                    <span className="inline-flex min-w-0 items-center gap-1 break-all">
+                      <Mail className="size-3 shrink-0" />
                       {p.email}
                     </span>
                   </div>
@@ -249,7 +257,7 @@ function Row({ k, v }: { k: string; v: string }) {
   );
 }
 
-const cycleTone = { upcoming: "neutral", "in-progress": "accent", reconciling: "warning", closed: "success" } as const;
+const cycleTone = { upcoming: "neutral", "in-progress": "info", reconciling: "warning", closed: "success" } as const;
 
 function CyclesTab({ a }: { a: LiveAgreement }) {
   const list = cycles.filter((c) => c.agreementId === a.id).sort((x, y) => y.start.localeCompare(x.start));
@@ -261,9 +269,9 @@ function CyclesTab({ a }: { a: LiveAgreement }) {
             <TH className="pl-5">Cycle</TH>
             <TH>Status</TH>
             <TH className="min-w-56">Promised vs delivered</TH>
-            <TH className="text-right">Revenue</TH>
-            <TH className="text-right">Cost</TH>
-            <TH className="pr-5 text-right">Margin</TH>
+            <TH numeric>Revenue</TH>
+            <TH numeric>Cost</TH>
+            <TH numeric className="pr-5">Margin</TH>
           </TR>
         </THead>
         <TBody>
@@ -283,14 +291,14 @@ function CyclesTab({ a }: { a: LiveAgreement }) {
                       <div className="bg-success" style={{ width: `${(c.delivered / c.promised) * 100}%` }} />
                       <div className="bg-primary/50" style={{ width: `${(c.inProgress / c.promised) * 100}%` }} />
                     </div>
-                    <span className="w-24 text-body tabular">
+                    <span className="w-24 shrink-0 whitespace-nowrap text-body tabular">
                       <b>{c.delivered}</b>/{c.promised} {c.inProgress > 0 && <span className="text-muted-foreground">· {c.inProgress} wip</span>}
                     </span>
                   </div>
                 </TD>
-                <TD className="text-right tabular">{inr(c.revenue)}</TD>
-                <TD className="text-right tabular text-muted-foreground">{c.cost ? inr(c.cost) : "—"}</TD>
-                <TD className={cn("pr-5 text-right font-semibold tabular", margin !== null && margin < 0.2 && "text-danger", margin !== null && margin >= 0.35 && "text-success")}>
+                <TD numeric>{inr(c.revenue)}</TD>
+                <TD numeric className="text-muted-foreground">{c.cost ? inr(c.cost) : "—"}</TD>
+                <TD numeric className={cn("pr-5 font-semibold", margin !== null && margin < 0.2 && "text-danger", margin !== null && margin >= 0.35 && "text-success")}>
                   {margin === null ? "—" : pct(margin)}
                 </TD>
               </TR>
@@ -298,7 +306,11 @@ function CyclesTab({ a }: { a: LiveAgreement }) {
           })}
         </TBody>
       </Table>
-      {!list.length && <div className="py-10 text-center text-body text-muted-foreground">No cycles yet.</div>}
+      {!list.length && (
+        <div className="p-5">
+          <EmptyState compact icon={History} title="No cycles yet" description="Monthly cycles are generated from this agreement once it is active." />
+        </div>
+      )}
     </Card>
   );
 }
@@ -315,7 +327,7 @@ function DeliverablesTab({ a }: { a: LiveAgreement }) {
             <TH>Format</TH>
             <TH>Stage</TH>
             <TH>Due</TH>
-            <TH className="pr-5 text-right">Revisions</TH>
+            <TH numeric className="pr-5">Revisions</TH>
           </TR>
         </THead>
         <TBody>
@@ -328,25 +340,29 @@ function DeliverablesTab({ a }: { a: LiveAgreement }) {
                 </div>
               </TD>
               <TD>
-                <Link href={`/production/${v.id}`} className="font-medium hover:text-primary">
+                <Link href={`/production/${v.id}`} className="rounded font-medium hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35">
                   {v.title}
                 </Link>
               </TD>
-              <TD className="text-muted-foreground">
+              <TD className="whitespace-nowrap text-muted-foreground">
                 {v.format} · {v.aspect}
               </TD>
               <TD>
                 <StageBadge stage={v.stage} />
               </TD>
               <TD className={cn("tabular", isOverdue(v) && "font-medium text-danger")}>{fmtDate(v.dueDate)}</TD>
-              <TD className="pr-5 text-right tabular">
+              <TD numeric className="pr-5">
                 {v.revisionsUsed}/{a.revisionsPerDeliverable}
               </TD>
             </TR>
           ))}
         </TBody>
       </Table>
-      {!videos.length && <div className="py-10 text-center text-body text-muted-foreground">No deliverables in this cycle yet.</div>}
+      {!videos.length && (
+        <div className="p-5">
+          <EmptyState compact icon={FileSignature} title="No deliverables yet" description="Deliverables appear here once this cycle's videos are planned." />
+        </div>
+      )}
     </Card>
   );
 }
@@ -365,16 +381,16 @@ function BillingTab({ a }: { a: LiveAgreement }) {
   const outstanding = invoices.filter((i) => i.status !== "scheduled").reduce((s, i) => s + i.amount - i.paid, 0);
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="p-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card className="p-5">
           <div className="text-body text-muted-foreground">Collected to date</div>
           <div className="mt-1 text-heading font-semibold tabular">{inr(paid)}</div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-5">
           <div className="text-body text-muted-foreground">Outstanding</div>
           <div className={cn("mt-1 text-heading font-semibold tabular", outstanding && "text-danger")}>{inr(outstanding)}</div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-5">
           <div className="text-body text-muted-foreground">Terms</div>
           <div className="mt-1 text-subheading font-semibold">{a.billing}</div>
           <div className="text-body text-muted-foreground">+ 18% GST</div>
@@ -388,8 +404,8 @@ function BillingTab({ a }: { a: LiveAgreement }) {
               <TH>Period</TH>
               <TH>Issued</TH>
               <TH>Due</TH>
-              <TH className="text-right">Amount</TH>
-              <TH className="text-right">Paid</TH>
+              <TH numeric>Amount</TH>
+              <TH numeric>Paid</TH>
               <TH className="pr-5">Status</TH>
             </TR>
           </THead>
@@ -400,8 +416,8 @@ function BillingTab({ a }: { a: LiveAgreement }) {
                 <TD>{i.period}</TD>
                 <TD className="tabular text-muted-foreground">{fmtDate(i.issued)}</TD>
                 <TD className="tabular text-muted-foreground">{fmtDate(i.due)}</TD>
-                <TD className="text-right tabular">{inr(i.amount)}</TD>
-                <TD className="text-right tabular">{i.paid ? inr(i.paid) : "—"}</TD>
+                <TD numeric>{inr(i.amount)}</TD>
+                <TD numeric>{i.paid ? inr(i.paid) : "—"}</TD>
                 <TD className="pr-5">
                   <div className="flex items-center gap-2">
                     <Badge tone={invTone[i.status]} dot>
@@ -440,6 +456,7 @@ function ChangesTab({ a }: { a: LiveAgreement }) {
         </div>
       </CardHeader>
       <CardContent>
+        {!a.changes.length && <EmptyState compact icon={History} title="No changes yet" description="Renewals, pauses and change requests will be logged here." />}
         <ol className="relative space-y-5 before:absolute before:bottom-2 before:left-[15px] before:top-2 before:w-px before:bg-border">
           {a.changes.map((ch, i) => {
             const Icon = changeIcon[ch.kind];
@@ -455,7 +472,7 @@ function ChangesTab({ a }: { a: LiveAgreement }) {
                 >
                   <Icon className="size-3.5" />
                 </span>
-                <div className="pt-1">
+                <div className="min-w-0 pt-1">
                   <div className="text-body font-medium">{ch.text}</div>
                   <div className="text-body text-muted-foreground">
                     {d(ch.at)} · {ch.kind === "sign" ? "signed by" : ch.by === "System" ? "automated" : "approved by"} {ch.by !== "System" && ch.by}

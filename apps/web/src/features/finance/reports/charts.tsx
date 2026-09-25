@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Bar, BarChart, CartesianGrid, ComposedChart, Legend, Line, ResponsiveContainer, Tooltip as RTooltip, XAxis, YAxis } from "recharts";
 import { Info } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cashFlow, monthlyFinance, OPENING_CASH_APR, REVENUE_TYPE_DEFS, revenueTypes } from "@/lib/mock/finance";
@@ -33,9 +34,9 @@ export function RevenueTypesCard({ months }: { months: string[] }) {
         <div className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-4">
           {sums.map((t, idx) => (
             <Tooltip key={t.key} content={REVENUE_TYPE_DEFS[t.key]}>
-              <div className="cursor-help rounded-xl border border-border px-3 py-2.5 transition hover:bg-muted/50">
+              <div tabIndex={0} className="min-w-0 cursor-help rounded-xl border border-border px-3 py-2.5 transition hover:bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
                 <div className="flex items-center gap-1.5 text-body text-muted-foreground">
-                  <span className={cn("size-2 rounded-sm", t.dot)} />
+                  <span className={cn("size-2 rounded-full", t.dot)} />
                   {t.label}
                   <Info className="size-3 opacity-60" />
                 </div>
@@ -51,7 +52,7 @@ export function RevenueTypesCard({ months }: { months: string[] }) {
         <div className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 8, right: 8, left: -4, bottom: 0 }} barGap={2} barCategoryGap="22%">
-              <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
+              <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
               <XAxis dataKey="month" {...axisProps} />
               <YAxis {...axisProps} tickFormatter={(v: number) => inrCompact(v)} width={60} />
               <RTooltip {...tooltipStyle} formatter={fmtTip} />
@@ -78,26 +79,30 @@ export function BizProgressChart() {
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex gap-4 text-body text-muted-foreground">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-body text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
-            <span className={cn("size-2 rounded-sm", metric === "revenue" ? "bg-chart-1" : "bg-chart-4")} />
+            <span className={cn("size-2 rounded-full", metric === "revenue" ? "bg-chart-1" : "bg-chart-4")} />
             FY 2026-27 actual
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-0.5 w-3 rounded bg-chart-3" />
+            <span className="h-0.5 w-3 rounded-full bg-chart-3" />
             {metric === "revenue" ? "Goal" : "Budget"}
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="h-0.5 w-3 rounded bg-chart-5" />
+            <span className="h-0.5 w-3 rounded-full bg-chart-5" />
             FY 2025-26
           </span>
         </div>
-        <div className="inline-flex rounded-lg bg-muted p-0.5 text-body">
+        <div className="inline-flex rounded-xl bg-muted p-1 text-body" role="group" aria-label="Metric">
           {(["revenue", "expense"] as const).map((k) => (
             <button
               key={k}
               onClick={() => setMetric(k)}
-              className={cn("cursor-pointer rounded-md px-2.5 py-1 font-medium capitalize transition", metric === k ? "bg-card shadow-sm" : "text-muted-foreground")}
+              aria-pressed={metric === k}
+              className={cn(
+                "cursor-pointer rounded-lg px-2.5 py-1 font-medium capitalize transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                metric === k ? "bg-card text-text-primary shadow-sm" : "text-muted-foreground hover:text-foreground",
+              )}
             >
               {k}
             </button>
@@ -107,7 +112,7 @@ export function BizProgressChart() {
       <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={data} margin={{ top: 8, right: 8, left: -4, bottom: 0 }}>
-            <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
+            <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
             <XAxis dataKey="month" {...axisProps} />
             <YAxis {...axisProps} tickFormatter={(v: number) => inrCompact(v)} width={60} />
             <RTooltip {...tooltipStyle} formatter={(v) => (v == null ? "—" : inr(Number(v)))} />
@@ -147,12 +152,12 @@ export function CashFlowCard({ months }: { months: string[] }) {
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data} margin={{ top: 8, right: 4, left: -4, bottom: 0 }} barGap={2}>
-              <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
+              <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
               <XAxis dataKey="month" {...axisProps} />
               <YAxis yAxisId="flow" {...axisProps} tickFormatter={(v: number) => inrCompact(v)} width={60} />
               <YAxis yAxisId="bal" orientation="right" {...axisProps} tickFormatter={(v: number) => inrCompact(v)} width={56} />
               <RTooltip {...tooltipStyle} formatter={fmtTip} />
-              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: "var(--color-muted-foreground)" }} />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: "var(--color-text-muted)" }} />
               <Bar yAxisId="flow" dataKey="inflow" name="Inflows" fill="var(--color-chart-2)" radius={[4, 4, 0, 0]} maxBarSize={24} />
               <Bar yAxisId="flow" dataKey="outflow" name="Outflows" fill="var(--color-chart-4)" radius={[4, 4, 0, 0]} maxBarSize={24} />
               <Line yAxisId="bal" type="monotone" dataKey="closing" name="Closing balance" stroke="var(--color-chart-1)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--color-chart-1)" }} />
@@ -161,10 +166,10 @@ export function CashFlowCard({ months }: { months: string[] }) {
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {data.map((r) => (
-            <span key={r.month} className={cn("rounded-md px-2 py-0.5 text-body tabular", r.net >= 0 ? "bg-success-soft text-success" : "bg-danger-soft text-danger")}>
+            <Badge key={r.month} tone={r.net >= 0 ? "success" : "danger"} className="tabular">
               {r.month} net {r.net >= 0 ? "+" : "−"}
               {inrCompact(Math.abs(r.net)).replace("-", "")}
-            </span>
+            </Badge>
           ))}
         </div>
       </CardContent>
@@ -174,7 +179,7 @@ export function CashFlowCard({ months }: { months: string[] }) {
 
 function Mini({ label, value, sub, className }: { label: string; value: string; sub?: string; className?: string }) {
   return (
-    <div className="rounded-xl bg-muted/60 px-3 py-2.5">
+    <div className="min-w-0 rounded-xl bg-surface-secondary px-3 py-2.5">
       <div className="text-body text-muted-foreground">{label}</div>
       <div className={cn("text-subheading font-semibold tabular", className)}>{value}</div>
       {sub && <div className="text-body text-muted-foreground">{sub}</div>}

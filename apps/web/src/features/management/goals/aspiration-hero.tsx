@@ -7,22 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { monthlyFinance } from "@/lib/mock/finance";
 import { cn, inrCompact, pct } from "@/lib/utils";
+import { axisProps, tooltipStyle } from "@/features/finance/chart-style";
 import { ASPIRATION } from "./goals-data";
-
-const tooltipStyle = {
-  contentStyle: {
-    background: "var(--color-popover)",
-    border: "1px solid var(--color-border)",
-    borderRadius: 10,
-    boxShadow: "0 8px 24px -8px rgba(0,0,0,0.18)",
-    fontSize: 12,
-    padding: "8px 10px",
-  },
-  labelStyle: { color: "var(--color-muted-foreground)", marginBottom: 4, fontWeight: 500 },
-  itemStyle: { color: "var(--color-foreground)", padding: 0 },
-  cursor: { fill: "var(--color-muted)" },
-};
-const axisProps = { tickLine: false, axisLine: false, tick: { fill: "var(--color-muted-foreground)", fontSize: 11 } } as const;
 
 export function AspirationHero() {
   const a = ASPIRATION;
@@ -32,13 +18,12 @@ export function AspirationHero() {
 
   return (
     <Card className="overflow-hidden">
-      <div className="grid gap-0 lg:grid-cols-[1.1fr_1.4fr]">
+      <div className="grid grid-cols-1 gap-0 lg:grid-cols-[1.1fr_1.4fr]">
         {/* Left — the aspiration */}
         <div className="relative border-b border-border p-6 lg:border-b-0 lg:border-r">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary-soft/70 via-transparent to-transparent" />
           <div className="relative">
             <div className="flex items-center gap-2 text-body font-medium text-muted-foreground">
-              <span className="inline-flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <span className="inline-flex size-6 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <Target className="size-3.5" />
               </span>
               Business Aspiration
@@ -62,13 +47,13 @@ export function AspirationHero() {
                   </span>
                 </div>
                 <Progress value={fyProgress * 100} tone="accent" className="h-2" />
-                <div className="mt-1.5 flex justify-between text-body text-muted-foreground">
+                <div className="mt-1.5 flex flex-wrap justify-between gap-x-3 text-body text-muted-foreground">
                   <span className="tabular">{pct(fyProgress)} of FY goal · 6 of 12 months</span>
                   <span className="tabular">Sep month-to-date</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="rounded-xl border border-border bg-card p-3">
                   <div className="text-body text-muted-foreground">YTD vs goal-to-date</div>
                   <div className="mt-1 flex items-baseline gap-2">
@@ -96,17 +81,17 @@ export function AspirationHero() {
 
         {/* Right — quarterly break-up */}
         <div className="p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <div className="text-subheading font-semibold tracking-tight">Quarterly break-up</div>
               <div className="text-body text-muted-foreground">Goal vs actual · Indian FY Apr–Mar</div>
             </div>
             <div className="flex items-center gap-3 text-body text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
-                <span className="size-2 rounded-sm bg-chart-5/40" /> Goal
+                <span className="size-2 rounded-full bg-chart-2/40" /> Goal
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="size-2 rounded-sm bg-primary" /> Actual
+                <span className="size-2 rounded-full bg-chart-1" /> Actual
               </span>
             </div>
           </div>
@@ -155,8 +140,8 @@ export function AspirationHero() {
                   {...tooltipStyle}
                   formatter={(v) => (typeof v === "number" ? inrCompact(v) : "—")}
                 />
-                <Bar dataKey="Goal" fill="var(--color-chart-5)" fillOpacity={0.35} radius={[3, 3, 0, 0]} />
-                <Bar dataKey="Actual" fill="var(--color-primary)" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Goal" fill="var(--color-chart-2)" fillOpacity={0.35} radius={[3, 3, 0, 0]} />
+                <Bar dataKey="Actual" fill="var(--color-chart-1)" radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

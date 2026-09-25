@@ -10,6 +10,7 @@ import { CategoryBadge } from "@/components/shared/video-bits";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Progress } from "@/components/ui/progress";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { clientById, clients, daysBetween, personById, TODAY } from "@/lib/mock/core";
@@ -41,7 +42,7 @@ export function AgreementsList() {
         }
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Active agreements" value={live.length} icon={FileSignature} tone="accent" hint={`${all.length} total`} />
         <StatCard label="Contracted MRR" value={inrCompact(mrr)} icon={Wallet} tone="success" hint="per month, ex-GST" />
         <StatCard label="Units promised / cycle" value={units} icon={Layers} tone="info" hint="across all clients" />
@@ -51,9 +52,10 @@ export function AgreementsList() {
       <div className="mb-3 flex flex-wrap items-center gap-1.5">
         <button
           onClick={() => router.push("/agreements")}
+          aria-pressed={!clientFilter}
           className={cn(
-            "h-7 cursor-pointer rounded-full border px-3 text-body font-medium transition",
-            !clientFilter ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground",
+            "h-7 cursor-pointer rounded-full border px-3 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+            !clientFilter ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface text-muted-foreground hover:border-primary/40 hover:text-primary",
           )}
         >
           All clients
@@ -62,9 +64,10 @@ export function AgreementsList() {
           <button
             key={c.id}
             onClick={() => router.push(`/agreements?client=${c.id}`)}
+            aria-pressed={clientFilter === c.id}
             className={cn(
-              "h-7 cursor-pointer rounded-full border px-3 text-body font-medium transition",
-              clientFilter === c.id ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:text-foreground",
+              "h-7 cursor-pointer rounded-full border px-3 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+              clientFilter === c.id ? "border-primary bg-primary text-primary-foreground" : "border-border bg-surface text-muted-foreground hover:border-primary/40 hover:text-primary",
             )}
           >
             {c.name}
@@ -84,9 +87,9 @@ export function AgreementsList() {
               <TH className="pl-5">Agreement</TH>
               <TH>Package</TH>
               <TH>Status</TH>
-              <TH className="text-right">Monthly fee</TH>
+              <TH numeric>Monthly fee</TH>
               <TH className="min-w-48">Period</TH>
-              <TH className="text-right">Units / cycle</TH>
+              <TH numeric>Units / cycle</TH>
               <TH className="pr-5">Owner</TH>
             </TR>
           </THead>
@@ -99,9 +102,9 @@ export function AgreementsList() {
               return (
                 <TR key={a.id} className="cursor-pointer" onClick={() => router.push(`/agreements/${a.id}`)}>
                   <TD className="pl-5">
-                    <Link href={`/agreements/${a.id}`} className="block" onClick={(e) => e.stopPropagation()}>
+                    <Link href={`/agreements/${a.id}`} className="block rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35" onClick={(e) => e.stopPropagation()}>
                       <div className="text-body font-semibold hover:text-primary">{c.name}</div>
-                      <div className="mt-0.5 flex items-center gap-2 text-body text-muted-foreground">
+                      <div className="mt-0.5 flex items-center gap-2 whitespace-nowrap text-body text-muted-foreground">
                         <CategoryBadge category={c.category} />
                         <span>{c.kind === "partner" ? "Partner client" : "Recurring"}</span>
                       </div>
@@ -114,8 +117,8 @@ export function AgreementsList() {
                   <TD>
                     <StatusBadge status={a.status} />
                   </TD>
-                  <TD className="text-right">
-                    <div className="font-semibold tabular">{inr(a.monthlyFee)}</div>
+                  <TD numeric>
+                    <div className="font-semibold">{inr(a.monthlyFee)}</div>
                     <div className="text-body text-muted-foreground">{a.billing}</div>
                   </TD>
                   <TD>
@@ -126,9 +129,9 @@ export function AgreementsList() {
                       <span>{fmtDate(a.endDate, { month: "short", year: "2-digit" })}</span>
                     </div>
                   </TD>
-                  <TD className="text-right">
-                    <div className="text-subheading font-semibold tabular">{unitsTotal(a)}</div>
-                    <div className="max-w-44 truncate text-body text-muted-foreground" title={a.units.map((u) => `${u.perCycle} ${u.label}`).join(", ")}>
+                  <TD numeric>
+                    <div className="text-subheading font-semibold">{unitsTotal(a)}</div>
+                    <div className="ml-auto max-w-44 truncate text-body text-muted-foreground" title={a.units.map((u) => `${u.perCycle} ${u.label}`).join(", ")}>
                       {a.units.map((u) => `${u.perCycle} ${u.label}`).join(" · ")}
                     </div>
                   </TD>
@@ -143,7 +146,21 @@ export function AgreementsList() {
             })}
           </TBody>
         </Table>
-        {!list.length && <div className="py-12 text-center text-body text-muted-foreground">No agreements for this client.</div>}
+        {!list.length && (
+          <div className="p-5">
+            <EmptyState
+              compact
+              icon={FileSignature}
+              title="No agreements for this client"
+              description="Agreements are created when a won deal is converted in CRM."
+              action={
+                <Button variant="secondary" size="sm" onClick={() => router.push("/agreements")}>
+                  Show all clients
+                </Button>
+              }
+            />
+          </div>
+        )}
       </Card>
     </div>
   );

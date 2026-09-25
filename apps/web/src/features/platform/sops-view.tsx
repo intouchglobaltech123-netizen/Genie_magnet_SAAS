@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   BookCheck,
   Camera,
+  Check,
   CheckCircle2,
   Clock,
   FileText,
@@ -25,7 +26,9 @@ import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input, Textarea } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { EmptyState } from "@/components/ui/feedback";
+import { Field, Input, Textarea } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -111,27 +114,28 @@ export function SopsView() {
         }
       />
 
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Published SOPs" value={sops.filter((s) => s.status === "published").length} icon={BookCheck} tone="success" hint={`${sops.length} total`} />
         <StatCard label="Checklist runs · Sep" value={runs} icon={ListChecks} tone="accent" hint={`${sops.reduce((s, x) => s + x.activeRuns, 0)} in progress`} />
         <StatCard label="Failures · Sep" value={fails} icon={AlertTriangle} tone="danger" hint={`${(((runs - fails) / Math.max(1, runs)) * 100).toFixed(1)}% pass rate`} />
         <StatCard label="Approved exceptions" value={exceptions} icon={ShieldAlert} tone="warning" hint="Documented deviations" />
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_360px]">
         <Card className="overflow-hidden">
           <div className="flex flex-wrap items-center gap-3 border-b border-border p-4">
             <div className="relative w-full max-w-64">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search SOPs" className="pl-9" />
+              <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search SOPs" aria-label="Search SOPs" className="pl-9" />
             </div>
             <div className="flex flex-wrap gap-1.5">
               {areas.map((a) => (
                 <button
                   key={a}
                   onClick={() => setArea(a)}
+                  aria-pressed={area === a}
                   className={cn(
-                    "cursor-pointer rounded-full border px-2.5 py-1 text-body font-medium transition",
+                    "cursor-pointer rounded-full border px-2.5 py-1 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                     area === a ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -153,7 +157,19 @@ export function SopsView() {
             </THead>
             <TBody>
               {list.map((s) => (
-                <TR key={s.id} className="cursor-pointer" onClick={() => setOpenId(s.id)}>
+                <TR
+                  key={s.id}
+                  className="cursor-pointer focus-visible:bg-primary-soft/40 focus-visible:outline-none"
+                  tabIndex={0}
+                  aria-label={`Open ${s.code} ${s.title}`}
+                  onClick={() => setOpenId(s.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setOpenId(s.id);
+                    }
+                  }}
+                >
                   <TD className="max-w-[320px]">
                     <div className="font-mono text-body text-muted-foreground">{s.code}</div>
                     <div className="truncate font-medium">{s.title}</div>
@@ -190,8 +206,13 @@ export function SopsView() {
               ))}
               {list.length === 0 && (
                 <TR>
-                  <TD colSpan={6} className="py-12 text-center text-muted-foreground">
-                    No SOPs match
+                  <TD colSpan={6} className="p-4">
+                    <EmptyState
+                      compact
+                      icon={Search}
+                      title="No SOPs match"
+                      description="Try a different search term or area filter."
+                    />
                   </TD>
                 </TR>
               )}
@@ -240,6 +261,9 @@ function ComplianceCard({ sops }: { sops: Sop[] }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        {withRuns.length === 0 && (
+          <EmptyState compact icon={ListChecks} title="No checklist runs yet" description="Pass rates appear once SOP checklists are run this month." />
+        )}
         {withRuns.map((s) => {
           const rate = ((s.runsThisMonth - s.failures) / s.runsThisMonth) * 100;
           return (
@@ -324,15 +348,17 @@ function SopSheet({
             <DialogDescription>{sop.summary}</DialogDescription>
           </DialogHeader>
           <DialogBody>
-            <div className="mb-4 grid grid-cols-3 gap-2">
+            <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
               {[
                 ["Doer", sop.doer],
                 ["Checker", sop.checker],
                 ["Approver", sop.approver],
               ].map(([k, v]) => (
-                <div key={k} className="rounded-xl border border-border p-3">
+                <div key={k} className="min-w-0 rounded-xl border border-border p-3">
                   <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
-                  <div className="mt-0.5 text-body font-medium">{v}</div>
+                  <div className="mt-0.5 truncate text-body font-medium" title={v}>
+                    {v}
+                  </div>
                 </div>
               ))}
             </div>
@@ -376,21 +402,24 @@ function SopSheet({
                         return (
                           <button
                             key={key}
+                            role="checkbox"
+                            aria-checked={!!done[key]}
                             onClick={() => setDone((d) => ({ ...d, [key]: !d[key] }))}
-                            className="flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left text-body hover:bg-muted/50"
+                            className="flex w-full cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-left text-body transition first:rounded-t-xl last:rounded-b-xl hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/30 sm:flex-nowrap"
                           >
                             <span
+                              aria-hidden
                               className={cn(
                                 "inline-flex size-[18px] shrink-0 items-center justify-center rounded-[5px] border transition",
-                                done[key] ? "border-success bg-success text-white" : "border-input",
+                                done[key] ? "border-success bg-success text-primary-foreground" : "border-input bg-card",
                               )}
                             >
-                              {done[key] && <CheckCircle2 className="size-3" />}
+                              {done[key] && <Check className="size-3.5" strokeWidth={3} />}
                             </span>
-                            <span className={cn("flex-1", done[key] && "text-muted-foreground line-through")}>{c.item}</span>
+                            <span className={cn("min-w-0 flex-1", done[key] && "text-muted-foreground line-through")}>{c.item}</span>
                             {c.mandatory && <Badge tone="danger">Mandatory</Badge>}
-                            <span className="inline-flex w-24 items-center gap-1 text-body text-muted-foreground">
-                              <Icon className="size-3.5" /> {evidenceMeta[c.evidence].label}
+                            <span className="inline-flex w-28 shrink-0 items-center gap-1 text-body text-muted-foreground">
+                              <Icon className="size-3.5 shrink-0" /> <span className="truncate">{evidenceMeta[c.evidence].label}</span>
                             </span>
                           </button>
                         );
@@ -427,7 +456,9 @@ function SopSheet({
                 <div className="text-body font-semibold">
                   Publish {sop.status === "published" ? bump(sop.version) : sop.version.startsWith("v0") ? "v1.0" : sop.version}
                 </div>
-                <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="What changed? e.g. Added drone battery check to kit list" />
+                <Field label="Change note">
+                  <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="What changed? e.g. Added drone battery check to kit list" aria-label="Change note" />
+                </Field>
                 <div className="rounded-lg bg-card p-3 text-body">
                   <div className="flex items-start gap-2">
                     <FileText className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
@@ -436,10 +467,12 @@ function SopSheet({
                       its version — so evidence stays valid — unless you migrate it.
                     </span>
                   </div>
-                  <label className="mt-2 flex cursor-pointer items-center gap-2 pl-6">
-                    <input type="checkbox" checked={migrate} onChange={(e) => setMigrate(e.target.checked)} className="accent-[var(--color-primary)]" />
-                    Migrate active runs to the new version
-                  </label>
+                  <div className="mt-2 flex items-center gap-2 pl-6">
+                    <Checkbox id="sop-migrate-runs" checked={migrate} onCheckedChange={(c) => setMigrate(c === true)} />
+                    <label htmlFor="sop-migrate-runs" className="cursor-pointer">
+                      Migrate active runs to the new version
+                    </label>
+                  </div>
                 </div>
               </div>
             )}
@@ -447,7 +480,7 @@ function SopSheet({
           <DialogFooter className="justify-between">
             <div className="flex gap-2">
               {sop.status === "draft" && (
-                <Button variant="outline" size="sm" onClick={() => onStatus(sop.id, "in-review")}>
+                <Button variant="secondary" size="sm" onClick={() => onStatus(sop.id, "in-review")}>
                   Send for review
                 </Button>
               )}

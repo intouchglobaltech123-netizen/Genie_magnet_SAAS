@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/feedback";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input, Label, Textarea } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -208,7 +209,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
           <div className="relative mt-3">
             <Progress value={progress * 100} tone={statusProgressTone[status]} className="h-2" />
             <div
-              className="absolute -top-1 h-4 w-0.5 rounded bg-foreground/60"
+              className="absolute -top-1 h-4 w-0.5 rounded-full bg-foreground/60"
               style={{ left: `${Math.min(100, expected * 100)}%` }}
               title="Expected by today"
             />
@@ -236,7 +237,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
             <Label>Metric</Label>
             <Input value={metric} onChange={(e) => setMetric(e.target.value)} />
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <NumField label="Baseline" value={baseline} onChange={setBaseline} unit={goal.unit} />
             <NumField label="Target" value={target} onChange={setTarget} unit={goal.unit} />
             <NumField
@@ -255,7 +256,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
           <SectionTitle>Actual source</SectionTitle>
           <div
             className={cn(
-              "flex items-start justify-between gap-3 rounded-xl border p-3.5 transition-colors",
+              "flex flex-wrap items-start justify-between gap-3 rounded-xl border p-3.5 transition-colors",
               override ? "border-border opacity-60" : "border-primary/30 bg-primary-soft/40",
             )}
           >
@@ -361,9 +362,10 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
                   <button
                     key={k}
                     type="button"
+                    aria-pressed={ciKind === k}
                     onClick={() => setCiKind(k)}
                     className={cn(
-                      "h-7 cursor-pointer rounded-md px-2.5 text-body font-medium transition",
+                      "h-7 cursor-pointer rounded-lg px-2.5 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                       ciKind === k ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground",
                       ciKind === k && k === "breakthrough" && "text-success",
                       ciKind === k && k === "breakdown" && "text-danger",
@@ -377,7 +379,7 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
                 value={ciValue}
                 onChange={(e) => setCiValue(e.target.value)}
                 placeholder={`Reading (${goal.unit === "inr" ? "₹" : goal.unit}) — optional`}
-                className="h-8 w-48 text-body"
+                className="h-8 w-full text-body sm:w-48"
                 inputMode="decimal"
               />
             </div>
@@ -437,8 +439,13 @@ function SheetInner({ goal, onClose }: { goal: Goal; onClose: () => void }) {
               })}
             </AnimatePresence>
             {goal.checkIns.length === 0 && (
-              <li className="flex items-center gap-2 text-body text-muted-foreground">
-                <History className="size-4" /> No check-ins yet — the first one sets the tone for the next STOP review.
+              <li>
+                <EmptyState
+                  compact
+                  icon={History}
+                  title="No check-ins yet"
+                  description="The first one sets the tone for the next STOP review."
+                />
               </li>
             )}
           </ol>
@@ -483,7 +490,7 @@ function NumField({
   const n = Number(value);
   return (
     <div className="space-y-1.5">
-      <Label className="flex items-center justify-between">
+      <Label className="flex flex-wrap items-center justify-between gap-x-2">
         {label}
         {hint && <span className="text-body font-normal text-muted-foreground">{hint}</span>}
       </Label>

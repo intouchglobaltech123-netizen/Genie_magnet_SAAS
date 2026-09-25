@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, CalendarClock, Check, ChevronLeft, ChevronRight, FilePenLine, History, Lock, MapPin, ShieldCheck, UserCheck } from "lucide-react";
+import { AlertTriangle, ArrowLeft, CalendarClock, Check, ChevronLeft, ChevronRight, FilePenLine, FileQuestion, History, Lock, MapPin, ShieldCheck, UserCheck } from "lucide-react";
 import { UsersRound } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Alert, EmptyState } from "@/components/ui/feedback";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -55,14 +56,20 @@ export function MeetingWorkspace({ id }: { id: string }) {
   const meeting = useMgmt((s) => s.meetings.find((m) => m.id === id));
   if (!meeting) {
     return (
-      <div className="mx-auto max-w-md py-24 text-center">
-        <h1 className="text-heading font-semibold">Review not found</h1>
-        <p className="mt-2 text-body text-muted-foreground">This meeting record doesn&apos;t exist in the demo data.</p>
-        <Button variant="outline" className="mt-6" asChild>
-          <Link href="/reviews">
-            <ArrowLeft /> Back to Reviews
-          </Link>
-        </Button>
+      <div className="mx-auto max-w-md py-16">
+        <h1 className="sr-only">Review not found</h1>
+        <EmptyState
+          icon={FileQuestion}
+          title="Review not found"
+          description="This meeting record doesn't exist in the demo data."
+          action={
+            <Button variant="secondary" asChild>
+              <Link href="/reviews">
+                <ArrowLeft /> Back to Reviews
+              </Link>
+            </Button>
+          }
+        />
       </div>
     );
   }
@@ -85,13 +92,13 @@ function Workspace({ meeting }: { meeting: Meeting }) {
   return (
     <div className="space-y-5">
       <div>
-        <Link href="/reviews" className="inline-flex items-center gap-1 text-body text-muted-foreground hover:text-foreground">
+        <Link href="/reviews" className="inline-flex items-center gap-1 rounded-lg text-body text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
           <ArrowLeft className="size-3.5" /> Reviews & Meetings
         </Link>
         <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="flex items-start gap-3.5">
+          <div className="flex min-w-0 items-start gap-3.5">
             <CadenceLetter cadence={meeting.cadence} letter={cadence.letter} className="size-11 text-subheading" />
-            <div>
+            <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone={meeting.cadence === "strategic" ? "gold" : "accent"}>
                   {cadence.stop} · {cadence.every}
@@ -122,9 +129,9 @@ function Workspace({ meeting }: { meeting: Meeting }) {
               </div>
             </div>
           </div>
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 flex-wrap gap-2">
             {meeting.cadence === "strategic" && (
-              <Button variant={locked ? "outline" : "accent"} asChild>
+              <Button variant={locked ? "outline" : "soft"} asChild>
                 <Link href={meeting.id === "rv-s6" ? "/round-table/rt-6" : "/round-table/rt-7"}>
                   <UsersRound /> {locked ? "Round Table results" : "Start Round Table"}
                 </Link>
@@ -137,7 +144,7 @@ function Workspace({ meeting }: { meeting: Meeting }) {
 
       {locked && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-border bg-muted/60 px-4 py-3 text-body">
-          <ShieldCheck className="size-4 text-success" />
+          <ShieldCheck className="size-4 shrink-0 text-success" />
           <span className="font-medium">
             Locked by {personById(meeting.lockedBy ?? meeting.facilitatorId).name} on {meeting.lockedAt ? fmtDateTime(meeting.lockedAt) : ""}
           </span>
@@ -147,7 +154,7 @@ function Workspace({ meeting }: { meeting: Meeting }) {
         </div>
       )}
 
-      <div className="grid gap-5 xl:grid-cols-[240px_minmax(0,1fr)_300px]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[240px_minmax(0,1fr)_300px]">
         {/* Stepper */}
         <nav className="space-y-1 xl:sticky xl:top-20 xl:self-start">
           <div className="mb-2 px-2 text-body font-medium uppercase tracking-wider text-muted-foreground">Agenda</div>
@@ -157,23 +164,25 @@ function Workspace({ meeting }: { meeting: Meeting }) {
             return (
               <button
                 key={s.kind + i}
+                type="button"
+                aria-current={active ? "step" : undefined}
                 onClick={() => setStep(i)}
                 className={cn(
-                  "flex w-full cursor-pointer items-start gap-3 rounded-xl px-2.5 py-2 text-left transition",
+                  "flex w-full cursor-pointer items-start gap-3 rounded-xl px-2.5 py-2 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                   active ? "bg-card shadow-card ring-1 ring-border" : "hover:bg-muted/60",
                 )}
               >
                 <span
                   className={cn(
                     "mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-body font-semibold",
-                    active ? "bg-primary text-white" : done ? "bg-success-soft text-success" : "bg-muted text-muted-foreground",
+                    active ? "bg-primary text-primary-foreground" : done ? "bg-success-soft text-success" : "bg-muted text-muted-foreground",
                   )}
                 >
                   {done && !active ? <Check className="size-3.5" /> : i + 1}
                 </span>
                 <span className="min-w-0">
                   <span className={cn("block text-body font-medium", !active && "text-foreground/85")}>{s.title}</span>
-                  <span className="block text-body text-muted-foreground">
+                  <span className="block text-body leading-5 text-muted-foreground">
                     {s.hint}
                     {meeting.cadence === "strategic" && minutes[i] ? ` · ${minutes[i]!.minutes}m` : ""}
                   </span>
@@ -186,8 +195,8 @@ function Workspace({ meeting }: { meeting: Meeting }) {
         {/* Step body */}
         <div className="min-w-0 space-y-4">
           <Card>
-            <CardHeader className="pb-4">
-              <div>
+            <CardHeader className="flex-wrap pb-4">
+              <div className="min-w-0">
                 <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">
                   Step {step + 1} of {steps.length}
                 </div>
@@ -221,8 +230,8 @@ function Workspace({ meeting }: { meeting: Meeting }) {
               )}
             </CardContent>
           </Card>
-          <Card className="p-4">
-            <div className="mb-2 flex items-center justify-between text-body">
+          <Card className="p-5">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 text-body">
               <span className="font-medium">Notes · {cur.title}</span>
               {!locked && <span className="text-muted-foreground">Saved automatically</span>}
             </div>
@@ -274,18 +283,22 @@ function Attendees({ meeting, locked }: { meeting: Meeting; locked: boolean }) {
                 <div className="truncate text-body text-muted-foreground">{p.role}</div>
               </div>
               {locked ? (
-                <Badge tone={a === "present" ? "success" : a === "late" ? "warning" : "danger"}>{a ?? "absent"}</Badge>
+                <Badge tone={a === "present" ? "success" : a === "late" ? "warning" : "danger"} dot className="capitalize">
+                  {a ?? "absent"}
+                </Badge>
               ) : (
                 <button
+                  type="button"
+                  aria-label={`Attendance for ${p.name}: ${a ?? "not checked in"}. Click to change.`}
                   onClick={() => checkIn(meeting.id, pid, nextAttend[String(a) as keyof typeof nextAttend])}
                   className={cn(
-                    "cursor-pointer rounded-md px-2 py-0.5 text-body font-medium transition",
+                    "shrink-0 cursor-pointer rounded-lg px-2 py-0.5 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                     a === "present"
-                      ? "bg-success-soft text-success"
+                      ? "bg-success-soft text-success hover:bg-success-soft/70"
                       : a === "late"
-                        ? "bg-warning-soft text-warning"
+                        ? "bg-warning-soft text-warning hover:bg-warning-soft/70"
                         : a === "absent"
-                          ? "bg-danger-soft text-danger"
+                          ? "bg-danger-soft text-danger hover:bg-danger-soft/70"
                           : "border border-border text-muted-foreground hover:border-primary hover:text-primary",
                   )}
                 >
@@ -314,7 +327,7 @@ function AuditLog({ meeting }: { meeting: Meeting }) {
   const ws = useWs(meeting.id);
   if (meeting.status !== "locked" && ws.audit.length === 0) {
     return (
-      <Card className="p-4 text-body text-muted-foreground">
+      <Card className="p-5 text-body text-muted-foreground">
         <div className="mb-1 flex items-center gap-2 font-medium text-foreground">
           <History className="size-4 text-muted-foreground" /> Record history
         </div>
@@ -392,20 +405,24 @@ function LockButton({ meeting }: { meeting: Meeting }) {
             <DialogDescription>After locking, the record is read-only. Corrections need a reason and are audit-logged.</DialogDescription>
           </DialogHeader>
           <DialogBody className="space-y-3">
-            <div className="grid grid-cols-2 gap-2 text-body">
+            <div className="grid grid-cols-1 gap-2 text-body sm:grid-cols-2">
               {[
                 ["Attendance", `${present} of ${meeting.attendeeIds.length}`],
                 ["Decisions → commitments", String(decisions)],
                 ["BT / BD marked", `${toReview.filter((c) => c.mark === "BT").length} / ${toReview.filter((c) => c.mark === "BD").length}`],
                 ["Carried forward", `${unresolved} → ${target}`],
               ].map(([k, v]) => (
-                <div key={k} className="rounded-xl border border-border p-3">
+                <div key={k} className="min-w-0 rounded-xl border border-border p-3">
                   <div className="text-body text-muted-foreground">{k}</div>
-                  <div className="mt-0.5 font-semibold">{v}</div>
+                  <div className="mt-0.5 break-words font-semibold">{v}</div>
                 </div>
               ))}
             </div>
-            {present === 0 && <p className="rounded-lg bg-warning-soft px-3 py-2 text-body text-warning">No attendees checked in yet — attendance will be recorded as absent.</p>}
+            {present === 0 && (
+              <Alert tone="warning" icon={AlertTriangle}>
+                No attendees checked in yet — attendance will be recorded as absent.
+              </Alert>
+            )}
             <label className="flex cursor-pointer items-start gap-2.5 rounded-xl bg-muted/60 p-3 text-body">
               <Checkbox checked={ack} onCheckedChange={(v) => setAck(!!v)} className="mt-0.5" />
               <span>Freeze the numbers snapshot as of now and carry unresolved commitments forward automatically.</span>
@@ -452,10 +469,10 @@ function CorrectionButton({ meeting }: { meeting: Meeting }) {
             <DialogDescription>The locked record is not overwritten — your correction is appended to the audit log with a reason.</DialogDescription>
           </DialogHeader>
           <DialogBody className="space-y-4">
-            <Field label="Reason (required)">
+            <Field label="Reason" required>
               <Select value={reason} onValueChange={setReason} placeholder="Select a reason" options={REASONS.map((r) => ({ value: r, label: r }))} />
             </Field>
-            <Field label="Correction">
+            <Field label="Correction" required>
               <Textarea value={text} onChange={(e) => setText(e.target.value)} placeholder="e.g. Due date of “Hire Reels editor” should read 30 Sep, not 20 Sep" />
             </Field>
           </DialogBody>

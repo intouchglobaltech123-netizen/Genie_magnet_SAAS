@@ -3,7 +3,7 @@
 import { Download, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useDemo } from "@/lib/store";
 import { agreementById, clientById, cycles, personById } from "@/lib/mock/core";
 import { outcomes, type OutcomeKpi } from "@/lib/mock/delivery";
@@ -25,32 +25,17 @@ export function ReportDialog({ open, onOpenChange, clientId }: { open: boolean; 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl p-0">
-        <DialogTitle className="sr-only">Monthly report preview</DialogTitle>
-        <div className="flex items-center justify-between gap-2 border-b border-border px-5 py-3 pr-14">
-          <span className="text-body font-medium">Report preview</span>
-          <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => toast.success("PDF downloaded", { description: `${client.code}_Report_Sep-2026.pdf · 1 page · 284 KB` })}>
-              <Download /> PDF
-            </Button>
-            <Button
-              size="sm"
-              variant="accent"
-              onClick={() => {
-                log(`September report shared with ${client.name} in Client Hub`, "success");
-                toast.success("Shared with client", { description: `${client.contacts[0]?.name} will see it in their Client Hub and on email` });
-                onOpenChange(false);
-              }}
-            >
-              <Send /> Share with client
-            </Button>
-          </div>
-        </div>
-
-        <div className="bg-muted/50 p-5">
+      <DialogContent className="max-w-3xl">
+        <DialogHeader className="border-b border-border-subtle">
+          <DialogTitle>Report preview</DialogTitle>
+          <DialogDescription>
+            {client.name} · September 2026 · shared to their Client Hub and email
+          </DialogDescription>
+        </DialogHeader>
+        <DialogBody className="bg-surface-secondary px-4 py-5 sm:px-6">
           {/* The "paper" */}
-          <article className="mx-auto rounded-xl border border-border bg-card p-8 shadow-card">
-            <header className="flex items-start justify-between gap-4 border-b border-border pb-5">
+          <article className="mx-auto rounded-xl border border-border bg-card p-5 shadow-card sm:p-8">
+            <header className="flex flex-wrap items-start justify-between gap-4 border-b border-border pb-5">
               <div>
                 <div className="text-body font-semibold uppercase tracking-[0.14em] text-muted-foreground">Monthly performance report</div>
                 <h2 className="mt-1 text-heading font-semibold tracking-tight">{client.name}</h2>
@@ -58,14 +43,14 @@ export function ReportDialog({ open, onOpenChange, clientId }: { open: boolean; 
                   September 2026 · {agreement?.packageName ?? "Retainer"}
                 </div>
               </div>
-              <div className="text-right text-body text-muted-foreground">
-                <div className="font-semibold text-foreground">Genie Magnet</div>
+              <div className="text-body text-muted-foreground sm:text-right">
+                <div className="font-semibold text-text-primary">Genie Magnet</div>
                 <div>Prepared by {owner.name}</div>
                 <div>Issued 30 Sep 2026</div>
               </div>
             </header>
 
-            <section className="grid grid-cols-2 gap-3 py-5 sm:grid-cols-5">
+            <section className="grid grid-cols-2 gap-3 py-5 md:grid-cols-5">
               {data.kpis.map((k) => (
                 <div key={k.key}>
                   <div className="text-body text-muted-foreground">{k.label}</div>
@@ -77,7 +62,7 @@ export function ReportDialog({ open, onOpenChange, clientId }: { open: boolean; 
               ))}
             </section>
 
-            <section className="grid gap-6 border-t border-border py-5 sm:grid-cols-2">
+            <section className="grid grid-cols-1 gap-6 border-t border-border py-5 sm:grid-cols-2">
               <div>
                 <h3 className="text-body font-semibold uppercase tracking-wider text-muted-foreground">Highlights</h3>
                 <ul className="mt-2 space-y-1.5 text-body leading-relaxed">
@@ -130,7 +115,7 @@ export function ReportDialog({ open, onOpenChange, clientId }: { open: boolean; 
               <h3 className="text-body font-semibold uppercase tracking-wider text-muted-foreground">Plan for October</h3>
               <div className="mt-2 flex flex-wrap gap-2">
                 {data.nextMonth.map((n) => (
-                  <span key={n} className="rounded-lg bg-muted px-2.5 py-1 text-body">
+                  <span key={n} className="rounded-lg bg-muted px-2.5 py-1 text-body text-text-secondary">
                     {n}
                   </span>
                 ))}
@@ -140,7 +125,21 @@ export function ReportDialog({ open, onOpenChange, clientId }: { open: boolean; 
               </p>
             </section>
           </article>
-        </div>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => toast.success("PDF downloaded", { description: `${client.code}_Report_Sep-2026.pdf · 1 page · 284 KB` })}>
+            <Download /> PDF
+          </Button>
+          <Button
+            onClick={() => {
+              log(`September report shared with ${client.name} in Client Hub`, "success");
+              toast.success("Shared with client", { description: `${client.contacts[0]?.name} will see it in their Client Hub and on email` });
+              onOpenChange(false);
+            }}
+          >
+            <Send /> Share with client
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

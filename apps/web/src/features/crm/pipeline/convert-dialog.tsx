@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Building2, CalendarRange, ClipboardCheck, FileSignature, PartyPopper, Receipt, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { personById } from "@/lib/mock/core";
 import { packageForService } from "@/lib/mock/crm";
 import { useDemo } from "@/lib/store";
@@ -40,9 +40,8 @@ export function ConvertDialog({ lead, onClose }: { lead: Lead | null; onClose: (
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-xl overflow-hidden">
-        <div className="relative bg-grid">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-success/10 to-transparent" />
-          <DialogHeader className="relative">
+        <div>
+          <DialogHeader>
             <motion.div
               initial={{ scale: 0.4, rotate: -20, opacity: 0 }}
               animate={{ scale: 1, rotate: 0, opacity: 1 }}
@@ -52,7 +51,7 @@ export function ConvertDialog({ lead, onClose }: { lead: Lead | null; onClose: (
               <PartyPopper className="size-5" />
             </motion.div>
             <DialogTitle>Deal won — {lead.company}</DialogTitle>
-            <p className="text-body text-muted-foreground">Convert to agreement. Here&apos;s what Agency OS will set up automatically:</p>
+            <DialogDescription>Convert to agreement. Here&apos;s what Agency OS will set up automatically:</DialogDescription>
           </DialogHeader>
         </div>
         <DialogBody className="space-y-2 pt-2">
@@ -79,7 +78,6 @@ export function ConvertDialog({ lead, onClose }: { lead: Lead | null; onClose: (
             Later
           </Button>
           <Button
-            variant="success"
             onClick={() => {
               markConverted(lead.id);
               log(`${lead.company} converted — agreement, onboarding & Oct cycle created`, "success");
@@ -100,7 +98,7 @@ export function ConvertDialog({ lead, onClose }: { lead: Lead | null; onClose: (
 
 export function ConvertedNote() {
   return (
-    <Link href="/onboarding" className="text-body text-success underline-offset-2 hover:underline">
+    <Link href="/onboarding" className="rounded text-body text-success underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35">
       Agreement created → onboarding
     </Link>
   );

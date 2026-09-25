@@ -4,7 +4,7 @@ import { useState } from "react";
 import { create } from "zustand";
 import { toast } from "sonner";
 import { AlertTriangle, BarChart3, CheckCircle2, CircleDashed, Lock, LockOpen, Send, Table2, TrendingUp, Wallet, Landmark, Receipt } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -60,19 +60,20 @@ export function ReportsView() {
           <button
             key={x.key}
             onClick={() => setPeriod(x.key)}
+            aria-pressed={period === x.key}
             className={cn(
-              "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3.5 text-body font-medium transition",
-              period === x.key ? "border-foreground bg-foreground text-background" : "border-border bg-card text-muted-foreground hover:text-foreground",
+              "inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3.5 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+              period === x.key ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:border-border-strong hover:text-foreground",
             )}
           >
             {x.label}
-            <span className="text-body opacity-60">{x.sub}</span>
+            <span className="font-normal opacity-70">{x.sub}</span>
           </button>
         ))}
         <span className="ml-auto text-body text-muted-foreground">{BUSINESS_ASPIRATION.fy} · Indian FY Apr–Mar · figures ex-GST</span>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard label="Earned revenue" value={inrCompact(revenue)} icon={TrendingUp} tone="accent" delta={revenue / goal - 1} deltaLabel={`vs goal ${inrCompact(goal)}`} />
         <StatCard label="Collected" value={inrCompact(collected)} icon={Wallet} tone="success" hint={`${pct(collected / (revenue || 1))} of earned`} />
         <StatCard label="Expenses" value={inrCompact(expense)} icon={Receipt} tone="warning" hint={`${pct(expense / (revenue || 1))} of revenue`} />
@@ -80,7 +81,7 @@ export function ReportsView() {
           label="Operating profit"
           value={inrCompact(profit)}
           icon={BarChart3}
-          tone={profit / revenue >= BUSINESS_ASPIRATION.netMarginGoal ? "success" : "gold"}
+          tone={profit / revenue >= BUSINESS_ASPIRATION.netMarginGoal ? "success" : "warning"}
           hint={`${pct(profit / (revenue || 1), 1)} margin · goal ${pct(BUSINESS_ASPIRATION.netMarginGoal)}`}
         />
         <StatCard label="Closing cash" value={inrCompact(closing)} icon={Landmark} tone="info" hint={`End of ${months.at(-1)} · HDFC current a/c`} />
@@ -138,12 +139,15 @@ function buildRows(): Row[] {
   return rows;
 }
 
-function revTone(v: number) {
-  return v >= 0 ? "bg-success-soft text-success" : v >= -0.05 ? "bg-warning-soft text-warning" : "bg-danger-soft text-danger";
+function revTone(v: number): BadgeTone {
+  return v >= 0 ? "success" : v >= -0.05 ? "warning" : "danger";
 }
-function expTone(v: number) {
-  return v <= 0 ? "bg-success-soft text-success" : v <= 0.03 ? "bg-warning-soft text-warning" : "bg-danger-soft text-danger";
+function expTone(v: number): BadgeTone {
+  return v <= 0 ? "success" : v <= 0.03 ? "warning" : "danger";
 }
+const SEG = "inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30";
+const SEG_ON = "bg-card text-text-primary shadow-sm";
+const SEG_OFF = "text-muted-foreground hover:text-foreground";
 const signed = (v: number) => `${v >= 0 ? "+" : "−"}${Math.abs(v * 100).toFixed(1)}%`;
 
 function BizProgressCard() {
@@ -153,18 +157,18 @@ function BizProgressCard() {
   return (
     <Card>
       <CardHeader className="flex-col gap-3 md:flex-row md:items-start">
-        <div>
+        <div className="min-w-0">
           <CardTitle>Biz Progress Dashboard</CardTitle>
           <CardDescription>
             Monthly revenue & expense — FY 2025-26 actual vs FY 2026-27 actual vs Business Aspiration goal ({inrCompact(BUSINESS_ASPIRATION.revenueGoal)} revenue ·{" "}
             {pct(BUSINESS_ASPIRATION.netMarginGoal)} net margin)
           </CardDescription>
         </div>
-        <div className="inline-flex shrink-0 rounded-lg bg-muted p-0.5 text-body">
-          <button onClick={() => setView("table")} className={cn("inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 font-medium transition", view === "table" ? "bg-card shadow-sm" : "text-muted-foreground")}>
+        <div className="inline-flex shrink-0 rounded-xl bg-muted p-1 text-body" role="group" aria-label="View">
+          <button onClick={() => setView("table")} aria-pressed={view === "table"} className={cn(SEG, view === "table" ? SEG_ON : SEG_OFF)}>
             <Table2 className="size-3.5" /> Table
           </button>
-          <button onClick={() => setView("chart")} className={cn("inline-flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 font-medium transition", view === "chart" ? "bg-card shadow-sm" : "text-muted-foreground")}>
+          <button onClick={() => setView("chart")} aria-pressed={view === "chart"} className={cn(SEG, view === "chart" ? SEG_ON : SEG_OFF)}>
             <BarChart3 className="size-3.5" /> Chart
           </button>
         </div>
@@ -188,14 +192,14 @@ function BizProgressCard() {
               </TH>
             </TR>
             <TR>
-              <TH className="border-l border-border text-right">FY 25-26</TH>
-              <TH className="text-right">FY 26-27</TH>
-              <TH className="text-right">Goal</TH>
-              <TH className="text-right">vs goal</TH>
-              <TH className="border-l border-border text-right">FY 25-26</TH>
-              <TH className="text-right">FY 26-27</TH>
-              <TH className="text-right">Budget</TH>
-              <TH className="pr-5 text-right">vs budget</TH>
+              <TH numeric className="border-l border-border">FY 25-26</TH>
+              <TH numeric>FY 26-27</TH>
+              <TH numeric>Goal</TH>
+              <TH numeric>vs goal</TH>
+              <TH numeric className="border-l border-border">FY 25-26</TH>
+              <TH numeric>FY 26-27</TH>
+              <TH numeric>Budget</TH>
+              <TH numeric className="pr-5">vs budget</TH>
             </TR>
           </THead>
           <TBody>
@@ -205,16 +209,22 @@ function BizProgressCard() {
               const locked = r.month ? !!locks[r.month] : false;
               const open = r.month === "Sep";
               return (
-                <TR key={r.label} className={cn(r.kind === "quarter" && "bg-muted/50 font-medium hover:bg-muted/50", r.kind === "fy" && "bg-muted font-semibold hover:bg-muted")}>
-                  <TD className="pl-5">
+                <TR
+                  key={r.label}
+                  className={cn(
+                    r.kind === "quarter" && "bg-surface-secondary font-medium hover:bg-surface-secondary",
+                    r.kind === "fy" && "bg-surface-secondary font-semibold hover:bg-surface-secondary [&>td]:border-t [&>td]:border-border-strong",
+                  )}
+                >
+                  <TD className="whitespace-nowrap pl-5">
                     <span className="inline-flex items-center gap-1.5">
                       {r.label}
                       {locked && <Lock className="size-3 text-muted-foreground" />}
-                      {open && !locked && <Badge tone="info" className="px-1.5 py-0 text-body">MTD</Badge>}
+                      {open && !locked && <Badge tone="info" className="px-1.5 py-0">MTD</Badge>}
                     </span>
                   </TD>
-                  <TD className="border-l border-border text-right text-muted-foreground tabular">{inrCompact(r.prevRev)}</TD>
-                  <TD className="text-right tabular">
+                  <TD numeric className="border-l border-border text-muted-foreground">{inrCompact(r.prevRev)}</TD>
+                  <TD numeric>
                     {r.rev !== null ? (
                       <>
                         {inrCompact(r.rev)}
@@ -228,24 +238,24 @@ function BizProgressCard() {
                       <span className="text-muted-foreground">—</span>
                     )}
                   </TD>
-                  <TD className="text-right tabular">{inrCompact(r.goalRev)}</TD>
-                  <TD className="text-right">
+                  <TD numeric>{inrCompact(r.goalRev)}</TD>
+                  <TD numeric>
                     {vsRev === null ? (
                       <span className="text-muted-foreground">—</span>
                     ) : r.kind === "fy" ? (
-                      <span className="inline-block rounded-md bg-primary-soft px-1.5 py-0.5 text-body font-semibold text-primary tabular">{pct(vsRev)} of FY goal</span>
+                      <Badge tone="accent" className="font-semibold tabular">{pct(vsRev)} of FY goal</Badge>
                     ) : (
-                      <span className={cn("inline-block rounded-md px-1.5 py-0.5 text-body font-semibold tabular", revTone(vsRev))}>{signed(vsRev)}</span>
+                      <Badge tone={revTone(vsRev)} className="font-semibold tabular">{signed(vsRev)}</Badge>
                     )}
                   </TD>
-                  <TD className="border-l border-border text-right text-muted-foreground tabular">{inrCompact(r.prevExp)}</TD>
-                  <TD className="text-right tabular">{r.exp !== null ? inrCompact(r.exp) : <span className="text-muted-foreground">—</span>}</TD>
-                  <TD className="text-right tabular">{inrCompact(r.goalExp)}</TD>
-                  <TD className="pr-5 text-right">
+                  <TD numeric className="border-l border-border text-muted-foreground">{inrCompact(r.prevExp)}</TD>
+                  <TD numeric>{r.exp !== null ? inrCompact(r.exp) : <span className="text-muted-foreground">—</span>}</TD>
+                  <TD numeric>{inrCompact(r.goalExp)}</TD>
+                  <TD numeric className="pr-5">
                     {vsExp === null ? (
                       <span className="text-muted-foreground">—</span>
                     ) : (
-                      <span className={cn("inline-block rounded-md px-1.5 py-0.5 text-body font-semibold tabular", expTone(vsExp))}>{signed(vsExp)}</span>
+                      <Badge tone={expTone(vsExp)} className="font-semibold tabular">{signed(vsExp)}</Badge>
                     )}
                   </TD>
                 </TR>
@@ -278,7 +288,7 @@ function BudgetCard() {
   return (
     <Card className="h-full">
       <CardHeader>
-        <div>
+        <div className="min-w-0">
           <CardTitle>Budget vs actual</CardTitle>
           <CardDescription>By cost category · Apr–Sep 2026 (ex-GST)</CardDescription>
         </div>
@@ -308,7 +318,7 @@ function BudgetCard() {
                   </span>
                   <span
                     className={cn(
-                      "w-20 text-right text-body font-semibold",
+                      "min-w-24 whitespace-nowrap text-right text-body font-semibold",
                       tone === "danger" ? "text-danger" : tone === "warning" ? "text-warning" : "text-success",
                     )}
                   >
@@ -319,12 +329,12 @@ function BudgetCard() {
               </div>
               <div className="relative mt-1.5">
                 <Progress value={Math.min(ratio, 1) * 100} tone={tone} className="h-2" />
-                {ratio > 1 && <div className="absolute -top-0.5 right-0 h-3 w-0.5 rounded bg-danger" />}
+                {ratio > 1 && <div className="absolute -top-0.5 right-0 h-3 w-0.5 rounded-full bg-danger" />}
               </div>
             </div>
           );
         })}
-        <div className="flex items-center justify-between border-t border-border pt-3 text-body font-semibold">
+        <div className="flex items-center justify-between gap-3 rounded-xl border-t border-border-strong bg-surface-secondary px-3 py-2.5 text-body font-semibold">
           <span>Total</span>
           <span className="tabular">
             {inr(totalA)} <span className="font-normal text-muted-foreground">/ {inr(totalB)}</span>
@@ -339,20 +349,22 @@ function BudgetCard() {
 
 function PnlLine({ label, value, sub }: { label: string; value: number; sub?: boolean }) {
   return (
-    <div className={cn("flex items-center justify-between py-1 text-body", sub ? "pl-4 text-muted-foreground" : "font-medium")}>
+    <div className={cn("flex items-center justify-between gap-3 py-1 text-body", sub ? "pl-4 text-muted-foreground" : "font-medium")}>
       <span>{label}</span>
       <span className="tabular">{sub ? `(${inrCompact(value)})` : inrCompact(value)}</span>
     </div>
   );
 }
 
-function PnlTotal({ label, value, rev, tone }: { label: string; value: number; rev: number; tone: string }) {
+function PnlTotal({ label, value, rev, tone }: { label: string; value: number; rev: number; tone: BadgeTone }) {
   return (
-    <div className="my-1.5 flex items-center justify-between rounded-lg bg-muted/70 px-3 py-2 text-body font-semibold">
+    <div className="my-1.5 flex items-center justify-between gap-3 rounded-xl border-t border-border-strong bg-surface-secondary px-3 py-2 text-body font-semibold">
       <span>{label}</span>
-      <span className="flex items-baseline gap-2 tabular">
+      <span className="flex items-center gap-2 tabular">
         {inrCompact(value)}
-        <span className={cn("rounded-md px-1.5 py-0.5 text-body", tone)}>{pct(value / rev, 1)}</span>
+        <Badge tone={tone} className="tabular">
+          {pct(value / rev, 1)}
+        </Badge>
       </span>
     </div>
   );
@@ -412,15 +424,15 @@ function PnlCard() {
         {pnlYtd.direct.map((x) => (
           <PnlLine key={x.label} label={x.label} value={x.amount} sub />
         ))}
-        <PnlTotal label="Gross profit" value={gross} rev={rev} tone="bg-success-soft text-success" />
+        <PnlTotal label="Gross profit" value={gross} rev={rev} tone="success" />
         {pnlYtd.variable.map((x) => (
           <PnlLine key={x.label} label={x.label} value={x.amount} sub />
         ))}
-        <PnlTotal label="Contribution" value={contribution} rev={rev} tone="bg-info-soft text-info" />
+        <PnlTotal label="Contribution" value={contribution} rev={rev} tone="info" />
         {pnlYtd.fixed.map((x) => (
           <PnlLine key={x.label} label={x.label} value={x.amount} sub />
         ))}
-        <PnlTotal label="Operating profit" value={op} rev={rev} tone={op / rev >= BUSINESS_ASPIRATION.netMarginGoal ? "bg-success-soft text-success" : "bg-accent-soft text-accent-strong"} />
+        <PnlTotal label="Operating profit" value={op} rev={rev} tone={op / rev >= BUSINESS_ASPIRATION.netMarginGoal ? "success" : "warning"} />
         <p className="mt-2 text-body text-muted-foreground">
           Goal: {pct(BUSINESS_ASPIRATION.netMarginGoal)} net margin · gap {inrCompact(rev * BUSINESS_ASPIRATION.netMarginGoal - op)} · founder remuneration below operating profit.
         </p>
@@ -466,10 +478,10 @@ function PeriodLockCard() {
                 key={m}
                 className={cn(
                   "rounded-xl border p-3 transition",
-                  l ? "border-border bg-muted/40" : future ? "border-dashed border-border opacity-60" : "border-info/40 bg-info-soft",
+                  l ? "border-border bg-surface-secondary" : future ? "border-dashed border-border opacity-60" : "border-info/40 bg-info-soft",
                 )}
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span className="text-body font-semibold">
                     {m} {year}
                   </span>

@@ -9,23 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn, inr, inrCompact } from "@/lib/utils";
+import { axisProps, tooltipStyle } from "@/features/finance/chart-style";
 import { CAPACITY_HISTORY, FUNNEL_HISTORY, nowStamp } from "./goals-data";
 import { useGoals } from "./goals-store";
-
-const tooltipStyle = {
-  contentStyle: {
-    background: "var(--color-popover)",
-    border: "1px solid var(--color-border)",
-    borderRadius: 10,
-    boxShadow: "0 8px 24px -8px rgba(0,0,0,0.18)",
-    fontSize: 12,
-    padding: "8px 10px",
-  },
-  labelStyle: { color: "var(--color-muted-foreground)", marginBottom: 4, fontWeight: 500 },
-  itemStyle: { color: "var(--color-foreground)", padding: 0 },
-  cursor: { fill: "var(--color-muted)" },
-};
-const axisProps = { tickLine: false, axisLine: false, tick: { fill: "var(--color-muted-foreground)", fontSize: 11 } } as const;
 
 type Inputs = typeof FUNNEL_HISTORY & typeof CAPACITY_HISTORY;
 type Key = keyof Inputs;
@@ -109,10 +95,10 @@ export function RevenueBreakdown() {
   const hires = Math.max(0, Math.ceil(((required - capacity) * v.hrsPerVideo) / v.productiveHrs));
 
   const waterfall = [
-    { name: "Base book", base: 0, value: v.baseBook, color: "var(--color-chart-5)", sign: "" },
+    { name: "Base book", base: 0, value: v.baseBook, color: "var(--color-chart-2)", sign: "" },
     { name: "Not renewed", base: renewals, value: v.baseBook - renewals, color: "var(--color-danger)", sign: "−" },
     { name: "Churn", base: kept, value: churnAmt, color: "var(--color-warning)", sign: "−" },
-    { name: "New sales", base: kept, value: newNeeded, color: "var(--color-primary)", sign: "+" },
+    { name: "New sales", base: kept, value: newNeeded, color: "var(--color-chart-1)", sign: "+" },
     { name: "FY target", base: 0, value: v.revenueTarget, color: "var(--color-success)", sign: "" },
   ];
 
@@ -136,7 +122,7 @@ export function RevenueBreakdown() {
   }
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
       {/* Inputs */}
       <Card className="h-fit">
         <CardHeader>
@@ -170,19 +156,19 @@ export function RevenueBreakdown() {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Metric label="Renewals kept" value={inrCompact(kept)} sub={`${inrCompact(renewals)} renewed − ${inrCompact(churnAmt)} churn`} dot="bg-chart-5" />
-              <Metric label="New sales needed" value={inrCompact(newNeeded)} sub={`${Math.round((newNeeded / v.revenueTarget) * 100)}% of target`} dot="bg-primary" />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <Metric label="Renewals kept" value={inrCompact(kept)} sub={`${inrCompact(renewals)} renewed − ${inrCompact(churnAmt)} churn`} dot="bg-chart-2" />
+              <Metric label="New sales needed" value={inrCompact(newNeeded)} sub={`${Math.round((newNeeded / v.revenueTarget) * 100)}% of target`} dot="bg-chart-1" />
               <Metric label="Lost from base book" value={inrCompact(v.baseBook - kept)} sub="Not renewed + churn" dot="bg-danger" />
             </div>
 
             {/* composition bar */}
             <div className="mt-5">
               <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted">
-                <motion.div className="h-full bg-chart-5" animate={{ width: `${(kept / v.revenueTarget) * 100}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }} />
-                <motion.div className="h-full bg-primary" animate={{ width: `${(newNeeded / v.revenueTarget) * 100}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }} />
+                <motion.div className="h-full bg-chart-2" animate={{ width: `${(kept / v.revenueTarget) * 100}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }} />
+                <motion.div className="h-full bg-chart-1" animate={{ width: `${(newNeeded / v.revenueTarget) * 100}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }} />
               </div>
-              <div className="mt-1.5 flex justify-between text-body text-muted-foreground">
+              <div className="mt-1.5 flex flex-wrap justify-between gap-x-3 text-body text-muted-foreground">
                 <span>Renewals {Math.round((kept / v.revenueTarget) * 100)}%</span>
                 <span>New sales {Math.round((newNeeded / v.revenueTarget) * 100)}%</span>
               </div>
@@ -221,7 +207,7 @@ export function RevenueBreakdown() {
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {/* Funnel */}
           <Card>
             <CardHeader>
@@ -237,9 +223,9 @@ export function RevenueBreakdown() {
                     <span className="font-medium">{f.label}</span>
                     <span className="text-subheading font-semibold tracking-tight tabular">{f.value}</span>
                   </div>
-                  <div className="h-7 w-full rounded-md bg-muted/60">
+                  <div className="h-7 w-full rounded-lg bg-muted/60">
                     <motion.div
-                      className={cn("h-full rounded-md", ["bg-primary/30", "bg-primary/50", "bg-primary/75", "bg-primary"][i])}
+                      className={cn("h-full rounded-lg", ["bg-primary/30", "bg-primary/50", "bg-primary/75", "bg-primary"][i])}
                       initial={{ width: 0 }}
                       animate={{ width: `${Math.max(3, (f.value / Math.max(1, leads)) * 100)}%` }}
                       transition={{ type: "spring", stiffness: 110, damping: 18, delay: i * 0.05 }}
@@ -264,7 +250,7 @@ export function RevenueBreakdown() {
                 </span>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <Metric label="Leads / month" value={String(leadsPerMonth)} sub={`${leads} for the year`} />
                   <Metric label="Ad budget / month" value={inr(adPerMonth)} sub={`${inrCompact(adBudget)} for the year`} />
                 </div>
@@ -299,7 +285,7 @@ export function RevenueBreakdown() {
                 </Badge>
               </CardHeader>
               <CardContent>
-                <div className="flex items-baseline gap-2">
+                <div className="flex flex-wrap items-baseline gap-2">
                   <span className="text-heading font-semibold tracking-tight tabular">{required}</span>
                   <span className="text-body text-muted-foreground">needed</span>
                   <ArrowRight className="size-3.5 self-center text-muted-foreground" />
@@ -324,7 +310,7 @@ export function RevenueBreakdown() {
                 </div>
                 <div
                   className={cn(
-                    "mt-3 flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-body",
+                    "mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg px-3 py-2 text-body",
                     capTone === "success" && "bg-success-soft text-success",
                     capTone === "warning" && "bg-warning-soft text-warning",
                     capTone === "danger" && "bg-danger-soft text-danger",
@@ -370,7 +356,7 @@ function Metric({ label, value, sub, dot }: { label: string; value: string; sub?
   return (
     <div className="rounded-xl border border-border p-3">
       <div className="flex items-center gap-1.5 text-body text-muted-foreground">
-        {dot && <span className={cn("size-2 rounded-sm", dot)} />}
+        {dot && <span className={cn("size-2 rounded-full", dot)} />}
         {label}
       </div>
       <div className="mt-1 text-heading font-semibold tracking-tight tabular">{value}</div>
@@ -415,9 +401,9 @@ function SliderGroup({
               step={d.step}
               value={v[d.key]}
               onChange={(e) => set(d.key, Number(e.target.value))}
-              className="mt-1.5 h-1.5 w-full cursor-pointer accent-accent"
+              className="mt-1.5 h-1.5 w-full cursor-pointer accent-primary"
             />
-            <div className="mt-0.5 flex items-center justify-between text-body">
+            <div className="mt-0.5 flex flex-wrap items-center justify-between gap-x-2 text-body">
               {isManual ? (
                 <span className="inline-flex items-center gap-1 text-warning">
                   <span className="size-1.5 rounded-full bg-current" /> source: manual
@@ -428,9 +414,9 @@ function SliderGroup({
                 </span>
               )}
               {isManual && (
-                <button type="button" onClick={() => reset(d.key)} className="cursor-pointer text-primary hover:underline">
+                <Button type="button" variant="link" onClick={() => reset(d.key)} className="h-auto px-0">
                   Reset to {d.historyLabel ? "plan" : "history"} ({d.fmt(HISTORY[d.key])})
-                </button>
+                </Button>
               )}
             </div>
           </div>

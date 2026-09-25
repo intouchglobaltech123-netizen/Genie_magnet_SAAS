@@ -46,7 +46,7 @@ export function DaySummary({ sheet }: { sheet: DaySheet | undefined }) {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-heading font-semibold tracking-tight tabular">{hoursLabel(s.total)}</span>
+              <span className="text-subheading font-semibold tracking-tight tabular">{hoursLabel(s.total)}</span>
               <span className="text-body text-muted-foreground">of 8h shift</span>
             </div>
           </div>
@@ -96,7 +96,7 @@ export function DaySummary({ sheet }: { sheet: DaySheet | undefined }) {
                 <Tooltip key={r.id} content={`#${i + 1} · ${clock12(r.start)} – ${clock12(r.end)} · ${r.status}`}>
                   <div
                     className={cn(
-                      "absolute top-1 bottom-1 rounded-[5px] transition-all",
+                      "absolute top-1 bottom-1 rounded-md transition-all",
                       !r.productive ? "bg-chart-4/60" : r.status === "Completed" ? "bg-success/80" : "bg-warning/80",
                     )}
                     style={{ left: `calc(${left}% + 1px)`, width: `calc(${width}% - 2px)` }}

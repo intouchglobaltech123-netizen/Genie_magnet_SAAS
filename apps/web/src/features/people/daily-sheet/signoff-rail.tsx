@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { personById } from "@/lib/mock/core";
 import { useDemo } from "@/lib/store";
@@ -77,8 +78,9 @@ export function SignoffRail({
       active: submitted && !gm,
       action: (
         <div className="space-y-2">
-          <input
-            className="h-8 w-full rounded-md border border-input bg-card px-2.5 text-body placeholder:text-muted-foreground/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+          <Input
+            className="h-8"
+            aria-label="GM remark"
             placeholder="GM remark (optional)"
             value={sheet?.gmNote ?? ""}
             onChange={(e) => setField(personId, date, { gmNote: e.target.value })}

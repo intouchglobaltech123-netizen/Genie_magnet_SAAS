@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/feedback";
 import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -23,7 +24,7 @@ const kindIcon = { system: Users, call: Phone, meeting: Handshake, doc: FileText
 function Section({ title, children, right }: { title: string; children: React.ReactNode; right?: React.ReactNode }) {
   return (
     <section className="border-t border-border py-5">
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h4 className="text-body font-semibold uppercase tracking-wider text-muted-foreground">{title}</h4>
         {right}
       </div>
@@ -73,7 +74,7 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
         </div>
       </DialogHeader>
       <DialogBody className="pb-8">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <div className="rounded-xl border border-border p-3">
             <div className="text-body text-muted-foreground">Value / month</div>
             <div className="mt-1 text-subheading font-semibold tabular">{inr(lead.value)}</div>
@@ -90,7 +91,7 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
           </div>
         </div>
 
-        <div className="mt-4 flex items-center gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <span className="text-body text-muted-foreground">Stage</span>
           <Select className="h-8 w-44" value={lead.stage} onValueChange={(v) => onMove(lead.id, v as Lead["stage"])} options={LEAD_STAGES.map((s) => ({ value: s, label: s }))} />
           <Button size="sm" variant="outline" className="ml-auto" onClick={() => toast.success("WhatsApp template sent", { description: `Follow-up to ${lead.name} logged` })}>
@@ -122,12 +123,12 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
             <div className="space-y-2">
               {proposals.map((p) => (
                 <div key={p.label} className={cn("flex items-center gap-3 rounded-xl border border-border p-3", p.status === "superseded" && "opacity-60")}>
-                  <span className="inline-flex size-9 items-center justify-center rounded-lg bg-muted text-body font-semibold">{p.label}</span>
+                  <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-body font-semibold">{p.label}</span>
                   <div className="min-w-0 flex-1">
                     <div className="text-body font-medium">{p.note}</div>
                     <div className="text-body text-muted-foreground">{p.scope}</div>
                   </div>
-                  <div className="text-right">
+                  <div className="shrink-0 text-right">
                     <div className={cn("text-body font-semibold tabular", p.status === "superseded" && "line-through")}>{inr(p.price)}</div>
                     <Badge tone={p.status === "accepted" ? "success" : p.status === "sent" ? "info" : "neutral"}>{p.status}</Badge>
                   </div>
@@ -135,12 +136,17 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-between rounded-xl border border-dashed border-border p-3 text-body text-muted-foreground">
-              No proposal yet — sent after discovery.
-              <Button size="xs" variant="soft" onClick={() => toast.success("Proposal draft created from package template")}>
-                Draft proposal
-              </Button>
-            </div>
+            <EmptyState
+              compact
+              icon={FileText}
+              title="No proposal yet"
+              description="Proposals are sent after discovery."
+              action={
+                <Button size="xs" variant="soft" onClick={() => toast.success("Proposal draft created from package template")}>
+                  Draft proposal
+                </Button>
+              }
+            />
           )}
         </Section>
 
@@ -154,9 +160,9 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
                 )}
               >
                 <div className="flex items-start gap-2.5">
-                  {disc.status === "pending" ? <ShieldAlert className="mt-0.5 size-4 text-warning" /> : disc.status === "approved" ? <CheckCircle2 className="mt-0.5 size-4 text-success" /> : <XCircle className="mt-0.5 size-4 text-danger" />}
-                  <div className="flex-1 text-body">
-                    <div className="font-semibold text-foreground">
+                  {disc.status === "pending" ? <ShieldAlert className="mt-0.5 size-4 shrink-0 text-warning" /> : disc.status === "approved" ? <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" /> : <XCircle className="mt-0.5 size-4 shrink-0 text-danger" />}
+                  <div className="min-w-0 flex-1 text-body">
+                    <div className="font-semibold text-text-primary">
                       {disc.pct}% discount · {disc.status === "pending" ? "Needs founder approval" : disc.status === "approved" ? "Approved by Janarthanan" : "Rejected — counter at 8%"}
                     </div>
                     <div className="text-muted-foreground">
@@ -200,11 +206,11 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
             ) : (
               <div className="space-y-2">
                 <div className="flex gap-2">
-                  <div className="relative w-28">
-                    <Input type="number" value={pctIn} onChange={(e) => setPctIn(e.target.value)} placeholder="12" className="pr-7" />
+                  <div className="relative w-28 shrink-0">
+                    <Input type="number" aria-label="Discount percent" value={pctIn} onChange={(e) => setPctIn(e.target.value)} placeholder="12" className="pr-7" />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-body text-muted-foreground">%</span>
                   </div>
-                  <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason (e.g. competing quote)" />
+                  <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason (e.g. competing quote)" aria-label="Discount reason" />
                 </div>
                 {pctNum > 0 && (
                   <div className={cn("text-body", needsFounder ? "text-warning" : "text-success")}>
@@ -249,7 +255,7 @@ function LeadDetail({ lead, onMove }: { lead: Lead; onMove: (id: string, s: Lead
                   >
                     <Icon className="size-3.5" />
                   </span>
-                  <div className="pt-0.5">
+                  <div className="min-w-0 pt-0.5">
                     <div className="text-body">{t.text}</div>
                     <div className="text-body text-muted-foreground">{t.at}</div>
                   </div>

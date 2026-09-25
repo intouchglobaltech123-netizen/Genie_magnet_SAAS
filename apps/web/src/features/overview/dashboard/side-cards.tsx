@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { format, parseISO } from "date-fns";
-import { ArrowRight, Camera, CalendarClock, MapPin } from "lucide-react";
+import { Activity, ArrowRight, Camera, CalendarClock, MapPin } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
+import { EmptyState } from "@/components/ui/feedback";
 import { Tooltip } from "@/components/ui/tooltip";
 import { daysBetween, people, personById, shoots, TODAY } from "@/lib/mock/core";
 import { useDemo } from "@/lib/store";
@@ -18,9 +19,8 @@ export function ReviewCountdownCard() {
   const days = daysBetween(TODAY, REVIEW_DATE);
   const elapsed = 45 - days;
   return (
-    <Card className="relative overflow-hidden border-primary/25 bg-grid">
-      <div className="pointer-events-none absolute -right-16 -top-16 size-48 rounded-full bg-primary/10 blur-3xl" />
-      <CardContent className="relative flex items-center gap-5 p-5">
+    <Card className="overflow-hidden">
+      <CardContent className="flex items-center gap-5 p-5">
         <div className="relative size-20 shrink-0">
           <svg viewBox="0 0 36 36" className="size-20 -rotate-90">
             <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--color-muted)" strokeWidth="3" />
@@ -41,7 +41,7 @@ export function ReviewCountdownCard() {
           </div>
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-body font-medium uppercase tracking-wider text-primary">Next 45-day strategic review</div>
+          <div className="text-body font-semibold text-primary dark:text-text-primary">Next 45-day strategic review</div>
           <div className="mt-1 text-subheading font-semibold">Saturday, 10 Oct 2026 · 10:00 AM</div>
           <div className="mt-0.5 text-body text-muted-foreground">Goals, client health, margins, founder dependency. 4 of 7 pre-reads ready.</div>
           <Button variant="link" size="xs" className="mt-1 h-auto" asChild>
@@ -71,11 +71,12 @@ export function WeekShootsCard() {
         </Button>
       </CardHeader>
       <CardContent className="space-y-2.5">
+        {!upcoming.length && <EmptyState compact icon={Camera} title="No shoots planned" description="Planned shoots for the coming days will show up here." />}
         {upcoming.map((s) => {
           const d = parseISO(s.date);
           const inDays = daysBetween(TODAY, s.date);
           return (
-            <Link key={s.id} href="/shoots" className="flex items-center gap-3 rounded-xl border border-border p-3 transition hover:border-primary/40 hover:bg-muted/40">
+            <Link key={s.id} href="/shoots" className="flex items-center gap-3 rounded-xl border border-border p-3 transition hover:border-primary/40 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
               <div className="flex w-11 shrink-0 flex-col items-center rounded-lg bg-muted py-1">
                 <span className="text-body font-medium uppercase text-muted-foreground">{format(d, "EEE")}</span>
                 <span className="text-subheading font-semibold leading-tight tabular">{format(d, "d")}</span>
@@ -86,7 +87,7 @@ export function WeekShootsCard() {
                   <MapPin className="size-3 shrink-0" /> {s.location} · {s.callTime}
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-1">
+              <div className="flex shrink-0 flex-col items-end gap-1">
                 <Badge tone={inDays <= 2 ? "warning" : "neutral"}>in {inDays}d</Badge>
                 <span className="inline-flex items-center gap-1 text-body text-muted-foreground">
                   <Camera className="size-3" />
@@ -97,7 +98,7 @@ export function WeekShootsCard() {
           );
         })}
         <div className="flex items-center gap-2 rounded-xl bg-muted/50 px-3 py-2 text-body text-muted-foreground">
-          <CalendarClock className="size-3.5" /> Nirmala Cooking Academy kickoff shoot — pending onboarding gate
+          <CalendarClock className="size-3.5 shrink-0" /> Nirmala Cooking Academy kickoff shoot — pending onboarding gate
         </div>
       </CardContent>
     </Card>
@@ -123,6 +124,7 @@ export function ActivityFeedCard({ limit = 9 }: { limit?: number }) {
         </div>
       </CardHeader>
       <CardContent className="max-h-[380px] flex-1 overflow-y-auto scrollbar-thin">
+        {!activity.length && <EmptyState compact icon={Activity} title="No activity yet" description="Updates from across the agency appear here as they happen." />}
         <ol className="relative space-y-3.5 before:absolute before:bottom-1 before:left-[3px] before:top-1 before:w-px before:bg-border">
           {activity.slice(0, limit).map((a) => (
             <li key={a.id} className="relative pl-5">

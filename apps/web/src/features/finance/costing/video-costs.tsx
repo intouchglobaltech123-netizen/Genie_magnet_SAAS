@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 import { Info, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -26,11 +28,14 @@ export function useVideoCosts() {
   }, [videos, crs, sc]);
 }
 
-function HeadTip({ label, tip, className }: { label: string; tip: string; className?: string }) {
+function HeadTip({ label, tip, className, numeric }: { label: string; tip: string; className?: string; numeric?: boolean }) {
   return (
-    <TH className={className}>
+    <TH numeric={numeric} className={className}>
       <Tooltip content={tip}>
-        <span className="inline-flex cursor-help items-center gap-1">
+        <span
+          tabIndex={0}
+          className="inline-flex cursor-help items-center gap-1 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30"
+        >
           {label}
           <Info className="size-3 opacity-60" />
         </span>
@@ -99,7 +104,7 @@ export function VideoCostTable() {
   return (
     <Card className="min-w-0">
       <CardHeader className="flex-wrap">
-        <div>
+        <div className="min-w-0">
           <CardTitle>Cost per video · Sep 2026 cycle</CardTitle>
           <CardDescription>Live from production — click a row to open its cost waterfall</CardDescription>
         </div>
@@ -122,14 +127,38 @@ export function VideoCostTable() {
             <TH className="pl-5">Video</TH>
             <TH>Format</TH>
             <TH>Stage</TH>
-            <HeadTip className="text-right" label="Standard" tip="Planned cost: planned edit minutes + standard director/camera minutes for the format, standard kit hours, overhead on planned hours and shoot travel budget." />
-            <HeadTip className="text-right" label="Actual" tip="Logged minutes × hourly cost + kit hours × depreciation/hr + labour hrs × ₹80 overhead + actual travel share + rework." />
-            <HeadTip className="text-right" label="Variance" tip="Actual − Standard. Shown once a video reaches client review; before that it is work-in-progress." />
-            <HeadTip className="text-right" label="Revenue share" tip="Package monthly fee ÷ Σ(units × format weight) × this video's weight. Weights: Reel/Explainer 1 · Ad/Testimonial 1.5 · Long-form 3 · Static post 0.15 · Story 0.05." />
-            <HeadTip className="pr-5 text-right" label="Margin" tip="(Revenue share − true cost) ÷ revenue share. For WIP videos the higher of actual-to-date and standard is used (projected)." />
+            <HeadTip numeric label="Standard" tip="Planned cost: planned edit minutes + standard director/camera minutes for the format, standard kit hours, overhead on planned hours and shoot travel budget." />
+            <HeadTip numeric label="Actual" tip="Logged minutes × hourly cost + kit hours × depreciation/hr + labour hrs × ₹80 overhead + actual travel share + rework." />
+            <HeadTip numeric label="Variance" tip="Actual − Standard. Shown once a video reaches client review; before that it is work-in-progress." />
+            <HeadTip numeric label="Revenue share" tip="Package monthly fee ÷ Σ(units × format weight) × this video's weight. Weights: Reel/Explainer 1 · Ad/Testimonial 1.5 · Long-form 3 · Static post 0.15 · Story 0.05." />
+            <HeadTip numeric className="pr-5" label="Margin" tip="(Revenue share − true cost) ÷ revenue share. For WIP videos the higher of actual-to-date and standard is used (projected)." />
           </TR>
         </THead>
         <TBody>
+          {filtered.length === 0 && (
+            <TR className="hover:bg-transparent">
+              <TD colSpan={8} className="p-5">
+                <EmptyState
+                  compact
+                  icon={Search}
+                  title="No videos match"
+                  description="Try another client or clear the search."
+                  action={
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setClient("all");
+                        setQ("");
+                      }}
+                    >
+                      Clear filters
+                    </Button>
+                  }
+                />
+              </TD>
+            </TR>
+          )}
           {filtered.map((r) => {
             const v = r.video;
             const active = v.id === selectedId;
@@ -154,27 +183,27 @@ export function VideoCostTable() {
                 <TD>
                   <StageBadge stage={v.stage} />
                 </TD>
-                <TD className="text-right tabular text-muted-foreground">{inr(r.standard.total)}</TD>
-                <TD className="text-right font-medium tabular">{inr(r.actual.total)}</TD>
-                <TD className="text-right">
+                <TD numeric className="text-muted-foreground">{inr(r.standard.total)}</TD>
+                <TD numeric className="font-medium">{inr(r.actual.total)}</TD>
+                <TD numeric>
                   <VarianceCell c={r} />
                 </TD>
-                <TD className="text-right tabular">{inr(r.revenue)}</TD>
-                <TD className="pr-5 text-right">
+                <TD numeric>{inr(r.revenue)}</TD>
+                <TD numeric className="pr-5">
                   <MarginBadge c={r} base={base.get(v.id)} />
                 </TD>
               </TR>
             );
           })}
-          <TR className="bg-muted/40 font-medium hover:bg-muted/40">
+          <TR className="bg-surface-secondary font-semibold hover:bg-surface-secondary [&>td]:border-t [&>td]:border-border-strong">
             <TD className="pl-5" colSpan={3}>
               {filtered.length} videos
             </TD>
-            <TD className="text-right tabular text-muted-foreground">{inr(tot.std)}</TD>
-            <TD className="text-right tabular">{inr(tot.act)}</TD>
+            <TD numeric className="text-muted-foreground">{inr(tot.std)}</TD>
+            <TD numeric>{inr(tot.act)}</TD>
             <TD />
-            <TD className="text-right tabular">{inr(tot.rev)}</TD>
-            <TD className="pr-5 text-right tabular">{tot.rev ? pct((tot.rev - tot.proj) / tot.rev) : "—"}</TD>
+            <TD numeric>{inr(tot.rev)}</TD>
+            <TD numeric className="pr-5">{tot.rev ? pct((tot.rev - tot.proj) / tot.rev) : "—"}</TD>
           </TR>
         </TBody>
       </Table>

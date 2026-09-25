@@ -38,7 +38,7 @@ export const kindMeta: Record<RevisionKind, { label: string; short: string; tone
 export const statusMeta: Record<ChangeRequest["status"], { label: string; tone: BadgeTone }> = {
   open: { label: "Open", tone: "info" },
   "awaiting-client": { label: "Awaiting client", tone: "warning" },
-  approved: { label: "Client approved", tone: "accent" },
+  approved: { label: "Client approved", tone: "success" },
   rejected: { label: "Rejected", tone: "neutral" },
   done: { label: "Done", tone: "success" },
 };

@@ -33,6 +33,7 @@ export function ScenarioControls({ compact }: { compact?: boolean }) {
           <p className="mt-0.5 text-body text-muted-foreground">What-if layer only — actuals, locked periods and invoices are never touched.</p>
         </div>
         <Switch
+          aria-label="Scenario mode"
           checked={on}
           onCheckedChange={(v) => {
             setOn(v);
@@ -55,6 +56,7 @@ export function ScenarioControls({ compact }: { compact?: boolean }) {
               max={s.max}
               step={s.step}
               value={sc[s.key]}
+              aria-label={s.label}
               onChange={(e) => patch({ [s.key]: Number(e.target.value) })}
               className="h-1.5 w-full cursor-pointer accent-[var(--color-primary)]"
             />
@@ -70,10 +72,10 @@ export function ScenarioControls({ compact }: { compact?: boolean }) {
 
 export function CostingSettings() {
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
       <Card className="lg:col-span-2">
-        <CardHeader>
-          <div>
+        <CardHeader className="flex-wrap">
+          <div className="min-w-0">
             <CardTitle className="flex items-center gap-2">
               <History className="size-4 text-muted-foreground" /> Rate cards · effective dates
             </CardTitle>
@@ -123,7 +125,7 @@ export function CostingSettings() {
             <CardDescription>Closed periods are locked — late time entries or rate changes post to the open month as adjustments, with an audit trail</CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
+        <CardContent className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           {periods.map((p) => (
             <button
               key={p.label}
@@ -133,8 +135,8 @@ export function CostingSettings() {
                   : toast("Sep 2026 is open", { description: "Will lock after cycle reconciliation (target 5 Oct)." })
               }
               className={cn(
-                "cursor-pointer rounded-xl border p-3 text-left transition hover:shadow-card",
-                p.status === "locked" ? "border-border bg-muted/40" : "border-success/40 bg-success-soft/50",
+                "cursor-pointer rounded-xl border p-3 text-left transition hover:shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                p.status === "locked" ? "border-border bg-surface-secondary" : "border-success/40 bg-success-soft/50",
               )}
             >
               <div className="flex items-center justify-between">

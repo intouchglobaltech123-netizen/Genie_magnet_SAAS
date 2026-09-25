@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/select";
 import { Field, Input } from "@/components/ui/input";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StatCard } from "@/components/shared/stat-card";
+import { EmptyState } from "@/components/ui/feedback";
 import { personById, TODAY } from "@/lib/mock/core";
 import { useDemo } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -46,24 +47,24 @@ function LogTimeDialog({ open, onOpenChange, defaultPerson, onAdd }: { open: boo
           <DialogDescription>Entries are submitted to Ashwin for approval and costed against the video&apos;s budget.</DialogDescription>
         </DialogHeader>
         <DialogBody className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Person">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Field label="Person" required>
               <Select value={personId} onValueChange={setPersonId} options={TIME_PEOPLE.map((id) => ({ value: id, label: personById(id).name }))} />
             </Field>
-            <Field label="Date">
+            <Field label="Date" required>
               <Select value={date} onValueChange={setDate} options={WEEK.map((d) => ({ value: d, label: dayLabel(d) + " Sep" }))} />
             </Field>
-            <Field label="Category">
+            <Field label="Category" required>
               <Select value={category} onValueChange={(v) => setCategory(v as Category)} options={CATEGORIES.map((c) => ({ value: c, label: c }))} />
             </Field>
-            <Field label="Hours">
+            <Field label="Hours" required>
               <Input type="number" step="0.25" min="0.25" max="14" value={hours} onChange={(e) => setHours(e.target.value)} />
             </Field>
           </div>
           <Field label="Video" hint="Link production, revision and client-waiting time to a video code.">
             <Select value={video} onValueChange={setVideo} options={[{ value: "none", label: "Not linked to a video" }, ...VIDEO_CODES.map((c) => ({ value: c, label: c }))]} />
           </Field>
-          <Field label="What did you work on?">
+          <Field label="What did you work on?" required>
             <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Diwali hamper ad — BGM and final spelling pass" />
           </Field>
         </DialogBody>
@@ -132,7 +133,7 @@ export function TimeView() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <Select
-            className="h-9 w-56"
+            className="h-9 w-full sm:w-56"
             value={person}
             onValueChange={(v) => {
               setPerson(v);
@@ -144,10 +145,14 @@ export function TimeView() {
             Week 39 · 21 – 27 Sep 2026
           </Badge>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={approveAll} disabled={!submitted.length}>
             <CheckCheck /> Approve all submitted
-            {submitted.length > 0 && <span className="tabular rounded-full bg-info-soft px-1.5 text-body text-info">{submitted.length}</span>}
+            {submitted.length > 0 && (
+              <Badge tone="info" className="tabular px-1.5">
+                {submitted.length}
+              </Badge>
+            )}
           </Button>
           <Button variant="accent" onClick={() => setLogOpen(true)}>
             <Plus /> Log time
@@ -162,7 +167,7 @@ export function TimeView() {
         <StatCard label="Over 40h" value={over40.length} icon={AlertTriangle} tone="danger" hint={over40.map((id) => personById(id).name.split(" ")[0]).join(", ") || "nobody"} />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_360px]">
         <Card>
           <CardHeader>
             <div>
@@ -175,13 +180,13 @@ export function TimeView() {
               <table className="w-full min-w-[720px] text-body">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="h-10 pl-5 text-left text-body font-medium uppercase tracking-wider text-muted-foreground">Person</th>
+                    <th className="h-10 pl-5 text-left text-body font-medium text-muted-foreground">Person</th>
                     {WEEK.map((d) => (
-                      <th key={d} className={cn("text-center text-body font-medium uppercase tracking-wider text-muted-foreground", d === TODAY && "text-primary", d > TODAY && "opacity-50")}>
+                      <th key={d} className={cn("whitespace-nowrap text-center text-body font-medium text-muted-foreground", d === TODAY && "text-primary", d > TODAY && "opacity-60")}>
                         {dayLabel(d)}
                       </th>
                     ))}
-                    <th className="pr-5 text-right text-body font-medium uppercase tracking-wider text-muted-foreground">Total</th>
+                    <th className="pr-5 text-right text-body font-medium text-muted-foreground">Total</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -192,9 +197,13 @@ export function TimeView() {
                     return (
                       <tr key={id} className={cn("border-b border-border last:border-0", dim && "opacity-40")}>
                         <td className="py-2 pl-5">
-                          <button className="flex cursor-pointer items-center gap-2 text-left" onClick={() => setPerson(person === id ? "all" : id)}>
+                          <button
+                            className="flex cursor-pointer items-center gap-2 rounded-md text-left hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
+                            aria-pressed={person === id}
+                            onClick={() => setPerson(person === id ? "all" : id)}
+                          >
                             <Avatar name={p.name} size="sm" />
-                            <span className="font-medium">{p.name}</span>
+                            <span className="whitespace-nowrap font-medium">{p.name}</span>
                           </button>
                         </td>
                         {WEEK.map((d) => {
@@ -204,13 +213,15 @@ export function TimeView() {
                             <td key={d} className="px-1 py-1.5 text-center">
                               <button
                                 disabled={!v}
+                                aria-label={`${p.name} · ${dayLabel(d)} Sep · ${v ? `${h(v)} hours` : "no entries"}`}
+                                aria-pressed={active}
                                 onClick={() => {
                                   setPerson(id);
                                   setDay(active ? null : d);
                                 }}
                                 className={cn(
-                                  "tabular h-8 w-full min-w-12 rounded-md text-body transition enabled:cursor-pointer enabled:hover:ring-2 enabled:hover:ring-primary/30",
-                                  !v ? "text-muted-foreground/50" : v > 9.5 ? "bg-warning-soft font-medium text-warning" : "bg-muted/70",
+                                  "tabular h-8 w-full min-w-12 rounded-md text-body transition enabled:cursor-pointer enabled:hover:ring-2 enabled:hover:ring-primary/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+                                  !v ? "text-muted-foreground" : v > 9.5 ? "bg-warning-soft font-medium text-warning" : "bg-muted/70",
                                   d === TODAY && v > 0 && v <= 9.5 && "bg-primary-soft",
                                   active && "ring-2 ring-primary",
                                 )}
@@ -230,7 +241,7 @@ export function TimeView() {
                     );
                   })}
                   <tr className="border-t border-border bg-muted/40">
-                    <td className="py-2 pl-5 text-body font-medium uppercase tracking-wider text-muted-foreground">Team</td>
+                    <td className="py-2 pl-5 text-body font-medium text-muted-foreground">Team</td>
                     {WEEK.map((d) => {
                       const v = entries.filter((e) => e.date === d).reduce((s, e) => s + e.hours, 0);
                       return (
@@ -274,7 +285,7 @@ export function TimeView() {
             <ul className="mt-3 space-y-1.5">
               {donut.map((d) => (
                 <li key={d.name} className="flex items-center gap-2 text-body">
-                  <span className="size-2.5 rounded-sm" style={{ background: catMeta[d.name as Category].color }} />
+                  <span className="size-2.5 shrink-0 rounded-sm" style={{ background: catMeta[d.name as Category].color }} />
                   <span className="flex-1">{d.name}</span>
                   <span className="tabular text-muted-foreground">{h(d.value)}h</span>
                   <span className="tabular w-10 text-right font-medium">{Math.round((d.value / total) * 100)}%</span>
@@ -282,7 +293,7 @@ export function TimeView() {
               ))}
             </ul>
             <div className="mt-4 border-t border-border pt-4">
-              <div className="mb-1.5 flex justify-between text-body">
+              <div className="mb-1.5 flex flex-wrap justify-between gap-x-3 text-body">
                 <span className="font-medium text-success">Productive {h(productive)}h</span>
                 <span className="text-muted-foreground">Non-productive {h(total - productive)}h</span>
               </div>
@@ -302,18 +313,22 @@ export function TimeView() {
             <CardDescription>
               {list.length} entries{day ? ` on ${dayLabel(day)} Sep` : ""}
               {day && (
-                <button className="ml-2 cursor-pointer text-primary hover:underline" onClick={() => setDay(null)}>
+                <Button variant="link" size="xs" className="ml-2 h-auto" onClick={() => setDay(null)}>
                   Clear day
-                </button>
+                </Button>
               )}
             </CardDescription>
           </div>
-          <div className="flex items-center gap-1 rounded-lg bg-muted p-1 text-body">
+          <div role="group" aria-label="Filter by status" className="flex flex-wrap items-center gap-1 rounded-lg bg-muted p-1 text-body">
             {(["all", "Draft", "Submitted", "Approved", "Rejected"] as const).map((s) => (
               <button
                 key={s}
                 onClick={() => setStatus(s)}
-                className={cn("cursor-pointer rounded-md px-2.5 py-1 font-medium text-muted-foreground", status === s && "bg-card text-foreground shadow-sm")}
+                aria-pressed={status === s}
+                className={cn(
+                  "cursor-pointer rounded-md px-2.5 py-1 font-medium text-muted-foreground transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+                  status === s && "bg-card text-text-primary shadow-sm",
+                )}
               >
                 {s === "all" ? "All" : s}
               </button>
@@ -323,10 +338,10 @@ export function TimeView() {
         <CardContent className="px-0 pb-2">
           <div className="max-h-[520px] overflow-auto scrollbar-thin">
             <table className="w-full min-w-[860px] text-body">
-              <thead className="sticky top-0 z-10 bg-card">
+              <thead className="sticky top-0 z-10 bg-surface-secondary">
                 <tr className="border-b border-border">
                   {["Date", "Person", "Category", "Video", "Description", "Hours", "Status", ""].map((c, i) => (
-                    <th key={i} className={cn("h-10 px-3 text-left text-body font-medium uppercase tracking-wider text-muted-foreground", i === 0 && "pl-5", c === "Hours" && "text-right", i === 7 && "pr-5")}>
+                    <th key={i} className={cn("h-10 whitespace-nowrap px-3 text-left text-body font-medium text-text-muted", i === 0 && "pl-5", c === "Hours" && "text-right", i === 7 && "pr-5")}>
                       {c}
                     </th>
                   ))}
@@ -336,7 +351,7 @@ export function TimeView() {
                 {list.map((e) => {
                   const p = personById(e.personId);
                   return (
-                    <tr key={e.id} className="border-b border-border last:border-0 hover:bg-muted/50">
+                    <tr key={e.id} className="border-b border-border-subtle transition-colors last:border-0 hover:bg-primary-soft/40">
                       <td className="tabular whitespace-nowrap py-2.5 pl-5 pr-3 text-muted-foreground">{dayLabel(e.date)}</td>
                       <td className="px-3">
                         <div className="flex items-center gap-2 whitespace-nowrap">
@@ -370,10 +385,10 @@ export function TimeView() {
                         {e.status === "Submitted" ? (
                           <div className="flex justify-end gap-1">
                             <Button size="xs" variant="ghost" className="text-danger" onClick={() => decide(e, "Rejected")}>
-                              <X className="size-3.5" /> Reject
+                              <X /> Reject
                             </Button>
                             <Button size="xs" variant="soft" onClick={() => decide(e, "Approved")}>
-                              <Check className="size-3.5" /> Approve
+                              <Check /> Approve
                             </Button>
                           </div>
                         ) : e.status === "Draft" ? (
@@ -385,8 +400,25 @@ export function TimeView() {
                 })}
                 {!list.length && (
                   <tr>
-                    <td colSpan={8} className="py-10 text-center text-muted-foreground">
-                      No entries match these filters.
+                    <td colSpan={8} className="px-5 py-3">
+                      <EmptyState
+                        compact
+                        icon={Clock}
+                        title="No entries match these filters"
+                        description="Try another status, person or day."
+                        action={
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setStatus("all");
+                              setDay(null);
+                            }}
+                          >
+                            Clear filters
+                          </Button>
+                        }
+                      />
                     </td>
                   </tr>
                 )}

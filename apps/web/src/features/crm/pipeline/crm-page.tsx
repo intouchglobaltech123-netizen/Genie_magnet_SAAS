@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BarChart3, Kanban, Plus, Search, Target, TrendingUp, Trophy, Wallet } from "lucide-react";
+import { ArrowRight, BarChart3, Kanban, Plus, Search, Target, TrendingUp, Trophy, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatCard } from "@/components/shared/stat-card";
@@ -74,7 +74,7 @@ export function CrmPage() {
         }
       />
 
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Open pipeline" value={inrCompact(pipeline)} icon={Wallet} tone="accent" hint={`${open.length} deals · per month`} />
         <StatCard label="Weighted forecast" value={inrCompact(weighted)} icon={TrendingUp} tone="info" hint="by stage probability" />
         <StatCard label="Conversion rate" value={pct(won / totalLeads, 1)} icon={Target} tone="gold" hint={`${won} won of ${totalLeads} leads`} />
@@ -147,9 +147,9 @@ export function CrmPage() {
                             </div>
                           )}
                           {l.stage === "Won" && !converted.includes(l.id) && l.id !== "l-10" && (
-                            <button onClick={() => setWinLead(l)} className="cursor-pointer px-2 pt-1 text-body font-medium text-primary hover:underline">
-                              Convert to agreement →
-                            </button>
+                            <Button variant="link" size="xs" onClick={() => setWinLead(l)} className="px-2 pt-1">
+                              Convert to agreement <ArrowRight />
+                            </Button>
                           )}
                         </div>
                       ))}

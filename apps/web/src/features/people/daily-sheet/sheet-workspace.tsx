@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/input";
+import { EmptyState as BaseEmptyState } from "@/components/ui/feedback";
 import { TODAY, personById } from "@/lib/mock/core";
 import { holidayByDate, leaveRequests } from "@/lib/mock/people";
 import { cn } from "@/lib/utils";
@@ -69,8 +70,9 @@ export function SheetWorkspace({
                 <button
                   key={sp.personId}
                   onClick={() => onPerson(sp.personId)}
+                  aria-pressed={active}
                   className={cn(
-                    "flex cursor-pointer items-center gap-2.5 rounded-xl border px-2.5 py-1.5 text-left transition",
+                    "flex cursor-pointer items-center gap-2.5 rounded-xl border px-2.5 py-1.5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                     active ? "border-primary/40 bg-primary-soft/60 shadow-sm" : "border-transparent hover:bg-muted",
                   )}
                 >
@@ -86,11 +88,11 @@ export function SheetWorkspace({
               );
             })}
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <Button size="icon-sm" variant="outline" onClick={() => onDate(shiftDate(date, -1))} aria-label="Previous day">
               <ChevronLeft />
             </Button>
-            <label className="relative flex h-8 items-center gap-2 rounded-lg border border-input bg-card pl-2.5 pr-2 text-body font-medium">
+            <label className="relative flex h-8 items-center gap-2 rounded-lg border border-input bg-card pl-2.5 pr-2 text-body font-medium focus-within:ring-2 focus-within:ring-ring/35 hover:border-secondary/40">
               <CalendarDays className="size-4 text-muted-foreground" />
               <span className="tabular">{dayLabel(date, { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</span>
               <input
@@ -98,6 +100,7 @@ export function SheetWorkspace({
                 value={date}
                 max="2026-12-31"
                 onChange={(e) => e.target.value && onDate(e.target.value)}
+                aria-label="Sheet date"
                 className="absolute inset-0 cursor-pointer opacity-0"
               />
             </label>
@@ -113,7 +116,7 @@ export function SheetWorkspace({
         </div>
       </Card>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="min-w-0 space-y-5">
           {/* The sheet */}
           <Card className="overflow-hidden">
@@ -123,11 +126,11 @@ export function SheetWorkspace({
                   <Icon className="size-5" />
                 </span>
                 <div>
-                  <div className="text-body font-semibold uppercase tracking-[0.14em] text-muted-foreground">Genie Magnet · Form DS-{kind.toUpperCase()}</div>
+                  <div className="text-body font-semibold uppercase tracking-wider text-muted-foreground">Genie Magnet · Form DS-{kind.toUpperCase()}</div>
                   <h2 className="text-subheading font-semibold tracking-tight">{template.title}</h2>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <div className="mr-2 hidden text-right text-body leading-5 sm:block">
                   <div className="font-medium">{person.name}</div>
                   <div className="text-muted-foreground">
@@ -179,7 +182,7 @@ export function SheetWorkspace({
                 title="Start today’s data sheet"
                 text="No more paper forms — start from a blank row or carry forward yesterday’s pending tasks."
                 action={
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap justify-center gap-2">
                     <Button size="sm" variant="accent" onClick={() => addRow(personId, date, { start: "09:30" })}>
                       <Plus /> Blank row
                     </Button>
@@ -304,11 +307,10 @@ function StatusDot({ status }: { status: ReturnType<typeof statusOf> }) {
 }
 
 function EmptyState({
-  icon: I,
+  icon,
   title,
   text,
   action,
-  tone,
 }: {
   icon: typeof Sun;
   title: string;
@@ -316,15 +318,5 @@ function EmptyState({
   action?: React.ReactNode;
   tone: "warning" | "info" | "neutral" | "accent";
 }) {
-  const t = { warning: "bg-warning-soft text-warning", info: "bg-info-soft text-info", neutral: "bg-muted text-muted-foreground", accent: "bg-primary-soft text-primary" }[tone];
-  return (
-    <div className="flex flex-col items-center px-6 py-14 text-center">
-      <span className={cn("inline-flex size-12 items-center justify-center rounded-2xl", t)}>
-        <I className="size-6" />
-      </span>
-      <div className="mt-3 text-subheading font-semibold">{title}</div>
-      <p className="mt-1 max-w-md text-body text-muted-foreground">{text}</p>
-      {action && <div className="mt-4">{action}</div>}
-    </div>
-  );
+  return <BaseEmptyState icon={icon} title={title} description={text} action={action} className="m-5" />;
 }

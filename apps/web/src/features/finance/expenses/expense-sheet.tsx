@@ -7,7 +7,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/input";
+import { Field, Textarea } from "@/components/ui/input";
 import { clientById, personById } from "@/lib/mock/core";
 import type { Expense } from "@/lib/mock/finance";
 import { useDemo } from "@/lib/store";
@@ -23,8 +23,8 @@ export const approvalMeta = {
 
 export const paymentMeta = {
   unpaid: { label: "Unpaid", tone: "neutral" as const },
-  reimbursed: { label: "Reimbursed", tone: "info" as const },
-  "paid-to-vendor": { label: "Paid to vendor", tone: "info" as const },
+  reimbursed: { label: "Reimbursed", tone: "success" as const },
+  "paid-to-vendor": { label: "Paid to vendor", tone: "success" as const },
 };
 
 export function useExpenseActions() {
@@ -86,15 +86,17 @@ export function RejectDialog({ expense, onOpenChange }: { expense: Expense | nul
                     key={r}
                     onClick={() => setReason(r)}
                     className={cn(
-                      "cursor-pointer rounded-full border px-2.5 py-1 text-body transition",
-                      reason === r ? "border-danger bg-danger-soft text-danger" : "border-border text-muted-foreground hover:text-foreground",
+                      "cursor-pointer rounded-full border px-2.5 py-1 text-body transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                      reason === r ? "border-danger bg-danger-soft text-danger" : "border-border text-muted-foreground hover:border-border-strong hover:text-foreground",
                     )}
                   >
                     {r}
                   </button>
                 ))}
               </div>
-              <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason (shared with the requester)" />
+              <Field label="Reason" hint="Shared with the requester" required>
+                <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason (shared with the requester)" />
+              </Field>
             </DialogBody>
             <DialogFooter>
               <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
@@ -132,8 +134,8 @@ export function ExpenseSheet({ expense, onOpenChange, onReject }: { expense: Exp
             <DialogBody className="space-y-5">
               <ReceiptPreview expense={expense} />
 
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3 rounded-xl border border-border p-4 text-body">
-                <Info2 label="Description" className="col-span-2">
+              <div className="grid grid-cols-1 gap-x-4 gap-y-3 rounded-xl border border-border p-4 text-body sm:grid-cols-2">
+                <Info2 label="Description" className="sm:col-span-2">
                   {expense.description}
                 </Info2>
                 <Info2 label="Amount (incl. GST)">
@@ -167,14 +169,14 @@ export function ExpenseSheet({ expense, onOpenChange, onReject }: { expense: Exp
                   <Badge tone={paymentMeta[expense.paymentStatus].tone}>{paymentMeta[expense.paymentStatus].label}</Badge>
                 </Info2>
                 {expense.rejectReason && (
-                  <Info2 label="Rejection reason" className="col-span-2">
+                  <Info2 label="Rejection reason" className="sm:col-span-2">
                     <span className="text-danger">{expense.rejectReason}</span>
                   </Info2>
                 )}
               </div>
 
               <div>
-                <div className="mb-2 text-body font-semibold">Policy checks</div>
+                <div className="mb-2 text-body font-semibold text-text-primary">Policy checks</div>
                 <ul className="divide-y divide-border rounded-xl border border-border">
                   {policyChecks(expense, personById(expense.approverId).name).map((c) => (
                     <li key={c.label} className="flex items-start gap-2.5 px-3.5 py-2.5 text-body">
@@ -192,7 +194,7 @@ export function ExpenseSheet({ expense, onOpenChange, onReject }: { expense: Exp
               </div>
 
               <div>
-                <div className="mb-2 text-body font-semibold">Timeline</div>
+                <div className="mb-2 text-body font-semibold text-text-primary">Timeline</div>
                 <ol className="relative space-y-3 border-l border-border pl-5">
                   {expense.timeline.map((t, idx) => (
                     <li key={idx} className="relative text-body">

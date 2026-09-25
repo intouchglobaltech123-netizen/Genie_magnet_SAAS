@@ -52,7 +52,7 @@ export function ReviewsHub() {
         <TabsContent value="overview" className="space-y-6">
           <StrategicHero />
           <div>
-            <div className="mb-3 flex items-baseline justify-between">
+            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
               <h2 className="text-subheading font-semibold tracking-tight">Review cadences</h2>
               <span className="text-body text-muted-foreground">Daily · 7-day · 14-day · 45-day — all four included in V1</span>
             </div>

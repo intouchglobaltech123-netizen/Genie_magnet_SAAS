@@ -53,7 +53,7 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
   }, []);
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[1fr_300px]">
+    <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_300px]">
       <Card className="overflow-hidden">
         <div className="border-b border-border px-6 py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -80,7 +80,7 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
               transition={{ duration: 0.18 }}
             >
               <div className="text-body font-medium text-muted-foreground tabular">Question {q.n}</div>
-              <h2 className="mt-2 max-w-2xl text-heading font-semibold leading-snug tracking-tight md:text-heading">{q.q}</h2>
+              <h2 className="mt-2 max-w-2xl text-heading font-semibold leading-snug tracking-tight">{q.q}</h2>
               <div className="mt-8 grid grid-cols-5 gap-2 md:gap-3">
                 {SCALE.map((s) => {
                   const active = answers[q.n] === s.value;
@@ -88,20 +88,22 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
                     <button
                       key={s.value}
                       onClick={() => pick(s.value)}
+                      aria-pressed={active}
+                      aria-label={`${s.value} · ${s.label}`}
                       className={cn(
-                        "group flex cursor-pointer flex-col items-center gap-2 rounded-xl border px-2 py-4 transition",
+                        "group flex min-w-0 cursor-pointer flex-col items-center gap-2 rounded-xl border px-1 py-4 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 sm:px-2",
                         active ? "border-primary bg-primary-soft text-primary shadow-sm" : "border-border hover:border-primary/40 hover:bg-muted/60",
                       )}
                     >
                       <span
                         className={cn(
                           "inline-flex size-9 items-center justify-center rounded-full text-subheading font-semibold tabular transition",
-                          active ? "bg-primary text-white" : "bg-muted text-foreground group-hover:bg-card",
+                          active ? "bg-primary text-primary-foreground" : "bg-muted text-foreground group-hover:bg-card",
                         )}
                       >
                         {s.value}
                       </span>
-                      <span className="text-body font-medium">{s.label}</span>
+                      <span className="w-full text-center text-body font-medium leading-4 [overflow-wrap:anywhere]">{s.label}</span>
                     </button>
                   );
                 })}
@@ -149,10 +151,12 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
                         <Tooltip key={x.n} content={`Q${x.n}${typeof a === "number" ? ` · ${SCALE[a - 1].label}` : ""}`}>
                           <button
                             onClick={() => setIdx(x.n - 1)}
+                            aria-label={`Go to question ${x.n}${typeof a === "number" ? ` (answered: ${SCALE[a - 1].label})` : " (unanswered)"}`}
+                            aria-current={x.n === q.n ? "step" : undefined}
                             className={cn(
-                              "h-5 cursor-pointer rounded-[5px] text-body font-medium transition tabular",
+                              "h-6 min-w-0 cursor-pointer rounded-lg text-body font-medium leading-4 transition tabular focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                               x.n === q.n ? "ring-2 ring-primary ring-offset-1 ring-offset-card" : "",
-                              typeof a === "number" ? "bg-primary text-white" : "bg-muted text-muted-foreground hover:bg-input",
+                              typeof a === "number" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-input",
                             )}
                           >
                             {x.n}

@@ -24,8 +24,8 @@ export function CostingCard({ assets }: { assets: Asset[] }) {
     <Card className="overflow-hidden">
       <div className="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr]">
         <div className="p-5">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary-soft text-primary">
+          <div className="flex items-start gap-2">
+            <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
               <Calculator className="size-4" />
             </span>
             <div>
@@ -34,8 +34,8 @@ export function CostingCard({ assets }: { assets: Asset[] }) {
             </div>
           </div>
 
-          <div className="mt-5 rounded-xl border border-border bg-background/60 p-4">
-            <div className="mb-3 flex items-center gap-2 text-body">
+          <div className="mt-5 rounded-xl border border-border bg-surface-secondary p-4">
+            <div className="mb-3 flex flex-wrap items-center gap-2 text-body">
               <span className="font-medium">{cam.name}</span>
               <Badge tone="outline">{cam.tag}</Badge>
               <span className="text-muted-foreground">· useful life {cam.usefulLifeYears} year</span>
@@ -74,6 +74,7 @@ export function CostingCard({ assets }: { assets: Asset[] }) {
               max={24}
               value={hours}
               onChange={(e) => setHours(Number(e.target.value))}
+              aria-label="Shoot length in hours"
               className="h-8 w-16 text-center tabular"
             />
             <span className="text-muted-foreground">hours</span>
@@ -106,7 +107,7 @@ function Chip({ label, value, strong, accent }: { label: string; value: string; 
           : "inline-flex flex-col rounded-lg border border-border bg-card px-3 py-1.5"
       }
     >
-      <span className={accent ? "text-body uppercase tracking-wider opacity-80" : "text-body uppercase tracking-wider text-muted-foreground"}>
+      <span className={accent ? "text-body uppercase tracking-wider text-primary-foreground/80" : "text-body uppercase tracking-wider text-muted-foreground"}>
         {label}
       </span>
       <span className={strong ? "font-semibold" : "font-medium"}>{value}</span>

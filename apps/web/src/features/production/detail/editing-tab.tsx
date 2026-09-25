@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { Input, Textarea } from "@/components/ui/input";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { clientById, personById, TODAY } from "@/lib/mock/core";
@@ -100,15 +101,16 @@ export function EditingTab({ v }: { v: Video }) {
                   key={s}
                   type="button"
                   onClick={() => toggle(s)}
+                  aria-pressed={on}
                   className={cn(
-                    "group flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-left transition",
+                    "group flex cursor-pointer items-center gap-3 rounded-xl border p-3 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                     on ? "border-primary/40 bg-primary-soft/60" : "border-border bg-card hover:border-muted-foreground/30 hover:bg-muted/50",
                   )}
                 >
                   <span
                     className={cn(
                       "inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-body font-semibold tabular transition",
-                      on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:text-foreground",
+                      on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:text-text-primary",
                     )}
                   >
                     {on ? <Check className="size-4" strokeWidth={3} /> : String(i + 1).padStart(2, "0")}
@@ -158,7 +160,7 @@ export function EditingTab({ v }: { v: Video }) {
                   <TH>Date</TH>
                   <TH>Start</TH>
                   <TH>End</TH>
-                  <TH>Total</TH>
+                  <TH numeric>Total</TH>
                   <TH>Work done</TH>
                 </TR>
               </THead>
@@ -168,14 +170,14 @@ export function EditingTab({ v }: { v: Video }) {
                     <TD className="tabular">{fmt(l.date, "EEE, d MMM")}</TD>
                     <TD className="font-mono text-body">{l.start}</TD>
                     <TD className="font-mono text-body">{l.end}</TD>
-                    <TD className="tabular font-medium">{hoursLabel(minutesBetween(l.start, l.end))}</TD>
+                    <TD numeric className="font-medium">{hoursLabel(minutesBetween(l.start, l.end))}</TD>
                     <TD className="text-muted-foreground">{l.note}</TD>
                   </TR>
                 ))}
                 {!logs.length && (
                   <TR>
-                    <TD colSpan={5} className="py-6 text-center text-muted-foreground">
-                      No sessions logged yet.
+                    <TD colSpan={5} className="py-4">
+                      <EmptyState compact icon={Clock} title="No sessions logged yet" description="Add the first editing session in the row below." />
                     </TD>
                   </TR>
                 )}
@@ -189,9 +191,9 @@ export function EditingTab({ v }: { v: Video }) {
                   <TD>
                     <Input type="time" value={row.end} onChange={(e) => setRow({ ...row, end: e.target.value })} className="h-8 w-24 text-body" />
                   </TD>
-                  <TD className="tabular text-muted-foreground">{hoursLabel(minutesBetween(row.start, row.end))}</TD>
+                  <TD numeric className="text-muted-foreground">{hoursLabel(minutesBetween(row.start, row.end))}</TD>
                   <TD>
-                    <div className="flex gap-2">
+                    <div className="flex min-w-56 gap-2">
                       <Input value={row.note} onChange={(e) => setRow({ ...row, note: e.target.value })} placeholder="What was done?" className="h-8 text-body" />
                       <Button size="sm" variant="outline" onClick={addRow}>
                         <Plus /> Log
@@ -205,7 +207,7 @@ export function EditingTab({ v }: { v: Video }) {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.1fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1.1fr]">
         <Card>
           <CardHeader>
             <div>
@@ -240,7 +242,7 @@ export function EditingTab({ v }: { v: Video }) {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               {(
                 [
                   ["editor", "Editor", editor.name, complete, "Complete all 9 steps first"],
@@ -254,7 +256,7 @@ export function EditingTab({ v }: { v: Video }) {
                     <div className="text-body font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
                     {s ? (
                       <>
-                        <div className="mt-1.5 font-[cursive] text-subheading italic leading-none text-foreground/90">{s.by === "Editor" ? who : s.by}</div>
+                        <div className="mt-1.5 font-[cursive] text-subheading italic leading-none text-text-primary">{s.by === "Editor" ? who : s.by}</div>
                         <div className="mt-1.5 inline-flex items-center gap-1 text-body text-success">
                           <Check className="size-3" /> {format(parseISO(s.at), "d MMM · HH:mm")}
                         </div>

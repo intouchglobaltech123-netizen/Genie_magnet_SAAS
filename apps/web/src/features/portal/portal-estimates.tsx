@@ -40,13 +40,13 @@ export function PortalEstimates() {
                   Outside your monthly package · {c.dateImpactDays ? `adds ${c.dateImpactDays} working days` : "no change to dates"}
                 </div>
               </div>
-              <div className="text-right">
+              <div className="md:text-right">
                 <div className="text-heading font-semibold tabular">{inr(c.estimate ?? 0)}</div>
                 <div className="text-body text-muted-foreground">+ GST · billed on next invoice</div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     update(c.id, { status: "rejected" });

@@ -9,6 +9,7 @@ import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EmptyState } from "@/components/ui/feedback";
 import { Progress } from "@/components/ui/progress";
 import { Select } from "@/components/ui/select";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -28,11 +29,11 @@ import { useProduction, useProductionHydration } from "./store";
 const ROLE_PERSON: Record<Role, string> = { founder: "p-jana", manager: "p-ashwin", editor: "p-divya", finance: "p-ashwin", hr: "p-harini", client: "p-ashwin" };
 const statusMeta: Record<TaskStatus, { label: string; tone: BadgeTone }> = {
   done: { label: "Done", tone: "success" },
-  "in-progress": { label: "In progress", tone: "accent" },
+  "in-progress": { label: "In progress", tone: "info" },
   todo: { label: "To do", tone: "neutral" },
   blocked: { label: "Blocked", tone: "danger" },
 };
-const prioTone: Record<GenTask["priority"], BadgeTone> = { High: "danger", Medium: "warning", Low: "outline" };
+const prioTone: Record<GenTask["priority"], BadgeTone> = { High: "danger", Medium: "warning", Low: "neutral" };
 const dotCls: Record<TaskStatus, string> = { done: "bg-success", "in-progress": "bg-primary", todo: "bg-muted-foreground/25", blocked: "bg-danger" };
 
 export function ProjectsView() {
@@ -130,9 +131,9 @@ export function ProjectsView() {
           />
         )}
         {mode === "mine" && (
-          <div className="flex items-center gap-2 text-body text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 text-body text-muted-foreground">
             <Avatar name={personById(me).name} size="sm" />
-            <Select className="h-8 w-52 text-body" value={me} onValueChange={setPicked} options={owners.map((o) => ({ value: o, label: personById(o).name }))} />
+            <Select className="h-8 w-52" value={me} onValueChange={setPicked} options={owners.map((o) => ({ value: o, label: personById(o).name }))} />
             <span>accountable tasks · signed in as {roleLabels[role].label}</span>
           </div>
         )}
@@ -158,11 +159,11 @@ export function ProjectsView() {
                 return (
                   <TR key={t.id}>
                     <TD>
-                      <Checkbox checked={false} onCheckedChange={(c) => toggle(t, !!c)} />
+                      <Checkbox aria-label={`Mark ${t.name} done`} checked={false} onCheckedChange={(c) => toggle(t, !!c)} />
                     </TD>
                     <TD className="font-medium">{t.name}</TD>
                     <TD>
-                      <Link href={`/production/${v.id}`} className="hover:text-primary">
+                      <Link href={`/production/${v.id}`} className="whitespace-nowrap hover:text-primary">
                         <span className="font-mono text-body text-muted-foreground">{v.code}</span> {v.title}
                       </Link>
                     </TD>
@@ -170,7 +171,7 @@ export function ProjectsView() {
                     <TD>
                       <Badge tone={prioTone[t.priority]}>{t.priority}</Badge>
                     </TD>
-                    <TD className={cn("tabular", daysBetween(TODAY, t.due) < 0 && "font-medium text-danger")}>{fmt(t.due)}</TD>
+                    <TD className={cn("whitespace-nowrap tabular", daysBetween(TODAY, t.due) < 0 && "font-medium text-danger")}>{fmt(t.due)}</TD>
                     <TD>
                       <Badge tone={statusMeta[t.status].tone} dot>
                         {statusMeta[t.status].label}
@@ -181,8 +182,13 @@ export function ProjectsView() {
               })}
               {!mine.length && (
                 <TR>
-                  <TD colSpan={7} className="py-10 text-center text-muted-foreground">
-                    Nothing open for {personById(me).name}. Switch role in the top bar to see another person’s list.
+                  <TD colSpan={7} className="py-4">
+                    <EmptyState
+                      compact
+                      icon={ListTodo}
+                      title={`Nothing open for ${personById(me).name}`}
+                      description="Pick another person above, or switch role in the top bar to see their list."
+                    />
                   </TD>
                 </TR>
               )}
@@ -191,7 +197,7 @@ export function ProjectsView() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {!projects.length && <Card className="py-14 text-center text-body text-muted-foreground">No deliverables planned for {cycleLabel} yet.</Card>}
+          {!projects.length && <EmptyState icon={FolderKanban} title={`No deliverables planned for ${cycleLabel} yet`} description="Projects appear once videos are planned into an agreement cycle." />}
           {projects.map(({ cy, ag, vids, tasks }) => {
             const c = clientById(cy.clientId);
             const done = tasks.filter((t) => t.status === "done").length;
@@ -205,7 +211,7 @@ export function ProjectsView() {
                     </div>
                     <div className="mt-1 text-subheading font-semibold tracking-tight">{ag.title}</div>
                   </div>
-                  <div className="w-48">
+                  <div className="w-full sm:w-48">
                     <div className="mb-1 flex justify-between text-body text-muted-foreground">
                       <span>Tasks</span>
                       <span className="tabular">
@@ -245,14 +251,25 @@ export function ProjectsView() {
                       const isOpen = !!expanded[v.id];
                       return (
                         <Fragment key={v.id}>
-                          <TR className="cursor-pointer bg-muted/20" onClick={() => setExpanded((e) => ({ ...e, [v.id]: !isOpen }))}>
+                          <TR
+                            className="cursor-pointer bg-surface-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/35"
+                            tabIndex={0}
+                            aria-expanded={isOpen}
+                            onClick={() => setExpanded((e) => ({ ...e, [v.id]: !isOpen }))}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                setExpanded((x) => ({ ...x, [v.id]: !isOpen }));
+                              }
+                            }}
+                          >
                             <TD>
                               <ChevronRight className={cn("size-4 text-muted-foreground transition", isOpen && "rotate-90")} />
                             </TD>
                             <TD>
                               <div className="flex items-center gap-2">
                                 <span className="font-mono text-body text-muted-foreground">{v.code}</span>
-                                <span className="font-medium">{v.title}</span>
+                                <span className="whitespace-nowrap font-medium">{v.title}</span>
                                 <UrgencyIcon urgency={v.urgency} />
                               </div>
                             </TD>
@@ -266,7 +283,7 @@ export function ProjectsView() {
                               </div>
                             </TD>
                             <TD />
-                            <TD className="tabular text-muted-foreground">{fmt(v.dueDate)}</TD>
+                            <TD className="whitespace-nowrap tabular text-muted-foreground">{fmt(v.dueDate)}</TD>
                             <TD>
                               <StageBadge stage={v.stage} />
                             </TD>
@@ -275,7 +292,7 @@ export function ProjectsView() {
                             vt.map((t) => (
                               <TR key={t.id}>
                                 <TD>
-                                  <Checkbox checked={t.status === "done"} onCheckedChange={(c) => toggle(t, !!c)} onClick={(e) => e.stopPropagation()} />
+                                  <Checkbox aria-label={`Mark ${t.name} ${t.status === "done" ? "not done" : "done"}`} checked={t.status === "done"} onCheckedChange={(c) => toggle(t, !!c)} onClick={(e) => e.stopPropagation()} />
                                 </TD>
                                 <TD className={cn("pl-6", t.status === "done" && "text-muted-foreground line-through")}>{t.name}</TD>
                                 <TD>
@@ -287,7 +304,7 @@ export function ProjectsView() {
                                 <TD>{t.contributors.length ? <AvatarStack names={t.contributors.map((x) => personById(x).name)} size="xs" /> : <span className="text-muted-foreground">—</span>}</TD>
                                 <TD className="text-body text-muted-foreground">
                                   {t.dependsOn ? (
-                                    <span className="inline-flex items-center gap-1">
+                                    <span className="inline-flex items-center gap-1 whitespace-nowrap">
                                       <ArrowRight className="size-3" /> {t.dependsOn}
                                     </span>
                                   ) : (
@@ -297,7 +314,7 @@ export function ProjectsView() {
                                 <TD>
                                   <Badge tone={prioTone[t.priority]}>{t.priority}</Badge>
                                 </TD>
-                                <TD className={cn("tabular", t.status !== "done" && daysBetween(TODAY, t.due) < 0 && "font-medium text-danger")}>{fmt(t.due)}</TD>
+                                <TD className={cn("whitespace-nowrap tabular", t.status !== "done" && daysBetween(TODAY, t.due) < 0 && "font-medium text-danger")}>{fmt(t.due)}</TD>
                                 <TD>
                                   <Badge tone={statusMeta[t.status].tone} dot>
                                     {statusMeta[t.status].label}

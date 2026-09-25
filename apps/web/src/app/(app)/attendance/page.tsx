@@ -11,6 +11,7 @@ export default function AttendancePage() {
         title="Attendance & Leave"
         description="Biometric punches from the Hikvision terminal, field attendance from shoot sheets, and leave approvals that check the production calendar before you say yes."
         depth="preview"
+        className="mb-0"
       />
       <AttendanceView />
     </div>

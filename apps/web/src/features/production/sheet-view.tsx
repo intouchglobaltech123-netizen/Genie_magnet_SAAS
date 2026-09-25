@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
+import { ChevronLeft, ChevronRight, Printer, Sheet } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EmptyState } from "@/components/ui/feedback";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tooltip } from "@/components/ui/tooltip";
 import { StageBadge, urgencyMeta } from "@/components/shared/video-bits";
@@ -38,7 +39,7 @@ export function SheetView({ videos }: { videos: Video[] }) {
             Digital copy of the paper sheet — tick urgency and VP right here. Changes sync to the board and calendar.
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-body tabular text-muted-foreground">
             Sheet {cur + 1} of {pages}
           </span>
@@ -91,6 +92,8 @@ export function SheetView({ videos }: { videos: Video[] }) {
                         <Tooltip key={u} content={m.desc}>
                           <button
                             type="button"
+                            aria-label={`Mark ${v.code} ${m.label}`}
+                            aria-pressed={on}
                             onClick={() => {
                               if (on) return;
                               updateVideo(v.id, { urgency: u });
@@ -98,7 +101,7 @@ export function SheetView({ videos }: { videos: Video[] }) {
                               toast.success(`${v.code} marked ${m.label}`);
                             }}
                             className={cn(
-                              "inline-flex size-7 cursor-pointer items-center justify-center rounded-md border transition",
+                              "inline-flex size-7 cursor-pointer items-center justify-center rounded-md border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                               on ? cn(m.cls, "border-transparent") : "border-border text-muted-foreground/40 hover:border-muted-foreground/40 hover:text-muted-foreground",
                             )}
                           >
@@ -110,7 +113,7 @@ export function SheetView({ videos }: { videos: Video[] }) {
                   </div>
                 </TD>
                 <TD>
-                  <Link href={`/production/${v.id}`} className="font-medium hover:text-primary">
+                  <Link href={`/production/${v.id}`} className="font-medium hover:text-primary focus-visible:underline focus-visible:outline-none">
                     {v.title}
                   </Link>
                 </TD>
@@ -118,7 +121,8 @@ export function SheetView({ videos }: { videos: Video[] }) {
                   <input
                     value={v.clipNo}
                     onChange={(e) => updateVideo(v.id, { clipNo: e.target.value })}
-                    className="w-36 rounded-md border border-transparent bg-transparent px-1.5 py-1 font-mono text-body outline-none transition hover:border-border focus:border-ring focus:bg-card"
+                    aria-label={`Clip numbers for ${v.code}`}
+                    className="w-36 rounded-md border border-transparent bg-transparent px-1.5 py-1 font-mono text-body outline-none transition hover:border-border focus-visible:border-primary focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary/15"
                   />
                 </TD>
                 <TD className="text-center">
@@ -151,7 +155,14 @@ export function SheetView({ videos }: { videos: Video[] }) {
               </TR>
             );
           })}
-          {Array.from({ length: blanks }).map((_, i) => (
+          {!videos.length && (
+            <TR className="hover:bg-transparent">
+              <TD colSpan={9} className="py-4">
+                <EmptyState compact icon={Sheet} title="No videos match these filters" description="Clear the search or filters above to see the full video list." />
+              </TD>
+            </TR>
+          )}
+          {!!videos.length && Array.from({ length: blanks }).map((_, i) => (
             <TR key={`blank-${i}`} className="hover:bg-transparent">
               <TD className="h-11 text-center text-body tabular text-muted-foreground/40">{cur * PER_SHEET + rows.length + i + 1}</TD>
               <TD colSpan={8} />

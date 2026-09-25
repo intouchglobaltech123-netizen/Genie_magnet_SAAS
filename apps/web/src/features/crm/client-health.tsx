@@ -25,6 +25,13 @@ const catColor: Record<CustomerCategory, string> = {
   Dangerous: "var(--color-danger)",
 };
 
+const catTile: Record<CustomerCategory, string> = {
+  Awesome: "bg-success-soft text-success",
+  Breadwinning: "bg-primary-soft text-primary",
+  Convincing: "bg-warning-soft text-warning",
+  Dangerous: "bg-danger-soft text-danger",
+};
+
 const factorDefs: { key: keyof (typeof healthFactors)[string]; label: string; invert?: boolean }[] = [
   { key: "billing", label: "Billing value" },
   { key: "profitability", label: "Profitability" },
@@ -44,23 +51,23 @@ export function ClientHealth() {
         description="Every client scored on what they bring in versus what they take to serve. Reviewed at each 45-day strategic review."
         depth="preview"
       />
-      <div className="mb-4 grid gap-4 xl:grid-cols-5">
+      <div className="mb-4 grid grid-cols-1 gap-4 xl:grid-cols-5">
         <div className="xl:col-span-3">
           <Matrix />
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:col-span-2 xl:grid-cols-1">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:col-span-2 xl:grid-cols-1">
           {(Object.keys(categoryMeta) as CustomerCategory[]).map((cat) => {
             const list = clients.filter((c) => c.category === cat);
             return (
-              <Card key={cat} className="flex items-center gap-3 p-4">
-                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-subheading font-bold text-white" style={{ background: catColor[cat] }}>
+              <Card key={cat} className="flex items-center gap-3 p-5">
+                <span className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-subheading font-semibold", catTile[cat])}>
                   {categoryMeta[cat].letter}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="text-body font-semibold">{cat}</div>
                   <div className="text-body text-muted-foreground">{categoryMeta[cat].desc}</div>
                 </div>
-                <div className="text-right">
+                <div className="shrink-0 text-right">
                   <div className="text-subheading font-semibold tabular">{list.length}</div>
                   <div className="text-body text-muted-foreground">{list.map((c) => c.code).join(" · ") || "—"}</div>
                 </div>
@@ -69,7 +76,7 @@ export function ClientHealth() {
           })}
         </div>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {sorted.map((c) => (
           <ClientCard key={c.id} clientId={c.id} />
         ))}
@@ -96,11 +103,11 @@ function Matrix() {
               <ReferenceArea x1={50} x2={100} y1={50} y2={100} fill="var(--color-chart-1)" fillOpacity={0.05} />
               <ReferenceArea x1={0} x2={50} y1={0} y2={50} fill="var(--color-warning)" fillOpacity={0.05} />
               <ReferenceArea x1={50} x2={100} y1={0} y2={50} fill="var(--color-danger)" fillOpacity={0.06} />
-              <CartesianGrid stroke="var(--color-border)" strokeDasharray="3 3" />
-              <ReferenceLine x={50} stroke="var(--color-border)" strokeWidth={1.5} />
-              <ReferenceLine y={50} stroke="var(--color-border)" strokeWidth={1.5} />
-              <XAxis type="number" dataKey="effort" domain={[0, 100]} {...axisProps} label={{ value: "Effort to serve →", position: "insideBottom", offset: -12, fill: "var(--color-muted-foreground)", fontSize: 11 }} />
-              <YAxis type="number" dataKey="return" domain={[0, 100]} {...axisProps} width={40} label={{ value: "Return →", angle: -90, position: "insideLeft", offset: 14, fill: "var(--color-muted-foreground)", fontSize: 11 }} />
+              <CartesianGrid stroke="var(--color-chart-grid)" />
+              <ReferenceLine x={50} stroke="var(--color-border-strong)" strokeWidth={1.5} />
+              <ReferenceLine y={50} stroke="var(--color-border-strong)" strokeWidth={1.5} />
+              <XAxis type="number" dataKey="effort" domain={[0, 100]} {...axisProps} label={{ value: "Effort to serve →", position: "insideBottom", offset: -12, fill: "var(--color-text-muted)", fontSize: 12 }} />
+              <YAxis type="number" dataKey="return" domain={[0, 100]} {...axisProps} width={40} label={{ value: "Return →", angle: -90, position: "insideLeft", offset: 14, fill: "var(--color-text-muted)", fontSize: 12 }} />
               <ZAxis type="number" dataKey="value" range={[260, 900]} />
               <Tooltip
                 {...tooltipStyle}
@@ -126,7 +133,7 @@ function Matrix() {
                   return (
                     <g>
                       <circle cx={cx} cy={cy} r={r} fill={catColor[payload.category]} fillOpacity={0.22} stroke={catColor[payload.category]} strokeWidth={1.5} />
-                      <text x={cx} y={cy + 3.5} textAnchor="middle" fontSize={10} fontWeight={700} fill="var(--color-foreground)">
+                      <text x={cx} y={cy + 4} textAnchor="middle" fontSize={11} fontWeight={600} fill="var(--color-text-primary)">
                         {payload.code}
                       </text>
                     </g>
@@ -135,20 +142,21 @@ function Matrix() {
               />
             </ScatterChart>
           </ResponsiveContainer>
-          <QuadLabel className="left-12 top-2" text="A · Awesome" color={catColor.Awesome} />
-          <QuadLabel className="right-5 top-2" text="B · Breadwinning" color={catColor.Breadwinning} />
-          <QuadLabel className="bottom-9 left-12" text="C · Convincing" color={catColor.Convincing} />
-          <QuadLabel className="bottom-9 right-5" text="D · Dangerous" color={catColor.Dangerous} />
+          <QuadLabel className="left-12 top-2" letter="A" text="Awesome" color={catColor.Awesome} />
+          <QuadLabel className="right-5 top-2" letter="B" text="Breadwinning" color={catColor.Breadwinning} />
+          <QuadLabel className="bottom-9 left-12" letter="C" text="Convincing" color={catColor.Convincing} />
+          <QuadLabel className="bottom-9 right-5" letter="D" text="Dangerous" color={catColor.Dangerous} />
         </div>
       </CardContent>
     </Card>
   );
 }
 
-function QuadLabel({ className, text, color }: { className: string; text: string; color: string }) {
+function QuadLabel({ className, letter, text, color }: { className: string; letter: string; text: string; color: string }) {
   return (
-    <span className={cn("pointer-events-none absolute text-body font-semibold uppercase tracking-wider", className)} style={{ color }}>
-      {text}
+    <span className={cn("pointer-events-none absolute rounded-md bg-card/80 px-1.5 text-body font-semibold", className)} style={{ color }} title={text}>
+      {letter}
+      <span className="hidden sm:inline"> · {text}</span>
     </span>
   );
 }
@@ -164,7 +172,7 @@ function ClientCard({ clientId }: { clientId: string }) {
   return (
     <Card className={cn(danger && "border-danger/40")}>
       <CardHeader>
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="relative size-14 shrink-0">
             <svg viewBox="0 0 36 36" className="size-14 -rotate-90">
               <circle cx="18" cy="18" r="15.5" fill="none" stroke="var(--color-muted)" strokeWidth="3" />
@@ -172,8 +180,8 @@ function ClientCard({ clientId }: { clientId: string }) {
             </svg>
             <span className="absolute inset-0 flex items-center justify-center text-subheading font-semibold tabular">{c.health}</span>
           </div>
-          <div>
-            <CardTitle className="text-subheading">{c.name}</CardTitle>
+          <div className="min-w-0">
+            <CardTitle>{c.name}</CardTitle>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <CategoryBadge category={c.category} />
               <span className="text-body text-muted-foreground">
@@ -190,7 +198,7 @@ function ClientCard({ clientId }: { clientId: string }) {
       </CardHeader>
       <CardContent>
         <p className="mb-4 text-body text-muted-foreground">{categoryMeta[c.category].desc}</p>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
+        <div className="grid grid-cols-1 gap-x-6 gap-y-2.5 sm:grid-cols-2">
           {factorDefs.map((fd) => {
             const raw = f[fd.key];
             const good = fd.invert ? 100 - raw : raw;
@@ -217,7 +225,7 @@ function ClientCard({ clientId }: { clientId: string }) {
           </div>
           <div>
             <div className="flex items-center gap-1 text-muted-foreground">
-              <Wallet className="size-3" /> Outstanding
+              <Wallet className="size-3 shrink-0" /> Outstanding
             </div>
             <div className={cn("mt-0.5 text-body font-semibold tabular", c.outstanding >= 90000 ? "text-danger" : c.outstanding ? "text-warning" : "text-success")}>
               {c.outstanding ? inr(c.outstanding) : "Nil"}
@@ -225,7 +233,7 @@ function ClientCard({ clientId }: { clientId: string }) {
           </div>
           <div>
             <div className="flex items-center gap-1 text-muted-foreground">
-              <CalendarClock className="size-3" /> Renewal
+              <CalendarClock className="size-3 shrink-0" /> Renewal
             </div>
             <div className={cn("mt-0.5 text-body font-semibold", renewIn <= 45 && "text-warning")}>
               {format(parseISO(a.endDate), "d MMM yy")} <span className="text-body font-normal text-muted-foreground">({renewIn}d)</span>
@@ -243,7 +251,7 @@ function RecoveryPlan({ clientId, name, actions, danger }: { clientId: string; n
   const log = useDemo((s) => s.log);
   return (
     <div className={cn("mt-4 rounded-xl border p-3.5", danger ? "border-danger/30 bg-danger-soft/50" : "border-warning/30 bg-warning-soft/50")}>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3">
         <div className="flex items-center gap-1.5 text-body font-semibold">
           <AlertOctagon className={cn("size-4", danger ? "text-danger" : "text-warning")} /> {danger ? "Recovery plan" : "Improvement actions"}
         </div>

@@ -102,7 +102,7 @@ export function Topbar() {
 
       <button
         onClick={() => setCmdOpen(true)}
-        className="ml-auto flex h-9 w-full max-w-xs cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 text-body text-muted-foreground transition-colors hover:border-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 md:ml-6 md:max-w-sm"
+        className="ml-auto flex h-9 w-full min-w-0 max-w-xs cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 text-body text-muted-foreground transition-colors hover:border-secondary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 md:ml-6 md:max-w-sm"
       >
         <Search className="size-4 shrink-0" />
         <span className="truncate">Search modules, clients, videos…</span>

@@ -21,9 +21,9 @@ export interface CalEvent {
 export const typeMeta: Record<EventType, { label: string; color: string }> = {
   shoot: { label: "Shoots", color: "var(--color-chart-1)" },
   meeting: { label: "Meetings", color: "var(--color-chart-2)" },
-  leave: { label: "Leave", color: "var(--color-chart-4)" },
+  leave: { label: "Leave", color: "var(--color-info)" },
   publish: { label: "Publish dates", color: "var(--color-chart-3)" },
-  holiday: { label: "Holidays", color: "var(--color-chart-3)" },
+  holiday: { label: "Holidays", color: "var(--color-text-muted)" },
 };
 
 export const EVENT_TYPES = Object.keys(typeMeta) as EventType[];

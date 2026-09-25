@@ -29,19 +29,23 @@ export function ClientProfitability() {
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
       <Card>
-        <CardHeader>
-          <div>
+        <CardHeader className="flex-wrap">
+          <div className="min-w-0">
             <CardTitle>Profitability by client cycle</CardTitle>
             <CardDescription>
               Cycle revenue vs true cost · {period === "Sep 2026" ? "costs to date (cycle open)" : "closed / reconciling cycles"}
             </CardDescription>
           </div>
-          <div className="inline-flex rounded-lg bg-muted p-1 text-body">
+          <div className="inline-flex shrink-0 rounded-xl bg-muted p-1 text-body" role="group" aria-label="Cycle period">
             {(["Aug 2026", "Sep 2026"] as const).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={cn("cursor-pointer rounded-md px-2.5 py-1 font-medium transition", period === p ? "bg-card shadow-sm" : "text-muted-foreground hover:text-foreground")}
+                aria-pressed={period === p}
+                className={cn(
+                  "cursor-pointer rounded-lg px-2.5 py-1 font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+                  period === p ? "bg-card text-text-primary shadow-sm" : "text-muted-foreground hover:text-foreground",
+                )}
               >
                 {p}
               </button>
@@ -52,11 +56,11 @@ export function ClientProfitability() {
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={rows} margin={{ top: 8, right: 8, left: -8, bottom: 0 }} barGap={4}>
-                <CartesianGrid vertical={false} stroke="var(--color-border)" strokeDasharray="3 3" />
+                <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
                 <XAxis dataKey="short" {...axisProps} />
                 <YAxis {...axisProps} tickFormatter={(x: number) => inrCompact(x)} width={56} />
                 <Tooltip {...tooltipStyle} cursor={{ fill: "var(--color-muted)", opacity: 0.5 }} formatter={(x) => inr(Number(x))} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: "var(--color-muted-foreground)" }} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: "var(--color-text-muted)" }} />
                 <Bar dataKey="revenue" name="Revenue" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]} maxBarSize={34} />
                 <Bar dataKey="cost" name="True cost" fill="var(--color-chart-3)" radius={[4, 4, 0, 0]} maxBarSize={34} />
               </BarChart>
@@ -78,9 +82,9 @@ export function ClientProfitability() {
           <THead>
             <TR>
               <TH className="pl-5">Client</TH>
-              <TH className="text-right">Units</TH>
-              <TH className="text-right">Cost / unit</TH>
-              <TH className="pr-5 text-right">Margin</TH>
+              <TH numeric>Units</TH>
+              <TH numeric>Cost / unit</TH>
+              <TH numeric className="pr-5">Margin</TH>
             </TR>
           </THead>
           <TBody>
@@ -93,11 +97,11 @@ export function ClientProfitability() {
                     <Badge tone={cycleStatusTone[r.status]}>{r.status}</Badge>
                   </div>
                 </TD>
-                <TD className="text-right tabular text-muted-foreground">
+                <TD numeric className="text-muted-foreground">
                   {r.delivered}/{r.promised}
                 </TD>
-                <TD className="text-right tabular">{r.perUnit ? inr(r.perUnit) : "—"}</TD>
-                <TD className="pr-5 text-right">
+                <TD numeric>{r.perUnit ? inr(r.perUnit) : "—"}</TD>
+                <TD numeric className="pr-5">
                   <div className="flex flex-col items-end gap-1">
                     <Badge tone={marginTone(r.marginPct)} className="tabular">
                       {pct(r.marginPct)}
@@ -134,14 +138,14 @@ function FormatInsight() {
           <CardDescription>Where the package price and the real effort disagree</CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {list.map((f) => {
           const tone = marginTone(f.m);
           return (
             <div key={f.format} className="rounded-xl border border-border p-3">
-              <div className="flex items-center justify-between">
-                <span className="text-body font-medium">{f.format}</span>
-                <span className="text-body text-muted-foreground">{f.n} videos</span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate text-body font-medium">{f.format}</span>
+                <span className="shrink-0 text-body text-muted-foreground">{f.n} videos</span>
               </div>
               <div className={cn("mt-1 text-heading font-semibold tabular", tone === "danger" ? "text-danger" : tone === "warning" ? "text-warning" : "text-success")}>
                 {pct(f.m)}

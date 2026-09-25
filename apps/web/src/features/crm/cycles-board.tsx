@@ -10,6 +10,7 @@ import { CategoryBadge } from "@/components/shared/video-bits";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Alert } from "@/components/ui/feedback";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { clientById } from "@/lib/mock/core";
 import { cycleTimeline } from "@/lib/mock/crm";
@@ -19,7 +20,7 @@ import { cn, inr, inrCompact, pct } from "@/lib/utils";
 import { useCrmDemo } from "./crm-store";
 import { unitsTotal, useAgreements, type LiveAgreement } from "./agreements/shared";
 
-const statusTone = { upcoming: "neutral", "in-progress": "accent", reconciling: "warning", closed: "success" } as const;
+const statusTone = { upcoming: "neutral", "in-progress": "info", reconciling: "warning", closed: "success" } as const;
 
 export function CyclesBoard() {
   const all = useAgreements();
@@ -46,18 +47,12 @@ export function CyclesBoard() {
         }
       />
 
-      <div className="mb-5 flex items-start gap-3 rounded-2xl border border-info/30 bg-info-soft/60 p-4 text-body">
-        <Zap className="mt-0.5 size-4 shrink-0 text-info" />
-        <div>
-          <div className="font-medium">Auto-generated 7 days before cycle start</div>
-          <div className="text-muted-foreground">
-            On 24 Sep the scheduler created Kaveri&apos;s October cycle. {octGenerated ? "All October cycles are now ready." : `${pending.length} cycles are held for manager confirmation (renewal due / payment risk) — review and generate below.`}{" "}
-            Next automatic run: <b className="text-foreground">24 Oct 2026</b> for November cycles.
-          </div>
-        </div>
-      </div>
+      <Alert tone="info" icon={Zap} title="Auto-generated 7 days before cycle start" className="mb-5">
+        On 24 Sep the scheduler created Kaveri&apos;s October cycle. {octGenerated ? "All October cycles are now ready." : `${pending.length} cycles are held for manager confirmation (renewal due / payment risk) — review and generate below.`}{" "}
+        Next automatic run: <b className="text-text-primary">24 Oct 2026</b> for November cycles.
+      </Alert>
 
-      <div className="mb-2 hidden grid-cols-[260px_repeat(3,1fr)] gap-3 px-1 text-body font-medium uppercase tracking-wider text-muted-foreground lg:grid">
+      <div className="mb-2 hidden grid-cols-[260px_repeat(3,minmax(0,1fr))] gap-3 px-1 text-body font-medium uppercase tracking-wider text-muted-foreground lg:grid">
         <span>Agreement</span>
         <span>Aug 2026 · closed</span>
         <span>Sep 2026 · in progress</span>
@@ -84,7 +79,7 @@ export function CyclesBoard() {
               const c = clientById(a.clientId);
               return (
                 <div key={a.id} className="rounded-xl border border-border p-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3">
                     <div className="text-body font-semibold">{c.name}</div>
                     <span className="text-body text-muted-foreground tabular">{inr(a.monthlyFee)}</span>
                   </div>
@@ -131,8 +126,8 @@ function Row({ a, octGenerated }: { a: LiveAgreement; octGenerated: boolean }) {
   const timeline = cycleTimeline(a);
   const paused = a.status === "paused";
   return (
-    <Card className="grid gap-3 p-3 lg:grid-cols-[260px_repeat(3,1fr)] lg:items-stretch">
-      <Link href={`/agreements/${a.id}`} className="flex flex-col justify-center rounded-xl px-2 py-1 hover:bg-muted/50">
+    <Card className="grid grid-cols-1 gap-3 p-3 lg:grid-cols-[260px_repeat(3,minmax(0,1fr))] lg:items-stretch">
+      <Link href={`/agreements/${a.id}`} className="flex min-w-0 flex-col justify-center rounded-xl px-2 py-1 hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35">
         <div className="text-body font-semibold">{c.name}</div>
         <div className="mt-1 flex flex-wrap items-center gap-1.5">
           <CategoryBadge category={c.category} />
@@ -154,12 +149,12 @@ function CycleCell({ cy, isOct, generated, paused }: { cy: Cycle & { synthetic?:
   if (isOct && (paused || !generated)) {
     return (
       <div className="flex flex-col justify-center rounded-xl border border-dashed border-border p-3 text-body text-muted-foreground">
-        <div className="flex items-center justify-between">
-          <span className="font-medium text-foreground">{cy.label}</span>
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-medium text-text-primary">{cy.label}</span>
           <Badge tone="neutral">{paused ? "Paused" : "Pending"}</Badge>
         </div>
-        <div className="mt-2 flex items-center gap-1.5">
-          <Info className="size-3.5" /> {paused ? "Not generated while agreement is paused" : `${cy.promised} deliverables awaiting generation`}
+        <div className="mt-2 flex items-start gap-1.5">
+          <Info className="mt-0.5 size-3.5 shrink-0" /> {paused ? "Not generated while agreement is paused" : `${cy.promised} deliverables awaiting generation`}
         </div>
       </div>
     );
@@ -172,7 +167,7 @@ function CycleCell({ cy, isOct, generated, paused }: { cy: Cycle & { synthetic?:
       animate={{ opacity: 1, scale: 1 }}
       className={cn("rounded-xl border p-3", cy.status === "in-progress" ? "border-primary/30 bg-primary-soft/30" : "border-border bg-card")}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <span className="text-body font-medium">{cy.label}</span>
         <Badge tone={statusTone[cy.status]} dot>
           {cy.status}
@@ -182,7 +177,7 @@ function CycleCell({ cy, isOct, generated, paused }: { cy: Cycle & { synthetic?:
         <div className="bg-success transition-all" style={{ width: `${(cy.delivered / cy.promised) * 100}%` }} />
         <div className="bg-primary/50 transition-all" style={{ width: `${(cy.inProgress / cy.promised) * 100}%` }} />
       </div>
-      <div className="mt-2 flex items-center justify-between text-body tabular">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-x-2 text-body tabular">
         <span>
           <b>{cy.delivered}</b>
           <span className="text-muted-foreground">/{cy.promised} delivered</span>

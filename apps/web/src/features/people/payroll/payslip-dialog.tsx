@@ -4,7 +4,7 @@ import { Download, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useDemo } from "@/lib/store";
 import { cn, fmtDate, inr } from "@/lib/utils";
 import { PAY_PERIOD, type PayrollRow } from "./data";
@@ -61,27 +61,27 @@ function Payslip({ row, released, blurred }: { row: PayrollRow; released: boolea
 
   return (
     <div>
-      <div className="px-6 pt-6 pr-12">
-        <DialogTitle className="text-body">Payslip preview</DialogTitle>
-        <p className="text-body text-muted-foreground">
+      <DialogHeader>
+        <DialogTitle>Payslip preview</DialogTitle>
+        <div className="flex flex-wrap items-center gap-2 text-body text-muted-foreground">
           {row.person.name} · {PAY_PERIOD.label}
           {released ? (
-            <Badge tone="success" dot className="ml-2">
+            <Badge tone="success" dot>
               Released
             </Badge>
           ) : (
-            <Badge tone="warning" dot className="ml-2">
+            <Badge tone="warning" dot>
               Draft — not yet released
             </Badge>
           )}
-        </p>
-      </div>
+        </div>
+      </DialogHeader>
 
       {/* The slip itself */}
-      <div className="m-6 rounded-xl border border-border bg-card">
-        <div className="flex items-start justify-between gap-4 border-b border-border px-6 py-5">
+      <div className="mx-4 mb-6 rounded-xl border border-border bg-card sm:mx-6">
+        <div className="flex flex-col gap-4 border-b border-border px-4 py-5 sm:flex-row sm:items-start sm:justify-between sm:px-6">
           <div className="flex items-center gap-3">
-            <span className="inline-flex size-10 items-center justify-center rounded-lg bg-primary text-body font-bold text-primary-foreground">
+            <span className="inline-flex size-10 items-center justify-center shrink-0 rounded-lg bg-primary text-body font-semibold text-primary-foreground">
               GM
             </span>
             <div>
@@ -89,14 +89,14 @@ function Payslip({ row, released, blurred }: { row: PayrollRow; released: boolea
               <div className="text-body text-muted-foreground">Appakudal, Erode District, Tamil Nadu 638315</div>
             </div>
           </div>
-          <div className="text-right">
+          <div className="sm:text-right">
             <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Payslip for the month</div>
             <div className="text-subheading font-semibold">{PAY_PERIOD.label}</div>
             <div className="text-body text-muted-foreground">Pay date: {fmtDate(PAY_PERIOD.payDate, { day: "2-digit", month: "short", year: "numeric" })}</div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-x-8 gap-y-2 px-6 py-4 text-body sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-x-8 gap-y-2 px-4 py-4 text-body sm:grid-cols-2 sm:px-6">
           {details.map(([k, v]) => (
             <div key={k} className="flex justify-between gap-3 border-b border-dashed border-border pb-1.5">
               <span className="text-muted-foreground">{k}</span>
@@ -105,8 +105,8 @@ function Payslip({ row, released, blurred }: { row: PayrollRow; released: boolea
           ))}
         </div>
 
-        <div className="px-6 pb-4">
-          <table className="w-full border border-border text-body">
+        <div className="scrollbar-thin overflow-x-auto px-4 pb-4 sm:px-6">
+          <table className="w-full min-w-[520px] border border-border text-body">
             <thead>
               <tr className="bg-muted/60 text-body uppercase tracking-wider text-muted-foreground">
                 <th className="px-3 py-2 text-left font-medium">Earnings</th>
@@ -122,7 +122,7 @@ function Payslip({ row, released, blurred }: { row: PayrollRow; released: boolea
                 return (
                   <tr key={i} className="border-t border-border">
                     <td className="px-3 py-2">{e?.[0]}</td>
-                    <td className="border-r border-border px-3 py-2 text-right">{e ? m(e[1]) : null}</td>
+                    <td className="border-r border-border px-3 py-2 text-right tabular">{e ? m(e[1]) : null}</td>
                     <td className="px-3 py-2">{d?.[0]}</td>
                     <td className="px-3 py-2 text-right">{d ? m(d[1]) : null}</td>
                   </tr>
@@ -138,7 +138,7 @@ function Payslip({ row, released, blurred }: { row: PayrollRow; released: boolea
           </table>
         </div>
 
-        <div className="mx-6 mb-5 flex flex-col gap-1 rounded-lg bg-primary-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-4 mb-5 flex flex-col sm:mx-6 gap-1 rounded-lg bg-primary-soft px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="text-body font-medium uppercase tracking-wider text-primary">Net pay</div>
             <div className={cn("text-body text-foreground", blurred && "blur-sm select-none")}>{rupeesInWords(row.net)}</div>
@@ -148,18 +148,17 @@ function Payslip({ row, released, blurred }: { row: PayrollRow; released: boolea
           </div>
         </div>
 
-        <div className="border-t border-border px-6 py-3 text-center text-body text-muted-foreground">
+        <div className="border-t border-border px-4 py-3 text-center sm:px-6 text-body text-muted-foreground">
           This is a system-generated payslip and does not require a signature. · Employer PF of {inr(row.employerPf)} is part of CTC.
         </div>
       </div>
 
       <DialogFooter>
-        <Button variant="outline" size="sm" onClick={() => toast("Sent to printer queue (demo)")}>
+        <Button variant="outline" onClick={() => toast("Sent to printer queue (demo)")}>
           <Printer /> Print
         </Button>
         <Button
           variant="accent"
-          size="sm"
           onClick={() => {
             toast.success("Payslip PDF generated (demo)", { description: `${row.empId}_${row.person.name.replace(/\s+/g, "_")}_Sep2026.pdf` });
             useDemo.getState().log(`Payslip PDF generated for ${row.person.name} (Sep 2026)`);

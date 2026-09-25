@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CircleHelp, Link2, MessageSquarePlus, Send } from "lucide-react";
+import { ArrowLeft, CircleHelp, Link2, MessageSquarePlus, SearchX, Send } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/feedback";
+import { Field, Textarea } from "@/components/ui/input";
 import { plannedModules } from "@/features/platform/planned-content";
 import { allNavItems } from "@/lib/nav";
 
@@ -20,16 +21,19 @@ export function PlannedView({ slug }: { slug: string }) {
 
   if (!item || !mod) {
     return (
-      <Card className="bg-grid">
-        <div className="mx-auto max-w-md px-6 py-20 text-center">
-          <h2 className="text-subheading font-semibold">Module not found</h2>
-          <p className="mt-1 text-body text-muted-foreground">This planned module doesn&apos;t exist. See the full list on the module map.</p>
-          <Button asChild variant="outline" className="mt-5">
-            <Link href="/modules">
-              <ArrowLeft /> Module map
-            </Link>
-          </Button>
-        </div>
+      <Card className="p-5">
+        <EmptyState
+          icon={SearchX}
+          title="Module not found"
+          description="This planned module doesn't exist. See the full list on the module map."
+          action={
+            <Button asChild variant="secondary">
+              <Link href="/modules">
+                <ArrowLeft /> Module map
+              </Link>
+            </Button>
+          }
+        />
       </Card>
     );
   }
@@ -52,7 +56,7 @@ export function PlannedView({ slug }: { slug: string }) {
         }
         description={mod.headline}
         actions={
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="secondary" size="sm">
             <Link href="/modules">
               <ArrowLeft /> All modules
             </Link>
@@ -62,12 +66,12 @@ export function PlannedView({ slug }: { slug: string }) {
 
       <section>
         <div className="mb-3 text-body font-semibold uppercase tracking-wider text-muted-foreground">What it will do</div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {mod.capabilities.slice(0, 4).map((c) => {
             const CIcon = c.icon;
             return (
               <Card key={c.title} className="p-5">
-                <span className="inline-flex size-8 items-center justify-center rounded-lg bg-muted text-foreground">
+                <span className="inline-flex size-8 items-center justify-center rounded-lg bg-primary-soft text-primary">
                   <CIcon className="size-4" />
                 </span>
                 <div className="mt-3 text-body font-semibold tracking-tight">{c.title}</div>
@@ -77,15 +81,15 @@ export function PlannedView({ slug }: { slug: string }) {
           })}
         </div>
         {mod.capabilities.length > 4 && (
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {mod.capabilities.slice(4).map((c) => {
               const CIcon = c.icon;
               return (
-                <Card key={c.title} className="flex items-start gap-3 p-4 xl:col-span-2">
-                  <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                <Card key={c.title} className="flex items-start gap-3 p-5 xl:col-span-2">
+                  <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
                     <CIcon className="size-4" />
                   </span>
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-body font-semibold tracking-tight">{c.title}</div>
                     <p className="mt-0.5 text-body text-muted-foreground">{c.desc}</p>
                   </div>
@@ -96,7 +100,7 @@ export function PlannedView({ slug }: { slug: string }) {
         )}
       </section>
 
-      <div className="mt-6 grid gap-5 xl:grid-cols-[1fr_340px]">
+      <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[1fr_340px]">
         <Card className="overflow-hidden">
           <CardHeader>
             <div>
@@ -155,7 +159,9 @@ export function PlannedView({ slug }: { slug: string }) {
                     {n}
                   </div>
                 ))}
-                <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add an answer or a requirement…" className="min-h-16 text-body" />
+                <Field label="Your note">
+                  <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add an answer or a requirement…" aria-label="Your note" className="min-h-16" />
+                </Field>
                 <Button
                   size="sm"
                   variant="soft"

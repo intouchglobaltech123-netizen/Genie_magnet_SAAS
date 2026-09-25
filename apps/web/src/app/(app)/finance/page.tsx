@@ -17,7 +17,7 @@ export default function FinancePage() {
         actions={
           <>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => toast.success("Board pack exported", { description: "GenieMagnet_FinancePack_Sep-2026.pdf · 6 pages" })}
             >

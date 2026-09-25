@@ -68,17 +68,17 @@ export function NewLeadDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           </DialogTitle>
           <DialogDescription>Captured leads get an owner and a follow-up date automatically.</DialogDescription>
         </DialogHeader>
-        <DialogBody className="grid gap-4 sm:grid-cols-2">
-          <Field label="Contact name">
+        <DialogBody className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="Contact name" required>
             <Input value={f.name} onChange={(e) => set("name", e.target.value)} placeholder="e.g. Kavitha Rajan" />
           </Field>
-          <Field label="Company">
+          <Field label="Company" required>
             <Input value={f.company} onChange={(e) => set("company", e.target.value)} placeholder="e.g. Kavitha Bakes" />
           </Field>
-          <Field label="Phone">
+          <Field label="Phone" hint="Phone or email is required">
             <Input value={f.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+91 98xxx xxxxx" />
           </Field>
-          <Field label="Email">
+          <Field label="Email" hint="Phone or email is required">
             <Input value={f.email} onChange={(e) => set("email", e.target.value)} placeholder="name@company.in" />
           </Field>
           <Field label="Source">
@@ -97,10 +97,10 @@ export function NewLeadDialog({ open, onOpenChange }: { open: boolean; onOpenCha
             <div className="flex gap-2.5 rounded-xl border border-warning/40 bg-warning-soft p-3 text-body sm:col-span-2">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
               <div>
-                <div className="font-medium text-foreground">Possible duplicate</div>
+                <div className="font-medium text-text-primary">Possible duplicate</div>
                 {dupes.slice(0, 2).map((d) => (
                   <div key={d.id} className="text-muted-foreground">
-                    {d.company} · {d.name} · {d.phone} — currently in <b className="text-foreground">{d.stage}</b>
+                    {d.company} · {d.name} · {d.phone} — currently in <b className="text-text-primary">{d.stage}</b>
                   </div>
                 ))}
               </div>

@@ -11,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input, Textarea } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/feedback";
+import { Field, Input, Textarea } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -38,15 +39,18 @@ export function ShootSheet({ id }: { id: string }) {
   const shoot = shoots.find((s) => s.id === id);
   if (!shoot) {
     return (
-      <div className="flex flex-col items-center gap-3 py-24 text-center">
-        <Camera className="size-8 text-muted-foreground" />
-        <div className="text-subheading font-semibold">Shoot not found</div>
-        <Button variant="outline" asChild>
-          <Link href="/shoots">
-            <ArrowLeft /> Back to shoots
-          </Link>
-        </Button>
-      </div>
+      <EmptyState
+        icon={Camera}
+        title="Shoot not found"
+        description="It may have been removed, or the demo data was reset."
+        action={
+          <Button variant="outline" asChild>
+            <Link href="/shoots">
+              <ArrowLeft /> Back to shoots
+            </Link>
+          </Button>
+        }
+      />
     );
   }
   return <Sheet shoot={shoot} />;
@@ -92,12 +96,12 @@ function Sheet({ shoot }: { shoot: Shoot }) {
 
   return (
     <div>
-      <Link href="/shoots" className="mb-4 inline-flex items-center gap-1.5 text-body text-muted-foreground transition hover:text-foreground">
+      <Link href="/shoots" className="mb-4 inline-flex items-center gap-1.5 rounded-md text-body text-muted-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35">
         <ArrowLeft className="size-3.5" /> Shoots & Kit
       </Link>
 
       <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
+        <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <ClientTag clientId={shoot.clientId} />
             <span className="font-mono text-body font-semibold">{shoot.batchNo}</span>
@@ -106,7 +110,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
             </Badge>
             <Tooltip content="This sheet is available in the offline field app — ticks sync automatically when the phone reconnects.">
               <span>
-                <Badge tone="gold">
+                <Badge tone="outline">
                   <CloudOff /> Offline ready
                 </Badge>
               </span>
@@ -115,10 +119,9 @@ function Sheet({ shoot }: { shoot: Shoot }) {
           <h1 className="text-heading font-semibold leading-tight tracking-tight">{shoot.projectName}</h1>
           <p className="mt-1 text-body text-muted-foreground">Digital shoot sheet · works offline in the field app and syncs when back on network.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {status === "packed" && (
             <Button
-              variant="outline"
               onClick={() => {
                 p.setShootStatus(shoot.id, "on-shoot");
                 log(`${shoot.batchNo} shoot started at ${shoot.location}`, "accent");
@@ -155,11 +158,11 @@ function Sheet({ shoot }: { shoot: Shoot }) {
         })}
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_380px]">
         <div className="space-y-5">
           {/* Paper form header */}
           <Card className="overflow-hidden">
-            <div className="flex items-center justify-between border-b border-border bg-muted/40 px-5 py-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-surface-secondary px-5 py-2.5">
               <span className="text-body font-semibold uppercase tracking-[0.18em] text-muted-foreground">Genie Magnet · Shoot sheet</span>
               <span className="font-mono text-body text-muted-foreground">{shoot.id.toUpperCase()}</span>
             </div>
@@ -176,9 +179,9 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                   ["Video count", `${shoot.videoIds.length} videos · ${shoot.kit === "dual" ? "Dual" : "Single"} cam`],
                 ] as [string, React.ReactNode][]
               ).map(([k, val]) => (
-                <div key={k} className="bg-card px-4 py-3">
+                <div key={k} className="min-w-0 bg-card px-4 py-3">
                   <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">{k}</div>
-                  <div className="mt-1 text-body font-medium">{val}</div>
+                  <div className="mt-1 break-words text-body font-medium">{val}</div>
                 </div>
               ))}
             </div>
@@ -207,7 +210,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                 {videos.map((v) => (
                   <TR key={v.id}>
                     <TD className="font-mono text-body font-medium">
-                      <Link href={`/production/${v.id}`} className="hover:text-primary">
+                      <Link href={`/production/${v.id}`} className="whitespace-nowrap hover:text-primary">
                         {v.code}
                       </Link>
                     </TD>
@@ -216,10 +219,11 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                     </TD>
                     <TD className="max-w-[260px] truncate font-medium">{v.title}</TD>
                     <TD>
-                      <Input value={v.clipNo} onChange={(e) => updateVideo(v.id, { clipNo: e.target.value })} className="h-8 w-40 font-mono text-body" />
+                      <Input aria-label={`Clip numbers for ${v.code}`} value={v.clipNo} onChange={(e) => updateVideo(v.id, { clipNo: e.target.value })} className="h-8 w-40 font-mono" />
                     </TD>
                     <TD className="text-center">
                       <Checkbox
+                        aria-label={`Video protection for ${v.code}`}
                         checked={v.videoProtection}
                         className="data-[state=checked]:border-success data-[state=checked]:bg-success"
                         onCheckedChange={(ch) => {
@@ -237,6 +241,13 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                     </TD>
                   </TR>
                 ))}
+                {!videos.length && (
+                  <TR className="hover:bg-transparent">
+                    <TD colSpan={6} className="py-4">
+                      <EmptyState compact icon={Camera} title="No videos in this shoot" description="Videos assigned to this batch will appear here with their clip numbers." />
+                    </TD>
+                  </TR>
+                )}
               </TBody>
             </Table>
           </Card>
@@ -276,10 +287,10 @@ function Sheet({ shoot }: { shoot: Shoot }) {
               </div>
             </CardHeader>
             <CardContent className="pb-0">
-              <div className="grid grid-cols-3 gap-3 pb-4">
+              <div className="grid grid-cols-1 gap-3 pb-4 sm:grid-cols-3">
                 {COLS.map((col) => (
                   <div key={col.key} className="rounded-xl border border-border px-3 py-2.5">
-                    <div className="flex items-baseline justify-between">
+                    <div className="flex items-baseline justify-between gap-2">
                       <span className="text-body font-medium text-muted-foreground">{col.label}</span>
                       <span className="text-subheading font-semibold tabular">
                         {count(col.key)}
@@ -315,6 +326,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                         {COLS.map((col) => (
                           <TD key={col.key} className="text-center">
                             <Checkbox
+                              aria-label={`${it} — ${col.label}`}
                               checked={t[col.key]}
                               onCheckedChange={(ch) => p.setTick(shoot.id, it, col.key, !!ch)}
                               className={cn(col.key === "received" && "data-[state=checked]:border-success data-[state=checked]:bg-success")}
@@ -359,9 +371,9 @@ function Sheet({ shoot }: { shoot: Shoot }) {
               {returnPhase && !allReceived && missing.length > 0 && (
                 <div className="rounded-xl border border-warning/30 bg-warning-soft p-3">
                   <div className="flex items-center gap-2 text-body font-semibold text-warning">
-                    <AlertTriangle className="size-4" /> {missing.length} items not returned
+                    <AlertTriangle className="size-4 shrink-0" /> {missing.length} items not returned
                   </div>
-                  <ul className="mt-1.5 space-y-0.5 text-body text-foreground/80">
+                  <ul className="mt-1.5 space-y-0.5 text-body text-text-secondary">
                     {missing.slice(0, 5).map((m) => (
                       <li key={m}>• {m}</li>
                     ))}
@@ -377,7 +389,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                 .map((inc) => (
                   <div key={inc.id} className="rounded-xl border border-danger/30 bg-danger-soft p-3 text-body">
                     <div className="font-semibold text-danger">Incident raised · {format(parseISO(inc.at), "d MMM, HH:mm")}</div>
-                    <div className="mt-0.5 text-foreground/80">{inc.items.join(", ")}</div>
+                    <div className="mt-0.5 text-text-secondary">{inc.items.join(", ")}</div>
                     {inc.note && <div className="mt-1 text-muted-foreground">“{inc.note}”</div>}
                   </div>
                 ))}
@@ -395,12 +407,12 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                 {preShootItems.filter((x) => pre[x]).length}/{preShootItems.length}
               </span>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-1.5">
+            <CardContent className="grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-2">
               {preShootItems.map((it) => (
                 <label
                   key={it}
                   className={cn(
-                    "flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-2 text-body transition",
+                    "flex min-w-0 cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-2 text-body transition",
                     pre[it] ? "border-primary/30 bg-primary-soft/40" : "border-border hover:bg-muted/50",
                   )}
                 >
@@ -417,7 +429,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
               <CardTitle>Important notes</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Textarea value={notesDraft} onChange={(e) => setNotesDraft(e.target.value)} rows={3} placeholder="Consent forms, permissions, talent timings…" />
+              <Textarea aria-label="Important notes" value={notesDraft} onChange={(e) => setNotesDraft(e.target.value)} rows={3} placeholder="Consent forms, permissions, talent timings…" />
               <div className="flex justify-end">
                 <Button
                   size="xs"
@@ -449,7 +461,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={sign.client.dataUrl} alt="Client signature" className="h-20 w-full object-contain" />
                   ) : (
-                    <div className="flex h-20 items-center justify-center font-[cursive] text-heading italic text-foreground/80">{sign.client.by}</div>
+                    <div className="flex h-20 items-center justify-center font-[cursive] text-heading italic text-text-secondary">{sign.client.by}</div>
                   )}
                   <div className="mt-1 flex items-center gap-1.5 border-t border-border pt-2 text-body text-success">
                     <Check className="size-3.5" /> Signed by {sign.client.by} · {format(parseISO(sign.client.at), "d MMM, HH:mm")}
@@ -471,7 +483,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
       </div>
 
       <div className="mt-10 flex flex-col items-center gap-1 border-t border-border pt-6 text-center">
-        <div className="text-body font-medium italic tracking-tight text-foreground/80">Shoot with purpose. Edit with precision. Deliver excellence.</div>
+        <div className="text-body font-medium italic tracking-tight text-text-secondary">Shoot with purpose. Edit with precision. Deliver excellence.</div>
         <div className="text-body uppercase tracking-[0.2em] text-muted-foreground">Genie Magnet</div>
       </div>
 
@@ -491,7 +503,9 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                 </Badge>
               ))}
             </div>
-            <Textarea value={incidentNote} onChange={(e) => setIncidentNote(e.target.value)} placeholder="What happened? e.g. Headset left at client location — courier arranged" rows={3} />
+            <Field label="What happened?">
+              <Textarea value={incidentNote} onChange={(e) => setIncidentNote(e.target.value)} placeholder="e.g. Headset left at client location — courier arranged" rows={3} />
+            </Field>
           </DialogBody>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIncidentOpen(false)}>
@@ -528,7 +542,7 @@ function defaultSigns(shoot: Shoot): { giver?: { by: string; at: string }; recei
 
 function SignBox({ label, sub, sig, enabled, why, onSign }: { label: string; sub: string; sig?: { by: string; at: string }; enabled: boolean; why: string; onSign: () => void }) {
   return (
-    <div className={cn("flex items-center gap-3 rounded-xl border p-3", sig ? "border-success/30 bg-success-soft/40" : "border-dashed border-border")}>
+    <div className={cn("flex flex-wrap items-center gap-3 rounded-xl border p-3", sig ? "border-success/30 bg-success-soft/40" : "border-dashed border-border")}>
       <div className="min-w-0 flex-1">
         <div className="text-body font-semibold">{label}</div>
         <div className="truncate text-body text-muted-foreground">

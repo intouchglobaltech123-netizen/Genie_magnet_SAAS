@@ -60,7 +60,7 @@ export function ReviewPlayer({
   return (
     <div className="overflow-hidden rounded-2xl bg-black shadow-pop ring-1 ring-black/10">
       {/* Frame */}
-      <div className="relative aspect-video w-full cursor-pointer select-none bg-[#0a0a0c]" onClick={onToggle}>
+      <div className="relative aspect-video w-full cursor-pointer select-none bg-black" onClick={onToggle}>
         <div
           className={cn("absolute overflow-hidden", vertical ? "inset-y-0 left-1/2 aspect-[9/16] -translate-x-1/2" : "inset-0")}
           style={{ background: posterGradient(video.id) }}
@@ -74,13 +74,13 @@ export function ReviewPlayer({
           <div className="absolute inset-0 bg-[radial-gradient(90%_70%_at_50%_110%,rgba(0,0,0,0.7),transparent)]" />
           {time > 0.5 && (
             <div className="absolute inset-x-[8%] bottom-[9%] text-center">
-              <span className="rounded bg-black/55 px-2 py-1 text-body font-medium leading-relaxed text-white md:text-subheading">{caption}</span>
+              <span className="rounded-md bg-black/55 px-2 py-1 text-body font-medium leading-relaxed text-white md:text-subheading">{caption}</span>
             </div>
           )}
         </div>
 
         {/* Review watermark */}
-        <div className="pointer-events-none absolute right-3 top-3 rounded bg-black/40 px-2 py-1 font-mono text-body tracking-wide text-white/60">
+        <div className="pointer-events-none absolute right-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-md bg-black/40 px-2 py-1 font-mono text-body tracking-wide text-white/70">
           {video.code} · {version.label} · REVIEW COPY
         </div>
 
@@ -103,17 +103,17 @@ export function ReviewPlayer({
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-3 px-4 pb-3 pt-2.5 text-white">
-        <button onClick={onToggle} className="cursor-pointer rounded-md p-1 text-white/90 hover:bg-white/10" aria-label={playing ? "Pause" : "Play"}>
+      <div className="flex items-center gap-2 px-3 pb-3 pt-2.5 text-white sm:gap-3 sm:px-4">
+        <button type="button" onClick={onToggle} className="shrink-0 cursor-pointer rounded-md p-1 text-white/90 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80" aria-label={playing ? "Pause" : "Play"}>
           {playing ? <Pause className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
         </button>
-        <span className="font-mono text-body tabular-nums text-white/80">
+        <span className="shrink-0 whitespace-nowrap font-mono text-body tabular-nums text-white/80">
           {fmtTs(time)} <span className="text-white/40">/ {fmtTs(duration)}</span>
         </span>
 
         <div
           ref={barRef}
-          className="group relative h-7 flex-1 cursor-pointer"
+          className="group relative h-7 min-w-0 flex-1 cursor-pointer"
           onClick={(e) => onSeek(ratioFromEvent(e.clientX) * duration)}
           onMouseMove={(e) => setHoverX(ratioFromEvent(e.clientX))}
           onMouseLeave={() => setHoverX(null)}
@@ -127,7 +127,7 @@ export function ReviewPlayer({
           />
           {hoverX !== null && (
             <div
-              className="pointer-events-none absolute -top-6 -translate-x-1/2 rounded bg-white px-1.5 py-0.5 font-mono text-body text-black"
+              className="pointer-events-none absolute -top-7 -translate-x-1/2 rounded-md bg-white px-1.5 py-0.5 font-mono text-body leading-4 text-black"
               style={{ left: `${hoverX * 100}%` }}
             >
               {fmtTs(hoverX * duration)}
@@ -141,13 +141,15 @@ export function ReviewPlayer({
               return (
                 <button
                   key={c.id}
+                  type="button"
+                  aria-label={`Comment at ${c.timestamp} by ${c.author}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     onMarker(c);
                   }}
                   title={`${c.timestamp} · ${c.author}`}
                   className={cn(
-                    "absolute -bottom-1.5 flex size-4 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full text-body font-bold ring-2 transition",
+                    "absolute -bottom-1.5 flex size-4 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full text-body font-bold leading-none ring-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80",
                     active ? "z-10 scale-125 bg-primary text-white ring-white" : c.resolved ? "bg-white/30 text-black ring-black/60" : "bg-warning text-black ring-black/60 hover:scale-110",
                   )}
                   style={{ left: `${left}%` }}
@@ -158,10 +160,10 @@ export function ReviewPlayer({
             })}
         </div>
 
-        <button onClick={onSpeed} className="cursor-pointer rounded-md px-1.5 py-0.5 font-mono text-body text-white/80 hover:bg-white/10">
+        <button type="button" onClick={onSpeed} aria-label={`Playback speed ${speed}×`} className="shrink-0 cursor-pointer rounded-md px-1.5 py-0.5 font-mono text-body text-white/80 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80">
           {speed}×
         </button>
-        <Volume2 className="size-4 text-white/60" />
+        <Volume2 className="hidden size-4 shrink-0 text-white/60 sm:block" aria-hidden />
       </div>
     </div>
   );
@@ -169,7 +171,7 @@ export function ReviewPlayer({
 
 function Burst() {
   const pieces = Array.from({ length: 28 }, (_, i) => i);
-  const colors = ["var(--color-success)", "var(--color-primary)", "var(--color-chart-3)", "#ffffff"];
+  const colors = ["var(--color-success)", "var(--color-primary)", "var(--color-accent)", "white"];
   return (
     <motion.div className="pointer-events-none absolute inset-0" initial={{ opacity: 1 }} exit={{ opacity: 0 }}>
       {pieces.map((i) => {
@@ -178,7 +180,7 @@ function Burst() {
         return (
           <motion.span
             key={i}
-            className="absolute left-1/2 top-1/2 block size-2 rounded-[2px]"
+            className="absolute left-1/2 top-1/2 block size-2 rounded-sm"
             style={{ background: colors[i % colors.length] }}
             initial={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
             animate={{ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist + 40, opacity: 0, rotate: 180 + i * 20 }}

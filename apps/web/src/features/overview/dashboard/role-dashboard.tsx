@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ClipboardList } from "lucide-react";
+import { ArrowRight, Clapperboard, ClipboardList, Wallet } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/feedback";
+import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { PageHeader } from "@/components/shared/page-header";
 import { StageBadge, UrgencyIcon } from "@/components/shared/video-bits";
 import { Progress } from "@/components/ui/progress";
@@ -34,11 +36,12 @@ function MyVideos() {
         </Button>
       </CardHeader>
       <CardContent className="divide-y divide-border">
+        {!videos.length && <EmptyState compact icon={Clapperboard} title="No videos assigned" description="Videos assigned to you this cycle will appear here." />}
         {videos.map((v) => {
           const done = EDIT_STEPS.filter((s) => v.editSteps[s]).length;
           const days = daysBetween(TODAY, v.dueDate);
           return (
-            <Link key={v.id} href={`/production/${v.id}`} className="flex items-center gap-3 py-3 first:pt-0 hover:opacity-90">
+            <Link key={v.id} href={`/production/${v.id}`} className="flex items-center gap-3 py-3 first:pt-0 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30">
               <UrgencyIcon urgency={v.urgency} />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-body font-medium">{v.title}</div>
@@ -51,7 +54,7 @@ function MyVideos() {
                 <Progress value={(done / 9) * 100} />
               </div>
               <StageBadge stage={v.stage} />
-              <span className={cn("w-20 text-right text-body tabular", isOverdue(v) ? "font-medium text-danger" : days <= 1 ? "text-warning" : "text-muted-foreground")}>
+              <span className={cn("w-20 shrink-0 text-right text-body tabular", isOverdue(v) ? "font-medium text-danger" : days <= 1 ? "text-warning" : "text-muted-foreground")}>
                 {isOverdue(v) ? `${-days}d late` : days === 0 ? "Due today" : `Due ${fmtDate(v.dueDate)}`}
               </span>
             </Link>
@@ -63,6 +66,7 @@ function MyVideos() {
 }
 
 function Receivables() {
+  const owing = clients.filter((c) => c.outstanding > 0).sort((a, b) => b.outstanding - a.outstanding);
   return (
     <Card>
       <CardHeader>
@@ -76,16 +80,31 @@ function Receivables() {
           </Link>
         </Button>
       </CardHeader>
-      <CardContent className="space-y-2">
-        {clients
-          .filter((c) => c.outstanding > 0)
-          .sort((a, b) => b.outstanding - a.outstanding)
-          .map((c) => (
-            <div key={c.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-body">
-              <span className="font-medium">{c.name}</span>
-              <span className={cn("font-semibold tabular", c.outstanding >= 100000 && "text-danger")}>{inr(c.outstanding)}</span>
-            </div>
-          ))}
+      <CardContent>
+        {owing.length ? (
+          <div className="overflow-hidden rounded-xl border border-border">
+            <Table>
+              <THead>
+                <TR>
+                  <TH>Client</TH>
+                  <TH numeric>Outstanding</TH>
+                </TR>
+              </THead>
+              <TBody>
+                {owing.map((c) => (
+                  <TR key={c.id}>
+                    <TD className="font-medium">{c.name}</TD>
+                    <TD numeric className={cn("font-semibold", c.outstanding >= 100000 && "text-danger")}>
+                      {inr(c.outstanding)}
+                    </TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          </div>
+        ) : (
+          <EmptyState compact icon={Wallet} title="Nothing outstanding" description="All client invoices are settled." />
+        )}
       </CardContent>
     </Card>
   );
@@ -104,7 +123,7 @@ export function RoleDashboard({ role }: { role: Exclude<Role, "founder" | "clien
     <div className="space-y-6">
       <PageHeader eyebrow={todayLabel} title={`Good morning, ${first}`} description={desc[role]} />
       {role === "editor" && (
-        <div className="grid gap-4 xl:grid-cols-12 [&>*]:min-w-0">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 [&>*]:min-w-0">
           <div className="xl:col-span-8">
             <MyVideos />
           </div>
@@ -114,7 +133,7 @@ export function RoleDashboard({ role }: { role: Exclude<Role, "founder" | "clien
         </div>
       )}
       {role === "manager" && (
-        <div className="grid gap-4 xl:grid-cols-12 [&>*]:min-w-0">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 [&>*]:min-w-0">
           <div className="xl:col-span-4">
             <PipelineByStageCard />
           </div>
@@ -127,7 +146,7 @@ export function RoleDashboard({ role }: { role: Exclude<Role, "founder" | "clien
         </div>
       )}
       {role === "finance" && (
-        <div className="grid gap-4 xl:grid-cols-12 [&>*]:min-w-0">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 [&>*]:min-w-0">
           <div className="xl:col-span-4">
             <RevenueHero />
           </div>
@@ -140,7 +159,7 @@ export function RoleDashboard({ role }: { role: Exclude<Role, "founder" | "clien
         </div>
       )}
       {role === "hr" && (
-        <div className="grid gap-4 xl:grid-cols-12 [&>*]:min-w-0">
+        <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 [&>*]:min-w-0">
           <div className="xl:col-span-6">
             <WorkloadCard />
           </div>

@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Alert } from "@/components/ui/feedback";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useDemo } from "@/lib/store";
@@ -51,10 +52,10 @@ export function RequestDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           </DialogDescription>
         </DialogHeader>
         <DialogBody className="space-y-4">
-          <Field label="What do you need?">
+          <Field label="What do you need?" required>
             <Select value={type} onValueChange={setType} options={requestTypes} />
           </Field>
-          <Field label="Short title">
+          <Field label="Short title" required>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. 15-second Pongal greeting reel" autoFocus />
           </Field>
           <Field label="Details" hint="References, product, language, where it will be posted.">
@@ -64,7 +65,7 @@ export function RequestDialog({ open, onOpenChange }: { open: boolean; onOpenCha
               placeholder="e.g. Use the sunrise mill shots, Tamil voice-over, for Instagram and WhatsApp status"
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Related video (optional)">
               <Select
                 value={related}
@@ -76,13 +77,12 @@ export function RequestDialog({ open, onOpenChange }: { open: boolean; onOpenCha
               <Input type="date" value={by} onChange={(e) => setBy(e.target.value)} />
             </Field>
           </div>
-          <div className="flex gap-2.5 rounded-xl bg-primary-soft p-3 text-body text-primary">
-            <Sparkles className="mt-0.5 size-4 shrink-0" />
+          <Alert tone="info" icon={Sparkles}>
             You&apos;ll receive an estimate with price and delivery date. Work begins only after you approve it here.
-          </div>
+          </Alert>
         </DialogBody>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
           <Button variant="accent" onClick={submit} disabled={!valid}>

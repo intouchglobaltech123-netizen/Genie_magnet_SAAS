@@ -8,7 +8,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Field, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Tooltip } from "@/components/ui/tooltip";
 import { PageHeader } from "@/components/shared/page-header";
@@ -21,7 +21,6 @@ import { Segmented } from "./bits";
 import {
   backwardPlan,
   CAPACITY_PEOPLE,
-  CLIENT_COLOR,
   capacityCell,
   clientDot,
   fmt,
@@ -70,9 +69,9 @@ export function PlanningView() {
         <StatCard label="On leave / holiday" value={weekId === "w39" ? "1 person" : "1 holiday"} icon={Palmtree} tone="warning" hint={weekId === "w39" ? "Naveen · 25–26 Sep" : "Gandhi Jayanti · 2 Oct"} />
       </div>
 
-      <div className="grid gap-5 2xl:grid-cols-[1.5fr_1fr]">
-        <Card>
-          <CardHeader>
+      <div className="grid grid-cols-1 gap-5 2xl:grid-cols-[1.5fr_1fr]">
+        <Card className="min-w-0">
+          <CardHeader className="flex-wrap">
             <div>
               <CardTitle>Team capacity</CardTitle>
               <CardDescription>Booked vs available hours per day · employees 8h, freelancers 6h</CardDescription>
@@ -109,7 +108,7 @@ export function PlanningView() {
                       <div className="pl-2">
                         <div className="flex justify-between text-body">
                           <span className="tabular text-muted-foreground">{u.booked}h</span>
-                          <span className={cn("font-semibold tabular", u.util > 1 ? "text-danger" : u.util > 0.85 ? "text-warning" : "text-foreground")}>
+                          <span className={cn("font-semibold tabular", u.util > 1 ? "text-danger" : u.util > 0.85 ? "text-warning" : "text-text-primary")}>
                             {Math.round(u.util * 100)}%
                           </span>
                         </div>
@@ -146,9 +145,9 @@ export function PlanningView() {
             <CardContent className="space-y-2.5">
               <div className="rounded-xl border border-danger/25 bg-danger-soft/50 p-3">
                 <div className="flex items-center gap-2 text-body font-semibold text-danger">
-                  <AlertTriangle className="size-4" /> Divya Lakshmi at 125% on Mon–Tue
+                  <AlertTriangle className="size-4 shrink-0" /> Divya Lakshmi at 125% on Mon–Tue
                 </div>
-                <p className="mt-1 text-body text-foreground/80">Diwali ad edit + Navaratri v3 revision overlap. Surya has 3h free on Tue.</p>
+                <p className="mt-1 text-body text-text-secondary">Diwali ad edit + Navaratri v3 revision overlap. Surya has 3h free on Tue.</p>
                 <Button
                   size="xs"
                   variant="outline"
@@ -165,7 +164,7 @@ export function PlanningView() {
                 <div className={cn("flex items-center gap-2 text-body font-semibold", reassigned ? "text-success" : "text-warning")}>
                   {reassigned ? <CheckCircle2 className="size-4" /> : <UserX className="size-4" />} Naveen Raj — sick leave 25–26 Sep
                 </div>
-                <p className="mt-1 text-body text-foreground/80">
+                <p className="mt-1 text-body text-text-secondary">
                   {reassigned ? "Backup verification for KVR-0926-07 and UNR-0926-02 reassigned to Surya Prakash." : "2 footage-backup tasks (KVR-0926-07, UNR-0926-02) need reassignment — editing is blocked until VP."}
                 </p>
                 {!reassigned && (
@@ -202,7 +201,7 @@ export function PlanningView() {
 function Legend({ cls, label }: { cls: string; label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className={cn("size-3 rounded-[4px]", cls)} />
+      <span className={cn("size-3 rounded-sm", cls)} />
       {label}
     </span>
   );
@@ -333,8 +332,8 @@ function PlannerBody({ v, options, onVideo, allVideos }: { v: Video; options: { 
   return (
     <Card className="mt-5">
       <CardHeader className="flex-col gap-4 lg:flex-row lg:items-end">
-        <div>
-          <div className="flex items-center gap-2">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             <CardTitle>Backward plan</CardTitle>
             <Badge tone="accent">
               <Sparkles /> Auto-scheduled
@@ -342,15 +341,13 @@ function PlannerBody({ v, options, onVideo, allVideos }: { v: Video; options: { 
           </div>
           <CardDescription>Pick a video and its publish date — the plan works backwards, skipping Sundays and holidays, and suggests who should do each step.</CardDescription>
         </div>
-        <div className="flex flex-wrap items-end gap-2">
-          <div>
-            <div className="mb-1 text-body font-medium text-muted-foreground">Video</div>
-            <Select className="h-9 w-80 text-body" value={v.id} onValueChange={onVideo} options={options} />
-          </div>
-          <div>
-            <div className="mb-1 text-body font-medium text-muted-foreground">Publish date</div>
+        <div className="flex w-full flex-wrap items-end gap-2 lg:w-auto">
+          <Field label="Video" className="w-full sm:w-80">
+            <Select className="h-9 w-full" value={v.id} onValueChange={onVideo} options={options} />
+          </Field>
+          <Field label="Publish date">
             <Input type="date" value={publish} onChange={(e) => setPublish(e.target.value)} className="w-40" />
-          </div>
+          </Field>
         </div>
       </CardHeader>
       <CardContent>
@@ -359,7 +356,7 @@ function PlannerBody({ v, options, onVideo, allVideos }: { v: Video; options: { 
             <AlertTriangle className="size-4 shrink-0 text-danger" />
             <div className="min-w-0 flex-1 text-body">
               <b className="font-semibold text-danger">{holidayPublish ? `Publish date falls on ${holidayPublish}.` : "Not feasible from today."}</b>{" "}
-              <span className="text-foreground/80">
+              <span className="text-text-secondary">
                 {late && `The first open step would have to start ${fmt(openStart!, "EEE d MMM")}, which is already past. `}
                 Earliest realistic publish date is <b className="font-semibold">{fmt(suggested!, "EEE, d MMM")}</b>.
               </span>
@@ -410,12 +407,11 @@ function PlannerBody({ v, options, onVideo, allVideos }: { v: Video; options: { 
                     <div
                       className={cn(
                         "absolute inset-y-1 flex items-center rounded-md px-2 text-body font-medium",
-                        done ? "bg-success-soft text-success" : past ? "bg-danger/80 text-white" : s.key === "publish" ? "bg-primary text-primary-foreground" : "text-white",
+                        done ? "bg-success-soft text-success" : past ? "bg-danger text-white" : s.key === "publish" ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground",
                       )}
                       style={{
                         left: `calc(${(a / days.length) * 100}% + 2px)`,
                         width: `calc(${((b - a + 1) / days.length) * 100}% - 4px)`,
-                        ...(!done && !past && s.key !== "publish" ? { backgroundColor: CLIENT_COLOR[v.clientId] } : {}),
                       }}
                     >
                       <span className="truncate">{s.key === "publish" ? "Live" : done ? "Done" : s.label.split(" ")[0]}</span>
@@ -427,7 +423,7 @@ function PlannerBody({ v, options, onVideo, allVideos }: { v: Video; options: { 
                     ) : (
                       <>
                         <Select
-                          className="h-8 w-40 text-body"
+                          className="h-8 w-40"
                           value={pick(s.key)}
                           onValueChange={(pid) => setAssign((x) => ({ ...x, [s.key]: pid }))}
                           options={list.map((x) => ({ value: x.pid, label: `${personById(x.pid).name.split(" ")[0]} · ${Math.round(x.score * 100)}` }))}

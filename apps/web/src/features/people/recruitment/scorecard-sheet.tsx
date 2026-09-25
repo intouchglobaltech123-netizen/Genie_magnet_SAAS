@@ -68,14 +68,15 @@ function Dots({ value, onChange }: { value: number; onChange: (v: number) => voi
           type="button"
           aria-label={`Score ${n}`}
           onClick={() => onChange(n)}
+          aria-pressed={n === value}
           className={cn(
-            "inline-flex size-7 cursor-pointer items-center justify-center rounded-full border text-body font-semibold tabular transition",
+            "inline-flex size-7 cursor-pointer items-center justify-center rounded-full border text-body font-semibold tabular transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
             n <= value
               ? value >= 4
-                ? "border-success bg-success text-white"
+                ? "border-success bg-success-soft text-success"
                 : value === 3
-                  ? "border-warning bg-warning text-white"
-                  : "border-danger bg-danger text-white"
+                  ? "border-warning bg-warning-soft text-warning"
+                  : "border-danger bg-danger-soft text-danger"
               : "border-border bg-card text-muted-foreground hover:border-primary/50",
           )}
         >
@@ -152,7 +153,7 @@ function Body({
       <DialogBody className="space-y-6 pt-5">
         {/* Live result */}
         <div className="sticky top-0 z-10 -mx-1 rounded-xl border border-border bg-card/95 p-4 shadow-card backdrop-blur">
-          <div className="flex items-center justify-between gap-4">
+          <div className="grid grid-cols-2 gap-4 sm:flex sm:items-center sm:justify-between">
             <div>
               <div className="text-body text-muted-foreground">Competence total</div>
               <div className="text-heading font-semibold tabular">
@@ -171,9 +172,9 @@ function Body({
               <div className="text-body text-muted-foreground">Weighted</div>
               <div className="text-heading font-semibold tabular">{ev.pct}%</div>
             </div>
-            <div className="text-right">
+            <div className="sm:text-right">
               <div className="mb-1 text-body text-muted-foreground">Recommendation</div>
-              <Badge tone={recTone} className="px-2.5 py-1 text-body">
+              <Badge tone={recTone} className="px-2.5 py-1">
                 {ev.rec}
               </Badge>
             </div>
@@ -185,7 +186,7 @@ function Body({
           <SectionTitle icon={ClipboardCheck} title="Competence attributes" hint="1 = poor · 5 = outstanding. A-player bar: all ≥ 4 or total ≥ 20." />
           <div className="divide-y divide-border rounded-xl border border-border">
             {(Object.keys(sc.params) as (keyof Scorecard["params"])[]).map((k) => (
-              <div key={k} className="flex items-center justify-between gap-4 px-4 py-3">
+              <div key={k} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                 <div>
                   <div className="text-body font-medium">{k}</div>
                   <div className="text-body text-muted-foreground">{paramHelp[k]}</div>
@@ -202,7 +203,7 @@ function Body({
             {(["Situation", "Task", "Action", "Result"] as const).map((k) => (
               <div key={k} className="rounded-xl border border-border p-4">
                 <div className="mb-2 flex items-start gap-2.5">
-                  <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-primary-soft text-body font-bold text-primary">
+                  <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-primary-soft text-body font-semibold text-primary">
                     {k[0]}
                   </span>
                   <div>
@@ -221,7 +222,7 @@ function Body({
           </div>
         </section>
 
-        <section className="grid gap-4 sm:grid-cols-2">
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-border p-4">
             <Label>Task / assignment score</Label>
             <p className="mb-3 text-body text-muted-foreground">
@@ -234,9 +235,10 @@ function Body({
                 max={10}
                 value={sc.taskScore}
                 onChange={(e) => setSc((s) => ({ ...s, taskScore: Number(e.target.value) }))}
+                aria-label="Task score"
                 className="w-full cursor-pointer accent-[var(--color-primary)]"
               />
-              <span className="w-12 text-right text-subheading font-semibold tabular">{sc.taskScore}/10</span>
+              <span className="w-14 shrink-0 text-right text-subheading font-semibold tabular">{sc.taskScore}/10</span>
             </div>
           </div>
           <div className="rounded-xl border border-border p-4">
@@ -257,6 +259,7 @@ function Body({
                   min={0}
                   max={100}
                   value={sc.psychometricScore}
+                  aria-label="Psychometric score"
                   onChange={(e) => setSc((s) => ({ ...s, psychometricScore: Math.min(100, Math.max(0, Number(e.target.value))) }))}
                   className="h-8 w-20 text-body tabular"
                 />
@@ -279,7 +282,7 @@ function Body({
         </section>
       </DialogBody>
 
-      <DialogFooter className="sticky bottom-0 flex-wrap bg-popover">
+      <DialogFooter>
         <Button
           variant="ghost"
           className="mr-auto text-danger"

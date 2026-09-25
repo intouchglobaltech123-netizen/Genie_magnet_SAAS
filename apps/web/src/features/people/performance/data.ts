@@ -120,10 +120,10 @@ export function classify(p: Params): Player {
   return "C";
 }
 
-export const playerMeta: Record<Player, { label: string; tone: "success" | "info" | "gold" | "danger"; desc: string; action: string }> = {
+export const playerMeta: Record<Player, { label: string; tone: "success" | "info" | "warning" | "danger"; desc: string; action: string }> = {
   A: { label: "A player", tone: "success", desc: "High competence · high commitment", action: "Retain, stretch, give ownership" },
   "B-Competence": { label: "B · Competence", tone: "info", desc: "Skilled, but attitude < 4", action: "Coach on ownership & motivation" },
-  "B-Commitment": { label: "B · Commitment", tone: "gold", desc: "Committed, but skill/knowledge < 4", action: "Train — LMS path + mentoring" },
+  "B-Commitment": { label: "B · Commitment", tone: "warning", desc: "Committed, but skill/knowledge < 4", action: "Train — LMS path + mentoring" },
   C: { label: "C player", tone: "danger", desc: "Low on both", action: "Performance improvement plan" },
 };
 

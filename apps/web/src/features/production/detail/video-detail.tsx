@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/feedback";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -31,16 +32,18 @@ export function VideoDetail({ id }: { id: string }) {
 
   if (!v) {
     return (
-      <div className="flex flex-col items-center gap-3 py-24 text-center">
-        <Film className="size-8 text-muted-foreground" />
-        <div className="text-subheading font-semibold">Video not found</div>
-        <p className="text-body text-muted-foreground">It may have been removed, or the demo data was reset.</p>
-        <Button variant="outline" asChild>
-          <Link href="/production">
-            <ArrowLeft /> Back to Video Production
-          </Link>
-        </Button>
-      </div>
+      <EmptyState
+        icon={Film}
+        title="Video not found"
+        description="It may have been removed, or the demo data was reset."
+        action={
+          <Button variant="outline" asChild>
+            <Link href="/production">
+              <ArrowLeft /> Back to Video Production
+            </Link>
+          </Button>
+        }
+      />
     );
   }
 
@@ -49,7 +52,7 @@ export function VideoDetail({ id }: { id: string }) {
 
   return (
     <div>
-      <Link href="/production" className="mb-4 inline-flex items-center gap-1.5 text-body text-muted-foreground transition hover:text-foreground">
+      <Link href="/production" className="mb-4 inline-flex items-center gap-1.5 text-body text-muted-foreground transition hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35 rounded-md">
         <ArrowLeft className="size-3.5" /> Video Production
       </Link>
 
@@ -73,7 +76,7 @@ export function VideoDetail({ id }: { id: string }) {
             </Link>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           {(
             [
               ["Editor", v.editorId],
@@ -94,7 +97,7 @@ export function VideoDetail({ id }: { id: string }) {
 
       <StageStepper v={v} />
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_300px]">
+      <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[1fr_300px]">
         <Tabs value={tab} onValueChange={setTab} className="min-w-0">
           <div className="-mx-1 overflow-x-auto px-1 scrollbar-thin">
             <TabsList>
@@ -239,7 +242,7 @@ function StageStepper({ v }: { v: Video }) {
                 <span
                   className={cn(
                     "mt-2 px-1 text-center text-body leading-tight",
-                    current ? "font-semibold text-foreground" : done ? "text-foreground/80" : "text-muted-foreground",
+                    current ? "font-semibold text-text-primary" : done ? "text-text-secondary" : "text-muted-foreground",
                     skipped && "italic",
                   )}
                 >
@@ -257,8 +260,8 @@ function StageStepper({ v }: { v: Video }) {
             <div className="text-body text-muted-foreground">
               {next ? (
                 <>
-                  Current stage <b className="font-medium text-foreground">{v.stage}</b>. All gates clear — ready for{" "}
-                  <b className="font-medium text-foreground">{next}</b>.
+                  Current stage <b className="font-medium text-text-primary">{v.stage}</b>. All gates clear — ready for{" "}
+                  <b className="font-medium text-text-primary">{next}</b>.
                 </>
               ) : (
                 <>
@@ -275,7 +278,7 @@ function StageStepper({ v }: { v: Video }) {
             <GateNotice gate={gate} />
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">

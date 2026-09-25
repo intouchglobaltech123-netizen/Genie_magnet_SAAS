@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/feedback";
 import { Field, Input, Label } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { CategoryBadge } from "@/components/shared/video-bits";
@@ -96,14 +97,14 @@ function RecordPaymentForm({ invoice, onDone }: { invoice: InvoiceView; onDone: 
         </DialogDescription>
       </DialogHeader>
       <DialogBody className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Amount received (₹)" hint="Edit for a part payment">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Amount received (₹)" hint="Edit for a part payment" required>
             <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className="tabular" />
           </Field>
-          <Field label="Received on">
+          <Field label="Received on" required>
             <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </Field>
-          <Field label="Mode">
+          <Field label="Mode" required>
             <Select value={mode} onValueChange={(v) => setMode(v as PaymentMode)} options={MODES.map((m) => ({ value: m, label: m }))} />
           </Field>
           <Field label="Reference no.">
@@ -121,14 +122,14 @@ function RecordPaymentForm({ invoice, onDone }: { invoice: InvoiceView; onDone: 
             <span className="text-body text-muted-foreground">(2% u/s 194C on taxable value)</span>
           </label>
           {tdsOn && (
-            <div className="mt-3 flex items-center gap-3">
+            <div className="mt-3 flex flex-wrap items-center gap-3">
               <Label className="shrink-0 text-body text-muted-foreground">TDS amount (₹)</Label>
               <Input type="number" value={tds} onChange={(e) => setTds(e.target.value)} className="h-8 w-36 tabular" />
               <span className="text-body text-muted-foreground">Claim in Form 26AS</span>
             </div>
           )}
         </div>
-        <div className="grid grid-cols-3 gap-2 rounded-xl bg-muted/60 p-3 text-body">
+        <div className="grid grid-cols-3 gap-2 rounded-xl bg-surface-secondary p-3 text-body">
           <div>
             <div className="text-muted-foreground">Settled now</div>
             <div className="font-semibold tabular">{inr(settled)}</div>
@@ -216,8 +217,8 @@ function NewInvoiceForm({ onDone }: { onDone: () => void }) {
         </DialogDescription>
       </DialogHeader>
       <DialogBody className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Client" className="col-span-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Client" className="sm:col-span-2" required>
             <Select
               value={partyKey}
               onValueChange={setPartyKey}
@@ -230,15 +231,15 @@ function NewInvoiceForm({ onDone }: { onDone: () => void }) {
           <Field label="Payment terms">
             <Select value={terms} onValueChange={setTerms} options={[{ value: "7", label: "Net 7" }, { value: "15", label: "Net 15" }, { value: "30", label: "Net 30" }]} />
           </Field>
-          <Field label="Description" className="col-span-2">
+          <Field label="Description" className="sm:col-span-2" required>
             <Input value={description} onChange={(e) => setDescription(e.target.value)} />
           </Field>
-          <Field label="Taxable value (₹)" hint="SAC 998386 · Photography & videography services">
+          <Field label="Taxable value (₹)" hint="SAC 998386 · Photography & videography services" required>
             <Input type="number" value={taxable} onChange={(e) => setTaxable(e.target.value)} className="tabular" />
           </Field>
           <Field label="Place of supply">
             <div className="flex h-9 items-center gap-2 rounded-lg border border-input bg-muted/50 px-3 text-body">
-              {party.state} <Badge tone={party.interState ? "gold" : "neutral"}>{party.interState ? "Inter-state" : "Intra-state"}</Badge>
+              {party.state} <Badge tone={party.interState ? "info" : "neutral"}>{party.interState ? "Inter-state" : "Intra-state"}</Badge>
             </div>
           </Field>
         </div>
@@ -270,7 +271,7 @@ function NewInvoiceForm({ onDone }: { onDone: () => void }) {
 
 function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className={cn("flex items-center justify-between px-3.5 py-2 text-body", strong ? "border-t border-border font-semibold" : "text-muted-foreground")}>
+    <div className={cn("flex items-center justify-between px-3.5 py-2 text-body", strong ? "border-t border-border-strong bg-surface-secondary font-semibold" : "text-muted-foreground")}>
       <span>{label}</span>
       <span className={cn("tabular", !strong && "text-foreground")}>{value}</span>
     </div>
@@ -311,7 +312,7 @@ export function InvoiceSheet({
               </DialogDescription>
             </DialogHeader>
             <DialogBody className="space-y-5">
-              <div className="grid grid-cols-2 gap-4 rounded-xl border border-border p-4 text-body">
+              <div className="grid grid-cols-1 gap-4 rounded-xl border border-border p-4 text-body sm:grid-cols-2">
                 <div>
                   <div className="text-body text-muted-foreground">Billed to</div>
                   <div className="mt-0.5 font-medium">{party.name}</div>
@@ -327,7 +328,7 @@ export function InvoiceSheet({
                   <div className="mt-1 font-mono text-body text-muted-foreground">GSTIN 33AAQFG7120K1Z4</div>
                 </div>
                 {invoice.category && (
-                  <div className="col-span-2 flex items-center gap-2 border-t border-border pt-3 text-body text-muted-foreground">
+                  <div className="flex items-center gap-2 border-t sm:col-span-2 border-border pt-3 text-body text-muted-foreground">
                     Customer category <CategoryBadge category={invoice.category as CustomerCategory} />
                   </div>
                 )}
@@ -335,7 +336,7 @@ export function InvoiceSheet({
 
               <div className="rounded-xl border border-border">
                 <div className="flex items-start justify-between gap-3 px-3.5 py-3 text-body">
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-medium">{invoice.description}</div>
                     <div className="text-body text-muted-foreground">Cycle {invoice.period} · SAC 998386</div>
                   </div>
@@ -358,20 +359,20 @@ export function InvoiceSheet({
               </div>
 
               <div>
-                <div className="mb-2 text-body font-semibold">Payments</div>
+                <div className="mb-2 text-body font-semibold text-text-primary">Payments</div>
                 {invoice.payments.length === 0 ? (
-                  <p className="rounded-lg bg-muted/60 px-3 py-2.5 text-body text-muted-foreground">No payments received yet.</p>
+                  <EmptyState compact icon={IndianRupee} title="No payments received yet" description="Payments recorded against this invoice will appear here." />
                 ) : (
                   <ul className="space-y-1.5">
                     {invoice.payments.map((p) => (
-                      <li key={p.id} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-body">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="size-4 text-success" />
+                      <li key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-body">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <CheckCircle2 className="size-4 shrink-0 text-success" />
                           <span>{fmtDate(p.date)}</span>
                           <Badge tone="neutral">{p.mode}</Badge>
                           <span className="truncate font-mono text-body text-muted-foreground">{p.ref}</span>
                         </div>
-                        <div className="text-right tabular">
+                        <div className="shrink-0 text-right tabular">
                           {inr(p.amount)}
                           {p.tds > 0 && <div className="text-body text-muted-foreground">+ TDS {inr(p.tds)}</div>}
                         </div>
@@ -381,7 +382,7 @@ export function InvoiceSheet({
                 )}
               </div>
 
-              <div className="flex items-center gap-2 rounded-lg bg-muted/60 px-3 py-2.5 text-body text-muted-foreground">
+              <div className="flex items-center gap-2 rounded-xl bg-surface-secondary px-3 py-2.5 text-body text-muted-foreground">
                 <BellRing className="size-4" />
                 {invoice.reminders ? (
                   <>

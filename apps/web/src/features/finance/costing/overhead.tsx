@@ -31,9 +31,9 @@ export function OverheadPools() {
             <TR>
               <TH className="pl-5">Pool</TH>
               <TH>Allocation basis</TH>
-              <TH className="text-right">Monthly</TH>
-              <TH className="text-right">Share</TH>
-              <TH className="pr-5 text-right">₹ / labour hr</TH>
+              <TH numeric>Monthly</TH>
+              <TH numeric>Share</TH>
+              <TH numeric className="pr-5">₹ / labour hr</TH>
             </TR>
           </THead>
           <TBody>
@@ -41,7 +41,7 @@ export function OverheadPools() {
               const isOpen = open === p.id;
               return (
                 <Fragment key={p.id}>
-                  <TR className="cursor-pointer" onClick={() => setOpen(isOpen ? null : p.id)}>
+                  <TR className="cursor-pointer" aria-expanded={isOpen} onClick={() => setOpen(isOpen ? null : p.id)}>
                     <TD className="pl-5">
                       <div className="flex items-center gap-1.5 font-medium">
                         <ChevronRight className={cn("size-3.5 text-muted-foreground transition", isOpen && "rotate-90")} />
@@ -51,22 +51,22 @@ export function OverheadPools() {
                     <TD>
                       <Badge tone="outline">{p.basis}</Badge>
                     </TD>
-                    <TD className="text-right tabular">{inr(p.monthly * factor)}</TD>
-                    <TD className="text-right tabular text-muted-foreground">{pct(p.monthly / OVERHEAD_TOTAL)}</TD>
-                    <TD className="pr-5 text-right tabular">₹{((p.monthly * factor) / DIRECT_LABOUR_HOURS).toFixed(1)}</TD>
+                    <TD numeric>{inr(p.monthly * factor)}</TD>
+                    <TD numeric className="text-muted-foreground">{pct(p.monthly / OVERHEAD_TOTAL)}</TD>
+                    <TD numeric className="pr-5">₹{((p.monthly * factor) / DIRECT_LABOUR_HOURS).toFixed(1)}</TD>
                   </TR>
                   {isOpen && (
-                    <TR className="bg-muted/30 hover:bg-muted/30">
+                    <TR className="bg-surface-secondary hover:bg-surface-secondary">
                       <TD colSpan={5} className="py-3 pl-11 pr-5">
                         <div className="space-y-1">
                           {p.items.map((i) => (
-                            <div key={i.label} className="flex justify-between text-body">
+                            <div key={i.label} className="flex justify-between gap-3 text-body">
                               <span className="text-muted-foreground">{i.label}</span>
                               <span className="tabular">{inr(i.amount * factor)}</span>
                             </div>
                           ))}
                           {p.note && (
-                            <div className="mt-2 flex items-start gap-1.5 rounded-lg bg-info-soft px-2.5 py-1.5 text-body text-info">
+                            <div className="mt-2 flex items-start gap-1.5 rounded-xl bg-info-soft px-2.5 py-1.5 text-body text-info">
                               <Info className="mt-0.5 size-3.5 shrink-0" />
                               {p.note}
                             </div>
@@ -78,13 +78,13 @@ export function OverheadPools() {
                 </Fragment>
               );
             })}
-            <TR className="bg-muted/40 font-semibold hover:bg-muted/40">
+            <TR className="bg-surface-secondary font-semibold hover:bg-surface-secondary [&>td]:border-t [&>td]:border-border-strong">
               <TD className="pl-5" colSpan={2}>
                 Total pools ÷ {DIRECT_LABOUR_HOURS.toLocaleString("en-IN")} direct labour hrs
               </TD>
-              <TD className="text-right tabular">{inr(OVERHEAD_TOTAL * factor)}</TD>
-              <TD className="text-right tabular">100%</TD>
-              <TD className="pr-5 text-right tabular">₹{(OVERHEAD_RATE * factor).toFixed(0)}</TD>
+              <TD numeric>{inr(OVERHEAD_TOTAL * factor)}</TD>
+              <TD numeric>100%</TD>
+              <TD numeric className="pr-5">₹{(OVERHEAD_RATE * factor).toFixed(0)}</TD>
             </TR>
           </TBody>
         </Table>
@@ -116,18 +116,18 @@ function AllocationFlow({ factor }: { factor: number }) {
       </CardHeader>
       <CardContent className="space-y-2">
         {steps.map((s, i) => (
-          <div key={s.k} className={cn("flex items-center justify-between rounded-xl border border-border px-3.5 py-2.5", s.strong && "border-primary/40 bg-primary-soft/50")}>
-            <div className="flex items-center gap-2.5">
-              <span className="flex size-5 items-center justify-center rounded-full bg-muted text-body font-semibold text-muted-foreground">{i + 1}</span>
+          <div key={s.k} className={cn("flex items-center justify-between gap-3 rounded-xl border border-border px-3.5 py-2.5", s.strong && "border-primary/40 bg-primary-soft/50")}>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-muted text-body font-semibold text-muted-foreground">{i + 1}</span>
               <div>
                 <div className="text-body font-medium">{s.k}</div>
                 <div className="text-body text-muted-foreground">{s.sub}</div>
               </div>
             </div>
-            <span className={cn("tabular", s.strong ? "text-subheading font-semibold text-primary" : "font-medium")}>{s.v}</span>
+            <span className={cn("shrink-0 tabular", s.strong ? "text-subheading font-semibold text-primary" : "font-medium")}>{s.v}</span>
           </div>
         ))}
-        <div className="flex items-start gap-2 rounded-xl bg-muted/60 p-3 text-body text-muted-foreground">
+        <div className="flex items-start gap-2 rounded-xl bg-surface-secondary p-3 text-body text-muted-foreground">
           <ArrowRight className="mt-0.5 size-3.5 shrink-0" />
           No double counting: founder remuneration is excluded, and Ashwin&apos;s hours logged directly on a video are charged as labour — only his unlogged share sits in the Management pool.
         </div>
@@ -151,12 +151,12 @@ function EquipmentRates() {
         <THead>
           <TR>
             <TH className="pl-5">Asset</TH>
-            <TH className="text-right">Purchase</TH>
-            <TH className="text-right">Residual</TH>
-            <TH className="text-right">Life</TH>
-            <TH className="text-right">Productive hrs / yr</TH>
-            <TH className="text-right">Hours used</TH>
-            <TH className="pr-5 text-right">₹ / hr</TH>
+            <TH numeric>Purchase</TH>
+            <TH numeric>Residual</TH>
+            <TH numeric>Life</TH>
+            <TH numeric>Productive hrs / yr</TH>
+            <TH numeric>Hours used</TH>
+            <TH numeric className="pr-5">₹ / hr</TH>
           </TR>
         </THead>
         <TBody>
@@ -172,14 +172,14 @@ function EquipmentRates() {
                     {hero && <span className="ml-1.5 font-sans text-accent-strong">worked example</span>}
                   </div>
                 </TD>
-                <TD className="text-right tabular">{inr(a.purchaseValue)}</TD>
-                <TD className="text-right tabular text-muted-foreground">{inr(a.residualValue)}</TD>
-                <TD className="text-right tabular">
+                <TD numeric>{inr(a.purchaseValue)}</TD>
+                <TD numeric className="text-muted-foreground">{inr(a.residualValue)}</TD>
+                <TD numeric>
                   {life} yr{life > 1 ? "s" : ""}
                 </TD>
-                <TD className="text-right tabular text-muted-foreground">{PRODUCTIVE_HOURS[a.category].toLocaleString("en-IN")}</TD>
-                <TD className="text-right tabular text-muted-foreground">{a.hoursUsed.toLocaleString("en-IN")}</TD>
-                <TD className="pr-5 text-right font-semibold tabular">₹{assetRate(a, sc).toFixed(1)}</TD>
+                <TD numeric className="text-muted-foreground">{PRODUCTIVE_HOURS[a.category].toLocaleString("en-IN")}</TD>
+                <TD numeric className="text-muted-foreground">{a.hoursUsed.toLocaleString("en-IN")}</TD>
+                <TD numeric className="pr-5 font-semibold">₹{assetRate(a, sc).toFixed(1)}</TD>
               </TR>
             );
           })}

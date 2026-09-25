@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/feedback";
 import { Progress } from "@/components/ui/progress";
 import { Select } from "@/components/ui/select";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -63,12 +64,18 @@ export function SessionView({ id }: { id: string }) {
 
   if (!session) {
     return (
-      <div className="py-24 text-center text-muted-foreground">
-        Round Table not found.{" "}
-        <Link href="/round-table" className="text-primary underline">
-          Back to Round Tables
-        </Link>
-      </div>
+      <EmptyState
+        icon={AlertTriangle}
+        title="Round Table not found"
+        description="It may have been removed, or the link is incorrect."
+        action={
+          <Button variant="secondary" size="sm" asChild>
+            <Link href="/round-table">
+              <ArrowLeft /> Back to Round Tables
+            </Link>
+          </Button>
+        }
+      />
     );
   }
 
@@ -79,7 +86,7 @@ export function SessionView({ id }: { id: string }) {
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-        <div>
+        <div className="min-w-0">
           <Link href="/round-table" className="mb-2 inline-flex items-center gap-1 text-body text-muted-foreground hover:text-foreground">
             <ArrowLeft className="size-3.5" /> Round Tables
           </Link>
@@ -93,11 +100,11 @@ export function SessionView({ id }: { id: string }) {
             {session.reviewTitle} · facilitated by {personById(session.facilitatorId).name} · {session.secondsPerPerson}s per person
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
           <Monitor className="size-4 text-muted-foreground" />
           <span className="text-body text-muted-foreground">This laptop is</span>
           <Select
-            className="h-8 w-52"
+            className="h-8 w-full sm:w-52"
             value={viewer}
             onValueChange={setViewerId}
             options={session.participantIds.map((pid) => ({
@@ -132,7 +139,7 @@ function Lobby({ session, isManager }: { session: RTSession; isManager: boolean 
   const allIn = joined >= total;
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
       <Card>
         <CardHeader>
           <div>
@@ -151,7 +158,7 @@ function Lobby({ session, isManager }: { session: RTSession; isManager: boolean 
               <div
                 key={pid}
                 className={cn(
-                  "flex flex-col items-center gap-2 rounded-2xl border p-4 text-center transition-all duration-500",
+                  "flex min-w-0 flex-col items-center gap-2 rounded-xl border p-4 text-center transition-all duration-500",
                   isIn ? "border-success/40 bg-success-soft/40" : "border-dashed border-border opacity-50",
                 )}
               >
@@ -159,8 +166,8 @@ function Lobby({ session, isManager }: { session: RTSession; isManager: boolean 
                   <Avatar name={p.name} size="xl" />
                   {isIn && <span className="absolute bottom-0 right-0 size-3.5 rounded-full bg-success ring-2 ring-card" />}
                 </div>
-                <div className="leading-tight">
-                  <div className="text-body font-medium">{p.name}</div>
+                <div className="w-full min-w-0 leading-tight">
+                  <div className="truncate text-body font-medium" title={p.name}>{p.name}</div>
                   <div className="text-body text-muted-foreground">{isIn ? "Joined · laptop" : "Waiting…"}</div>
                 </div>
                 {pid === session.facilitatorId && <Badge tone="accent">Manager</Badge>}
@@ -219,7 +226,7 @@ function Lobby({ session, isManager }: { session: RTSession; isManager: boolean 
             {allIn ? "Start Round Table" : "Waiting for everyone to join…"}
           </Button>
         ) : (
-          <div className="rounded-xl border border-dashed border-border p-4 text-center text-body text-muted-foreground">
+          <div className="rounded-xl border border-dashed border-border-strong bg-surface-secondary p-4 text-center text-body text-muted-foreground">
             Waiting for {personById(session.facilitatorId).name} to start the session…
           </div>
         )}
@@ -347,10 +354,10 @@ function LiveRound({
   const urgent = secs <= 10;
 
   return (
-    <div className="relative grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+    <div className="relative grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
       {/* Participant sheet */}
       <Card className="overflow-hidden">
-        <div className="flex items-center justify-between border-b border-border bg-muted/40 px-5 py-2.5 text-body text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border bg-muted/40 px-5 py-2.5 text-body text-muted-foreground">
           <span>
             Round <span className="font-semibold text-foreground">{session.currentIndex + 1}</span> of {total}
           </span>
@@ -364,10 +371,10 @@ function LiveRound({
               key={subjectId}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-1 items-center gap-4"
+              className="flex min-w-0 flex-1 items-center gap-4"
             >
-              <Avatar name={subject.name} size="xl" className="size-20 text-heading" />
-              <div>
+              <Avatar name={subject.name} size="xl" className="size-20 shrink-0 text-heading" />
+              <div className="min-w-0">
                 <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">
                   {isSelf ? "Your turn · self-review" : "Now reviewing"}
                 </div>
@@ -407,7 +414,7 @@ function LiveRound({
               />
             </div>
           ))}
-          <div className="flex items-center justify-between gap-3 pt-1">
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
             <span className="text-body text-muted-foreground">
               {mine ? "Submitted — waiting for the buzzer or the rest of the team." : "Your sheet auto-submits when the buzzer goes."}
             </span>
@@ -514,9 +521,12 @@ function LiveRound({
                   {[1, 5, 10].map((s) => (
                     <button
                       key={s}
+                      type="button"
+                      aria-label={`Demo speed ${s}×`}
+                      aria-pressed={speed === s}
                       onClick={() => setSpeed(s)}
                       className={cn(
-                        "flex-1 cursor-pointer rounded-md border py-1 text-body font-medium transition",
+                        "flex-1 cursor-pointer rounded-lg border py-1 text-body font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                         speed === s ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-muted",
                       )}
                     >
@@ -556,7 +566,7 @@ function LiveRound({
             className="fixed inset-0 z-40 flex items-center justify-center bg-background/80 backdrop-blur-sm"
           >
             <motion.div initial={{ scale: 0.85 }} animate={{ scale: 1 }} className="text-center">
-              <div className="mx-auto mb-4 inline-flex size-16 items-center justify-center rounded-full bg-danger text-white shadow-pop">
+              <div className="mx-auto mb-4 inline-flex size-16 items-center justify-center rounded-full bg-danger text-background shadow-md">
                 <Bell className="size-8" />
               </div>
               <div className="text-heading font-semibold tracking-tight">Time&apos;s up!</div>
@@ -581,7 +591,7 @@ function TimerRing({ frac, secs, urgent, paused }: { frac: number; secs: number;
   const r = 44;
   const c = 2 * Math.PI * r;
   return (
-    <div className="relative size-28 shrink-0">
+    <div className="relative size-28 shrink-0" role="timer" aria-label={`${Math.floor(secs / 60)} minutes ${secs % 60} seconds ${paused ? "paused" : "left"}`}>
       <svg viewBox="0 0 100 100" className="size-full -rotate-90">
         <circle cx="50" cy="50" r={r} fill="none" stroke="var(--color-muted)" strokeWidth="7" />
         <circle
@@ -598,10 +608,10 @@ function TimerRing({ frac, secs, urgent, paused }: { frac: number; secs: number;
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={cn("text-heading font-semibold tabular", urgent && "text-danger")}>
+        <span className={cn("text-heading font-semibold leading-none tabular", urgent && "text-danger")}>
           {Math.floor(secs / 60)}:{String(secs % 60).padStart(2, "0")}
         </span>
-        <span className="text-body uppercase tracking-wider text-muted-foreground">{paused ? "paused" : "left"}</span>
+        <span className="text-body uppercase leading-4 tracking-wide text-muted-foreground">{paused ? "paused" : "left"}</span>
       </div>
     </div>
   );
@@ -627,7 +637,7 @@ function Moderation({ session }: { session: RTSession }) {
           <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-warning-soft text-warning">
             <ShieldCheck className="size-5" />
           </span>
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <div className="text-subheading font-semibold">Manager review before release</div>
             <p className="text-body text-muted-foreground">
               You can see who wrote each answer. Hide anything abusive or personal, then release — employees only ever see their feedback anonymously.
@@ -652,7 +662,7 @@ function Moderation({ session }: { session: RTSession }) {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[240px_minmax(0,1fr)]">
         <Card className="p-2">
           {session.participantIds.map((pid) => {
             const list = session.answers.filter((a) => a.subjectId === pid);
@@ -660,27 +670,32 @@ function Moderation({ session }: { session: RTSession }) {
             return (
               <button
                 key={pid}
+                type="button"
+                aria-current={subject === pid ? "true" : undefined}
                 onClick={() => setSubject(pid)}
                 className={cn(
-                  "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-body transition",
+                  "flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-body transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
                   subject === pid ? "bg-muted font-medium" : "hover:bg-muted/60",
                 )}
               >
                 <Avatar name={personById(pid).name} size="sm" />
                 <span className="flex-1 truncate">{personById(pid).name}</span>
-                {flagged && <AlertTriangle className="size-3.5 text-danger" />}
-                <span className="text-body text-muted-foreground">{list.length}</span>
+                {flagged && <AlertTriangle className="size-3.5 text-danger" aria-label="Flagged language" />}
+                <span className="text-body text-muted-foreground tabular">{list.length}</span>
               </button>
             );
           })}
         </Card>
 
         <div className="space-y-3">
+          {answers.length === 0 && (
+            <EmptyState compact icon={UserRound} title="No sheets yet" description={`Nobody submitted a sheet about ${firstName(subject)}.`} />
+          )}
           {answers.map((a) => {
             const flagged = a.answers.some((t) => FLAG_WORDS.test(t));
             return (
               <Card key={a.id} className={cn("p-4", a.hidden && "opacity-55")}>
-                <div className="mb-3 flex items-center gap-2">
+                <div className="mb-3 flex flex-wrap items-center gap-2">
                   <Avatar name={personById(a.authorId).name} size="sm" />
                   <span className="text-body font-medium">{personById(a.authorId).name}</span>
                   {a.self && <Badge tone="accent">Self-review</Badge>}
@@ -696,6 +711,7 @@ function Moderation({ session }: { session: RTSession }) {
                       variant="ghost"
                       size="icon-sm"
                       className="ml-auto"
+                      aria-label={a.hidden ? "Show to employee" : "Hide from employee"}
                       disabled={a.self || a.missed}
                       onClick={() => {
                         toggleHidden(session.id, a.id, "Hidden by manager — not constructive");
@@ -709,7 +725,7 @@ function Moderation({ session }: { session: RTSession }) {
                 {a.missed ? (
                   <p className="text-body italic text-muted-foreground">No answer before the buzzer.</p>
                 ) : (
-                  <dl className="grid gap-2 sm:grid-cols-3">
+                  <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     {a.answers.map((t, i) => (
                       <div key={i} className="rounded-lg bg-muted/50 p-2.5">
                         <dt className="mb-1 text-body font-medium uppercase tracking-wider text-muted-foreground">
@@ -731,12 +747,12 @@ function Moderation({ session }: { session: RTSession }) {
 
 function WaitingRelease() {
   return (
-    <Card className="p-10 text-center">
-      <ShieldCheck className="mx-auto mb-3 size-8 text-warning" />
-      <div className="text-subheading font-semibold">All rounds are done</div>
-      <p className="mx-auto mt-1 max-w-md text-body text-muted-foreground">
-        Your manager is reviewing the sheets. You&apos;ll be notified as soon as your feedback is released.
-      </p>
+    <Card className="p-5">
+      <EmptyState
+        icon={ShieldCheck}
+        title="All rounds are done"
+        description="Your manager is reviewing the sheets. You'll be notified as soon as your feedback is released."
+      />
     </Card>
   );
 }
@@ -754,7 +770,7 @@ function ReleasedSummary({ session, isManager, viewerId }: { session: RTSession;
           <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-success-soft text-success">
             <CheckCircle2 className="size-5" />
           </span>
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <div className="text-subheading font-semibold">Results released</div>
             <p className="text-body text-muted-foreground">
               {session.releasedAt &&
@@ -778,7 +794,7 @@ function ReleasedSummary({ session, isManager, viewerId }: { session: RTSession;
               <CardDescription>Most common themes in &quot;falls short&quot; and &quot;do better&quot; — use these to steer the Competence step of the review</CardDescription>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <CardContent className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {session.participantIds.map((pid) => {
               const texts = session.answers
                 .filter((a) => a.subjectId === pid && !a.self && !a.hidden && !a.missed)
@@ -788,7 +804,7 @@ function ReleasedSummary({ session, isManager, viewerId }: { session: RTSession;
                 <div key={pid} className="rounded-xl border border-border p-3">
                   <div className="mb-2 flex items-center gap-2">
                     <Avatar name={personById(pid).name} size="sm" />
-                    <span className="text-body font-medium">{personById(pid).name}</span>
+                    <span className="min-w-0 truncate text-body font-medium">{personById(pid).name}</span>
                     {session.commitments[pid] ? (
                       <Badge tone="success" className="ml-auto">
                         Committed
@@ -800,6 +816,7 @@ function ReleasedSummary({ session, isManager, viewerId }: { session: RTSession;
                     )}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
+                    {themes.length === 0 && <span className="text-body text-muted-foreground">No recurring themes</span>}
                     {themes.map((t) => (
                       <Badge key={t.name} tone="outline">
                         {t.name} · {t.count}

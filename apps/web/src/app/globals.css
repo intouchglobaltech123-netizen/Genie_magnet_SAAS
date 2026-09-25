@@ -56,10 +56,12 @@
   /* Functional (muted, accessible) */
   --color-success: #2e7d57;
   --color-success-soft: #e5f1ea;
+  --color-success-foreground: #ffffff;
   --color-warning: #a3670f;
   --color-warning-soft: #faefda;
   --color-danger: #b23f39;
   --color-danger-soft: #f8e4e2;
+  --color-danger-foreground: #ffffff;
   --color-info: #2b679b;
   --color-info-soft: #e2edf6;
 
@@ -160,10 +162,12 @@
 
   --color-success: #5cbf8c;
   --color-success-soft: #122a20;
+  --color-success-foreground: #0a1a12;
   --color-warning: #e0a94a;
   --color-warning-soft: #2b2112;
   --color-danger: #e6766f;
   --color-danger-soft: #2e1618;
+  --color-danger-foreground: #1f0b0c;
   --color-info: #6aa8dc;
   --color-info-soft: #112437;
 
