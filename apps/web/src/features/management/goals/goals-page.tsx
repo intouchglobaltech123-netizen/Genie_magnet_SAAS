@@ -125,7 +125,7 @@ export function GoalsPage() {
               <ListTree /> Goal tree
             </TabsTrigger>
             <TabsTrigger value="revenue">
-              <Calculator /> Revenue breakdown
+              <Calculator /> Revenue cascade
             </TabsTrigger>
             <TabsTrigger value="owner">
               <UsersRound /> By owner

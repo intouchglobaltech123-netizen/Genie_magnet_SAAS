@@ -150,9 +150,9 @@ export const insights: Insight[] = [
     audience: "Founder",
     source: { label: "Client Health", href: "/client-health" },
     at: "2026-09-24T17:30",
-    draft: { kind: "Agenda item", to: "45-day strategic review · 14 Oct", text: "Urban Nest Realty: fix the terms (advance billing, CR rates) or plan an exit at the 31 Dec renewal. Owner: Janarthanan." },
+    draft: { kind: "Agenda item", to: "45-day strategic review · 10 Oct", text: "Urban Nest Realty: fix the terms (advance billing, CR rates) or plan an exit at the 31 Dec renewal. Owner: Janarthanan." },
     approveLabel: "Add to agenda",
-    doneLabel: "Added to the 14 Oct agenda",
+    doneLabel: "Added to the 10 Oct agenda",
   },
   {
     id: "g-sls-topics",

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CalendarPlus, LayoutGrid, Sun, CalendarRange, UsersRound } from "lucide-react";
+import { CalendarDays, CalendarPlus, LayoutGrid, Sun, CalendarRange, UsersRound } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import { useMgmt } from "../store";
 import { CadenceLanes } from "./cadence-lanes";
 import { PastReviews, StrategicHero, UpcomingSchedule } from "./overview";
 import { DailyStandup } from "./standup";
+import { StopCalendar } from "./stop-calendar";
 import { WeeklyReview } from "./weekly";
 
 export function ReviewsHub() {
@@ -42,6 +43,9 @@ export function ReviewsHub() {
           <TabsTrigger value="overview">
             <LayoutGrid /> Overview
           </TabsTrigger>
+          <TabsTrigger value="calendar">
+            <CalendarDays /> STOP calendar
+          </TabsTrigger>
           <TabsTrigger value="daily">
             <Sun /> Daily stand-up
           </TabsTrigger>
@@ -62,6 +66,9 @@ export function ReviewsHub() {
             <UpcomingSchedule />
             <PastReviews />
           </div>
+        </TabsContent>
+        <TabsContent value="calendar">
+          <StopCalendar />
         </TabsContent>
         <TabsContent value="daily">
           <DailyStandup />

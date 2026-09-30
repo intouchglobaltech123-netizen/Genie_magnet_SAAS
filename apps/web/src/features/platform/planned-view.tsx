@@ -173,7 +173,7 @@ export function PlannedView({ slug }: { slug: string }) {
                     }
                     setNotes((n) => [...n, note.trim()]);
                     setNote("");
-                    toast.success("Added to the Phase 2 brief", { description: item.title });
+                    toast.success("Added to the build brief", { description: item.title });
                   }}
                 >
                   {note.trim() ? <Send /> : <MessageSquarePlus />} Add to brief

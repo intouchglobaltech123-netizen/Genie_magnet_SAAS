@@ -72,7 +72,7 @@ export function AgencyOnboarding() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => toast.success("Re-run scheduled", { description: "The agency questionnaire reopens at the 45-day strategic review on 14 Oct, to measure progress." })}
+              onClick={() => toast.success("Re-run scheduled", { description: "The agency questionnaire reopens at the 45-day strategic review on 10 Oct, to measure progress." })}
             >
               <CalendarClock /> Re-run at next strategic review
             </Button>

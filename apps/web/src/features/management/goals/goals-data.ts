@@ -23,7 +23,7 @@ export type GoalDept = (typeof GOAL_DEPARTMENTS)[number];
 
 /** STOP review cadences */
 export const CADENCES = {
-  strategic: { label: "Strategic", every: "45-day", next: "2026-10-14" },
+  strategic: { label: "Strategic", every: "45-day", next: "2026-10-10" },
   tactical: { label: "Tactical", every: "14-day", next: "2026-10-07" },
   operational: { label: "Operational", every: "Daily", next: "2026-09-26" },
 } as const;

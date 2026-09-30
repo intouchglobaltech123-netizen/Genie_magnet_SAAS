@@ -35,7 +35,7 @@ function risk(): GenieAnswer {
     lines: atRisk.map(
       (c) => `${c.name} — ${c.category} · health ${c.health}${c.outstanding ? ` · ${inrCompact(c.outstanding)} outstanding` : ""}${c.category === "Dangerous" ? " · high effort for the fee" : " · slow approvals"}`,
     ),
-    next: "Suggested: put Urban Nest on the 14 Oct strategic review agenda and send Nova's approval reminder today.",
+    next: "Suggested: put Urban Nest on the 10 Oct strategic review agenda and send Nova's approval reminder today.",
     sources: [
       { label: "Client Health", href: "/client-health" },
       { label: "Billing & Collections", href: "/billing" },

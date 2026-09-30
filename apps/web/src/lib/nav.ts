@@ -51,7 +51,7 @@ import {
 } from "lucide-react";
 import type { Role } from "@/lib/types";
 
-/** demo = fully clickable, preview = list/detail with dummy data, planned = overview page (phase 2) */
+/** demo = fully clickable, preview = list/detail with dummy data, planned = overview page (later phase) */
 export type Depth = "demo" | "preview" | "planned";
 
 export interface NavItem {
@@ -77,7 +77,7 @@ export const navSections: NavSection[] = [
     title: "Overview",
     items: [
       { title: "Dashboard", href: "/", icon: LayoutDashboard, depth: "demo", moduleNo: 43, summary: "Role dashboards: revenue, delivery, exceptions", roles: ALL_INTERNAL },
-      { title: "Module Map", href: "/modules", icon: Network, depth: "demo", summary: "All 47 modules and their demo status", roles: LEADERS },
+      { title: "Module Map", href: "/modules", icon: Network, depth: "demo", summary: "Every module and its demo status", roles: LEADERS },
     ],
   },
   {

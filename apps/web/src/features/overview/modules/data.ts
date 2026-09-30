@@ -96,5 +96,5 @@ export const modules: ModuleRow[] = raw.map(([no, name, summary]) => {
 export const depthMeta: Record<Depth, { label: string; tone: "accent" | "info" | "neutral"; desc: string }> = {
   demo: { label: "Demo", tone: "accent", desc: "Fully clickable — state changes on screen" },
   preview: { label: "Preview", tone: "info", desc: "List / detail screens with sample data" },
-  planned: { label: "Planned", tone: "neutral", desc: "Overview only — built in phase 2" },
+  planned: { label: "Planned", tone: "neutral", desc: "Overview only — built in a later phase" },
 };

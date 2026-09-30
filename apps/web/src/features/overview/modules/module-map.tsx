@@ -14,6 +14,8 @@ import { Tooltip } from "@/components/ui/tooltip";
 import type { Depth } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 import { depthMeta, MODULE_GROUPS, modules, type ModuleRow } from "./data";
+
+const TOTAL = modules.length;
 import { useModuleFeedback, type Verdict } from "./feedback-store";
 
 type Filter = "all" | Depth;
@@ -67,7 +69,7 @@ export function ModuleMap() {
   const exportText = () => {
     const lines = [
       "Genie Magnet OS — Module review with Janarthanan",
-      `Reviewed ${reviewed}/47 · ${tally.approve} approved · ${tally.change} change${tally.change === 1 ? "" : "s"} · ${tally.remove} remove`,
+      `Reviewed ${reviewed}/${TOTAL} · ${tally.approve} approved · ${tally.change} change${tally.change === 1 ? "" : "s"} · ${tally.remove} remove`,
       "",
     ];
     (["change", "remove", "approve"] as Verdict[]).forEach((v) => {
@@ -156,11 +158,11 @@ export function ModuleMap() {
           <div className="flex flex-1 flex-wrap items-center gap-2 lg:justify-end">
             <div className="flex items-center gap-2 text-body">
               <div className="flex h-2 w-28 overflow-hidden rounded-full bg-muted sm:w-40" aria-hidden>
-                <div className="bg-success transition-all" style={{ width: `${(tally.approve / 47) * 100}%` }} />
-                <div className="bg-warning transition-all" style={{ width: `${(tally.change / 47) * 100}%` }} />
-                <div className="bg-danger transition-all" style={{ width: `${(tally.remove / 47) * 100}%` }} />
+                <div className="bg-success transition-all" style={{ width: `${(tally.approve / TOTAL) * 100}%` }} />
+                <div className="bg-warning transition-all" style={{ width: `${(tally.change / TOTAL) * 100}%` }} />
+                <div className="bg-danger transition-all" style={{ width: `${(tally.remove / TOTAL) * 100}%` }} />
               </div>
-              <span className="text-muted-foreground tabular">{reviewed}/47</span>
+              <span className="text-muted-foreground tabular">{reviewed}/{TOTAL}</span>
             </div>
             {(
               [
@@ -168,7 +170,7 @@ export function ModuleMap() {
                 ["approve", `${tally.approve} approved`],
                 ["change", `${tally.change} ${tally.change === 1 ? "change" : "changes"}`],
                 ["remove", `${tally.remove} remove`],
-                ["pending", `${47 - reviewed} pending`],
+                ["pending", `${TOTAL - reviewed} pending`],
               ] as [FbFilter, string][]
             ).map(([k, label]) => (
               <button

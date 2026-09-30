@@ -181,7 +181,7 @@ function OrgSection() {
         <CardHeader>
           <div>
             <CardTitle>Modules</CardTitle>
-            <CardDescription>Turn modules on for your team. Phase 2 modules can be switched on once released.</CardDescription>
+            <CardDescription>Turn modules on for your team. Planned modules can be switched on once released.</CardDescription>
           </div>
         </CardHeader>
         <CardContent className="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2">
@@ -196,7 +196,7 @@ function OrgSection() {
                     <div key={i.href} className="flex items-center gap-3 py-2">
                       <Icon className="size-4 shrink-0 text-muted-foreground" />
                       <span className="min-w-0 flex-1 truncate text-body">{i.title}</span>
-                      {planned && <Badge>Phase 2</Badge>}
+                      {planned && <Badge>Planned</Badge>}
                       <Switch
                         aria-label={`${i.title} module`}
                         checked={enabled[i.href]}
@@ -312,7 +312,7 @@ function UsersSection() {
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="size-4 text-muted-foreground" /> Permission matrix
             </CardTitle>
-            <CardDescription>Click a cell to grant or revoke. Record-level scope (own / team / all) is set per role in Phase 2.</CardDescription>
+            <CardDescription>Click a cell to grant or revoke. Record-level scope (own / team / all) is set per role when sign-in and roles are built in Phase 1.</CardDescription>
           </div>
         </CardHeader>
         <div className="flex flex-wrap gap-1.5 px-5 pb-4">

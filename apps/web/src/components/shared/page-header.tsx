@@ -24,7 +24,7 @@ export function PageHeader({
           <div className="mb-2 flex items-center gap-2 text-body font-medium text-muted-foreground">
             {eyebrow}
             {depth === "preview" && <Badge tone="info">Preview · sample data</Badge>}
-            {depth === "planned" && <Badge tone="neutral">Planned · Phase 2</Badge>}
+            {depth === "planned" && <Badge tone="neutral">Planned · later phase</Badge>}
           </div>
         )}
         <h1 className="text-heading font-semibold leading-tight tracking-tight">{title}</h1>
