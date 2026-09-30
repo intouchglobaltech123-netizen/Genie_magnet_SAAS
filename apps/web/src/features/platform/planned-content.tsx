@@ -3,7 +3,6 @@
 import type { ComponentType } from "react";
 import {
   Bell,
-  CalendarSync,
   CheckCheck,
   CloudOff,
   Copy,
@@ -20,7 +19,6 @@ import {
   ListRestart,
   Lock,
   MessageSquareText,
-  Plug,
   Repeat,
   ScanSearch,
   ShieldCheck,
@@ -28,7 +26,6 @@ import {
   Timer,
   UserRoundCheck,
   Users,
-  Webhook,
   Workflow,
   type LucideIcon,
 } from "lucide-react";
@@ -37,7 +34,6 @@ import {
   AutomationPreview,
   DiagnosticPreview,
   FilesPreview,
-  IntegrationsPreview,
   MigrationPreview,
   OfflinePreview,
   PeerFeedbackPreview,
@@ -111,21 +107,6 @@ export const plannedModules: Record<string, PlannedModule> = {
     Preview: AutomationPreview,
     dependencies: ["Agreements & cycles data model", "Notifications channels (email, WhatsApp)", "Audit Log for every automated change"],
     questions: ["Which three automations should go live first?", "Who owns the exception queue day to day?"],
-  },
-  integrations: {
-    headline: "Connect the tools Genie Magnet already uses so data flows in without re-typing.",
-    capabilities: [
-      { icon: CalendarSync, title: "Google Workspace", desc: "Sign-in, Calendar sync for shoots and reviews, Drive links for footage and deliverables." },
-      { icon: Plug, title: "Meta & YouTube", desc: "Lead ads into CRM; published URLs and views into Outcomes & Reports." },
-      { icon: MessageSquareText, title: "WhatsApp", desc: "Reminders to staff and review links / approvals for clients." },
-      { icon: Users, title: "Hikvision & LMS", desc: "Attendance punches and training progress imported automatically." },
-      { icon: Webhook, title: "Email & webhooks", desc: "Invoices and alerts by email; webhooks to send events anywhere." },
-    ],
-    previewTitle: "Planned connectors",
-    previewDesc: "Mark the ones you want first",
-    Preview: IntegrationsPreview,
-    dependencies: ["Google Workspace admin access", "WhatsApp Business API number & approved templates", "Hikvision export format / API access"],
-    questions: ["Which WhatsApp number should the system use?", "Is the LMS the WTF Community platform or a separate one?", "Does Hikvision support API, or Excel export only?"],
   },
   offline: {
     headline: "Shoot and asset checklists that work in places with no signal — then sync safely.",

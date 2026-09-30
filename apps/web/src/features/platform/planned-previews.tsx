@@ -3,7 +3,6 @@
 import { useState } from "react";
 import {
   ArrowRight,
-  Bell,
   Check,
   CheckCircle2,
   CloudOff,
@@ -20,7 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge, StatusBadge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/feedback";
 import { Switch } from "@/components/ui/switch";
@@ -313,58 +312,6 @@ export function AutomationPreview() {
           ))}
         </div>
       </div>
-    </div>
-  );
-}
-
-// ───────────────────────── Integrations ─────────────────────────
-
-const integrations = [
-  { name: "Google Workspace", desc: "Sign-in & user directory" },
-  { name: "Google Calendar", desc: "Shoots, reviews, leave" },
-  { name: "Google Drive", desc: "Footage & file links" },
-  { name: "Meta (Instagram, Facebook)", desc: "Lead ads, post insights" },
-  { name: "YouTube", desc: "Publishing proof & views" },
-  { name: "WhatsApp Business", desc: "Reminders & client approvals" },
-  { name: "Company LMS / community", desc: "Training progress" },
-  { name: "Hikvision attendance", desc: "Punch data import" },
-  { name: "Email (SMTP)", desc: "Invoices & notifications" },
-  { name: "Webhooks", desc: "Send events to any tool" },
-];
-
-export function IntegrationsPreview() {
-  const [watch, setWatch] = useState<Record<string, boolean>>({ "WhatsApp Business": true, "Hikvision attendance": true });
-  return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-      {integrations.map((i) => (
-        <div key={i.name} className="flex min-w-0 flex-col rounded-xl border border-border p-4">
-          <div className="flex items-start justify-between gap-2">
-            <span className="inline-flex size-9 items-center justify-center rounded-xl bg-muted text-body font-semibold text-muted-foreground">
-              {i.name
-                .split(/[\s/(]+/)
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((w) => w[0])
-                .join("")}
-            </span>
-            <StatusBadge status="Planned" />
-          </div>
-          <div className="mt-3 text-body font-medium leading-tight">{i.name}</div>
-          <div className="mt-0.5 flex-1 text-body text-muted-foreground">{i.desc}</div>
-          <Button
-            size="xs"
-            variant={watch[i.name] ? "soft" : "secondary"}
-            aria-pressed={!!watch[i.name]}
-            className="mt-3"
-            onClick={() => {
-              setWatch((w) => ({ ...w, [i.name]: !w[i.name] }));
-              toast.success(watch[i.name] ? "Removed from priority list" : `${i.name} marked as priority`);
-            }}
-          >
-            <Bell /> {watch[i.name] ? "Priority" : "Mark priority"}
-          </Button>
-        </div>
-      ))}
     </div>
   );
 }

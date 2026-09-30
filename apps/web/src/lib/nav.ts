@@ -94,7 +94,7 @@ export const navSections: NavSection[] = [
       { title: "SOPs & Checklists", href: "/sops", icon: ListChecks, depth: "preview", moduleNo: 16, summary: "Versioned SOPs, evidence, doer/checker/approver", roles: ALL_INTERNAL },
       { title: "Internal QC", href: "/qc", icon: ClipboardCheck, depth: "demo", moduleNo: 17, summary: "Quality gate before client review", roles: ["founder", "manager", "editor"] },
       { title: "Revisions & CRs", href: "/revisions", icon: GitPullRequestArrow, depth: "demo", moduleNo: 19, summary: "Agency correction · included · out-of-scope", roles: ["founder", "manager", "editor"] },
-      { title: "Publishing", href: "/publishing", icon: Send, depth: "preview", moduleNo: 20, summary: "Approved version, URL, timestamp, proof", roles: ALL_INTERNAL },
+      { title: "Publishing", href: "/publishing", icon: Send, depth: "demo", moduleNo: 20, summary: "Approved version, URL, timestamp, proof", roles: ALL_INTERNAL },
       { title: "Outcomes & Reports", href: "/outcomes", icon: LineChart, depth: "preview", moduleNo: 21, summary: "Reach, views, leads; client reports", roles: LEADERS },
       { title: "Cycle Reconciliation", href: "/reconciliation", icon: Layers, depth: "preview", moduleNo: 22, summary: "Delivered units, carry-forward, period close", roles: ["founder", "manager", "finance"] },
       { title: "Client Health", href: "/client-health", icon: HeartPulse, depth: "preview", moduleNo: 23, summary: "Client Fitment Map: Amazing · Bread-winning · Convenience · Dangerous", roles: LEADERS },
@@ -141,7 +141,7 @@ export const navSections: NavSection[] = [
     items: [
       { title: "Genie Assistant", href: "/genie", icon: Sparkles, depth: "demo", moduleNo: 45, summary: "Insights, drafts to approve and Ask Genie", roles: LEADERS },
       { title: "Automation", href: "/m/automation", icon: Workflow, depth: "planned", moduleNo: 7, summary: "Triggers, rules, retries, exception queue", roles: ["founder"] },
-      { title: "Integrations", href: "/m/integrations", icon: Plug, depth: "planned", moduleNo: 46, summary: "Google, Meta, Drive, LMS, WhatsApp, Hikvision", roles: ["founder"] },
+      { title: "Integrations", href: "/integrations", icon: Plug, depth: "demo", moduleNo: 46, summary: "Add platforms, WhatsApp Business, Google, payments", roles: LEADERS },
       { title: "Offline Field App", href: "/m/offline", icon: CloudOff, depth: "planned", moduleNo: 31, summary: "Offline shoot/asset checklists with sync", roles: LEADERS },
       { title: "Audit Log", href: "/m/audit", icon: ShieldCheck, depth: "planned", moduleNo: 4, summary: "Who changed what, when, and why", roles: ["founder"] },
       { title: "Data Migration", href: "/m/migration", icon: DatabaseZap, depth: "planned", moduleNo: 47, summary: "Import clients, employees, assets, finance", roles: ["founder"] },

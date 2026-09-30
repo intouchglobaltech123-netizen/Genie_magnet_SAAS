@@ -21,6 +21,7 @@ import type { Video } from "@/lib/types";
 import { fmtDate } from "@/lib/utils";
 import { Poster } from "@/features/portal/poster";
 import { usePublishing } from "./publish-store";
+import { PlatformsView, QuotaView, quotaSummary, ScheduleView } from "./publishing-extras";
 
 /** Platforms are labels, not statuses — one neutral chip style for all of them. */
 function PlatformChip({ p }: { p: string }) {
@@ -38,33 +39,47 @@ export function PublishingPage() {
 
   const queue = videos.filter((v) => v.stage === "Approved");
   const published = videos.filter((v) => v.stage === "Published");
+  const quota = quotaSummary();
 
   return (
     <div>
       <PageHeader
         eyebrow="Client Delivery · Module 20"
-        depth="preview"
+        depth="demo"
         title="Publishing"
-        description="Only the client-approved version goes live. Every post is closed with its URL, timestamp and a proof screenshot."
+        description="Only the client-approved version goes live — to each client's connected platforms, in its scheduled slot, within the package quota. Every post is closed with its URL, timestamp and proof."
       />
 
-      <Alert tone="info" icon={Info} title="Phase 1 · manual posting with proof" className="mb-6">
-        The social team posts manually and records proof here. <span className="font-medium">Phase 2:</span> direct scheduling &amp; publishing via Meta Graph and YouTube
-        Data APIs, with the URL and timestamp captured automatically.
+      <Alert tone="info" icon={Info} title="Add any platform" className="mb-6">
+        Instagram, Facebook and YouTube post directly from Phase 3 (after Meta and Google approval); LinkedIn and X follow in Phase 5. Until a platform is live, the team posts
+        manually and records the proof here — the URL and timestamp are captured automatically once it is connected.
       </Alert>
 
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Ready to publish" value={queue.length} icon={Send} tone="accent" hint="approved by client" />
         <StatCard label="Published · Sep" value={published.length} icon={CheckCircle2} tone="success" hint="across all clients" />
         <StatCard label="With proof" value={`${proofs.filter((p) => published.some((v) => v.id === p.videoId)).length} / ${published.length}`} icon={ShieldCheck} tone="info" hint="URL + screenshot" />
-        <StatCard label="Version mismatches" value="0" icon={ShieldCheck} tone="success" hint="posted file = approved file" />
+        <StatCard label="Delivered this month" value={`${quota.posted} / ${quota.promised}`} icon={ShieldCheck} tone="gold" hint="against package quotas" />
       </div>
 
       <Tabs defaultValue="queue">
         <TabsList>
           <TabsTrigger value="queue">Queue · {queue.length}</TabsTrigger>
+          <TabsTrigger value="schedule">Schedule</TabsTrigger>
+          <TabsTrigger value="quotas">Quotas</TabsTrigger>
+          <TabsTrigger value="platforms">Platforms</TabsTrigger>
           <TabsTrigger value="published">Published · {published.length}</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="schedule">
+          <ScheduleView />
+        </TabsContent>
+        <TabsContent value="quotas">
+          <QuotaView />
+        </TabsContent>
+        <TabsContent value="platforms">
+          <PlatformsView />
+        </TabsContent>
 
         <TabsContent value="queue" className="space-y-3">
           {queue.length === 0 && <EmptyState icon={Send} title="Queue is clear" description="Nothing approved and waiting. Videos land here as soon as the client approves a version." />}

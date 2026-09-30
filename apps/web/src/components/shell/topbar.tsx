@@ -22,6 +22,7 @@ import { useRT } from "@/features/round-table/store";
 import { useOnboarding } from "@/features/onboarding/store";
 import { useContent } from "@/features/content/store";
 import { useGenie } from "@/features/genie/store";
+import { useIntegrations } from "@/features/integrations/platforms";
 import { AskGenieButton, AskGenieSheet } from "@/features/genie/ask-sheet";
 import { navSections, roleLabels } from "@/lib/nav";
 import { useDemo } from "@/lib/store";
@@ -192,6 +193,7 @@ export function Topbar() {
                 useOnboarding.getState().reset();
                 useContent.getState().reset();
                 useGenie.getState().reset();
+                useIntegrations.getState().reset();
                 toast("Demo data reset", { description: "All changes made during the demo were cleared." });
               }}
             >

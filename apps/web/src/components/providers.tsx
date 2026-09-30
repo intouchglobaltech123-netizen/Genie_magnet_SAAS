@@ -8,6 +8,7 @@ import { useRT } from "@/features/round-table/store";
 import { useOnboarding } from "@/features/onboarding/store";
 import { useContent } from "@/features/content/store";
 import { useGenie } from "@/features/genie/store";
+import { useIntegrations } from "@/features/integrations/platforms";
 import { FeedbackButton } from "@/features/feedback/feedback-button";
 import { WelcomeDialog } from "@/features/feedback/welcome-dialog";
 
@@ -18,6 +19,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     useOnboarding.persist.rehydrate();
     useContent.persist.rehydrate();
     useGenie.persist.rehydrate();
+    useIntegrations.persist.rehydrate();
   }, []);
 
   return (
