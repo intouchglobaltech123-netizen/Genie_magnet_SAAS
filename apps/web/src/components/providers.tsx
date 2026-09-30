@@ -7,6 +7,7 @@ import { useDemo } from "@/lib/store";
 import { useRT } from "@/features/round-table/store";
 import { useOnboarding } from "@/features/onboarding/store";
 import { useContent } from "@/features/content/store";
+import { useGenie } from "@/features/genie/store";
 import { FeedbackButton } from "@/features/feedback/feedback-button";
 import { WelcomeDialog } from "@/features/feedback/welcome-dialog";
 
@@ -16,6 +17,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     useRT.persist.rehydrate();
     useOnboarding.persist.rehydrate();
     useContent.persist.rehydrate();
+    useGenie.persist.rehydrate();
   }, []);
 
   return (

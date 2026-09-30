@@ -21,6 +21,8 @@ import { OPEN_WELCOME_EVENT } from "@/features/feedback/welcome-dialog";
 import { useRT } from "@/features/round-table/store";
 import { useOnboarding } from "@/features/onboarding/store";
 import { useContent } from "@/features/content/store";
+import { useGenie } from "@/features/genie/store";
+import { AskGenieButton, AskGenieSheet } from "@/features/genie/ask-sheet";
 import { navSections, roleLabels } from "@/lib/nav";
 import { useDemo } from "@/lib/store";
 import type { Role } from "@/lib/types";
@@ -113,6 +115,8 @@ export function Topbar() {
       </button>
 
       <div className="flex shrink-0 items-center gap-1">
+        <AskGenieButton />
+        <AskGenieSheet />
         <Button variant="ghost" size="icon-sm" onClick={toggleTheme} aria-label="Toggle dark mode">
           <Sun className="hidden dark:block" />
           <Moon className="dark:hidden" />
@@ -187,6 +191,7 @@ export function Topbar() {
                 useRT.getState().resetAll();
                 useOnboarding.getState().reset();
                 useContent.getState().reset();
+                useGenie.getState().reset();
                 toast("Demo data reset", { description: "All changes made during the demo were cleared." });
               }}
             >

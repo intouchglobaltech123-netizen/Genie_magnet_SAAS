@@ -1,11 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   Bell,
-  Bot,
   Check,
   CheckCircle2,
   CloudOff,
@@ -18,9 +16,7 @@ import {
   FileVideo,
   Link2,
   RefreshCw,
-  Sparkles,
   Wifi,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
@@ -251,90 +247,6 @@ export function PeerFeedbackPreview() {
             </div>
           </div>
         ))}
-      </div>
-    </div>
-  );
-}
-
-// ───────────────────────── AI assistant ─────────────────────────
-
-const recs = [
-  {
-    id: "r1",
-    title: "Move KVR-0926-07 to Surya — Divya is at 108% this week",
-    evidence: ["Divya: 43.2 h logged vs 40 h capacity", "Surya: 30.1 h, same skills (Reels, Premiere)", "Due 29 Sep · priority"],
-    scope: "Visible to: Founder, Manager",
-  },
-  {
-    id: "r2",
-    title: "Send a renewal proposal to Sri Lakshmi Silks",
-    evidence: ["Agreement ends 31 Oct", "Health 78 · Bread-winning", "Delivered 96% of units over 12 months"],
-    scope: "Visible to: Founder, Sales",
-  },
-  {
-    id: "r3",
-    title: "Chase invoice GM/26-27/041 — Urban Nest, 32 days overdue",
-    evidence: ["₹40,000 outstanding", "2 reminders sent (day 7, day 15)", "Client response time avg 4 days"],
-    scope: "Visible to: Founder, Finance",
-  },
-];
-
-export function AiPreview() {
-  const [state, setState] = useState<Record<string, "approved" | "dismissed">>({});
-  return (
-    <div className="space-y-3">
-      <AnimatePresence initial={false}>
-        {recs.map((r) => (
-          <motion.div key={r.id} layout className={cn("rounded-xl border p-4 transition", state[r.id] ? "border-border bg-muted/40" : "border-primary/25 bg-primary-soft/30")}>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="flex min-w-0 gap-3">
-                <span className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary-soft text-primary">
-                  <Sparkles className="size-3.5" />
-                </span>
-                <div>
-                  <div className={cn("text-body font-medium", state[r.id] === "dismissed" && "text-muted-foreground line-through")}>{r.title}</div>
-                  <ul className="mt-1.5 space-y-0.5 text-body text-muted-foreground">
-                    {r.evidence.map((e) => (
-                      <li key={e} className="flex items-center gap-1.5">
-                        <span className="size-1 rounded-full bg-muted-foreground/60" /> {e}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-2 text-body text-muted-foreground">{r.scope}</div>
-                </div>
-              </div>
-              {state[r.id] ? (
-                <Badge tone={state[r.id] === "approved" ? "success" : "neutral"} dot>{state[r.id] === "approved" ? "Approved · task created" : "Dismissed"}</Badge>
-              ) : (
-                <div className="flex gap-1.5">
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    onClick={() => {
-                      setState((s) => ({ ...s, [r.id]: "dismissed" }));
-                      toast("Dismissed — the assistant learns from this");
-                    }}
-                  >
-                    <X /> Dismiss
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="accent"
-                    onClick={() => {
-                      setState((s) => ({ ...s, [r.id]: "approved" }));
-                      toast.success("Approved — nothing changes until a human says so");
-                    }}
-                  >
-                    <Check /> Approve
-                  </Button>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-      <div className="flex items-center gap-2 text-body text-muted-foreground">
-        <Bot className="size-3.5" /> The assistant only reads records your role can see, and never acts without approval.
       </div>
     </div>
   );

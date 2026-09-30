@@ -60,7 +60,7 @@ const raw: [number, string, string][] = [
   [42, "Round Table (Peer Feedback)", "45-day team feedback circle with timed rounds and controlled release"],
   [43, "Dashboards", "Founder, manager, editor, finance, HR views"],
   [44, "Alerts & Risk", "Exceptions: overdue, payment, leave, capacity"],
-  [45, "AI Assistant", "Recommendations with human approval"],
+  [45, "Genie Assistant", "Rules find issues, Genie drafts, a person approves; Ask Genie"],
   [46, "Integrations", "Google, Meta, Drive, LMS, WhatsApp, Hikvision"],
   [47, "Data Migration", "Import clients, employees, assets, finance"],
   [48, "Content Studio", "Idea bank, client topic selection, research, script versions and approval"],

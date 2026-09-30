@@ -3,8 +3,6 @@
 import type { ComponentType } from "react";
 import {
   Bell,
-  Bot,
-  BrainCircuit,
   CalendarSync,
   CheckCheck,
   CloudOff,
@@ -35,7 +33,6 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import {
-  AiPreview,
   AuditPreview,
   AutomationPreview,
   DiagnosticPreview,
@@ -99,21 +96,6 @@ export const plannedModules: Record<string, PlannedModule> = {
     Preview: PeerFeedbackPreview,
     dependencies: ["Reviews & Meetings 45-day cycle", "Role definitions from Team & HR"],
     questions: ["Should freelancers give or receive peer feedback?", "Minimum responses before release — 3 or 4?", "Should the founder see raw responses?"],
-  },
-  ai: {
-    headline: "An assistant that suggests the next best action, shows its evidence, and never acts without a human.",
-    capabilities: [
-      { icon: BrainCircuit, title: "Recommendations", desc: "Rebalance editor load, flag renewals, chase overdue invoices, spot at-risk clients — each with the data behind it." },
-      { icon: CheckCheck, title: "Human approval", desc: "Every suggestion is Approve / Dismiss. Approving creates the task; nothing changes silently." },
-      { icon: ShieldCheck, title: "Role-scoped", desc: "The assistant only reads what the asking person's role can see — personal finance data is never included." },
-      { icon: FileSearch, title: "Evidence shown", desc: "Each suggestion lists the records and numbers it used, so it can be checked in seconds." },
-      { icon: Bot, title: "Ask in plain English", desc: "“Which videos are at risk this week?” answered from live data, with links." },
-    ],
-    previewTitle: "Today's suggestions",
-    previewDesc: "Approve or dismiss — nothing happens without you",
-    Preview: AiPreview,
-    dependencies: ["Clean data in CRM, Production and Billing", "Audit Log (to record approvals)", "Data-processing agreement with the AI provider"],
-    questions: ["Which suggestions would save you the most time?", "Should the manager be able to approve AI suggestions, or founder only?"],
   },
   automation: {
     headline: "Rules that do the repetitive work — reliably, once, with a clear queue when something goes wrong.",

@@ -13,6 +13,7 @@ import { useCrmDemo } from "@/features/crm/crm-store";
 import { KpiGrid, RevenueHero } from "./kpis";
 import { PipelineByStageCard, PortfolioCard, RevenueTrendCard } from "./charts";
 import { AttentionCard } from "./attention";
+import { GenieHomeCard } from "@/features/genie/genie-home";
 import { ActivityFeedCard, ReviewCountdownCard, WeekShootsCard, WorkloadCard } from "./side-cards";
 
 export const todayLabel = format(parseISO(TODAY), "EEEE, d MMM yyyy");
@@ -65,6 +66,8 @@ export function FounderDashboard() {
           <KpiGrid />
         </div>
       </div>
+
+      <GenieHomeCard />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-12 [&>*]:min-w-0">
         <div className="xl:col-span-7">
