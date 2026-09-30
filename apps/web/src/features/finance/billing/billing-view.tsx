@@ -134,7 +134,7 @@ function UrbanNestCallout({
         <CheckCircle2 className="size-5 text-success" />
         <div className="text-body">
           <span className="font-semibold">Urban Nest Realty cleared GM/26-27/041.</span>{" "}
-          <span className="text-muted-foreground">Category can be reviewed from Dangerous → Convincing at the next client review.</span>
+          <span className="text-muted-foreground">Category can be reviewed from Dangerous → Convenience at the next client review.</span>
         </div>
       </Card>
     );

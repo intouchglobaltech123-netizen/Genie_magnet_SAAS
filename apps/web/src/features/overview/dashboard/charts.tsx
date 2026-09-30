@@ -103,14 +103,14 @@ export function PipelineByStageCard() {
 }
 
 const catColor: Record<CustomerCategory, string> = {
-  Awesome: "var(--color-success)",
-  Breadwinning: "var(--color-chart-1)",
-  Convincing: "var(--color-warning)",
+  Amazing: "var(--color-success)",
+  "Bread-winning": "var(--color-chart-1)",
+  Convenience: "var(--color-warning)",
   Dangerous: "var(--color-danger)",
 };
 
 export function PortfolioCard() {
-  const cats: CustomerCategory[] = ["Awesome", "Breadwinning", "Convincing", "Dangerous"];
+  const cats: CustomerCategory[] = ["Amazing", "Bread-winning", "Convenience", "Dangerous"];
   const data = cats.map((c) => ({ name: c, value: clients.filter((x) => x.category === c).reduce((s, x) => s + x.monthlyValue, 0) }));
   const total = data.reduce((s, d) => s + d.value, 0);
   return (

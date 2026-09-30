@@ -66,7 +66,7 @@ export function ModuleMap() {
 
   const exportText = () => {
     const lines = [
-      "Agency OS — Module review with Janarthanan",
+      "Genie Magnet OS — Module review with Janarthanan",
       `Reviewed ${reviewed}/47 · ${tally.approve} approved · ${tally.change} change${tally.change === 1 ? "" : "s"} · ${tally.remove} remove`,
       "",
     ];
@@ -91,7 +91,7 @@ export function ModuleMap() {
       <PageHeader
         eyebrow="Blueprint · MODULES.md"
         title="Module map"
-        description="All 47 modules of Agency OS and how deep this demo goes. Mark each one during the walkthrough — feedback is saved on this device."
+        description="Every module of Genie Magnet OS and how deep this demo goes. Mark each one during the walkthrough — feedback is saved on this device."
         actions={
           <>
             <Button

@@ -83,7 +83,7 @@ export const navSections: NavSection[] = [
     items: [
       { title: "CRM & Sales", href: "/crm", icon: Target, depth: "demo", moduleNo: 9, summary: "Leads, pipeline, proposals, discount approval", roles: ["founder", "manager"] },
       { title: "Agreements", href: "/agreements", icon: FileSignature, depth: "demo", moduleNo: 10, summary: "Packages, units, revision allowance, billing terms", roles: ["founder", "manager", "finance"] },
-      { title: "Onboarding", href: "/onboarding", icon: UserCheck, depth: "preview", moduleNo: 11, summary: "Brief, brand files, approver, onboarding gate", roles: LEADERS },
+      { title: "Onboarding", href: "/onboarding", icon: UserCheck, depth: "demo", moduleNo: 11, summary: "Growth OS questionnaires, checklist and onboarding gate", roles: LEADERS },
       { title: "Recurring Cycles", href: "/cycles", icon: Repeat, depth: "preview", moduleNo: 12, summary: "Monthly cycles auto-generated from agreements", roles: LEADERS },
       { title: "Projects & Tasks", href: "/projects", icon: FolderKanban, depth: "preview", moduleNo: 13, summary: "Deliverables, tasks, owners, dependencies", roles: ALL_INTERNAL },
       { title: "Planning & Capacity", href: "/planning", icon: CalendarRange, depth: "preview", moduleNo: 14, summary: "Backward planning, workload, leave conflicts", roles: LEADERS },
@@ -95,7 +95,7 @@ export const navSections: NavSection[] = [
       { title: "Publishing", href: "/publishing", icon: Send, depth: "preview", moduleNo: 20, summary: "Approved version, URL, timestamp, proof", roles: ALL_INTERNAL },
       { title: "Outcomes & Reports", href: "/outcomes", icon: LineChart, depth: "preview", moduleNo: 21, summary: "Reach, views, leads; client reports", roles: LEADERS },
       { title: "Cycle Reconciliation", href: "/reconciliation", icon: Layers, depth: "preview", moduleNo: 22, summary: "Delivered units, carry-forward, period close", roles: ["founder", "manager", "finance"] },
-      { title: "Client Health", href: "/client-health", icon: HeartPulse, depth: "preview", moduleNo: 23, summary: "Awesome · Breadwinning · Convincing · Dangerous", roles: LEADERS },
+      { title: "Client Health", href: "/client-health", icon: HeartPulse, depth: "preview", moduleNo: 23, summary: "Client Fitment Map: Amazing · Bread-winning · Convenience · Dangerous", roles: LEADERS },
     ],
   },
   {

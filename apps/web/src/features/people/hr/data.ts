@@ -68,7 +68,7 @@ const trainingByDept: Record<string, TrainingItem[]> = {
     { title: "Community management playbook", provider: "Internal LMS", status: "assigned", progress: 0, due: "2026-10-25" },
   ],
   default: [
-    { title: "Agency OS onboarding", provider: "Internal LMS", status: "completed", progress: 100 },
+    { title: "Genie Magnet OS onboarding", provider: "Internal LMS", status: "completed", progress: 100 },
     { title: "Company values & customer categories (A/B/C/D)", provider: "Founder session", status: "completed", progress: 100 },
     { title: "POSH awareness", provider: "External · 1 hour", status: "in-progress", progress: 50, due: "2026-10-20" },
   ],

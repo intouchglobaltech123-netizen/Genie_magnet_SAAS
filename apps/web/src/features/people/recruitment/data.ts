@@ -67,7 +67,7 @@ export const roles: RoleDoc[] = [
     tasks: [
       "Rough cut → fine cut → colour → sound → motion text → export → upload",
       "Apply client brand kit (fonts, LUTs, logo placement)",
-      "Log time against each video in Agency OS",
+      "Log time against each video in Genie Magnet OS",
       "Incorporate client revisions within the included allowance",
       "Maintain music and SFX library licences",
     ],

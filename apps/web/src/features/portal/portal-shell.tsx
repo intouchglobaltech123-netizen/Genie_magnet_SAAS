@@ -35,10 +35,10 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
       <header className="sticky top-0 z-30 border-b border-border bg-card/90 backdrop-blur-xl">
         <div className="h-0.5 bg-accent" aria-hidden />
         <div className="mx-auto flex h-14 w-full max-w-[1200px] items-center gap-4 px-4 lg:gap-6 lg:px-8">
-          <Link href="/portal" className={cn("flex min-w-0 items-center gap-2.5 rounded-lg", FOCUS)} aria-label="Agency OS · Client Hub — overview">
+          <Link href="/portal" className={cn("flex min-w-0 items-center gap-2.5 rounded-lg", FOCUS)} aria-label="Genie Magnet OS · Client Hub — overview">
             <BrandMark />
             <span className="truncate text-body font-semibold tracking-tight text-primary dark:text-text-primary">
-              Agency OS <span className="hidden font-normal text-muted-foreground min-[420px]:inline">· Client Hub</span>
+              Genie Magnet OS <span className="hidden font-normal text-muted-foreground min-[420px]:inline">· Client Hub</span>
             </span>
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">

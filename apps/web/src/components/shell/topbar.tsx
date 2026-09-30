@@ -19,6 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CommandMenu } from "@/components/shell/command-menu";
 import { OPEN_WELCOME_EVENT } from "@/features/feedback/welcome-dialog";
 import { useRT } from "@/features/round-table/store";
+import { useOnboarding } from "@/features/onboarding/store";
 import { navSections, roleLabels } from "@/lib/nav";
 import { useDemo } from "@/lib/store";
 import type { Role } from "@/lib/types";
@@ -183,6 +184,7 @@ export function Topbar() {
               onSelect={() => {
                 reset();
                 useRT.getState().resetAll();
+                useOnboarding.getState().reset();
                 toast("Demo data reset", { description: "All changes made during the demo were cleared." });
               }}
             >

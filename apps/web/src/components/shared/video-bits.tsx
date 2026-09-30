@@ -61,10 +61,10 @@ export function StageBadge({ stage }: { stage: VideoStage }) {
 }
 
 export const categoryMeta: Record<CustomerCategory, { tone: BadgeTone; desc: string; letter: string }> = {
-  Awesome: { tone: "success", letter: "A", desc: "Low effort, high return — nurture and ask for referrals" },
-  Breadwinning: { tone: "accent", letter: "B", desc: "High effort, high return — protect and grow" },
-  Convincing: { tone: "warning", letter: "C", desc: "Needs convincing — improve value or margin" },
-  Dangerous: { tone: "danger", letter: "D", desc: "High effort, low return / payment risk — fix or exit" },
+  Amazing: { tone: "success", letter: "A", desc: "Low effort, high return — nurture and ask for referrals" },
+  "Bread-winning": { tone: "accent", letter: "B", desc: "High effort, high return — protect and grow" },
+  Convenience: { tone: "warning", letter: "C", desc: "Low effort, low return — easy to serve; raise value or upsell" },
+  Dangerous: { tone: "danger", letter: "D", desc: "High effort, low return — fix the terms or exit" },
 };
 
 export function CategoryBadge({ category }: { category: CustomerCategory }) {

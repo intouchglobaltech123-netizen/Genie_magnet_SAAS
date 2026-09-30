@@ -26,7 +26,7 @@ export default function LoginPage() {
       <section className="relative hidden flex-col justify-between overflow-hidden bg-primary p-12 text-primary-foreground lg:flex">
         <div className="flex items-center gap-3">
           <BrandMark className="size-10" />
-          <BrandWordmark inverted sub="Genie Magnet · Internal operating system" />
+          <BrandWordmark inverted sub="Growth OS for content agencies" />
         </div>
 
         <div className="max-w-md space-y-5">

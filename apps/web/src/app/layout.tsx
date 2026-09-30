@@ -5,8 +5,8 @@ import { Providers } from "@/components/providers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Agency OS",
-  description: "Genie Magnet Agency OS — interactive product demo",
+  title: "Genie Magnet OS",
+  description: "Genie Magnet OS — interactive product demo",
   // Private client demo: keep it out of search engines.
   robots: { index: false, follow: false },
 };

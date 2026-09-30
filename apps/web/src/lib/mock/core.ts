@@ -51,7 +51,7 @@ export const editors = people.filter((p) => ["p-divya", "p-surya", "f-rahul"].in
 
 export const clients: Client[] = [
   {
-    id: "c-kaveri", code: "KVR", name: "Kaveri Organics", industry: "FMCG · Organic foods", city: "Erode", kind: "recurring", category: "Breadwinning",
+    id: "c-kaveri", code: "KVR", name: "Kaveri Organics", industry: "FMCG · Organic foods", city: "Erode", kind: "recurring", category: "Bread-winning",
     accountOwnerId: "p-ashwin", health: 86, since: "2025-04-01", monthlyValue: 85000, outstanding: 0,
     contacts: [
       { name: "Ramesh Gounder", title: "Managing Partner", email: "ramesh@kaveriorganics.in", phone: "+91 94430 55101", approver: true },
@@ -59,14 +59,14 @@ export const clients: Client[] = [
     ],
   },
   {
-    id: "c-lakshmi", code: "SLS", name: "Sri Lakshmi Silks", industry: "Retail · Textiles", city: "Kanchipuram", kind: "recurring", category: "Awesome",
+    id: "c-lakshmi", code: "SLS", name: "Sri Lakshmi Silks", industry: "Retail · Textiles", city: "Kanchipuram", kind: "recurring", category: "Amazing",
     accountOwnerId: "p-priya", health: 92, since: "2025-09-01", monthlyValue: 65000, outstanding: 65000,
     contacts: [
       { name: "Meenakshi Sundaram", title: "Owner", email: "meenakshi@srilakshmisilks.com", phone: "+91 94430 55201", approver: true },
     ],
   },
   {
-    id: "c-nova", code: "NVD", name: "Nova Dental Care", industry: "Healthcare · Dental clinics", city: "Coimbatore", kind: "recurring", category: "Convincing",
+    id: "c-nova", code: "NVD", name: "Nova Dental Care", industry: "Healthcare · Dental clinics", city: "Coimbatore", kind: "recurring", category: "Convenience",
     accountOwnerId: "p-ashwin", health: 64, since: "2026-02-01", monthlyValue: 48000, outstanding: 96000,
     contacts: [
       { name: "Dr. Arvind Balaji", title: "Chief Dentist", email: "arvind@novadental.in", phone: "+91 94430 55301", approver: true },
@@ -74,7 +74,7 @@ export const clients: Client[] = [
     ],
   },
   {
-    id: "c-bright", code: "BPA", name: "BrightPath Academy", industry: "Education · Coaching", city: "Salem", kind: "partner", category: "Convincing",
+    id: "c-bright", code: "BPA", name: "BrightPath Academy", industry: "Education · Coaching", city: "Salem", kind: "partner", category: "Convenience",
     accountOwnerId: "p-priya", health: 74, since: "2026-05-15", monthlyValue: 30000, outstanding: 15000,
     contacts: [{ name: "Suresh Kannan", title: "Director", email: "suresh@brightpath.edu.in", phone: "+91 94430 55401", approver: true }],
   },

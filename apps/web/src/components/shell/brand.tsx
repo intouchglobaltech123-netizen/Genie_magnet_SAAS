@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-/** Agency OS mark: a Royal tile with a single Quicksand spark — used in the sidebar, login and portal. */
+/** Genie Magnet OS mark: a Royal tile with a single Quicksand spark — used in the sidebar, login and portal. */
 export function BrandMark({ className }: { className?: string }) {
   return (
     <span
@@ -20,10 +20,10 @@ export function BrandMark({ className }: { className?: string }) {
   );
 }
 
-export function BrandWordmark({ inverted, sub = "Genie Magnet" }: { inverted?: boolean; sub?: string }) {
+export function BrandWordmark({ inverted, sub = "Agency workspace" }: { inverted?: boolean; sub?: string }) {
   return (
     <div className="min-w-0 leading-tight">
-      <div className={cn("text-subheading font-semibold tracking-tight", inverted ? "text-white" : "text-primary")}>Agency OS</div>
+      <div className={cn("text-subheading font-semibold tracking-tight", inverted ? "text-white" : "text-primary")}>Genie Magnet OS</div>
       <div className={cn("truncate text-body", inverted ? "text-sidebar-muted" : "text-muted-foreground")}>{sub}</div>
     </div>
   );

@@ -1,5 +1,5 @@
-import { OnboardingTracker } from "@/features/crm/onboarding-tracker";
+import { OnboardingHub } from "@/features/onboarding/onboarding-hub";
 
 export default function Page() {
-  return <OnboardingTracker />;
+  return <OnboardingHub />;
 }

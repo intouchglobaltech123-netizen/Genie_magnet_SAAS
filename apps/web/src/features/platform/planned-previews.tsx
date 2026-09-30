@@ -268,7 +268,7 @@ const recs = [
   {
     id: "r2",
     title: "Send a renewal proposal to Sri Lakshmi Silks",
-    evidence: ["Agreement ends 31 Oct", "Health 78 · Breadwinning", "Delivered 96% of units over 12 months"],
+    evidence: ["Agreement ends 31 Oct", "Health 78 · Bread-winning", "Delivered 96% of units over 12 months"],
     scope: "Visible to: Founder, Sales",
   },
   {

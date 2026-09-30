@@ -49,7 +49,7 @@ export function WelcomeDialog() {
     <Dialog open={open} onOpenChange={close}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle>Welcome to the Agency OS demo</DialogTitle>
+          <DialogTitle>Welcome to the Genie Magnet OS demo</DialogTitle>
           <DialogDescription>A clickable preview for Genie Magnet. Explore freely, then tell us what to change.</DialogDescription>
         </DialogHeader>
         <DialogBody>

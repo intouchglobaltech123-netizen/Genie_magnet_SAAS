@@ -19,16 +19,16 @@ import { axisProps, tooltipStyle } from "@/features/overview/chart-style";
 import { useCrmDemo } from "./crm-store";
 
 const catColor: Record<CustomerCategory, string> = {
-  Awesome: "var(--color-success)",
-  Breadwinning: "var(--color-chart-1)",
-  Convincing: "var(--color-warning)",
+  Amazing: "var(--color-success)",
+  "Bread-winning": "var(--color-chart-1)",
+  Convenience: "var(--color-warning)",
   Dangerous: "var(--color-danger)",
 };
 
 const catTile: Record<CustomerCategory, string> = {
-  Awesome: "bg-success-soft text-success",
-  Breadwinning: "bg-primary-soft text-primary",
-  Convincing: "bg-warning-soft text-warning",
+  Amazing: "bg-success-soft text-success",
+  "Bread-winning": "bg-primary-soft text-primary",
+  Convenience: "bg-warning-soft text-warning",
   Dangerous: "bg-danger-soft text-danger",
 };
 
@@ -46,7 +46,7 @@ export function ClientHealth() {
   return (
     <div>
       <PageHeader
-        eyebrow="Module 23 · Agreement Review & Client Health"
+        eyebrow="Module 23 · Client Fitment Map & Health"
         title="Client health"
         description="Every client scored on what they bring in versus what they take to serve. Reviewed at each 45-day strategic review."
         depth="preview"
@@ -142,9 +142,9 @@ function Matrix() {
               />
             </ScatterChart>
           </ResponsiveContainer>
-          <QuadLabel className="left-12 top-2" letter="A" text="Awesome" color={catColor.Awesome} />
-          <QuadLabel className="right-5 top-2" letter="B" text="Breadwinning" color={catColor.Breadwinning} />
-          <QuadLabel className="bottom-9 left-12" letter="C" text="Convincing" color={catColor.Convincing} />
+          <QuadLabel className="left-12 top-2" letter="A" text="Amazing" color={catColor.Amazing} />
+          <QuadLabel className="right-5 top-2" letter="B" text="Bread-winning" color={catColor["Bread-winning"]} />
+          <QuadLabel className="bottom-9 left-12" letter="C" text="Convenience" color={catColor.Convenience} />
           <QuadLabel className="bottom-9 right-5" letter="D" text="Dangerous" color={catColor.Dangerous} />
         </div>
       </CardContent>

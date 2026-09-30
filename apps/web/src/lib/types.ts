@@ -21,7 +21,8 @@ export interface Person {
   utilisation: number; // 0..1 this week
 }
 
-export type CustomerCategory = "Awesome" | "Breadwinning" | "Convincing" | "Dangerous";
+/** Growth OS Client Fitment Map quadrants (effort to serve vs return). */
+export type CustomerCategory = "Amazing" | "Bread-winning" | "Convenience" | "Dangerous";
 
 export interface Client {
   id: string;

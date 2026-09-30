@@ -113,7 +113,7 @@ export function Sidebar() {
     >
       <Link href="/" className={cn("flex h-16 shrink-0 items-center gap-3", collapsed ? "justify-center" : "px-5")}>
         <BrandMark />
-        {!collapsed && <BrandWordmark inverted sub="Genie Magnet · Workspace" />}
+        {!collapsed && <BrandWordmark inverted sub="Agency workspace" />}
       </Link>
 
       <NavList collapsed={collapsed} />
@@ -151,7 +151,7 @@ export function MobileSidebar() {
           <div className="flex h-16 shrink-0 items-center justify-between px-5">
             <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-3">
               <BrandMark />
-              <BrandWordmark inverted sub="Genie Magnet · Workspace" />
+              <BrandWordmark inverted sub="Agency workspace" />
             </Link>
             <DialogPrimitive.Close
               aria-label="Close navigation"

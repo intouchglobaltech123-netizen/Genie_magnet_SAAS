@@ -51,7 +51,7 @@ export function ConvertDialog({ lead, onClose }: { lead: Lead | null; onClose: (
               <PartyPopper className="size-5" />
             </motion.div>
             <DialogTitle>Deal won — {lead.company}</DialogTitle>
-            <DialogDescription>Convert to agreement. Here&apos;s what Agency OS will set up automatically:</DialogDescription>
+            <DialogDescription>Convert to agreement. Here&apos;s what Genie Magnet OS will set up automatically:</DialogDescription>
           </DialogHeader>
         </div>
         <DialogBody className="space-y-2 pt-2">
