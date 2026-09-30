@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { useDemo } from "@/lib/store";
 import { useRT } from "@/features/round-table/store";
 import { useOnboarding } from "@/features/onboarding/store";
+import { useContent } from "@/features/content/store";
 import { FeedbackButton } from "@/features/feedback/feedback-button";
 import { WelcomeDialog } from "@/features/feedback/welcome-dialog";
 
@@ -14,6 +15,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     useDemo.persist.rehydrate();
     useRT.persist.rehydrate();
     useOnboarding.persist.rehydrate();
+    useContent.persist.rehydrate();
   }, []);
 
   return (

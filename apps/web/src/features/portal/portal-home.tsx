@@ -17,6 +17,7 @@ import { PORTAL_ACCOUNT_MANAGER, PORTAL_CLIENT_ID, PORTAL_USER, portalInvoices, 
 import type { Video } from "@/lib/types";
 import { cn, fmtDate, inr } from "@/lib/utils";
 import { allowanceFor, firstName, latestVersion, portalVideos } from "./lib";
+import { PortalContent } from "./portal-content";
 import { PortalEstimates } from "./portal-estimates";
 import { Poster } from "./poster";
 import { RequestDialog } from "./request-dialog";
@@ -140,6 +141,8 @@ export function PortalHome() {
           </div>
         )}
       </section>
+
+      <PortalContent />
 
       <PortalEstimates />
 

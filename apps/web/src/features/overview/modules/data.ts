@@ -9,7 +9,7 @@ export interface ModuleDef {
 
 export const MODULE_GROUPS = [
   { id: "platform", title: "Platform foundation", range: "1–8", desc: "Tenancy, access, audit, files, notifications, automation, settings" },
-  { id: "a", title: "Section A · Client delivery", range: "9–23", desc: "From lead to published video to renewal" },
+  { id: "a", title: "Section A · Client delivery", range: "9–23, 48", desc: "From lead to published video to renewal" },
   { id: "b", title: "Section B · Supporting workflows", range: "24–36", desc: "People, equipment, time and money behind delivery" },
   { id: "c", title: "Section C · Management", range: "37–42", desc: "Goals, reviews, decisions and founder dependency" },
   { id: "x", title: "Cross-cutting", range: "43–47", desc: "Dashboards, alerts, AI, integrations, migration" },
@@ -63,9 +63,10 @@ const raw: [number, string, string][] = [
   [45, "AI Assistant", "Recommendations with human approval"],
   [46, "Integrations", "Google, Meta, Drive, LMS, WhatsApp, Hikvision"],
   [47, "Data Migration", "Import clients, employees, assets, finance"],
+  [48, "Content Studio", "Idea bank, client topic selection, research, script versions and approval"],
 ];
 
-const groupFor = (n: number) => (n <= 8 ? "platform" : n <= 23 ? "a" : n <= 36 ? "b" : n <= 42 ? "c" : "x");
+const groupFor = (n: number) => (n <= 8 ? "platform" : n <= 23 || n === 48 ? "a" : n <= 36 ? "b" : n <= 42 ? "c" : "x");
 
 const depthRank: Record<Depth, number> = { demo: 3, preview: 2, planned: 1 };
 
