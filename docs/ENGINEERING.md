@@ -1,6 +1,6 @@
 # Engineering guide
 
-How to run, test and change Genie Magnet OS. Decisions behind this setup are in [`docs/adr`](adr/README.md).
+How to run, test and change Genie Magnet OS. Decisions behind this setup are in [`docs/adr`](adr/README.md); the work ahead is in [`docs/backlog`](backlog/phase-1.md).
 
 ## Repository layout
 
