@@ -6,6 +6,7 @@ import {
   BookOpen,
   Boxes,
   Briefcase,
+  Building2,
   CalendarDays,
   CalendarRange,
   Camera,
@@ -83,6 +84,7 @@ export const navSections: NavSection[] = [
     title: "Client Delivery",
     items: [
       { title: "CRM & Sales", href: "/crm", icon: Target, depth: "demo", moduleNo: 9, summary: "Leads, pipeline, proposals, discount approval", roles: ["founder", "manager"] },
+      { title: "Clients", href: "/clients", icon: Building2, depth: "demo", moduleNo: 49, summary: "Client profile and lifecycle tracker: Win → Onboard → Plan → Produce → Deliver", roles: ["founder", "manager"] },
       { title: "Agreements", href: "/agreements", icon: FileSignature, depth: "demo", moduleNo: 10, summary: "Packages, units, revision allowance, billing terms", roles: ["founder", "manager", "finance"] },
       { title: "Onboarding", href: "/onboarding", icon: UserCheck, depth: "demo", moduleNo: 11, summary: "Growth OS questionnaires, checklist and onboarding gate", roles: LEADERS },
       { title: "Content", href: "/content", icon: Lightbulb, depth: "demo", moduleNo: 48, summary: "Ideas → client topics → research → scripts → approval", roles: ["founder", "manager", "editor"] },
