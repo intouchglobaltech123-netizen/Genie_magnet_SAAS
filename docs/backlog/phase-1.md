@@ -3,7 +3,9 @@
 **Weeks 2–5 · Mon 19 Oct – Fri 13 Nov 2026.** Goal: the real application skeleton — sign-in, agencies, roles, audit — with clients won and onboarded on real data.
 **Exit gate:** a client can be won and onboarded in the real app (story P1-30).
 
-Sizes: **S** ≤ 2 days · **M** 3–5 days · **L** 6–10 days. "Needs" points to the information request topics Genie Magnet is answering (S1–S5, F1, O3 due 19 Oct).
+Sizes: **S** ≤ 2 days · **M** 3–5 days · **L** 6–10 days.
+
+**Everything is configurable by each agency (plan v1.1).** Roles and permissions, packages, pipeline stages, onboarding questions and invoice settings are settings with Growth OS defaults — never hard-coded. Genie Magnet does not need to send them in advance; their team sets up their own workspace in a guided session in week 4 (P1-29). If they send the information request answers anyway, we pre-load them.
 
 Already done in Phase 0: monorepo, `@gm/shared`, `@gm/db` schema v0 with forced RLS and the cross-tenant suite, API skeleton with tenant context and the clients endpoint, worker skeleton, CI, ADRs.
 
@@ -22,7 +24,7 @@ As the tech lead, I want every request logged, rate-limited and returning one er
 **P1-02 · Seed and sample data (S)**
 As a developer, I want `npm run db:seed` to create Genie Magnet (tenant #1) and a second test agency with sample data, so everyone works on the same realistic data.
 
-- Seeds the agency, roles, packages (from S1 when received), sample clients — never real client data without Genie Magnet's approval.
+- Seeds the agency with the Growth OS defaults (roles, packages, stages, question sets) and sample clients — never real client data without Genie Magnet's approval.
 - A second agency exists in every environment except production, for cross-tenant checks.
 
 **P1-03 · Audit log (M)**
@@ -60,35 +62,37 @@ As a team member, I want to sign in with email and password or Google, so I can 
 - Sign in, sign out, password reset by email; sessions expire after inactivity.
 - The active agency comes from the session and replaces the development `x-agency-id` header everywhere.
 
-**P1-09 · Invitations and roles (M)** — Needs O3
+**P1-09 · Invitations and roles (M)**
 As the owner, I want to invite people by email with a role, so each person sees only what they should.
 
-- Roles from the confirmed list (O3); `@gm/shared` roles updated to match.
+- Default roles (Owner, Manager, Team leader, Editor, Shooter, Script writer, Social media manager, Finance, HR, Freelancer, Client approver, Client viewer) that the agency can rename, copy or add to.
 - An invitation expires after 7 days; accepting it creates the membership.
 - A person can belong to more than one agency and switch between them.
 
 **P1-10 · Two-factor authentication (S)**
 As the owner, I want two-factor sign-in required for owner and finance roles, so money and settings are protected.
 
-**P1-11 · Permissions with CASL (L)** — Needs O3
-As the owner, I want each role limited to what it may see, change and approve, so salaries, costs and other clients' data stay private.
+**P1-11 · Custom roles and the permission matrix (L)**
+As the owner, I want to decide for each role what it may see, change and approve, so salaries, costs and other clients' data stay private — without asking the developers.
 
-- Abilities per role defined in `@gm/shared`, enforced by a guard on every endpoint, used by the web app to hide actions.
+- A permission matrix in Settings (areas × roles: none / view / edit / approve), starting from the default for each role; sensitive areas (salaries, payroll, personal finance) are off unless granted.
+- CASL abilities are built from the agency's saved matrix, enforced by a guard on every endpoint and used by the web app to hide actions.
+- A permission change is audited and applies from the next request.
 - Record-level rules (e.g. editors see their assigned videos).
 - A permission-matrix test per role; a missing check fails CI.
 
 ## Settings
 
-**P1-12 · Agency profile (S)** — name, logo, colours, business stage, completion window (default 7 days), reminder days.
+**P1-12 · Agency profile and branding (S)** — name, logo, colours, business stage, completion window (default 7 days), reminder days, languages used with clients.
 
-**P1-13 · Packages (M)** — Needs S1
+**P1-13 · Packages (M)**
 As the owner, I want to set up packages with price, videos and posts per month, platforms, shoot days and revision allowance, so agreements and quotas come from one place.
 
 - Create, edit, archive; changes never alter signed agreements retroactively.
 
 ## CRM
 
-**P1-14 · Leads and pipeline (M)** — stages New → Won/Lost, owner, source, value, next follow-up; board and list views.
+**P1-14 · Leads and pipeline (M)** — pipeline stages the agency can rename, add and reorder (Won and Lost stay fixed); owner, source, value, next follow-up; board and list views.
 
 **P1-15 · Calls and activities (S)** — log calls, meetings and notes; follow-up reminders.
 
@@ -109,24 +113,28 @@ As the account manager, when a deal is won I want the client, agreement, onboard
 
 **P1-19 · Agreements (M)** — package, terms, quotas per month, revision allowance, billing schedule, start/end, status; renewal-due flag 45 days before the end.
 
-**P1-20 · Basic invoices (M)** — Needs F1
-As finance, I want to raise invoices with GST fields and a PDF, so billing can start in the new system.
+**P1-20 · Invoice settings and basic invoices (M)**
+As finance, I want to set up our own invoice details once and then raise GST invoices with a PDF, so billing can start in the new system.
 
-- Manual invoices with GSTIN, SAC code, tax split (CGST/SGST or IGST), numbering per F1; PDF download; status draft/sent/paid.
+- Invoice settings: GSTIN, registered state, SAC code and tax rate per service, number format (e.g. `GM/{FY}/{0000}`), payment terms, bank details, logo.
+- Tax split chosen automatically: CGST + SGST within the state, IGST for clients in other states.
+- Manual invoices; PDF download; status draft / sent / paid.
 
 ## Onboarding engine
 
-**P1-21 · Templates and versions (M)** — Needs S4
-As the owner, I want the client and agency questionnaires stored as versioned templates, so changes never break answers already given.
+**P1-21 · Question builder and versions (L)**
+As the owner, I want to add, edit, reorder and remove onboarding questions myself, so the questionnaires fit how my agency works.
 
-- Seed client v1.0 and agency v1.0 from Appendix C with Genie Magnet's corrections (S4).
-- Sections marked required or within the window; question types used by the two questionnaires only (text, long text, number, currency, single/multiple choice, table, file).
+- Client and agency templates start from the Growth OS question sets (Appendix C).
+- For each question: text, help, type (text, long text, number, currency, single/multiple choice, table, file), required or within the window, the field its answer fills, and translations (e.g. Tamil).
+- Edits go into a draft; publishing creates a new version; answers already given keep the version they were answered on.
 
-**P1-22 · Responses, public link and assisted mode (L)** — Needs S5
+**P1-22 · Responses, public link and assisted mode (L)**
 As a client, I want to open a private link and answer at my own pace, and as an account manager I want to fill it with the client on a call, so onboarding works either way.
 
 - Answers save as the person types; the link opens at the next unanswered question; tokens are single-purpose and stored hashed.
-- Assisted mode records who entered each answer.
+- Assisted mode records who entered each answer; both modes are always available, the agency picks the default.
+- The client sees the questionnaire in the language chosen for them, where translations exist.
 - Branching (`showIf`) and answer-to-field mapping (e.g. business stage → client profile).
 
 **P1-23 · Progress and the onboarding gate (M)**
@@ -153,18 +161,19 @@ As the account manager, I want the client profile and a draft Business Canvas bu
 
 **P1-28 · Staging (M)** — deploy from `main` automatically with migrations; error tracking; uptime check; nightly backups; staging uses sample or consented data only.
 
-**P1-29 · Genie Magnet's agency questionnaire on staging (S)** — Janarthanan completes the required sections with the team; the 7-day sections tracked.
+**P1-29 · Genie Magnet sets up its own workspace (S)** — a guided half-day session in week 4: Janarthanan and Ashwin answer the agency questionnaire and enter their packages, team, roles and permissions, question changes and invoice settings on staging. We note anything the settings could not handle and fix it before the exit gate.
 
 **P1-30 · Exit-gate scenario (M)**
 An automated end-to-end test (and a live demo) of the whole phase:
 
 1. The owner signs in with two-factor and invites a manager.
-2. The manager creates a lead, logs a call and sends a proposal with a discount that needs the owner's approval; the owner approves.
-3. The deal is won; client, agreement and questionnaire are created automatically.
-4. The client answers the required sections by link; the 7-day sections show pending and the reminder goes out (clock moved on staging).
-5. The onboarding gate shows ready; the audit log shows every step.
-6. A user of the second agency sees none of it.
+1. The owner creates a custom role and changes one permission, edits an onboarding question and sets the invoice number format; each change takes effect at once and is in the audit log.
+1. The manager creates a lead, logs a call and sends a proposal with a discount that needs the owner's approval; the owner approves.
+1. The deal is won; client, agreement and questionnaire are created automatically.
+1. The client answers the required sections by link; the 7-day sections show pending and the reminder goes out (clock moved on staging).
+1. The onboarding gate shows ready; the audit log shows every step.
+1. A user of the second agency sees none of it.
 
 ---
 
-**Dependencies on Genie Magnet (due 19 Oct):** S1 packages, S2 clients and tracking sheet, S3 team list, S4 question corrections, S5 link or assisted, F1 GST and invoice format, O3 roles and permissions. Hosting decision and sending domain are needed by week 3.
+**What Genie Magnet provides:** demo feedback and scope sign-off (week 1), hosting decision and sending domain (by week 3), and the half-day set-up session (week 4). Meta Business verification, the WhatsApp number, the Google Cloud project and Razorpay KYC should start now — they are needed in Phase 3.
