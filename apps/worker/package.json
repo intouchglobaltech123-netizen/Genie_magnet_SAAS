@@ -1,0 +1,25 @@
+{
+  "name": "worker",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Genie Magnet OS background jobs — reminders, WhatsApp, Genie Assistant rules, publishing",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -b",
+    "start": "node dist/main.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@gm/db": "*",
+    "@gm/shared": "*",
+    "bullmq": "^6.3.10",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@gm/config": "*",
+    "@types/node": "^22.18.0",
+    "vitest": "^5.0.3"
+  }
+}

@@ -9,3 +9,7 @@ dist
 .vercel
 *.tsbuildinfo
 next-env.d.ts
+coverage
+packages/db/src/generated
+.pg-test
+~$*

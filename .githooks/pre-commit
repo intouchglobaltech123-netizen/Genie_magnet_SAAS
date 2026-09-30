@@ -1,0 +1,8 @@
+#!/bin/sh
+# Enable once per clone:  git config core.hooksPath .githooks
+# Fast checks only — CI runs the full suite.
+npm run -s typecheck || exit 1
+npx --no-install prettier --check $(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(ts|tsx|json|md|yml)$') >/dev/null 2>&1 || {
+  echo "Prettier: run 'npm run format' and stage the changes." >&2
+  exit 1
+}

@@ -1,0 +1,664 @@
+// Genie Magnet OS — database design v0 (Phase 0 draft for team review).
+//
+// Rules for every model:
+//   • Every tenant table has agency_id and a row-level security policy (see migrations/*_rls).
+//   • The API and worker connect as genie_app, which cannot bypass RLS; queries run through
+//     forAgency()/withAgency() in src/tenancy.ts, which set app.agency_id for the transaction.
+//   • Money is whole rupees (Int). Dates without a time use @db.Date.
+//   • Better Auth tables (session, account, verification) are generated in Phase 1.
+//   • HR, payroll and finance tables arrive in Phase 5 (see docs/adr and the development plan).
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────────── Tenancy & people ─────────────────────────────
+
+enum Plan {
+  starter
+  growth
+  pro
+  internal
+}
+
+enum Role {
+  owner
+  manager
+  creative
+  sales
+  finance
+  hr
+  freelancer
+  client
+}
+
+model Agency {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  name       String
+  slug       String   @unique
+  plan       Plan     @default(starter)
+  /// Days to complete the deeper onboarding sections (Growth OS default 7).
+  windowDays Int      @default(7) @map("window_days")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  memberships Membership[]
+  clients     Client[]
+  packages    Package[]
+
+  @@map("agencies")
+}
+
+/// Global identity (Better Auth). A user can belong to several agencies in the SaaS.
+model User {
+  id            String   @id
+  email         String   @unique
+  name          String
+  emailVerified Boolean  @default(false) @map("email_verified")
+  image         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  memberships Membership[]
+
+  @@map("users")
+}
+
+model Membership {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  userId    String   @map("user_id")
+  role      Role
+  title     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, userId])
+  @@index([userId])
+  @@map("memberships")
+}
+
+/// Append-only: genie_app may insert and read, never update or delete.
+model AuditLog {
+  id       String   @id @default(uuid(7)) @db.Uuid
+  agencyId String   @map("agency_id") @db.Uuid
+  actorId  String?  @map("actor_id")
+  action   String
+  entity   String
+  entityId String?  @map("entity_id")
+  before   Json?
+  after    Json?
+  at       DateTime @default(now())
+
+  @@index([agencyId, entity, entityId])
+  @@index([agencyId, at])
+  @@map("audit_logs")
+}
+
+model FileObject {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  agencyId   String   @map("agency_id") @db.Uuid
+  storageKey String   @map("storage_key")
+  name       String
+  mime       String
+  size       Int
+  uploadedBy String?  @map("uploaded_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([agencyId, storageKey])
+  @@map("files")
+}
+
+// ───────────────────────────── Sales, clients & packages ─────────────────────────────
+
+enum BusinessStage {
+  struggle
+  survival
+  stability
+  success
+  scale
+}
+
+/// Growth OS Client Fitment Map.
+enum Fitment {
+  amazing
+  bread_winning
+  convenience
+  dangerous
+}
+
+enum LeadStage {
+  new
+  contacted
+  qualified
+  discovery
+  proposal
+  negotiation
+  won
+  lost
+}
+
+model Lead {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  agencyId     String    @map("agency_id") @db.Uuid
+  name         String
+  company      String?
+  phone        String?
+  email        String?
+  source       String
+  stage        LeadStage @default(new)
+  value        Int       @default(0)
+  ownerId      String?   @map("owner_id")
+  nextFollowUp DateTime? @map("next_follow_up") @db.Date
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([agencyId, stage])
+  @@map("leads")
+}
+
+model Client {
+  id               String         @id @default(uuid(7)) @db.Uuid
+  agencyId         String         @map("agency_id") @db.Uuid
+  /// 2–4 capital letters, used in video codes (KVR-0926-05).
+  code             String
+  name             String
+  industry         String?
+  city             String?
+  stage            BusinessStage?
+  fitment          Fitment?
+  health           Int?
+  whatsappGroupUrl String?        @map("whatsapp_group_url")
+  accountOwnerId   String?        @map("account_owner_id")
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  agency      Agency                  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  contacts    Contact[]
+  agreements  Agreement[]
+  responses   QuestionnaireResponse[]
+  content     ContentItem[]
+  videos      Video[]
+  connections PlatformConnection[]
+
+  @@unique([agencyId, code])
+  @@index([agencyId, fitment])
+  @@map("clients")
+}
+
+model Contact {
+  id       String  @id @default(uuid(7)) @db.Uuid
+  agencyId String  @map("agency_id") @db.Uuid
+  clientId String  @map("client_id") @db.Uuid
+  name     String
+  title    String?
+  email    String?
+  phone    String
+  approver Boolean @default(false)
+
+  client Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, clientId])
+  @@map("contacts")
+}
+
+model Package {
+  id                      String   @id @default(uuid(7)) @db.Uuid
+  agencyId                String   @map("agency_id") @db.Uuid
+  name                    String
+  monthlyFee              Int      @map("monthly_fee")
+  videosPerMonth          Int      @map("videos_per_month")
+  postsPerMonth           Int      @map("posts_per_month")
+  shootDays               Int      @map("shoot_days")
+  revisionsPerDeliverable Int      @map("revisions_per_deliverable")
+  platforms               String[]
+  active                  Boolean  @default(true)
+
+  agency     Agency      @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  agreements Agreement[]
+
+  @@unique([agencyId, name])
+  @@map("packages")
+}
+
+enum AgreementStatus {
+  draft
+  active
+  renewal_due
+  paused
+  ended
+}
+
+model Agreement {
+  id                      String          @id @default(uuid(7)) @db.Uuid
+  agencyId                String          @map("agency_id") @db.Uuid
+  clientId                String          @map("client_id") @db.Uuid
+  packageId               String?         @map("package_id") @db.Uuid
+  title                   String
+  status                  AgreementStatus @default(draft)
+  startDate               DateTime        @map("start_date") @db.Date
+  endDate                 DateTime        @map("end_date") @db.Date
+  monthlyFee              Int             @map("monthly_fee")
+  billing                 String
+  revisionsPerDeliverable Int             @map("revisions_per_deliverable")
+
+  client  Client   @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  package Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  cycles  Cycle[]
+
+  @@index([agencyId, clientId])
+  @@index([agencyId, status])
+  @@map("agreements")
+}
+
+enum CycleStatus {
+  upcoming
+  in_progress
+  reconciling
+  closed
+}
+
+/// One month of an agreement: what was promised, what was delivered.
+model Cycle {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  agencyId    String      @map("agency_id") @db.Uuid
+  agreementId String      @map("agreement_id") @db.Uuid
+  month       DateTime    @db.Date
+  status      CycleStatus @default(upcoming)
+  promised    Int
+  delivered   Int         @default(0)
+
+  agreement Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  videos    Video[]
+
+  @@unique([agreementId, month])
+  @@index([agencyId, status])
+  @@map("cycles")
+}
+
+// ───────────────────────────── Onboarding engine ─────────────────────────────
+
+enum QuestionnaireKind {
+  client
+  agency
+}
+
+model QuestionnaireTemplate {
+  id          String            @id @default(uuid(7)) @db.Uuid
+  agencyId    String            @map("agency_id") @db.Uuid
+  kind        QuestionnaireKind
+  version     String
+  windowDays  Int               @default(7) @map("window_days")
+  /// Sections and questions, validated by @gm/shared questionnaireTemplateSchema.
+  definition  Json
+  isDefault   Boolean           @default(false) @map("is_default")
+  publishedAt DateTime?         @map("published_at")
+
+  responses QuestionnaireResponse[]
+
+  @@unique([agencyId, kind, version])
+  @@map("questionnaire_templates")
+}
+
+model QuestionnaireResponse {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  agencyId       String    @map("agency_id") @db.Uuid
+  templateId     String    @map("template_id") @db.Uuid
+  /// Null for the agency's own questionnaire.
+  clientId       String?   @map("client_id") @db.Uuid
+  /// Private link token (hashed at rest in Phase 1).
+  token          String    @unique
+  mode           String    @default("link")
+  sentAt         DateTime? @map("sent_at")
+  requiredDoneAt DateTime? @map("required_done_at")
+  completedAt    DateTime? @map("completed_at")
+
+  template  QuestionnaireTemplate   @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  client    Client?                 @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  answers   Answer[]
+  reminders QuestionnaireReminder[]
+
+  @@index([agencyId, clientId])
+  @@map("questionnaire_responses")
+}
+
+model Answer {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  agencyId    String   @map("agency_id") @db.Uuid
+  responseId  String   @map("response_id") @db.Uuid
+  questionKey String   @map("question_key")
+  value       Json
+  answeredBy  String?  @map("answered_by")
+  answeredAt  DateTime @default(now()) @map("answered_at")
+
+  response QuestionnaireResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  @@unique([responseId, questionKey])
+  @@map("answers")
+}
+
+model QuestionnaireReminder {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  agencyId   String   @map("agency_id") @db.Uuid
+  responseId String   @map("response_id") @db.Uuid
+  day        Int
+  channel    String
+  sentAt     DateTime @default(now()) @map("sent_at")
+
+  response QuestionnaireResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, responseId])
+  @@map("questionnaire_reminders")
+}
+
+// ───────────────────────────── Content ─────────────────────────────
+
+enum ContentStage {
+  idea
+  topic
+  research
+  script
+  approval
+  ready
+}
+
+model TopicList {
+  id       String    @id @default(uuid(7)) @db.Uuid
+  agencyId String    @map("agency_id") @db.Uuid
+  clientId String    @map("client_id") @db.Uuid
+  month    DateTime  @db.Date
+  needed   Int
+  status   String    @default("draft")
+  sentAt   DateTime? @map("sent_at")
+
+  @@unique([clientId, month])
+  @@index([agencyId, status])
+  @@map("topic_lists")
+}
+
+model ContentItem {
+  id       String       @id @default(uuid(7)) @db.Uuid
+  agencyId String       @map("agency_id") @db.Uuid
+  clientId String       @map("client_id") @db.Uuid
+  title    String
+  pillar   String
+  format   String
+  source   String
+  stage    ContentStage @default(idea)
+  ownerId  String?      @map("owner_id")
+  month    DateTime     @db.Date
+  due      DateTime?    @db.Date
+  /// Client's choice on the monthly topic list: picked | skipped.
+  pick     String?
+  notes    String       @default("")
+  links    Json         @default("[]")
+
+  client   Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  versions ScriptVersion[]
+  video    Video?
+
+  @@index([agencyId, clientId, month])
+  @@index([agencyId, stage])
+  @@map("content_items")
+}
+
+model ScriptVersion {
+  id            String   @id @default(uuid(7)) @db.Uuid
+  agencyId      String   @map("agency_id") @db.Uuid
+  contentItemId String   @map("content_item_id") @db.Uuid
+  number        Int
+  hook          String
+  body          String
+  cta           String
+  onScreen      String   @default("") @map("on_screen")
+  status        String   @default("draft")
+  clientNote    String?  @map("client_note")
+  createdById   String?  @map("created_by_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  contentItem ContentItem @relation(fields: [contentItemId], references: [id], onDelete: Cascade)
+
+  @@unique([contentItemId, number])
+  @@map("script_versions")
+}
+
+// ───────────────────────────── Production ─────────────────────────────
+
+enum VideoStage {
+  planned
+  scripting
+  shoot_scheduled
+  shot
+  editing
+  internal_qc
+  client_review
+  revision
+  approved
+  published
+}
+
+model Video {
+  id            String     @id @default(uuid(7)) @db.Uuid
+  agencyId      String     @map("agency_id") @db.Uuid
+  clientId      String     @map("client_id") @db.Uuid
+  cycleId       String?    @map("cycle_id") @db.Uuid
+  contentItemId String?    @unique @map("content_item_id") @db.Uuid
+  /// KVR-0926-05: client code, month-year, running number.
+  code          String
+  title         String
+  format        String
+  aspect        String
+  urgency       String     @default("standard")
+  stage         VideoStage @default(planned)
+  editorId      String?    @map("editor_id")
+  dueDate       DateTime?  @map("due_date") @db.Date
+  publishDate   DateTime?  @map("publish_date") @db.Date
+  revisionsUsed Int        @default(0) @map("revisions_used")
+  editSteps     Json       @default("{}") @map("edit_steps")
+  qc            Json       @default("{}")
+
+  client         Client          @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  cycle          Cycle?          @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+  contentItem    ContentItem?    @relation(fields: [contentItemId], references: [id], onDelete: SetNull)
+  versions       VideoVersion[]
+  changeRequests ChangeRequest[]
+  posts          ScheduledPost[]
+
+  @@unique([agencyId, code])
+  @@index([agencyId, stage])
+  @@index([agencyId, clientId, dueDate])
+  @@map("videos")
+}
+
+model VideoVersion {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  videoId   String   @map("video_id") @db.Uuid
+  label     String
+  status    String
+  duration  String?
+  notes     String?
+  fileId    String?  @map("file_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  video    Video           @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  comments ReviewComment[]
+
+  @@unique([videoId, label])
+  @@map("video_versions")
+}
+
+model ReviewComment {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  agencyId     String   @map("agency_id") @db.Uuid
+  versionId    String   @map("version_id") @db.Uuid
+  author       String
+  timestampSec Int?     @map("timestamp_sec")
+  text         String
+  kind         String   @default("text")
+  resolved     Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  version VideoVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, versionId])
+  @@map("review_comments")
+}
+
+enum RevisionKind {
+  agency_correction
+  included_revision
+  change_request
+}
+
+model ChangeRequest {
+  id        String       @id @default(uuid(7)) @db.Uuid
+  agencyId  String       @map("agency_id") @db.Uuid
+  videoId   String       @map("video_id") @db.Uuid
+  kind      RevisionKind
+  summary   String
+  estimate  Int?
+  status    String       @default("open")
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, status])
+  @@map("change_requests")
+}
+
+// ───────────────────────────── Publishing & messaging ─────────────────────────────
+
+model PlatformConnection {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  agencyId    String   @map("agency_id") @db.Uuid
+  clientId    String   @map("client_id") @db.Uuid
+  /// instagram | facebook | youtube | linkedin | x | threads | pinterest | gbp
+  platform    String
+  handle      String
+  status      String   @default("connected")
+  /// Reference into the secrets store — tokens are never stored in this table.
+  tokenRef    String?  @map("token_ref")
+  connectedAt DateTime @default(now()) @map("connected_at")
+
+  client Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  posts  ScheduledPost[]
+
+  @@unique([clientId, platform])
+  @@map("platform_connections")
+}
+
+model ScheduledPost {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  agencyId     String    @map("agency_id") @db.Uuid
+  videoId      String    @map("video_id") @db.Uuid
+  connectionId String    @map("connection_id") @db.Uuid
+  scheduledAt  DateTime  @map("scheduled_at")
+  status       String    @default("scheduled")
+  publishedUrl String?   @map("published_url")
+  publishedAt  DateTime? @map("published_at")
+  proofFileId  String?   @map("proof_file_id") @db.Uuid
+
+  video      Video              @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  connection PlatformConnection @relation(fields: [connectionId], references: [id], onDelete: Restrict)
+
+  @@index([agencyId, scheduledAt])
+  @@map("scheduled_posts")
+}
+
+model WhatsAppMessage {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  agencyId    String   @map("agency_id") @db.Uuid
+  clientId    String?  @map("client_id") @db.Uuid
+  toPhone     String   @map("to_phone")
+  template    String
+  variables   Json     @default("{}")
+  status      String   @default("queued")
+  relatedType String?  @map("related_type")
+  relatedId   String?  @map("related_id")
+  reply       String?
+  sentAt      DateTime @default(now()) @map("sent_at")
+
+  @@index([agencyId, clientId, sentAt])
+  @@map("whatsapp_messages")
+}
+
+// ───────────────────────────── Genie Assistant ─────────────────────────────
+
+enum InsightStatus {
+  open
+  approved
+  edited
+  dismissed
+}
+
+model Insight {
+  id          String        @id @default(uuid(7)) @db.Uuid
+  agencyId    String        @map("agency_id") @db.Uuid
+  rule        String
+  area        String
+  severity    String
+  title       String
+  evidence    Json
+  /// Draft written by the language model; numbers always come from the rule's evidence.
+  draft       Json?
+  status      InsightStatus @default(open)
+  decidedById String?       @map("decided_by_id")
+  decidedAt   DateTime?     @map("decided_at")
+  dedupeKey   String        @map("dedupe_key")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  @@unique([agencyId, dedupeKey])
+  @@index([agencyId, status])
+  @@map("insights")
+}
+
+// ───────────────────────────── STOP reviews ─────────────────────────────
+
+enum ReviewCadence {
+  daily
+  weekly
+  tactical
+  strategic
+}
+
+model Meeting {
+  id       String        @id @default(uuid(7)) @db.Uuid
+  agencyId String        @map("agency_id") @db.Uuid
+  cadence  ReviewCadence
+  number   Int
+  title    String
+  startsAt DateTime      @map("starts_at")
+  status   String        @default("scheduled")
+  lockedAt DateTime?     @map("locked_at")
+  lockedBy String?       @map("locked_by")
+
+  commitments Commitment[]
+
+  @@unique([agencyId, cadence, number])
+  @@map("meetings")
+}
+
+model Commitment {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  agencyId  String    @map("agency_id") @db.Uuid
+  meetingId String    @map("meeting_id") @db.Uuid
+  text      String
+  ownerId   String?   @map("owner_id")
+  due       DateTime? @db.Date
+  status    String    @default("open")
+  /// BT (breakthrough) | BD (breakdown)
+  mark      String?
+  carried   Int       @default(0)
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, status])
+  @@map("commitments")
+}
