@@ -1,8 +1,40 @@
 // Domain vocabulary shared by web, API and worker. Growth OS names are kept as they are;
 // only the AI is called "Genie Assistant". Changing a value here is a data migration.
 
-export const ROLES = ["owner", "manager", "creative", "sales", "finance", "hr", "freelancer", "client"] as const;
-export type Role = (typeof ROLES)[number];
+/**
+ * Default roles every new agency starts with. Agencies rename, copy and add roles in Settings (plan v1.1),
+ * so a membership's role is any string; these keys are only the starting set.
+ */
+export const DEFAULT_ROLES = [
+  "owner",
+  "manager",
+  "team_leader",
+  "editor",
+  "shooter",
+  "script_writer",
+  "social_media_manager",
+  "finance",
+  "hr",
+  "freelancer",
+  "client_approver",
+  "client_viewer",
+] as const;
+export type DefaultRole = (typeof DEFAULT_ROLES)[number];
+
+export const DEFAULT_ROLE_LABELS: Record<DefaultRole, string> = {
+  owner: "Owner",
+  manager: "Manager",
+  team_leader: "Team leader",
+  editor: "Editor",
+  shooter: "Shooter",
+  script_writer: "Script writer",
+  social_media_manager: "Social media manager",
+  finance: "Finance",
+  hr: "HR",
+  freelancer: "Freelancer",
+  client_approver: "Client approver",
+  client_viewer: "Client viewer",
+};
 
 /** Growth OS Client Fitment Map: effort to serve vs return. */
 export const FITMENT_QUADRANTS = ["Amazing", "Bread-winning", "Convenience", "Dangerous"] as const;

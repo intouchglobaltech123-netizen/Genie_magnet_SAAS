@@ -46,6 +46,7 @@ jobs:
     env:
       TEST_DATABASE_OWNER_URL: postgresql://genie_owner:owner-ci@localhost:5432/genie_test
       TEST_DATABASE_APP_URL: postgresql://genie_app:app-ci@localhost:5432/genie_test
+      TEST_DATABASE_AUTH_URL: postgresql://genie_auth:auth-ci@localhost:5432/genie_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -53,9 +54,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - name: Create the runtime role (no RLS bypass) and a shadow database
+      - name: Create the runtime and auth roles (no RLS bypass) and a shadow database
         run: |
           psql "$TEST_DATABASE_OWNER_URL" -c "CREATE ROLE genie_app LOGIN PASSWORD 'app-ci' NOSUPERUSER NOBYPASSRLS"
+          psql "$TEST_DATABASE_OWNER_URL" -c "CREATE ROLE genie_auth LOGIN PASSWORD 'auth-ci' NOSUPERUSER NOBYPASSRLS"
           psql "$TEST_DATABASE_OWNER_URL" -c "CREATE DATABASE genie_shadow"
       - run: npm run format:check
       - run: npm run build:services

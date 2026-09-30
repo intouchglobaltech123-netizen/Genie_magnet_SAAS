@@ -20,6 +20,7 @@
     "format:check": "prettier --check \"apps/api/**/*.ts\" \"apps/worker/**/*.ts\" \"packages/**/*.{ts,json}\"",
     "db:generate": "npm run generate -w @gm/db",
     "db:migrate": "npm run migrate:dev -w @gm/db",
+    "db:diff": "npm run migrate:diff -w @gm/db",
     "infra:up": "docker compose -f infra/docker-compose.yml up -d",
     "infra:down": "docker compose -f infra/docker-compose.yml down"
   },

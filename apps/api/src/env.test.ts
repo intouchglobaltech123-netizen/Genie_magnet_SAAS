@@ -13,6 +13,22 @@ describe("loadEnv", () => {
 
   it("refuses the development agency header in production", () => {
     expect(() => loadEnv({ NODE_ENV: "production", DATABASE_URL: "postgresql://x" })).toThrow(/dev-header is not allowed in production/);
-    expect(loadEnv({ NODE_ENV: "production", DATABASE_URL: "postgresql://x", AUTH_MODE: "better-auth" }).AUTH_MODE).toBe("better-auth");
+    const secret = "x".repeat(32);
+    expect(
+      loadEnv({
+        NODE_ENV: "production",
+        DATABASE_URL: "postgresql://x",
+        AUTH_DATABASE_URL: "postgresql://y",
+        BETTER_AUTH_SECRET: secret,
+        AUTH_MODE: "better-auth",
+      }).AUTH_MODE,
+    ).toBe("better-auth");
+  });
+
+  it("needs the auth database and a strong secret for real sign-in", () => {
+    expect(() => loadEnv({ DATABASE_URL: "postgresql://x", AUTH_MODE: "better-auth" })).toThrow(/needs AUTH_DATABASE_URL and BETTER_AUTH_SECRET/);
+    expect(() =>
+      loadEnv({ DATABASE_URL: "postgresql://x", AUTH_DATABASE_URL: "postgresql://y", BETTER_AUTH_SECRET: "short", AUTH_MODE: "better-auth" }),
+    ).toThrow(/at least 32/);
   });
 });

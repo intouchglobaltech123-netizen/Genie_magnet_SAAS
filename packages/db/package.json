@@ -12,7 +12,8 @@
     "typecheck": "prisma generate && tsc -b",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
-    "test": "vitest run"
+    "test": "vitest run",
+    "migrate:diff": "node scripts/with-temp-postgres.mjs npx prisma migrate diff --from-migrations prisma/migrations --to-schema prisma/schema.prisma --script"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.0",

@@ -5,7 +5,8 @@
 //   • The API and worker connect as genie_app, which cannot bypass RLS; queries run through
 //     forAgency()/withAgency() in src/tenancy.ts, which set app.agency_id for the transaction.
 //   • Money is whole rupees (Int). Dates without a time use @db.Date.
-//   • Better Auth tables (session, account, verification) are generated in Phase 1.
+//   • Sign-in tables (users, sessions, accounts, verifications) belong to Better Auth, which connects
+//     as genie_auth: it can reach only sign-in tables, agencies, memberships and invitations.
 //   • HR, payroll and finance tables arrive in Phase 5 (see docs/adr and the development plan).
 
 generator client {
@@ -28,27 +29,20 @@ enum Plan {
   internal
 }
 
-enum Role {
-  owner
-  manager
-  creative
-  sales
-  finance
-  hr
-  freelancer
-  client
-}
-
 model Agency {
   id         String   @id @default(uuid(7)) @db.Uuid
   name       String
   slug       String   @unique
+  logo       String?
+  /// Better Auth organization metadata (JSON string).
+  metadata   String?
   plan       Plan     @default(starter)
   /// Days to complete the deeper onboarding sections (Growth OS default 7).
   windowDays Int      @default(7) @map("window_days")
   createdAt  DateTime @default(now()) @map("created_at")
 
   memberships Membership[]
+  invitations Invitation[]
   clients     Client[]
   packages    Package[]
 
@@ -66,15 +60,70 @@ model User {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   memberships Membership[]
+  sessions    Session[]
+  accounts    Account[]
 
   @@map("users")
+}
+
+model Session {
+  id                   String   @id
+  token                String   @unique
+  expiresAt            DateTime @map("expires_at")
+  ipAddress            String?  @map("ip_address")
+  userAgent            String?  @map("user_agent")
+  userId               String   @map("user_id")
+  /// The agency every request in this session works in (Better Auth's active organization).
+  activeOrganizationId String?  @map("active_agency_id")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+/// Sign-in methods per user (password hash, Google). Never readable by genie_app.
+model Account {
+  id                    String    @id
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([identifier])
+  @@map("verifications")
 }
 
 model Membership {
   id        String   @id @default(uuid(7)) @db.Uuid
   agencyId  String   @map("agency_id") @db.Uuid
   userId    String   @map("user_id")
-  role      Role
+  /// Role key defined by the agency (defaults: owner, manager, …) — permissions live in the agency's matrix.
+  role      String
   title     String?
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -84,6 +133,22 @@ model Membership {
   @@unique([agencyId, userId])
   @@index([userId])
   @@map("memberships")
+}
+
+model Invitation {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  email     String
+  role      String
+  status    String   @default("pending")
+  expiresAt DateTime @map("expires_at")
+  inviterId String   @map("inviter_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, email])
+  @@map("invitations")
 }
 
 /// Append-only: genie_app may insert and read, never update or delete.

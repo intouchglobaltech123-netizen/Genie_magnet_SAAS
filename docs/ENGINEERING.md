@@ -36,10 +36,19 @@ How to run, test and change Genie Magnet OS. Decisions behind this setup are in 
 | `npm run typecheck`  | Services build + web type-check                                          |
 | `npm run lint`       | Web lint                                                                 |
 | `npm run format`     | Prettier on service code and docs                                        |
-| `npm run db:migrate` | New migration from schema changes (development)                          |
+| `npm run db:migrate` | New migration from schema changes (development, needs a database)        |
+| `npm run db:diff`    | Print the SQL for schema changes using a temporary database (no Docker)  |
 | `npm run build`      | Web production build (what the hosted demo runs)                         |
 
 The cross-tenant tests need PostgreSQL. With Docker they can use the compose database; **without Docker they start an embedded PostgreSQL automatically** (first run downloads nothing — the binary comes with `npm install`). In CI they use a Postgres service container, one fresh database per suite.
+
+## Database roles
+
+| Role          | Used by               | Can reach                                                                                  |
+| ------------- | --------------------- | ------------------------------------------------------------------------------------------ |
+| `genie_owner` | Migrations only       | Everything (owns the schema)                                                               |
+| `genie_app`   | API and worker        | Business data of the current agency only (row-level security); never passwords or sessions |
+| `genie_auth`  | Better Auth (sign-in) | Sign-in tables, agencies, memberships and invitations — never business data                |
 
 ## Rules that are never skipped
 

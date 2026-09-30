@@ -1,17 +1,18 @@
 import "reflect-metadata";
-import type { INestApplication } from "@nestjs/common";
+import type { NestExpressApplication } from "@nestjs/platform-express";
 import { Test } from "@nestjs/testing";
 import pg from "pg";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { startTestDatabase, type TestDatabase } from "@gm/db/testing";
 import { AppModule } from "../app.module.js";
+import { configureApp } from "../bootstrap.js";
 
 const A = "0190f5a0-0000-7000-8000-0000000000a1";
 const B = "0190f5a0-0000-7000-8000-0000000000b2";
 
 let db: TestDatabase;
-let app: INestApplication;
+let app: NestExpressApplication;
 
 const kaveri = {
   name: "Kaveri Organics",
@@ -32,8 +33,10 @@ beforeAll(async () => {
   process.env.DATABASE_URL = db.appUrl;
   process.env.NODE_ENV = "test";
   process.env.AUTH_MODE = "dev-header";
+  delete process.env.AUTH_DATABASE_URL;
+  delete process.env.BETTER_AUTH_SECRET;
   const mod = await Test.createTestingModule({ imports: [AppModule] }).compile();
-  app = mod.createNestApplication();
+  app = configureApp(mod.createNestApplication<NestExpressApplication>({ bodyParser: false }));
   await app.init();
 }, 180_000);
 

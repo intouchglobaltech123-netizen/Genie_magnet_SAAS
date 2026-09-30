@@ -54,7 +54,7 @@ As an operator, I want failed jobs retried and then listed with their reason, so
 
 ## Sign-in and permissions
 
-**P1-07 · Better Auth spike (M)** — exit criteria in [ADR 0003](../adr/0003-authentication-better-auth.md). Owner: tech lead. Blocks P1-08 to P1-11.
+**P1-07 · Better Auth spike (M)** — **Done 30 Sep 2026.** Exit criteria and decisions in [ADR 0003](../adr/0003-authentication-better-auth.md); Google sign-in waits for the Google Cloud project.
 
 **P1-08 · Sign in and sessions (M)**
 As a team member, I want to sign in with email and password or Google, so I can use the app securely.

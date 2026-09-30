@@ -24,6 +24,18 @@ beforeAll(async () => {
   clientA = a.rows[0].id;
   clientB = b.rows[0].id;
   await owner.query(`INSERT INTO audit_logs (id, agency_id, action, entity) VALUES (gen_random_uuid(), $1, 'create', 'client')`, [A]);
+  // Sign-in data: one person in each agency, with a password account and a session.
+  await owner.query(
+    `INSERT INTO users (id, email, name, updated_at) VALUES ('u-ashwin', 'ashwin@example.com', 'Ashwin', now()), ('u-zen', 'zen@example.com', 'Zen Owner', now())`,
+  );
+  await owner.query(
+    `INSERT INTO memberships (id, agency_id, user_id, role) VALUES (gen_random_uuid(), $1, 'u-ashwin', 'manager'), (gen_random_uuid(), $2, 'u-zen', 'owner')`,
+    [A, B],
+  );
+  await owner.query(
+    `INSERT INTO accounts (id, account_id, provider_id, user_id, password, updated_at) VALUES ('acc-1', 'u-ashwin', 'credential', 'u-ashwin', 'hash', now())`,
+  );
+  await owner.query(`INSERT INTO sessions (id, token, expires_at, user_id, updated_at) VALUES ('s-1', 'tok-1', now() + interval '1 day', 'u-ashwin', now())`);
   await owner.end();
   prisma = createPrisma(db.appUrl);
 }, 180_000);
@@ -86,6 +98,43 @@ describe("row-level security", () => {
   it("rejects a missing or malformed agency id before touching the database", () => {
     expect(() => forAgency(prisma, "")).toThrow(TenancyError);
     expect(() => forAgency(prisma, "1 OR 1=1")).toThrow(TenancyError);
+  });
+});
+
+describe("sign-in tables", () => {
+  const query = async (url: string, sql: string) => {
+    const c = new pg.Client({ connectionString: url });
+    await c.connect();
+    try {
+      return await c.query(sql);
+    } finally {
+      await c.end();
+    }
+  };
+
+  it("never lets the application read passwords, sessions or verification codes", async () => {
+    await expect(query(db.appUrl, "SELECT * FROM accounts")).rejects.toThrow(/permission denied/);
+    await expect(query(db.appUrl, "SELECT * FROM sessions")).rejects.toThrow(/permission denied/);
+    await expect(query(db.appUrl, "SELECT * FROM verifications")).rejects.toThrow(/permission denied/);
+  });
+
+  it("shows the application only the people in the current agency", async () => {
+    expect((await forAgency(prisma, A).user.findMany()).map((u) => u.id)).toEqual(["u-ashwin"]);
+    expect((await forAgency(prisma, B).user.findMany()).map((u) => u.id)).toEqual(["u-zen"]);
+    expect(await prisma.user.findMany()).toEqual([]);
+  });
+
+  it("does not let the application create or change users", async () => {
+    await expect(query(db.appUrl, "UPDATE users SET name = 'x'")).rejects.toThrow(/permission denied/);
+  });
+
+  it("lets the auth service work across agencies but never touch business data", async () => {
+    const agencies = await query(db.authUrl, "SELECT id FROM agencies ORDER BY id");
+    expect(agencies.rows.map((r) => r.id)).toEqual([A, B]);
+    const members = await query(db.authUrl, "SELECT user_id FROM memberships ORDER BY user_id");
+    expect(members.rows.map((r) => r.user_id)).toEqual(["u-ashwin", "u-zen"]);
+    await expect(query(db.authUrl, "SELECT * FROM clients")).rejects.toThrow(/permission denied/);
+    await expect(query(db.authUrl, "SELECT * FROM audit_logs")).rejects.toThrow(/permission denied/);
   });
 });
 
