@@ -20,6 +20,10 @@ export const envSchema = z
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     /** Pick a person and sign in without a password (test servers only — never with real data). */
     TEST_SIGN_IN: z.stringbool().default(false),
+    /** Requests per minute per person (or per IP when not signed in) on each API route. */
+    RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
+    /** Proxies in front of the API (1 on Railway), so the caller's IP is read from X-Forwarded-For. 0 locally. */
+    TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
   })
   .refine((e) => !(e.NODE_ENV === "production" && e.AUTH_MODE === "dev-header"), {
     message: "AUTH_MODE=dev-header is not allowed in production",

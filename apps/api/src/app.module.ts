@@ -1,9 +1,12 @@
 import { type MiddlewareConsumer, Module, type NestModule } from "@nestjs/common";
+import { APP_FILTER, APP_GUARD } from "@nestjs/core";
 import { createPrisma } from "@gm/db";
 import { AUTH, AUTH_PRISMA, createAuth } from "./auth/auth.js";
 import { MeController } from "./auth/me.controller.js";
 import { Outbox } from "./auth/outbox.js";
 import { ClientsController } from "./clients/clients.controller.js";
+import { ErrorFilter } from "./common/error.filter.js";
+import { RateLimitGuard } from "./common/rate-limit.js";
 import { ClientsService } from "./clients/clients.service.js";
 import { ENV, type Env, loadEnv } from "./env.js";
 import { HealthController } from "./health/health.controller.js";
@@ -27,6 +30,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
       useFactory: (env: Env, db: ReturnType<typeof createPrisma> | null, outbox: Outbox) => (db && env.BETTER_AUTH_SECRET ? createAuth(env, db, outbox) : null),
     },
     TenantDb,
+    { provide: APP_GUARD, useClass: RateLimitGuard },
+    { provide: APP_FILTER, useClass: ErrorFilter },
     ClientsService,
   ],
 })

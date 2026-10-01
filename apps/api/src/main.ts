@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import { ConsoleLogger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
@@ -8,7 +9,9 @@ import { loadEnv } from "./env.js";
 
 async function bootstrap() {
   const env = loadEnv();
-  const app = configureApp(await NestFactory.create<NestExpressApplication>(AppModule, { bodyParser: false }));
+  // One JSON object per line in production (for the log service); readable text locally.
+  const logger = new ConsoleLogger({ json: env.NODE_ENV === "production", redact: ["password", "token", "secret", "authorization", "cookie"] });
+  const app = configureApp(await NestFactory.create<NestExpressApplication>(AppModule, { bodyParser: false, logger }));
 
   const doc = new DocumentBuilder().setTitle("Genie Magnet OS API").setVersion("0.1.0").addCookieAuth("better-auth.session_token").build();
   SwaggerModule.setup("docs", app, () => SwaggerModule.createDocument(app, doc));

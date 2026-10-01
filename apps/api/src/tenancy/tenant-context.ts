@@ -4,6 +4,7 @@ import type { NextFunction, Request, Response } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import { createPrisma, forAgency, type TenantClient, withAgency } from "@gm/db";
 import { AUTH, AUTH_PRISMA, type Auth } from "../auth/auth.js";
+import { locals } from "../common/request-context.js";
 import { ENV, type Env } from "../env.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 
@@ -34,11 +35,15 @@ export class TenantMiddleware implements NestMiddleware {
     @Optional() @Inject(AUTH_PRISMA) private readonly authDb: ReturnType<typeof createPrisma> | null,
   ) {}
 
-  async use(req: Request, _res: Response, next: NextFunction) {
+  async use(req: Request, res: Response, next: NextFunction) {
+    const run = (ctx: TenantContext) => {
+      locals(res).tenant = { agencyId: ctx.agencyId, userId: ctx.userId };
+      storage.run(ctx, () => next());
+    };
     if (this.env.AUTH_MODE === "dev-header") {
       const agencyId = req.header("x-agency-id");
       if (!agencyId) return next();
-      return storage.run({ agencyId, userId: req.header("x-user-id") ?? undefined }, () => next());
+      return run({ agencyId, userId: req.header("x-user-id") ?? undefined });
     }
 
     if (!this.auth || !this.authDb) return next();
@@ -47,7 +52,7 @@ export class TenantMiddleware implements NestMiddleware {
     if (!session || !agencyId) return next();
     const membership = await this.authDb.membership.findFirst({ where: { agencyId, userId: session.user.id }, select: { role: true } });
     if (!membership) return next();
-    storage.run({ agencyId, userId: session.user.id, role: membership.role }, () => next());
+    run({ agencyId, userId: session.user.id, role: membership.role });
   }
 }
 

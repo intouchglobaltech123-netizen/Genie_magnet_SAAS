@@ -36,6 +36,9 @@ export function createAuth(env: Env, prisma: ReturnType<typeof createPrisma>, ou
     trustedOrigins: [env.WEB_ORIGIN],
     database: prismaAdapter(prisma, { provider: "postgresql" }),
     advanced: { database: { generateId: () => randomUUID() } },
+    // Per IP: 100 requests a minute, and Better Auth's stricter rules for sign-in and sign-up (3 per 10 s)
+    // and password-reset and verification emails (3 a minute). In memory, like the API's own limit.
+    rateLimit: { enabled: true, window: 60, max: 100, storage: "memory" },
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 10,

@@ -128,4 +128,17 @@ describe("sign-in and agencies (Better Auth spike)", () => {
     const intruder = request.agent(app.getHttpServer());
     await post(intruder, "/api/auth/sign-in/email", { email: "ashwin@gm.test", password: "not-the-password" }).expect(401);
   });
+
+  it("slows down repeated sign-in attempts from one address", async () => {
+    const statuses: number[] = [];
+    for (let i = 0; i < 4; i++) {
+      const res = await request(app.getHttpServer())
+        .post("/api/auth/sign-in/email")
+        .set("Origin", ORIGIN)
+        .set("X-Forwarded-For", "203.0.113.7")
+        .send({ email: "ashwin@gm.test", password: `guess-number-000${i}` });
+      statuses.push(res.status);
+    }
+    expect(statuses).toEqual([401, 401, 401, 429]);
+  });
 });

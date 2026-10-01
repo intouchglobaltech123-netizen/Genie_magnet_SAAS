@@ -60,6 +60,13 @@ curl -b cookies.txt http://localhost:4000/clients
 
 `GET /api/auth/test-sign-in/people` lists who can be picked; add `"agencyId"` to choose the agency. The API refuses to start with `TEST_SIGN_IN=true` in production, and it must stay off on any server that holds real data — anyone who can reach that server could sign in as anyone.
 
+## Errors, logs and limits (API)
+
+- **Errors** always come back as `{ message, issues?, requestId }`. A 500 never shows internals; the full error is in the server log under the same request id. Sign-in routes (`/api/auth/*`) use Better Auth's own `{ message, code }`.
+- **Logs**: one line per request with request id, method, path, status, time, agency id and user id — never query strings, IP addresses, names, emails or tokens. JSON in production, readable text locally. Send `x-request-id` from the web app to follow one action end to end.
+- **Rate limits**: sign-in and sign-up 3 tries per 10 seconds per IP, other sign-in routes 100 a minute (Better Auth); every API route 300 a minute per person, or per IP when not signed in (`RATE_LIMIT_PER_MINUTE`). Routes can set their own with `@RateLimit(...)`; health checks are exempt. Kept in memory — fine for one API process, moved to Redis when the API runs on several.
+- Behind a proxy (Railway) set `TRUST_PROXY=1` so the caller's IP is read correctly.
+
 ## Database roles
 
 | Role          | Used by               | Can reach                                                                                  |

@@ -15,7 +15,7 @@ Already done in Phase 0: monorepo, `@gm/shared`, `@gm/db` schema v0 with forced 
 
 ## Platform
 
-**P1-01 · API hardening (M)**
+**P1-01 · API hardening (M)** — **Done 1 Oct 2026.** See [ENGINEERING.md](../ENGINEERING.md#errors-logs-and-limits-api). Public-link routes get their own tighter limit when they are built (P1-22).
 As the tech lead, I want every request logged, rate-limited and returning one error shape, so problems are traceable and the API is safe to expose.
 
 - Structured JSON logs with a request id, agency id and user id; no personal data in logs.
