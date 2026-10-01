@@ -13,6 +13,8 @@ import { ErrorFilter } from "./common/error.filter.js";
 import { RateLimitGuard } from "./common/rate-limit.js";
 import { ENV, type Env, loadEnv } from "./env.js";
 import { HealthController } from "./health/health.controller.js";
+import { ImportsController } from "./imports/imports.controller.js";
+import { ImportsService } from "./imports/imports.service.js";
 import { PrismaService } from "./prisma/prisma.service.js";
 import { AgencyService } from "./settings/agency.service.js";
 import { PackagesService } from "./settings/packages.service.js";
@@ -26,7 +28,17 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
 // folder with controller + service, talks to the database only through TenantDb, and to other
 // modules only through their services. See docs/adr/0001-modular-monolith.md.
 @Module({
-  controllers: [HealthController, MeController, AgencyController, PackagesController, TeamController, RolesController, AuditController, ClientsController],
+  controllers: [
+    HealthController,
+    MeController,
+    AgencyController,
+    PackagesController,
+    TeamController,
+    RolesController,
+    AuditController,
+    ClientsController,
+    ImportsController,
+  ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
     PrismaService,
@@ -53,6 +65,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     AgencyService,
     PackagesService,
     ClientsService,
+    ImportsService,
     // Order matters: rate limit first, then permissions; errors in one shape.
     { provide: APP_GUARD, useClass: RateLimitGuard },
     { provide: APP_GUARD, useClass: PermissionGuard },

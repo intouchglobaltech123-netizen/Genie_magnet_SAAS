@@ -86,6 +86,10 @@ Each agency edits its own permission matrix (Settings → Roles): areas × roles
 - People and roles: `/team` (members, invitations) and `/roles` (the matrix). Better Auth's own invite/role/remove routes are closed.
 - In `AUTH_MODE=dev-header`, add `x-role` to act as a role (owner when left out).
 
+## Time zones
+
+Times are stored without a time zone and read as UTC. The database is set to UTC (migration `20261022000100_utc`) and every connection asks for UTC (`createPrisma`), so a server running on local time can never shift `created_at` values.
+
 ## Database roles
 
 | Role          | Used by               | Can reach                                                                                  |

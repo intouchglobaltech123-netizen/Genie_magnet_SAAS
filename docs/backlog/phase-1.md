@@ -124,14 +124,14 @@ As finance, I want to set up our own invoice details once and then raise GST inv
 - Tax split chosen automatically: CGST + SGST within the state, IGST for clients in other states.
 - Manual invoices; PDF download; status draft / sent / paid.
 
-**P1-31 · Import from Excel or CSV, self-service (M)**
+**P1-31 · Import from Excel or CSV, self-service (M)** — **Done for clients and team.** The file is read in the browser and never uploaded; only checked rows are sent. Templates to download, automatic column matching (with the headings people usually use), made-up client codes when missing, every row checked against existing clients and team, all-or-nothing import, history with undo for 24 hours. Leads come with the sales pipeline (P1-14). `/imports`; screen Import from Excel.
 As the owner, I want to bring in our existing clients, contacts, leads and team from a spreadsheet myself, so we start on our real data without sending it to anyone.
 
 - A template to download for each kind of record, or upload our own sheet and match its columns to the fields.
 - A preview before anything is saved: every row checked with the same rules as the forms, problems shown by row and column; nothing is saved until every row passes or the bad rows are left out on purpose.
 - Team rows become invitations with an existing role, never accounts.
 - Needs edit access to each area being imported. Each import and every record it creates are in the audit log; an import can be undone within 24 hours if its records have not been changed since.
-- The uploaded file is read inside the agency's own space and deleted after the import.
+- The file never leaves the person's computer: it is read in the browser and only the checked rows are sent.
 
 ## Onboarding engine
 

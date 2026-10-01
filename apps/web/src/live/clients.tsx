@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Building2, Plus } from "lucide-react";
+import Link from "next/link";
+import { Building2, FileSpreadsheet, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { clientInput, scopeOf } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
@@ -129,10 +130,18 @@ export function LiveClients() {
         description="Everyone your agency works for, with the people who approve their work."
         actions={
           canAdd && (
-            <Button onClick={() => setAdding(true)}>
-              <Plus />
-              Add client
-            </Button>
+            <>
+              <Button variant="secondary" asChild>
+                <Link href="/app/import?kind=clients">
+                  <FileSpreadsheet />
+                  Import from Excel
+                </Link>
+              </Button>
+              <Button onClick={() => setAdding(true)}>
+                <Plus />
+                Add client
+              </Button>
+            </>
           )
         }
       />
@@ -154,13 +163,21 @@ export function LiveClients() {
           <EmptyState
             icon={Building2}
             title="No clients yet"
-            description={canAdd ? "Add your first client. Importing from Excel is coming next." : "Clients you look after will appear here."}
+            description={canAdd ? "Add your clients one by one, or bring in your list from Excel." : "Clients you look after will appear here."}
             action={
               canAdd && (
-                <Button onClick={() => setAdding(true)}>
-                  <Plus />
-                  Add client
-                </Button>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button onClick={() => setAdding(true)}>
+                    <Plus />
+                    Add client
+                  </Button>
+                  <Button variant="secondary" asChild>
+                    <Link href="/app/import?kind=clients">
+                      <FileSpreadsheet />
+                      Import from Excel
+                    </Link>
+                  </Button>
+                </div>
               )
             }
           />

@@ -205,6 +205,26 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+/// A spreadsheet import (P1-31): what it created, so it can be shown in history and undone within 24 hours.
+/// The file itself is read in the browser and never stored.
+model Import {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  agencyId   String    @map("agency_id") @db.Uuid
+  /// clients · team (leads arrive with the sales pipeline)
+  kind       String
+  fileName   String    @map("file_name")
+  rowCount   Int       @map("row_count")
+  /// Ids of the records it created (clients or invitations).
+  createdIds String[]  @map("created_ids")
+  createdBy  String?   @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  undoneAt   DateTime? @map("undone_at")
+  undoneBy   String?   @map("undone_by")
+
+  @@index([agencyId, createdAt])
+  @@map("imports")
+}
+
 model FileObject {
   id         String   @id @default(uuid(7)) @db.Uuid
   agencyId   String   @map("agency_id") @db.Uuid

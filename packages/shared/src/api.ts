@@ -124,3 +124,22 @@ export interface Package {
   agreements: number;
   createdAt: string;
 }
+
+/** GET /imports (one item) */
+export interface ImportRecord {
+  id: string;
+  kind: "clients" | "team";
+  fileName: string;
+  rowCount: number;
+  createdAt: string;
+  createdBy: string | null;
+  undoneAt: string | null;
+  /** Within 24 hours, not undone yet, and the person may change this kind of record. */
+  canUndo: boolean;
+}
+
+/** POST /imports/clients and /imports/team */
+export interface ImportResult {
+  id: string;
+  created: number;
+}

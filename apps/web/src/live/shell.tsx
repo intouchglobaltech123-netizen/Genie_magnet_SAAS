@@ -4,7 +4,25 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { Building2, Check, ChevronDown, FlaskConical, History, Home, Landmark, LogOut, Menu, Moon, Package, Plus, ShieldCheck, Sun, Users, X } from "lucide-react";
+import {
+  Building2,
+  Check,
+  ChevronDown,
+  FileSpreadsheet,
+  FlaskConical,
+  History,
+  Home,
+  Landmark,
+  LogOut,
+  Menu,
+  Moon,
+  Package,
+  Plus,
+  ShieldCheck,
+  Sun,
+  Users,
+  X,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { AreaKey } from "@gm/shared";
@@ -29,8 +47,9 @@ interface NavItem {
   title: string;
   href: string;
   icon: LucideIcon;
-  /** Shown only to people whose role has at least view access to this area. */
+  /** Shown only to people whose role has at least this access (view unless said) to this area. */
   area?: AreaKey;
+  level?: "view" | "edit";
 }
 
 const NAV: { title: string; items: NavItem[] }[] = [
@@ -39,6 +58,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
     items: [
       { title: "Home", href: "/app", icon: Home },
       { title: "Clients", href: "/app/clients", icon: Building2, area: "clients" },
+      { title: "Import from Excel", href: "/app/import", icon: FileSpreadsheet, area: "clients", level: "edit" },
     ],
   },
   {
@@ -59,7 +79,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="scrollbar-thin flex-1 space-y-5 overflow-y-auto px-3 pb-6 pt-2" aria-label="Main">
       {NAV.map((section) => {
-        const items = section.items.filter((i) => !i.area || can(i.area, "view"));
+        const items = section.items.filter((i) => !i.area || can(i.area, i.level ?? "view"));
         if (!items.length) return null;
         return (
           <div key={section.title}>

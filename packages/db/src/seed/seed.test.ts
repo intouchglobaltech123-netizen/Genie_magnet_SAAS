@@ -70,6 +70,16 @@ describe("sample data (P1-02)", () => {
     }
   });
 
+  it("stores times in UTC, whatever the server's own time zone", async () => {
+    const app = createPrisma(db.appUrl);
+    try {
+      const agency = await forAgency(app, genieMagnet.id).agency.findUnique({ where: { id: genieMagnet.id }, select: { createdAt: true } });
+      expect(Math.abs(Date.now() - agency!.createdAt.getTime())).toBeLessThan(10 * 60_000);
+    } finally {
+      await app.$disconnect();
+    }
+  });
+
   it("makes a person who works for both agencies one user with two memberships", async () => {
     const owner = new pg.Client({ connectionString: db.ownerUrl });
     await owner.connect();

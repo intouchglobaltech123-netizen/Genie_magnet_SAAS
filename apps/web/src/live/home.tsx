@@ -65,13 +65,12 @@ function SetupChecklist({ agencyId }: { agencyId: string }) {
     },
     {
       title: "Add your clients",
-      why: "Add each client with the person who approves their work. Importing from Excel is coming next.",
+      why: "Add each client with the person who approves their work — one by one, or your whole list from Excel.",
       href: "/app/clients",
       done: (clients.data?.length ?? 0) > 0,
     },
   ];
   const coming: Step[] = [
-    { title: "Import clients and leads from Excel", why: "Download a template or use your own sheet; check everything before it is saved." },
     { title: "Invoice settings", why: "GSTIN, invoice number format, bank details and payment terms." },
   ];
   const done = steps.filter((s) => s.done).length;

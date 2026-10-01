@@ -10,5 +10,6 @@ export { ensureDefaultRoles } from "./roles.js";
  * (DATABASE_URL) so row-level security always applies. Use forAgency()/withAgency() for queries.
  */
 export function createPrisma(connectionString: string) {
-  return new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
+  // UTC for every session too (see migration 20261022000100_utc): times are stored without a zone and read as UTC.
+  return new PrismaClient({ adapter: new PrismaPg({ connectionString, options: "-c TimeZone=UTC" }) });
 }

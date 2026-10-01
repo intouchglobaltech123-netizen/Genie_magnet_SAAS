@@ -10,6 +10,9 @@ import {
   type Client,
   type ClientInput,
   type CreatedInvitation,
+  type ImportKind,
+  type ImportRecord,
+  type ImportResult,
   type Me,
   type Package,
   type PackageInput,
@@ -30,6 +33,7 @@ export const keys = {
   testPeople: ["test-people"] as const,
   agency: ["agency"] as const,
   packages: ["packages"] as const,
+  imports: ["imports"] as const,
 };
 
 // ─── Session ──────────────────────────────────────────────────────────
@@ -246,4 +250,21 @@ export function useSetPackageActive() {
 export function useDeletePackage() {
   const refresh = useRefresh(keys.packages);
   return useMutation({ mutationFn: (id: string) => api(`/packages/${id}`, { method: "DELETE" }), onSuccess: refresh });
+}
+
+// ─── Imports ──────────────────────────────────────────────────────────
+
+export const useImports = () => useQuery({ queryKey: keys.imports, queryFn: () => api<ImportRecord[]>("/imports") });
+
+export function useImport(kind: ImportKind) {
+  const refresh = useRefresh(keys.imports, keys.clients, keys.team);
+  return useMutation({
+    mutationFn: (v: { fileName: string; rows: unknown[] }) => api<ImportResult>(`/imports/${kind}`, { body: v }),
+    onSuccess: refresh,
+  });
+}
+
+export function useUndoImport() {
+  const refresh = useRefresh(keys.imports, keys.clients, keys.team);
+  return useMutation({ mutationFn: (id: string) => api<{ removed: number; kept: number }>(`/imports/${id}`, { method: "DELETE" }), onSuccess: refresh });
 }

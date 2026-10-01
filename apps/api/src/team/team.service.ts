@@ -95,7 +95,7 @@ export class TeamService {
   }
 
   /** The page where the invited person signs in or signs up and accepts. Shown to the inviter too, to share it themselves. */
-  private inviteLink(id: string) {
+  inviteLink(id: string) {
     return `${this.env.WEB_ORIGIN}/app/invite/${id}`;
   }
 

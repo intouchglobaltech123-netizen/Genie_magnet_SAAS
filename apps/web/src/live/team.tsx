@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, MailPlus, Trash2, UserMinus, Users } from "lucide-react";
+import Link from "next/link";
+import { Copy, FileSpreadsheet, MailPlus, Trash2, UserMinus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { OWNER_ROLE, type Team } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
@@ -169,10 +170,18 @@ export function LiveTeam() {
         description="Everyone in this agency and their role. What each role may do is set in Roles and permissions."
         actions={
           canEdit && (
-            <Button onClick={() => setInviting(true)}>
-              <MailPlus />
-              Invite a person
-            </Button>
+            <>
+              <Button variant="secondary" asChild>
+                <Link href="/app/import?kind=team">
+                  <FileSpreadsheet />
+                  Import from Excel
+                </Link>
+              </Button>
+              <Button onClick={() => setInviting(true)}>
+                <MailPlus />
+                Invite a person
+              </Button>
+            </>
           )
         }
       />
