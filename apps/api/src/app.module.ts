@@ -1,6 +1,6 @@
 import { type MiddlewareConsumer, Module, type NestModule } from "@nestjs/common";
 import { APP_FILTER, APP_GUARD } from "@nestjs/core";
-import { createPrisma, ensureDefaultRoles, withAgency } from "@gm/db";
+import { createPrisma, setUpAgencyDefaults, withAgency } from "@gm/db";
 import { AccessService, PermissionGuard } from "./access/access.js";
 import { AuditController } from "./audit/audit.controller.js";
 import { AuditService } from "./audit/audit.service.js";
@@ -10,6 +10,9 @@ import { Outbox } from "./auth/outbox.js";
 import { ClientsController } from "./clients/clients.controller.js";
 import { ClientsService } from "./clients/clients.service.js";
 import { ErrorFilter } from "./common/error.filter.js";
+import { LeadsController, PipelineController } from "./crm/crm.controller.js";
+import { LeadsService } from "./crm/leads.service.js";
+import { PipelineService } from "./crm/pipeline.service.js";
 import { RateLimitGuard } from "./common/rate-limit.js";
 import { ENV, type Env, loadEnv } from "./env.js";
 import { HealthController } from "./health/health.controller.js";
@@ -37,6 +40,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     RolesController,
     AuditController,
     ClientsController,
+    PipelineController,
+    LeadsController,
     ImportsController,
   ],
   providers: [
@@ -53,7 +58,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
           ? createAuth(env, db, {
               outbox,
               audit: audit.recordFor,
-              setUpAgency: (agencyId) => withAgency(app.client, agencyId, (tx) => ensureDefaultRoles(tx, agencyId)),
+              setUpAgency: (agencyId) => withAgency(app.client, agencyId, (tx) => setUpAgencyDefaults(tx, agencyId)),
             })
           : null,
     },
@@ -65,6 +70,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     AgencyService,
     PackagesService,
     ClientsService,
+    PipelineService,
+    LeadsService,
     ImportsService,
     // Order matters: rate limit first, then permissions; errors in one shape.
     { provide: APP_GUARD, useClass: RateLimitGuard },

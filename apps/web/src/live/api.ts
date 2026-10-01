@@ -22,7 +22,7 @@ export class ApiError extends Error {
  * Calls the API through this site (`/api/...`, rewritten to the API in next.config.ts), so the sign-in
  * cookie is first-party. Sign-in routes are `/auth/...`.
  */
-export async function api<T>(path: string, init: { method?: "GET" | "POST" | "PATCH" | "DELETE"; body?: unknown } = {}): Promise<T> {
+export async function api<T>(path: string, init: { method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE"; body?: unknown } = {}): Promise<T> {
   const hasBody = init.body !== undefined;
   let res: Response;
   try {

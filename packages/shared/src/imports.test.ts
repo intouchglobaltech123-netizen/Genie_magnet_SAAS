@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CLIENT_IMPORT_COLUMNS, clientImport, matchColumns, parseYesNo, suggestCode, TEAM_IMPORT_COLUMNS } from "./imports.js";
+import { CLIENT_IMPORT_COLUMNS, clientImport, matchColumns, parseDateText, parseRupees, parseYesNo, suggestCode, TEAM_IMPORT_COLUMNS } from "./imports.js";
 
 describe("matching a sheet's columns", () => {
   it("uses the template headings, then the headings people usually write", () => {
@@ -34,6 +34,17 @@ describe("rows sent to the API", () => {
       rows: [{ name: "Kaveri Organics", code: "KVR", contacts: [{ name: "Ramesh", phone: "9443055101" }], accountOwnerEmail: "Ashwin@GM.test" }],
     });
     expect(ok.success && ok.data.rows[0]?.accountOwnerEmail).toBe("ashwin@gm.test");
+  });
+
+  it("understand dates and amounts the way people write them", () => {
+    expect(["2026-10-05", "05/10/2026", "5-10-26", "31/02/2026", "next week"].map(parseDateText)).toEqual([
+      "2026-10-05",
+      "2026-10-05",
+      "2026-10-05",
+      undefined,
+      undefined,
+    ]);
+    expect(["₹60,000", "Rs. 1,20,000", "45000.4", "", "lots"].map(parseRupees)).toEqual([60000, 120000, 45000, undefined, undefined]);
   });
 
   it("understand yes and no", () => {

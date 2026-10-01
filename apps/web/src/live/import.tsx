@@ -9,6 +9,10 @@ import Papa from "papaparse";
 import {
   CLIENT_IMPORT_COLUMNS,
   clientImportRow,
+  LEAD_IMPORT_COLUMNS,
+  leadImportRow,
+  parseDateText,
+  parseRupees,
   type ImportColumn,
   type ImportKind,
   type ImportResult,
@@ -30,11 +34,19 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { ApiError, errorMessage } from "./api";
-import { useCan, useClients, useImport, useImports, useMe, useRoles, useTeam, useUndoImport } from "./queries";
+import { useCan, useClients, useImport, useImports, useMe, useRoles, useStages, useTeam, useUndoImport } from "./queries";
 
-const COLUMNS: Record<ImportKind, ImportColumn[]> = { clients: CLIENT_IMPORT_COLUMNS, team: TEAM_IMPORT_COLUMNS };
-const MAX_ROWS: Record<ImportKind, number> = { clients: 1000, team: 500 };
-const WHAT: Record<ImportKind, string> = { clients: "clients", team: "people" };
+const COLUMNS: Record<ImportKind, ImportColumn[]> = { clients: CLIENT_IMPORT_COLUMNS, team: TEAM_IMPORT_COLUMNS, leads: LEAD_IMPORT_COLUMNS };
+const MAX_ROWS: Record<ImportKind, number> = { clients: 1000, team: 500, leads: 2000 };
+const WHAT: Record<ImportKind, string> = { clients: "clients", team: "people", leads: "leads" };
+const ONE: Record<ImportKind, string> = { clients: "client", team: "person", leads: "lead" };
+const count = (n: number, kind: ImportKind) => `${n} ${n === 1 ? ONE[kind] : WHAT[kind]}`;
+const AREA = { clients: "clients", team: "team", leads: "crm" } as const;
+const DONE_LINK: Record<ImportKind, { href: string; label: string }> = {
+  clients: { href: "/app/clients", label: "See the clients" },
+  team: { href: "/app/settings/team", label: "See the team" },
+  leads: { href: "/app/sales", label: "See the pipeline" },
+};
 
 interface Sheet {
   fileName: string;
@@ -175,6 +187,45 @@ function useTeamRows(sheet: Sheet | null, mapping: Record<string, number | null>
   }, [sheet, mapping, team.data, roles.data, me]);
 }
 
+function useLeadRows(sheet: Sheet | null, mapping: Record<string, number | null>) {
+  const can = useCan();
+  const stages = useStages();
+  const team = useTeam(can("team", "view"));
+  const me = useMe().data;
+  return useMemo(() => {
+    if (!sheet || !stages.data || (can("team", "view") && !team.data)) return null;
+    const members = new Set((team.data?.members ?? []).map((m) => m.user.email.toLowerCase()).concat(me ? [me.user.email.toLowerCase()] : []));
+    return sheet.rows.map((r, i): PreviewRow => {
+      const get = (k: string) => (mapping[k] == null ? "" : (r[mapping[k]!] ?? "").trim());
+      const values: Record<string, string> = Object.fromEntries(LEAD_IMPORT_COLUMNS.map((c) => [c.key, get(c.key)]));
+      const issues: Record<string, string> = {};
+      const wanted = values.stage!.toLowerCase();
+      const stage = wanted ? stages.data.find((s) => s.key === wanted || s.name.toLowerCase() === wanted) : undefined;
+      if (wanted && !stage) issues.stage = `No stage called "${values.stage}"`;
+      const value = parseRupees(values.value!);
+      if (values.value && value === undefined) issues.value = "Use a number, e.g. 60000";
+      const nextFollowUp = values.nextFollowUp ? parseDateText(values.nextFollowUp) : undefined;
+      if (values.nextFollowUp && !nextFollowUp) issues.nextFollowUp = "Use a date like 2026-10-05 or 05/10/2026";
+      const payload = {
+        name: values.name,
+        company: values.company,
+        phone: values.phone,
+        email: values.email,
+        source: values.source,
+        stage: stage?.key,
+        value: value ?? 0,
+        ownerEmail: values.ownerEmail || undefined,
+        nextFollowUp,
+        notes: values.notes,
+      };
+      const parsed = leadImportRow.safeParse(payload);
+      if (!parsed.success) for (const issue of parsed.error.issues) issues[String(issue.path[0])] ??= issue.message;
+      if (values.ownerEmail && can("team", "view") && !members.has(values.ownerEmail.toLowerCase())) issues.ownerEmail ??= "No one in your team has this email";
+      return { line: i + 2, values: { ...values, stage: stage?.name ?? values.stage }, issues, payload: parsed.success ? parsed.data : null };
+    });
+  }, [sheet, mapping, stages.data, team.data, me, can]);
+}
+
 // ─── Screens ──────────────────────────────────────────────────────────
 
 function Importer({ kind }: { kind: ImportKind }) {
@@ -191,10 +242,11 @@ function Importer({ kind }: { kind: ImportKind }) {
 
   const clientRows = useClientRows(kind === "clients" ? sheet : null, mapping);
   const teamRows = useTeamRows(kind === "team" ? sheet : null, mapping);
+  const leadRows = useLeadRows(kind === "leads" ? sheet : null, mapping);
   const rows = useMemo(() => {
-    const base = kind === "clients" ? clientRows : teamRows;
+    const base = kind === "clients" ? clientRows : kind === "leads" ? leadRows : teamRows;
     return base?.map((r, i) => (serverIssues[i] ? { ...r, issues: { ...serverIssues[i], ...r.issues } } : r)) ?? null;
-  }, [kind, clientRows, teamRows, serverIssues]);
+  }, [kind, clientRows, teamRows, leadRows, serverIssues]);
   const good = rows?.filter((r) => !Object.keys(r.issues).length && r.payload) ?? [];
   const bad = (rows?.length ?? 0) - good.length;
   const missingRequired = columns.filter((c) => c.required && mapping[c.key] == null && !(kind === "clients" && c.key === "code"));
@@ -233,7 +285,7 @@ function Importer({ kind }: { kind: ImportKind }) {
               const [, idx, ...field] = issue.path.split(".");
               const row = sent[Number(idx)];
               const rowIndex = rows!.indexOf(row!);
-              const key = kind === "clients" ? (CLIENT_PATHS[field.join(".")] ?? "name") : (field[0] ?? "email");
+              const key = kind === "clients" ? (CLIENT_PATHS[field.join(".")] ?? "name") : (field[0] ?? (kind === "team" ? "email" : "name"));
               (next[rowIndex] ??= {})[key] = issue.message;
             }
             setServerIssues(next);
@@ -249,12 +301,12 @@ function Importer({ kind }: { kind: ImportKind }) {
         <div className="flex flex-wrap items-center gap-3">
           <CheckCircle2 className="size-6 text-success" />
           <p className="text-body">
-            {done.created} {WHAT[kind]} {kind === "team" ? "invited — share their links from the Team page while emails are off." : "added."}
+            {count(done.created, kind)} {kind === "team" ? "invited — share their links from the Team page while emails are off." : "added."}
           </p>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button asChild>
-            <Link href={kind === "clients" ? "/app/clients" : "/app/settings/team"}>{kind === "clients" ? "See the clients" : "See the team"}</Link>
+            <Link href={DONE_LINK[kind].href}>{DONE_LINK[kind].label}</Link>
           </Button>
           <Button variant="secondary" onClick={() => setDone(null)}>
             Import another file
@@ -393,7 +445,7 @@ function Importer({ kind }: { kind: ImportKind }) {
             )}
             {run.error && !(run.error instanceof ApiError && run.error.body.issues) && <span className="text-body text-danger">{errorMessage(run.error)}</span>}
             <Button className="ml-auto" disabled={!good.length || (bad > 0 && !leaveOut) || run.isPending} onClick={submit}>
-              {run.isPending ? "Importing…" : `Import ${good.length} ${WHAT[kind]}`}
+              {run.isPending ? "Importing…" : `Import ${count(good.length, kind)}`}
             </Button>
           </div>
         </SectionCard>
@@ -422,9 +474,7 @@ function RecentImports() {
           {imports.data.map((i) => (
             <TR key={i.id}>
               <TD className="font-medium">{i.fileName}</TD>
-              <TD>
-                {i.rowCount} {WHAT[i.kind]}
-              </TD>
+              <TD>{count(i.rowCount, i.kind)}</TD>
               <TD>{i.createdBy ?? "—"}</TD>
               <TD className="whitespace-nowrap text-muted-foreground">
                 {new Date(i.createdAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
@@ -456,7 +506,7 @@ export function LiveImport() {
   const can = useCan();
   const router = useRouter();
   const params = useSearchParams();
-  const kinds = (["clients", "team"] as const).filter((k) => can(k === "clients" ? "clients" : "team", "edit"));
+  const kinds = (["clients", "leads", "team"] as const).filter((k) => can(AREA[k], "edit"));
   const wanted = params.get("kind");
   const kind = kinds.find((k) => k === wanted) ?? kinds[0];
 
@@ -470,8 +520,9 @@ export function LiveImport() {
           {kinds.length > 1 && (
             <Tabs value={kind} onValueChange={(v) => router.replace(`/app/import?kind=${v}`)}>
               <TabsList>
-                <TabsTrigger value="clients">Clients</TabsTrigger>
-                <TabsTrigger value="team">Team</TabsTrigger>
+                {kinds.includes("clients") && <TabsTrigger value="clients">Clients</TabsTrigger>}
+                {kinds.includes("leads") && <TabsTrigger value="leads">Leads</TabsTrigger>}
+                {kinds.includes("team") && <TabsTrigger value="team">Team</TabsTrigger>}
               </TabsList>
             </Tabs>
           )}

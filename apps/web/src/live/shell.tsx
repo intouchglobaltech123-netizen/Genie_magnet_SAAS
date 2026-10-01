@@ -9,10 +9,12 @@ import {
   Check,
   ChevronDown,
   FileSpreadsheet,
+  Filter,
   FlaskConical,
   History,
   Home,
   Landmark,
+  ListOrdered,
   LogOut,
   Menu,
   Moon,
@@ -57,6 +59,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
     title: "Workspace",
     items: [
       { title: "Home", href: "/app", icon: Home },
+      { title: "Sales pipeline", href: "/app/sales", icon: Filter, area: "crm" },
       { title: "Clients", href: "/app/clients", icon: Building2, area: "clients" },
       { title: "Import from Excel", href: "/app/import", icon: FileSpreadsheet, area: "clients", level: "edit" },
     ],
@@ -66,6 +69,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
     items: [
       { title: "Agency profile", href: "/app/settings/agency", icon: Landmark, area: "settings" },
       { title: "Packages", href: "/app/settings/packages", icon: Package },
+      { title: "Pipeline stages", href: "/app/settings/pipeline", icon: ListOrdered, area: "settings" },
       { title: "Team", href: "/app/settings/team", icon: Users, area: "team" },
       { title: "Roles and permissions", href: "/app/settings/roles", icon: ShieldCheck, area: "team" },
       { title: "Audit log", href: "/app/audit", icon: History, area: "audit" },

@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Building2, CheckCircle2, Circle, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, Building2, CalendarClock, CheckCircle2, Circle, ShieldCheck, Users } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, SectionCard } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useAgency, useAudit, useCan, useClients, useMe, usePackages, useTeam } from "./queries";
+import { useAgency, useAudit, useCan, useClients, useLeads, useMe, usePackages, useStages, useTeam } from "./queries";
 
 interface Step {
   title: string;
@@ -151,6 +151,11 @@ export function LiveHome() {
   const can = useCan();
   const team = useTeam(can("team", "view"));
   const clients = useClients(can("clients", "view"));
+  const leads = useLeads(can("crm", "view"));
+  const stages = useStages();
+  const open = new Set((stages.data ?? []).filter((s) => s.kind === "open").map((s) => s.key));
+  const today = new Date().toISOString().slice(0, 10);
+  const due = (leads.data ?? []).filter((l) => open.has(l.stage) && l.nextFollowUp && l.nextFollowUp <= today).length;
   const agency = me.agencies.find((a) => a.id === me.activeAgencyId);
   const firstName = me.user.name.split(" ")[0];
   const canSetUp = can("team", "edit") || can("roles", "edit");
@@ -169,6 +174,7 @@ export function LiveHome() {
           )}
         </div>
         <div className="space-y-3">
+          {can("crm", "view") && <Shortcut href="/app/sales" icon={CalendarClock} title="Follow-ups due today" value={leads.data ? due : "…"} />}
           {can("clients", "view") && <Shortcut href="/app/clients" icon={Building2} title="Clients" value={clients.data?.length ?? "…"} />}
           {can("team", "view") && <Shortcut href="/app/settings/team" icon={Users} title="People in the team" value={team.data?.members.length ?? "…"} />}
           {can("team", "view") && <Shortcut href="/app/settings/roles" icon={ShieldCheck} title="Roles and permissions" value="Open" />}

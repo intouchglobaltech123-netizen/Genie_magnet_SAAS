@@ -57,6 +57,7 @@ model Agency {
   memberships Membership[]
   invitations Invitation[]
   roles       Role[]
+  stages      PipelineStage[]
   clients     Client[]
   packages    Package[]
 
@@ -257,15 +258,23 @@ enum Fitment {
   dangerous
 }
 
-enum LeadStage {
-  new
-  contacted
-  qualified
-  discovery
-  proposal
-  negotiation
-  won
-  lost
+/// The agency's sales pipeline (P1-14). Open stages are renamed, added, reordered and removed by the agency;
+/// Won and Lost are always there, last. Leads refer to a stage by `key`.
+model PipelineStage {
+  id          String @id @default(uuid(7)) @db.Uuid
+  agencyId    String @map("agency_id") @db.Uuid
+  key         String
+  name        String
+  position    Int
+  /// open · won · lost
+  kind        String @default("open")
+  /// Chance of winning at this stage (0–100), for the weighted pipeline.
+  probability Int    @default(0)
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, key])
+  @@map("pipeline_stages")
 }
 
 model Lead {
@@ -276,14 +285,44 @@ model Lead {
   phone        String?
   email        String?
   source       String
-  stage        LeadStage @default(new)
+  /// Key of one of the agency's pipeline stages.
+  stage        String    @default("new")
+  /// Expected monthly value in rupees.
   value        Int       @default(0)
   ownerId      String?   @map("owner_id")
   nextFollowUp DateTime? @map("next_follow_up") @db.Date
+  notes        String?
+  lostReason   String?   @map("lost_reason")
+  /// The client this lead became when the deal was won.
+  clientId     String?   @map("client_id") @db.Uuid
   createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  activities Activity[]
 
   @@index([agencyId, stage])
+  @@index([agencyId, ownerId])
   @@map("leads")
+}
+
+/// Calls, meetings, messages and notes with a lead (P1-15).
+model Activity {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  leadId    String   @map("lead_id") @db.Uuid
+  /// call · meeting · whatsapp · email · note
+  kind      String
+  summary   String
+  outcome   String?
+  /// When it happened.
+  at        DateTime @default(now())
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, leadId, at])
+  @@map("activities")
 }
 
 model Client {

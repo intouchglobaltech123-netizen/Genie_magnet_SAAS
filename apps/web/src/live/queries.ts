@@ -10,7 +10,14 @@ import {
   type Client,
   type ClientInput,
   type CreatedInvitation,
+  type ActivityInput,
   type ImportKind,
+  type Lead,
+  type LeadDetail,
+  type LeadInput,
+  type LeadUpdate,
+  type PipelineInput,
+  type PipelineStage,
   type ImportRecord,
   type ImportResult,
   type Me,
@@ -34,6 +41,8 @@ export const keys = {
   agency: ["agency"] as const,
   packages: ["packages"] as const,
   imports: ["imports"] as const,
+  stages: ["pipeline-stages"] as const,
+  leads: ["leads"] as const,
 };
 
 // ─── Session ──────────────────────────────────────────────────────────
@@ -244,7 +253,10 @@ export function useSavePackage() {
 
 export function useSetPackageActive() {
   const refresh = useRefresh(keys.packages);
-  return useMutation({ mutationFn: (v: { id: string; active: boolean }) => api<Package>(`/packages/${v.id}/${v.active ? "restore" : "archive"}`, { body: {} }), onSuccess: refresh });
+  return useMutation({
+    mutationFn: (v: { id: string; active: boolean }) => api<Package>(`/packages/${v.id}/${v.active ? "restore" : "archive"}`, { body: {} }),
+    onSuccess: refresh,
+  });
 }
 
 export function useDeletePackage() {
@@ -257,7 +269,7 @@ export function useDeletePackage() {
 export const useImports = () => useQuery({ queryKey: keys.imports, queryFn: () => api<ImportRecord[]>("/imports") });
 
 export function useImport(kind: ImportKind) {
-  const refresh = useRefresh(keys.imports, keys.clients, keys.team);
+  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads);
   return useMutation({
     mutationFn: (v: { fileName: string; rows: unknown[] }) => api<ImportResult>(`/imports/${kind}`, { body: v }),
     onSuccess: refresh,
@@ -265,6 +277,57 @@ export function useImport(kind: ImportKind) {
 }
 
 export function useUndoImport() {
-  const refresh = useRefresh(keys.imports, keys.clients, keys.team);
+  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads);
   return useMutation({ mutationFn: (id: string) => api<{ removed: number; kept: number }>(`/imports/${id}`, { method: "DELETE" }), onSuccess: refresh });
+}
+
+// ─── Sales pipeline ───────────────────────────────────────────────────
+
+export const useStages = () => useQuery({ queryKey: keys.stages, queryFn: () => api<PipelineStage[]>("/pipeline/stages") });
+
+export function useSaveStages() {
+  const refresh = useRefresh(keys.stages, keys.leads);
+  return useMutation({ mutationFn: (v: PipelineInput) => api<PipelineStage[]>("/pipeline/stages", { method: "PUT", body: v }), onSuccess: refresh });
+}
+
+export const useLeads = (enabled = true) => useQuery({ queryKey: keys.leads, queryFn: () => api<Lead[]>("/leads"), enabled });
+
+export const useLead = (id: string | null) => useQuery({ queryKey: [...keys.leads, id], queryFn: () => api<LeadDetail>(`/leads/${id}`), enabled: !!id });
+
+export function useSaveLead() {
+  const refresh = useRefresh(keys.leads);
+  return useMutation({
+    mutationFn: (v: { id?: string; input: LeadInput | LeadUpdate }) =>
+      v.id ? api<LeadDetail>(`/leads/${v.id}`, { method: "PATCH", body: v.input }) : api<LeadDetail>("/leads", { body: v.input }),
+    onSuccess: refresh,
+  });
+}
+
+/** Moving a card on the board: shown at once, put back if the server refuses. */
+export function useMoveLead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; stage: string }) => api<LeadDetail>(`/leads/${v.id}`, { method: "PATCH", body: { stage: v.stage } }),
+    onMutate: async (v) => {
+      await qc.cancelQueries({ queryKey: keys.leads });
+      const before = qc.getQueryData<Lead[]>(keys.leads);
+      qc.setQueryData<Lead[]>(keys.leads, (leads) => leads?.map((l) => (l.id === v.id ? { ...l, stage: v.stage } : l)));
+      return { before };
+    },
+    onError: (_e, _v, ctx) => ctx?.before && qc.setQueryData(keys.leads, ctx.before),
+    onSettled: () => qc.invalidateQueries({ queryKey: keys.leads }),
+  });
+}
+
+export function useDeleteLead() {
+  const refresh = useRefresh(keys.leads);
+  return useMutation({ mutationFn: (id: string) => api(`/leads/${id}`, { method: "DELETE" }), onSuccess: refresh });
+}
+
+export function useAddActivity() {
+  const refresh = useRefresh(keys.leads);
+  return useMutation({
+    mutationFn: (v: { leadId: string; input: ActivityInput }) => api<LeadDetail>(`/leads/${v.leadId}/activities`, { body: v.input }),
+    onSuccess: refresh,
+  });
 }

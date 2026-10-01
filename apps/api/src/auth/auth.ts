@@ -34,7 +34,7 @@ const AGENCY_ROUTES_KEPT = new Set([
 export interface AuthDeps {
   outbox: Outbox;
   audit: AuditWriter;
-  /** Gives a new agency its default roles (P1-11). */
+  /** Gives a new agency its default roles and pipeline stages. */
   setUpAgency: (agencyId: string) => Promise<void>;
 }
 

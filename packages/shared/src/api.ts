@@ -128,7 +128,7 @@ export interface Package {
 /** GET /imports (one item) */
 export interface ImportRecord {
   id: string;
-  kind: "clients" | "team";
+  kind: "clients" | "team" | "leads";
   fileName: string;
   rowCount: number;
   createdAt: string;
@@ -142,4 +142,39 @@ export interface ImportRecord {
 export interface ImportResult {
   id: string;
   created: number;
+}
+
+/** GET /pipeline/stages (one item) */
+export interface PipelineStage {
+  key: string;
+  name: string;
+  kind: "open" | "won" | "lost";
+  probability: number;
+  position: number;
+}
+
+/** GET /leads (one item) */
+export interface Lead {
+  id: string;
+  name: string;
+  company: string | null;
+  phone: string | null;
+  email: string | null;
+  source: string;
+  stage: string;
+  value: number;
+  ownerId: string | null;
+  owner: { id: string; name: string | null } | null;
+  nextFollowUp: string | null;
+  notes: string | null;
+  lostReason: string | null;
+  clientId: string | null;
+  activities: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** GET /leads/:id */
+export interface LeadDetail extends Lead {
+  history: { id: string; kind: string; summary: string; outcome: string | null; at: string; by: { id: string; name: string | null } | null }[];
 }

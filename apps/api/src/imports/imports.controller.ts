@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post } from "@nestjs/common";
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
-import { clientImport, type ClientImport, teamImport, type TeamImport } from "@gm/shared";
+import { clientImport, type ClientImport, leadImport, type LeadImport, teamImport, type TeamImport } from "@gm/shared";
 import { Can, Staff } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { ImportsService } from "./imports.service.js";
@@ -37,6 +37,14 @@ export class ImportsController {
   @ApiBody({ schema: schema(teamImport) })
   team(@Body(new ZodPipe(teamImport)) body: TeamImport) {
     return this.imports.importTeam(body);
+  }
+
+  /** Stages are the pipeline's keys (the importer matches names); owners are found by email. */
+  @Post("leads")
+  @Can("crm", "edit")
+  @ApiBody({ schema: schema(leadImport) })
+  leads(@Body(new ZodPipe(leadImport)) body: LeadImport) {
+    return this.imports.importLeads(body);
   }
 
   /** Within 24 hours: removes the clients it created (if untouched since) or cancels its waiting invitations. */

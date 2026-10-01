@@ -96,9 +96,9 @@ As the owner, I want to set up packages with price, videos and posts per month, 
 
 ## CRM
 
-**P1-14 · Leads and pipeline (M)** — pipeline stages the agency can rename, add and reorder (Won and Lost stay fixed); owner, source, value, next follow-up; board and list views.
+**P1-14 · Leads and pipeline (M)** — **Done.** Each agency renames, adds, reorders and removes its open stages (a stage with leads cannot be removed) with a win chance per stage for the weighted pipeline; Won and Lost are fixed and last. Leads with owner, source, monthly value and next follow-up; board (drag between stages) and list, search, mine, follow-ups due. Roles limited to their own leads see and change only theirs. Leads import from Excel. `/pipeline/stages`, `/leads`; screens Sales pipeline and Settings → Pipeline stages.
 
-**P1-15 · Calls and activities (S)** — log calls, meetings and notes; follow-up reminders.
+**P1-15 · Calls and activities (S)** — **Done.** Log a call, meeting, WhatsApp, email or note on a lead, setting the next follow-up at the same time; history on the lead; follow-ups due on Home and the pipeline. Reminders by notification come with P1-04.
 
 **P1-16 · Proposals and discount approval (M)**
 As a salesperson, I want to send a proposal with a discount, and have discounts above my limit approved by the owner, so pricing stays under control.

@@ -1,7 +1,19 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
-import { allows, type ClientImport, exceeds, FITMENT_QUADRANTS, type ImportKind, OWNER_ROLE, permissionArea, scopeOf, type TeamImport } from "@gm/shared";
+import {
+  allows,
+  type ClientImport,
+  exceeds,
+  FITMENT_QUADRANTS,
+  type ImportKind,
+  type LeadImport,
+  OWNER_ROLE,
+  permissionArea,
+  scopeOf,
+  type TeamImport,
+} from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
 import { Outbox } from "../auth/outbox.js";
+import { PipelineService } from "../crm/pipeline.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { matrixOf } from "../team/roles.service.js";
 import { TeamService } from "../team/team.service.js";
@@ -34,14 +46,15 @@ export class ImportsService {
     private readonly audit: AuditService,
     private readonly team: TeamService,
     private readonly outbox: Outbox,
+    private readonly pipeline: PipelineService,
   ) {}
 
   private canEdit(kind: ImportKind) {
-    return allows(this.tenant.permissions, kind === "clients" ? "clients" : "team", "edit");
+    return allows(this.tenant.permissions, kind === "clients" ? "clients" : kind === "leads" ? "crm" : "team", "edit");
   }
 
   async list() {
-    const kinds = (["clients", "team"] as const).filter((k) => this.canEdit(k));
+    const kinds = (["clients", "team", "leads"] as const).filter((k) => this.canEdit(k));
     const rows = await this.tenant.db.import.findMany({ where: { kind: { in: kinds } }, orderBy: { createdAt: "desc" }, take: 50 });
     const ids = [...new Set(rows.map((r) => r.createdBy).filter((id): id is string => !!id))];
     const people = ids.length ? await this.tenant.db.user.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } }) : [];
@@ -207,17 +220,82 @@ export class ImportsService {
     return { id: result.id, created: result.created };
   }
 
+  // ─── Leads ──────────────────────────────────────────────────────────
+
+  async importLeads({ fileName, rows }: LeadImport) {
+    const agencyId = this.tenant.agencyId;
+    const userId = this.tenant.userId;
+    if (!userId) throw new UnauthorizedException("Sign in to import.");
+    const ownOnly = scopeOf(this.tenant.permissions, "crm") === "own";
+    const [stages, members] = await Promise.all([
+      this.pipeline.stages(),
+      this.tenant.db.user.findMany({ where: { memberships: { some: { agencyId } } }, select: { id: true, email: true } }),
+    ]);
+    const stageKeys = new Set(stages.map((s) => s.key));
+    const firstOpen = stages.find((s) => s.kind === "open")!.key;
+    const byEmail = new Map(members.map((m) => [m.email.toLowerCase(), m.id]));
+    const issues: Issue[] = [];
+    const owners: (string | null)[] = [];
+
+    rows.forEach((r, i) => {
+      if (r.stage && !stageKeys.has(r.stage)) issues.push({ path: `rows.${i}.stage`, message: `There is no stage "${r.stage}" in your pipeline` });
+      let owner: string | null = userId;
+      if (r.ownerEmail) {
+        const found = byEmail.get(r.ownerEmail);
+        if (!found) issues.push({ path: `rows.${i}.ownerEmail`, message: "No one in your team has this email" });
+        else if (ownOnly && found !== userId) issues.push({ path: `rows.${i}.ownerEmail`, message: "Your role adds leads for yourself only" });
+        else owner = found;
+      }
+      owners.push(owner);
+    });
+    refuse(issues);
+
+    return this.tenant.tx(async (tx) => {
+      const ids: string[] = [];
+      for (const [i, r] of rows.entries()) {
+        const { ownerEmail: _ownerEmail, nextFollowUp, ...lead } = r;
+        const created = await tx.lead.create({
+          data: {
+            ...lead,
+            agencyId,
+            stage: r.stage ?? firstOpen,
+            ownerId: owners[i],
+            nextFollowUp: nextFollowUp ? new Date(`${nextFollowUp}T00:00:00Z`) : undefined,
+          },
+          select: { id: true, name: true, stage: true },
+        });
+        ids.push(created.id);
+        await this.audit.record(tx, {
+          action: "create",
+          entity: "lead",
+          entityId: created.id,
+          after: { name: created.name, stage: created.stage, via: fileName },
+        });
+      }
+      const record = await tx.import.create({ data: { agencyId, kind: "leads", fileName, rowCount: rows.length, createdIds: ids, createdBy: userId } });
+      await this.audit.record(tx, { action: "import", entity: "import", entityId: record.id, after: { kind: "leads", fileName, rows: rows.length } });
+      return { id: record.id, created: ids.length };
+    });
+  }
+
   // ─── Undo ───────────────────────────────────────────────────────────
 
   async undo(id: string) {
     const record = await this.tenant.db.import.findFirst({ where: { id } });
     if (!record) throw new NotFoundException("No import with that id.");
     const kind = record.kind as ImportKind;
-    if (!this.canEdit(kind)) throw new ForbiddenException(`Your role cannot change ${kind === "clients" ? "clients" : "the team"}.`);
+    if (!this.canEdit(kind)) throw new ForbiddenException(`Your role cannot change ${kind === "team" ? "the team" : kind}.`);
     if (record.undoneAt) throw new ConflictException("This import has already been undone.");
     if (Date.now() - record.createdAt.getTime() >= UNDO_HOURS * 3_600_000) throw new ConflictException("Imports can be undone for 24 hours only.");
     const ids = record.createdIds;
 
+    if (kind === "leads") {
+      const [changed, activities] = await Promise.all([
+        this.tenant.db.auditLog.count({ where: { entity: "lead", entityId: { in: ids }, NOT: { action: "create" } } }),
+        this.tenant.db.activity.count({ where: { leadId: { in: ids } } }),
+      ]);
+      if (changed || activities) throw new ConflictException("Some of these leads have been worked on since the import, so undoing it would lose that work.");
+    }
     if (kind === "clients") {
       // Undo only what nobody has touched since: no later change to these clients, nothing made from them.
       const [changed, agreements] = await Promise.all([
@@ -238,6 +316,13 @@ export class ImportsService {
           await this.audit.record(tx, { action: "delete", entity: "client", entityId: c.id, before: { code: c.code, name: c.name, via: "undo import" } });
         }
         removed = clients.length;
+      } else if (kind === "leads") {
+        const leads = await tx.lead.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } });
+        for (const l of leads) {
+          await tx.lead.delete({ where: { id: l.id } });
+          await this.audit.record(tx, { action: "delete", entity: "lead", entityId: l.id, before: { name: l.name, via: "undo import" } });
+        }
+        removed = leads.length;
       } else {
         // People who already joined stay; invitations still waiting are cancelled.
         removed = (await tx.invitation.updateMany({ where: { id: { in: ids }, status: "pending" }, data: { status: "canceled" } })).count;

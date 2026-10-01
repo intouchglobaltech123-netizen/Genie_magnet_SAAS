@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { packageTotals } from "@gm/shared";
 import type { PrismaClient } from "../generated/prisma/client.js";
-import { ensureDefaultRoles } from "../roles.js";
+import { setUpAgencyDefaults } from "../defaults.js";
 import { withAgency } from "../tenancy.js";
 import { type SeedAgency, sampleAgencies } from "./data.js";
 
@@ -23,14 +23,14 @@ export interface SeedResult {
  * Runs as the schema owner. Every write sets the agency (and, for a person, the user) first, so it also
  * works where the owner is not a superuser and row-level security applies to it.
  * Seeded people have no password: on test servers they sign in with test sign-in (TEST_SIGN_IN in the API).
- * An agency that already exists is left as it is (it only gets default roles it is missing), so running it again is safe.
+ * An agency that already exists is left as it is (it only gets default roles and stages it is missing), so running it again is safe.
  */
 export async function seedSampleData(prisma: PrismaClient, agencies: SeedAgency[] = sampleAgencies): Promise<SeedResult[]> {
   const results: SeedResult[] = [];
   for (const a of agencies) {
     const exists = await withAgency(prisma, a.id, (tx) => tx.agency.findUnique({ where: { id: a.id }, select: { id: true } }));
     if (exists) {
-      await withAgency(prisma, a.id, (tx) => ensureDefaultRoles(tx, a.id));
+      await withAgency(prisma, a.id, (tx) => setUpAgencyDefaults(tx, a.id));
       results.push({ agency: a.name, created: false });
       continue;
     }
@@ -56,7 +56,7 @@ export async function seedSampleData(prisma: PrismaClient, agencies: SeedAgency[
 
     await withAgency(prisma, a.id, async (tx) => {
       await tx.agency.create({ data: { id: a.id, name: a.name, slug: a.slug, plan: a.plan, ...a.profile } });
-      await ensureDefaultRoles(tx, a.id);
+      await setUpAgencyDefaults(tx, a.id);
       await tx.membership.createMany({ data: a.people.map((p) => ({ agencyId: a.id, userId: userId(p.email), role: p.role, title: p.title })) });
 
       const packages = new Map<string, string>();
