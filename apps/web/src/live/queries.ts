@@ -18,6 +18,9 @@ import {
   type LeadUpdate,
   type PipelineInput,
   type PipelineStage,
+  type Proposal,
+  type ProposalInput,
+  type WinInput,
   type ImportRecord,
   type ImportResult,
   type Me,
@@ -328,6 +331,44 @@ export function useAddActivity() {
   const refresh = useRefresh(keys.leads);
   return useMutation({
     mutationFn: (v: { leadId: string; input: ActivityInput }) => api<LeadDetail>(`/leads/${v.leadId}/activities`, { body: v.input }),
+    onSuccess: refresh,
+  });
+}
+
+// ─── Proposals and winning ────────────────────────────────────────────
+
+export const useProposals = (status: string, enabled = true) =>
+  useQuery({ queryKey: ["proposals", status], queryFn: () => api<(Proposal & { leadName: string })[]>(`/proposals?status=${status}`), enabled });
+
+function useRefreshDeals() {
+  const qc = useQueryClient();
+  return () => Promise.all([keys.leads, ["proposals"], keys.clients, keys.me].map((queryKey) => qc.invalidateQueries({ queryKey })));
+}
+
+export function useCreateProposal() {
+  const refresh = useRefreshDeals();
+  return useMutation({
+    mutationFn: (v: { leadId: string; input: ProposalInput }) => api<Proposal>(`/leads/${v.leadId}/proposals`, { body: v.input }),
+    onSuccess: refresh,
+  });
+}
+
+/** approve · reject (with a note) · sent · accepted · declined */
+export function useProposalStep() {
+  const refresh = useRefreshDeals();
+  return useMutation({
+    mutationFn: (v: { id: string; step: "approve" | "reject" | "sent" | "accepted" | "declined"; note?: string }) =>
+      v.step === "accepted" || v.step === "declined"
+        ? api<Proposal>(`/proposals/${v.id}/answer`, { body: { accepted: v.step === "accepted", note: v.note } })
+        : api<Proposal>(`/proposals/${v.id}/${v.step}`, { body: v.step === "sent" ? {} : { note: v.note } }),
+    onSuccess: refresh,
+  });
+}
+
+export function useWinLead() {
+  const refresh = useRefreshDeals();
+  return useMutation({
+    mutationFn: (v: { leadId: string; input: WinInput }) => api<{ clientId: string; agreementId: string | null }>(`/leads/${v.leadId}/win`, { body: v.input }),
     onSuccess: refresh,
   });
 }

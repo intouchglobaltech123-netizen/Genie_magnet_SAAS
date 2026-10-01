@@ -14,7 +14,8 @@ import { errorMessage } from "./api";
 import { useCan, useLeads, useSaveStages, useStages } from "./queries";
 
 type Row = { key?: string; name: string; probability: string };
-const rowsOf = (stages: PipelineStage[]): Row[] => stages.filter((s) => s.kind === "open").map((s) => ({ key: s.key, name: s.name, probability: String(s.probability) }));
+const rowsOf = (stages: PipelineStage[]): Row[] =>
+  stages.filter((s) => s.kind === "open").map((s) => ({ key: s.key, name: s.name, probability: String(s.probability) }));
 
 function Editor({ stages, canEdit }: { stages: PipelineStage[]; canEdit: boolean }) {
   const save = useSaveStages();
@@ -42,7 +43,12 @@ function Editor({ stages, canEdit }: { stages: PipelineStage[]; canEdit: boolean
           const inUse = r.key ? (counts.get(r.key) ?? 0) : 0;
           return (
             <li key={r.key ?? `new-${i}`} className="grid grid-cols-[1fr_110px_auto] items-center gap-2 sm:grid-cols-[1fr_130px_auto]">
-              <Input aria-label={`Stage ${i + 1} name`} value={r.name} disabled={!canEdit} onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
+              <Input
+                aria-label={`Stage ${i + 1} name`}
+                value={r.name}
+                disabled={!canEdit}
+                onChange={(e) => setRows(rows.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+              />
               <div className="flex items-center gap-1">
                 <Input
                   aria-label={`Chance of winning at ${r.name || `stage ${i + 1}`}`}

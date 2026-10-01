@@ -57,6 +57,7 @@ type Form = {
   windowDays: string;
   reminderDays: number[];
   languages: string[];
+  discountLimit: string;
 };
 
 const toForm = (a: AgencyProfile): Form => ({
@@ -71,6 +72,7 @@ const toForm = (a: AgencyProfile): Form => ({
   windowDays: String(a.windowDays),
   reminderDays: a.reminderDays,
   languages: a.languages,
+  discountLimit: String(a.discountLimit),
 });
 
 function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: boolean }) {
@@ -96,6 +98,7 @@ function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: bool
       windowDays: Number(f.windowDays),
       reminderDays: f.reminderDays,
       languages: f.languages,
+      discountLimit: Number(f.discountLimit),
     };
     const parsed = agencyProfileInput.safeParse(input);
     if (!parsed.success) {
@@ -128,10 +131,7 @@ function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: bool
                   value={f.businessStage || "_none"}
                   onValueChange={(v) => setF({ ...f, businessStage: v === "_none" ? "" : v })}
                   aria-label="Business stage"
-                  options={[
-                    { value: "_none", label: "Not set" },
-                    ...BUSINESS_STAGES.map((s) => ({ value: s, label: `${s} — ${STAGE_HINT[s]}` })),
-                  ]}
+                  options={[{ value: "_none", label: "Not set" }, ...BUSINESS_STAGES.map((s) => ({ value: s, label: `${s} — ${STAGE_HINT[s]}` }))]}
                 />
               </Field>
               <Field label="Brand colour" hint="Used in the client portal and on documents." error={errors.brandColor}>
@@ -282,9 +282,7 @@ function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: bool
                 <label key={l.code} className="flex items-center gap-2 text-body">
                   <Checkbox
                     checked={f.languages.includes(l.code)}
-                    onCheckedChange={(on) =>
-                      setF({ ...f, languages: on === true ? [...f.languages, l.code] : f.languages.filter((c) => c !== l.code) })
-                    }
+                    onCheckedChange={(on) => setF({ ...f, languages: on === true ? [...f.languages, l.code] : f.languages.filter((c) => c !== l.code) })}
                   />
                   {l.label}
                 </label>
@@ -296,6 +294,15 @@ function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: bool
               <p className="text-body text-muted-foreground">Questionnaires can be translated into these.</p>
             )}
           </div>
+        </SectionCard>
+        <SectionCard title="Sales" description="How much discount a salesperson can give on their own.">
+          <Field
+            label="Discount without approval (%)"
+            hint="Growth OS default: 10%. Above this, a proposal waits for someone who may approve sales (the owner and managers by default)."
+            error={errors.discountLimit}
+          >
+            <Input type="number" min={0} max={50} value={f.discountLimit} onChange={set("discountLimit")} className="w-28" />
+          </Field>
         </SectionCard>
       </fieldset>
 

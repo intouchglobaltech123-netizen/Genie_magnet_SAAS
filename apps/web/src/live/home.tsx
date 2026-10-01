@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Building2, CalendarClock, CheckCircle2, Circle, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, BadgePercent, Building2, CalendarClock, CheckCircle2, Circle, ShieldCheck, Users } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, SectionCard } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useAgency, useAudit, useCan, useClients, useLeads, useMe, usePackages, useStages, useTeam } from "./queries";
+import { useAgency, useAudit, useCan, useClients, useLeads, useMe, usePackages, useProposals, useStages, useTeam } from "./queries";
 
 interface Step {
   title: string;
@@ -70,9 +70,7 @@ function SetupChecklist({ agencyId }: { agencyId: string }) {
       done: (clients.data?.length ?? 0) > 0,
     },
   ];
-  const coming: Step[] = [
-    { title: "Invoice settings", why: "GSTIN, invoice number format, bank details and payment terms." },
-  ];
+  const coming: Step[] = [{ title: "Invoice settings", why: "GSTIN, invoice number format, bank details and payment terms." }];
   const done = steps.filter((s) => s.done).length;
 
   if (hidden) return null;
@@ -152,6 +150,7 @@ export function LiveHome() {
   const team = useTeam(can("team", "view"));
   const clients = useClients(can("clients", "view"));
   const leads = useLeads(can("crm", "view"));
+  const approvals = useProposals("pending_approval", can("crm", "approve"));
   const stages = useStages();
   const open = new Set((stages.data ?? []).filter((s) => s.kind === "open").map((s) => s.key));
   const today = new Date().toISOString().slice(0, 10);
@@ -174,6 +173,9 @@ export function LiveHome() {
           )}
         </div>
         <div className="space-y-3">
+          {can("crm", "approve") && !!approvals.data?.length && (
+            <Shortcut href="/app/sales" icon={BadgePercent} title="Discounts waiting for your approval" value={approvals.data.length} />
+          )}
           {can("crm", "view") && <Shortcut href="/app/sales" icon={CalendarClock} title="Follow-ups due today" value={leads.data ? due : "…"} />}
           {can("clients", "view") && <Shortcut href="/app/clients" icon={Building2} title="Clients" value={clients.data?.length ?? "…"} />}
           {can("team", "view") && <Shortcut href="/app/settings/team" icon={Users} title="People in the team" value={team.data?.members.length ?? "…"} />}

@@ -103,6 +103,7 @@ export interface AgencyProfile {
   windowDays: number;
   reminderDays: number[];
   languages: string[];
+  discountLimit: number;
   plan: string;
 }
 
@@ -174,7 +175,28 @@ export interface Lead {
   updatedAt: string;
 }
 
+/** A proposal on a lead (P1-16). */
+export interface Proposal {
+  id: string;
+  leadId: string;
+  leadName?: string;
+  packageId: string | null;
+  packageName: string;
+  listFee: number;
+  discountPercent: number;
+  monthlyFee: number;
+  months: number;
+  deliverables: DeliverableInput[];
+  notes: string | null;
+  status: "pending_approval" | "approved" | "rejected" | "sent" | "accepted" | "declined";
+  decisionNote: string | null;
+  decidedBy: string | null;
+  createdBy: string | null;
+  createdAt: string;
+}
+
 /** GET /leads/:id */
 export interface LeadDetail extends Lead {
+  proposals: Proposal[];
   history: { id: string; kind: string; summary: string; outcome: string | null; at: string; by: { id: string; name: string | null } | null }[];
 }

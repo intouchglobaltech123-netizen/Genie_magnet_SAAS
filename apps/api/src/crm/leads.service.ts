@@ -4,6 +4,7 @@ import { type ActivityInput, type LeadInput, type LeadUpdate, scopeOf } from "@g
 import { AuditService, changes } from "../audit/audit.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { PipelineService } from "./pipeline.service.js";
+import { presentProposal } from "./proposals.service.js";
 
 type LeadRow = Prisma.LeadGetPayload<{ include: { _count: { select: { activities: true } } } }>;
 
@@ -106,10 +107,14 @@ export class LeadsService {
 
   async get(id: string) {
     const lead = await this.find(id);
-    const activities = await this.tenant.db.activity.findMany({ where: { leadId: id }, orderBy: { at: "desc" }, take: 200 });
+    const [activities, proposals] = await Promise.all([
+      this.tenant.db.activity.findMany({ where: { leadId: id }, orderBy: { at: "desc" }, take: 200 }),
+      this.tenant.db.proposal.findMany({ where: { leadId: id }, orderBy: { createdAt: "desc" } }),
+    ]);
     const names = await this.names([lead.ownerId, ...activities.map((a) => a.createdBy)]);
     return {
       ...this.present(lead, names),
+      proposals: proposals.map((p) => presentProposal(p)),
       history: activities.map((a) => ({
         id: a.id,
         kind: a.kind,
@@ -151,7 +156,16 @@ export class LeadsService {
 
   async update(id: string, input: LeadUpdate) {
     const current = await this.find(id);
-    if (input.stage) await this.pipeline.stage(input.stage);
+    if (input.stage && input.stage !== current.stage) {
+      const stage = await this.pipeline.stage(input.stage);
+      // Winning sets up the client and agreement, so it goes through "Mark as won" (proposals.service), not a stage move.
+      if (stage.kind === "won" && !current.clientId) {
+        throw new BadRequestException({
+          message: "Mark the deal as won from the lead, so the client and agreement are set up.",
+          issues: [{ path: "stage", message: "Use Mark as won" }],
+        });
+      }
+    }
     const ownerId = input.ownerId !== undefined ? await this.owner(input.ownerId) : undefined;
     const data = { ...input, ownerId, nextFollowUp: date(input.nextFollowUp) };
     const next = terms({ ...current, ...Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)) } as LeadRow);

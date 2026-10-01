@@ -91,10 +91,9 @@ async function readFile(file: File): Promise<Sheet> {
 async function downloadTemplate(kind: ImportKind) {
   const { default: writeXlsxFile } = await import("write-excel-file/browser");
   const columns = COLUMNS[kind];
-  await writeXlsxFile(
-    [columns.map((c) => ({ value: c.label, fontWeight: "bold" as const })), columns.map((c) => c.example)],
-    { columns: columns.map(() => ({ width: 26 })) },
-  ).toFile(`genie-${kind}-template.xlsx`);
+  await writeXlsxFile([columns.map((c) => ({ value: c.label, fontWeight: "bold" as const })), columns.map((c) => c.example)], {
+    columns: columns.map(() => ({ width: 26 })),
+  }).toFile(`genie-${kind}-template.xlsx`);
 }
 
 // ─── Checking the rows (the same rules the API applies) ──────────────
@@ -256,7 +255,8 @@ function Importer({ kind }: { kind: ImportKind }) {
     try {
       const s = await readFile(file);
       if (!s.rows.length) throw new Error("The file has headings but no rows.");
-      if (s.rows.length > MAX_ROWS[kind]) throw new Error(`The file has ${s.rows.length} rows. Import at most ${MAX_ROWS[kind]} at a time — split it into smaller files.`);
+      if (s.rows.length > MAX_ROWS[kind])
+        throw new Error(`The file has ${s.rows.length} rows. Import at most ${MAX_ROWS[kind]} at a time — split it into smaller files.`);
       setSheet(s);
       setMapping(matchColumns(s.headers, columns));
       setLeaveOut(false);
@@ -400,7 +400,11 @@ function Importer({ kind }: { kind: ImportKind }) {
       {sheet && rows && missingRequired.length === 0 && (
         <SectionCard
           title="3. Check and import"
-          description={bad ? `${good.length} rows ready · ${bad} need fixing. Fix them in your file and choose it again, or leave them out.` : `All ${good.length} rows are ready.`}
+          description={
+            bad
+              ? `${good.length} rows ready · ${bad} need fixing. Fix them in your file and choose it again, or leave them out.`
+              : `All ${good.length} rows are ready.`
+          }
           contentClassName="p-0"
         >
           <div className="max-h-[480px] overflow-auto">
@@ -459,7 +463,11 @@ function RecentImports() {
   const undo = useUndoImport();
   if (!imports.data?.length) return null;
   return (
-    <SectionCard title="Recent imports" description="An import can be undone for 24 hours, if nothing it added has been worked on since." contentClassName="p-0">
+    <SectionCard
+      title="Recent imports"
+      description="An import can be undone for 24 hours, if nothing it added has been worked on since."
+      contentClassName="p-0"
+    >
       <Table>
         <THead>
           <TR>
@@ -512,7 +520,10 @@ export function LiveImport() {
 
   return (
     <>
-      <PageHeader title="Import from Excel" description="Bring in your existing lists yourself. Every row is checked before anything is saved, and an import can be undone for 24 hours." />
+      <PageHeader
+        title="Import from Excel"
+        description="Bring in your existing lists yourself. Every row is checked before anything is saved, and an import can be undone for 24 hours."
+      />
       {!kind ? (
         <EmptyState icon={FileSpreadsheet} title="Nothing you can import" description="Importing needs a role that can add clients or invite people." />
       ) : (

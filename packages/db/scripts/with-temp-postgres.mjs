@@ -48,6 +48,9 @@ try {
   status = spawnSync(cmd, args, { env, stdio: "inherit", shell: process.platform === "win32" }).status ?? 1;
 } finally {
   await server.stop().catch(() => {});
-  rmSync(dir, { recursive: true, force: true });
+  // Windows can hold the folder for a moment after the server stops; the test runs sweep anything left.
+  try {
+    rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+  } catch {}
 }
 process.exit(status);

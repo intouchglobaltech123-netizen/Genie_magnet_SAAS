@@ -100,12 +100,12 @@ As the owner, I want to set up packages with price, videos and posts per month, 
 
 **P1-15 · Calls and activities (S)** — **Done.** Log a call, meeting, WhatsApp, email or note on a lead, setting the next follow-up at the same time; history on the lead; follow-ups due on Home and the pipeline. Reminders by notification come with P1-04.
 
-**P1-16 · Proposals and discount approval (M)**
+**P1-16 · Proposals and discount approval (M)** — **Done.** A proposal copies a package's terms with a discount; within the agency's limit (Settings → Agency profile, default 10%) it is approved at once, above it it waits for someone who may approve sales, who approves or rejects with a note. Sent, then the client's answer. Approvals on Home and the pipeline.
 As a salesperson, I want to send a proposal with a discount, and have discounts above my limit approved by the owner, so pricing stays under control.
 
 - Discounts up to the sales authority (10 % by default, configurable) are auto-approved; above it, the owner approves or rejects with a note.
 
-**P1-17 · Deal won → client set up (M)**
+**P1-17 · Deal won → client set up (M)** — **Done** (onboarding questionnaire and checklist added when the onboarding engine lands, P1-21+). Mark as won creates the client and contact from the lead and the agreement from the accepted proposal in one transaction, closes the lead and links it; each record in the audit log. Dragging a lead to Won opens this; it cannot be skipped.
 As the account manager, when a deal is won I want the client, agreement, onboarding questionnaire and checklist created automatically, so onboarding starts the same day.
 
 - Creates client and contacts, agreement from the package, questionnaire response (not yet sent), checklist; notifies the account manager.

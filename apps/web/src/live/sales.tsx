@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarClock, LayoutGrid, List, Mail, MessageCircle, NotebookPen, Phone, Plus, Search, Trash2, Users } from "lucide-react";
+import { BadgeCheck, CalendarClock, LayoutGrid, List, Mail, MessageCircle, NotebookPen, Phone, Plus, Search, Trash2, Users, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { ACTIVITY_KINDS, type ActivityKind, type Lead, leadInput, LEAD_SOURCES, type LeadUpdate, type PipelineStage } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
@@ -17,8 +17,9 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { ApiError, errorMessage } from "./api";
+import { ApprovalsCard, LostDialog, ProposalsSection, WinDialog } from "./deals";
 import { inr } from "./packages";
-import { useAddActivity, useCan, useDeleteLead, useLead, useLeads, useMe, useMoveLead, useSaveLead, useStages, useTeam } from "./queries";
+import { useAddActivity, useCan, useClients, useDeleteLead, useLead, useLeads, useMe, useMoveLead, useSaveLead, useStages, useTeam } from "./queries";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const shortDate = (d: string) => new Date(`${d}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" });
@@ -48,7 +49,18 @@ function useOwnerOptions() {
 
 // ─── Lead form (new lead and the lead panel) ──────────────────────────
 
-type Form = { name: string; company: string; phone: string; email: string; source: string; stage: string; value: string; ownerId: string; nextFollowUp: string; notes: string };
+type Form = {
+  name: string;
+  company: string;
+  phone: string;
+  email: string;
+  source: string;
+  stage: string;
+  value: string;
+  ownerId: string;
+  nextFollowUp: string;
+  notes: string;
+};
 
 const formOf = (l?: Lead): Form => ({
   name: l?.name ?? "",
@@ -63,7 +75,19 @@ const formOf = (l?: Lead): Form => ({
   notes: l?.notes ?? "",
 });
 
-function LeadFields({ f, setF, errors, stages, editable }: { f: Form; setF: (f: Form) => void; errors: Record<string, string>; stages: PipelineStage[]; editable: boolean }) {
+function LeadFields({
+  f,
+  setF,
+  errors,
+  stages,
+  editable,
+}: {
+  f: Form;
+  setF: (f: Form) => void;
+  errors: Record<string, string>;
+  stages: PipelineStage[];
+  editable: boolean;
+}) {
   const owners = useOwnerOptions();
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
   return (
@@ -88,7 +112,12 @@ function LeadFields({ f, setF, errors, stages, editable }: { f: Form; setF: (f: 
           <Input type="number" min={0} step={1000} value={f.value} onChange={set("value")} />
         </Field>
         <Field label="Stage" error={errors.stage}>
-          <Select value={f.stage} onValueChange={(stage) => setF({ ...f, stage })} options={stages.map((s) => ({ value: s.key, label: s.name }))} aria-label="Stage" />
+          <Select
+            value={f.stage}
+            onValueChange={(stage) => setF({ ...f, stage })}
+            options={stages.map((s) => ({ value: s.key, label: s.name }))}
+            aria-label="Stage"
+          />
         </Field>
         <Field label="Follows it up" error={errors.ownerId}>
           <Select value={f.ownerId} onValueChange={(ownerId) => setF({ ...f, ownerId })} options={owners} placeholder="Me" aria-label="Follows it up" />
@@ -126,7 +155,17 @@ function toInput(f: Form) {
 
 const issuesOf = (e: unknown) => (e instanceof ApiError && e.body.issues ? Object.fromEntries(e.body.issues.map((i) => [i.path, i.message])) : {});
 
-function NewLeadDialog({ open, onOpenChange, stages, onCreated }: { open: boolean; onOpenChange: (o: boolean) => void; stages: PipelineStage[]; onCreated: (id: string) => void }) {
+function NewLeadDialog({
+  open,
+  onOpenChange,
+  stages,
+  onCreated,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  stages: PipelineStage[];
+  onCreated: (id: string) => void;
+}) {
   const save = useSaveLead();
   const [f, setF] = useState<Form>(() => ({ ...formOf(), stage: stages.find((s) => s.kind === "open")?.key ?? "" }));
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -158,7 +197,11 @@ function NewLeadDialog({ open, onOpenChange, stages, onCreated }: { open: boolea
           </DialogHeader>
           <DialogBody>
             <LeadFields f={f} setF={setF} errors={errors} stages={stages} editable />
-            {save.error && !Object.keys(issuesOf(save.error)).length && <Alert tone="danger" className="mt-4">{errorMessage(save.error)}</Alert>}
+            {save.error && !Object.keys(issuesOf(save.error)).length && (
+              <Alert tone="danger" className="mt-4">
+                {errorMessage(save.error)}
+              </Alert>
+            )}
           </DialogBody>
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
@@ -218,7 +261,15 @@ function ActivityForm({ leadId }: { leadId: string }) {
           );
         })}
       </div>
-      <Textarea rows={2} required minLength={2} placeholder="What happened? What did they say?" value={summary} onChange={(e) => setSummary(e.target.value)} aria-label="What happened" />
+      <Textarea
+        rows={2}
+        required
+        minLength={2}
+        placeholder="What happened? What did they say?"
+        value={summary}
+        onChange={(e) => setSummary(e.target.value)}
+        aria-label="What happened"
+      />
       <div className="flex flex-wrap items-end gap-3">
         <label className="text-body text-text-secondary">
           Next follow-up
@@ -233,7 +284,19 @@ function ActivityForm({ leadId }: { leadId: string }) {
   );
 }
 
-function LeadPanel({ id, stages, onClose }: { id: string | null; stages: PipelineStage[]; onClose: () => void }) {
+function LeadPanel({
+  id,
+  stages,
+  onClose,
+  onWin,
+  onLost,
+}: {
+  id: string | null;
+  stages: PipelineStage[];
+  onClose: () => void;
+  onWin: (id: string) => void;
+  onLost: (id: string) => void;
+}) {
   const can = useCan();
   const lead = useLead(id);
   const save = useSaveLead();
@@ -261,7 +324,29 @@ function LeadPanel({ id, stages, onClose }: { id: string | null; stages: Pipelin
               </DialogDescription>
             </DialogHeader>
             <DialogBody className="space-y-6">
-              {editable && <ActivityForm leadId={lead.data.id} />}
+              {lead.data.clientId ? (
+                <Alert tone="success" icon={BadgeCheck}>
+                  Won — {lead.data.company ?? lead.data.name} is a client now.
+                </Alert>
+              ) : (
+                editable &&
+                stage?.kind !== "lost" && (
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" onClick={() => onWin(lead.data!.id)}>
+                      <BadgeCheck />
+                      Mark as won
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => onLost(lead.data!.id)}>
+                      <XCircle />
+                      Mark as lost
+                    </Button>
+                  </div>
+                )
+              )}
+              {stage?.kind === "lost" && lead.data.lostReason && <Alert tone="info">Lost: {lead.data.lostReason}</Alert>}
+              {editable && !lead.data.clientId && <ActivityForm leadId={lead.data.id} />}
+
+              <ProposalsSection lead={lead.data} />
 
               <div>
                 <div className="mb-2 text-body font-semibold">History</div>
@@ -372,7 +457,19 @@ function LeadCard({ lead, onOpen, draggable }: { lead: Lead; onOpen: () => void;
   );
 }
 
-function Board({ leads, stages, onOpen }: { leads: Lead[]; stages: PipelineStage[]; onOpen: (id: string) => void }) {
+function Board({
+  leads,
+  stages,
+  onOpen,
+  onWin,
+  onLost,
+}: {
+  leads: Lead[];
+  stages: PipelineStage[];
+  onOpen: (id: string) => void;
+  onWin: (id: string) => void;
+  onLost: (id: string) => void;
+}) {
   const can = useCan();
   const move = useMoveLead();
   const [over, setOver] = useState<string | null>(null);
@@ -393,8 +490,15 @@ function Board({ leads, stages, onOpen }: { leads: Lead[]; stages: PipelineStage
               setOver(null);
               const id = e.dataTransfer.getData("text/lead");
               const lead = leads.find((l) => l.id === id);
-              if (lead && lead.stage !== s.key)
-                move.mutate({ id, stage: s.key }, { onSuccess: () => toast.success(`${lead.name} → ${s.name}`), onError: (err) => toast.error(errorMessage(err)) });
+              if (!lead || lead.stage === s.key) return;
+              // Winning sets up the client and agreement; losing asks why.
+              if (s.kind === "won") return lead.clientId ? undefined : onWin(lead.id);
+              if (s.kind === "lost") return onLost(lead.id);
+              if (lead)
+                move.mutate(
+                  { id, stage: s.key },
+                  { onSuccess: () => toast.success(`${lead.name} → ${s.name}`), onError: (err) => toast.error(errorMessage(err)) },
+                );
             }}
             className={cn(
               "flex w-64 shrink-0 flex-col rounded-xl border bg-surface-secondary p-2 transition-colors",
@@ -446,7 +550,9 @@ function LeadList({ leads, stages, onOpen }: { leads: Lead[]; stages: PipelineSt
                 {l.company && <div className="text-muted-foreground">{l.company}</div>}
               </TD>
               <TD>
-                <Badge tone={name.get(l.stage)?.kind === "won" ? "success" : name.get(l.stage)?.kind === "lost" ? "neutral" : "info"}>{name.get(l.stage)?.name ?? l.stage}</Badge>
+                <Badge tone={name.get(l.stage)?.kind === "won" ? "success" : name.get(l.stage)?.kind === "lost" ? "neutral" : "info"}>
+                  {name.get(l.stage)?.name ?? l.stage}
+                </Badge>
               </TD>
               <TD numeric>{l.value ? inr(l.value) : "—"}</TD>
               <TD>{l.owner?.name ?? "—"}</TD>
@@ -462,6 +568,25 @@ function LeadList({ leads, stages, onOpen }: { leads: Lead[]; stages: PipelineSt
   );
 }
 
+/** "Mark as won" for a lead from the board or the panel: waits for the lead's proposals and the client codes in use. */
+function WinFlow({ id, onClose }: { id: string; onClose: () => void }) {
+  const lead = useLead(id);
+  const clients = useClients();
+  const [open, setOpen] = useState(true);
+  if (!lead.data || !clients.data) return null;
+  return (
+    <WinDialog
+      key={id}
+      lead={lead.data}
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (!o) onClose();
+      }}
+    />
+  );
+}
+
 export function LiveSales() {
   const me = useMe().data!;
   const can = useCan();
@@ -473,6 +598,11 @@ export function LiveSales() {
   const [dueOnly, setDueOnly] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [winning, setWinning] = useState<string | null>(null);
+  const [losing, setLosing] = useState<string | null>(null);
+  const save = useSaveLead();
+  const lostStage = stages.data?.find((s) => s.kind === "lost");
+  const losingLead = leads.data?.find((l) => l.id === losing);
 
   const shown = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -509,6 +639,7 @@ export function LiveSales() {
           )
         }
       />
+      <ApprovalsCard onOpen={setOpen} />
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="relative w-full max-w-xs">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-text-muted" />
@@ -546,13 +677,28 @@ export function LiveSales() {
           />
         </Card>
       ) : view === "board" ? (
-        <Board leads={shown} stages={stages.data} onOpen={setOpen} />
+        <Board leads={shown} stages={stages.data} onOpen={setOpen} onWin={setWinning} onLost={setLosing} />
       ) : (
         <LeadList leads={shown} stages={stages.data} onOpen={setOpen} />
       )}
 
       {stages.data && adding && <NewLeadDialog open={adding} onOpenChange={setAdding} stages={stages.data} onCreated={setOpen} />}
-      {stages.data && <LeadPanel id={open} stages={stages.data} onClose={() => setOpen(null)} />}
+      {stages.data && <LeadPanel id={open} stages={stages.data} onClose={() => setOpen(null)} onWin={setWinning} onLost={setLosing} />}
+      {winning && <WinFlow id={winning} onClose={() => setWinning(null)} />}
+      <LostDialog
+        open={!!losingLead}
+        name={losingLead?.name ?? ""}
+        onClose={() => setLosing(null)}
+        onConfirm={(reason) => {
+          const id = losing!;
+          setLosing(null);
+          if (lostStage)
+            save.mutate(
+              { id, input: { stage: lostStage.key, lostReason: reason || undefined, nextFollowUp: null } },
+              { onSuccess: () => toast.success("Marked as lost"), onError: (e) => toast.error(errorMessage(e)) },
+            );
+        }}
+      />
     </>
   );
 }

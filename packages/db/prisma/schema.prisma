@@ -52,6 +52,8 @@ model Agency {
   reminderDays  Int[]          @default([2, 5]) @map("reminder_days")
   /// Languages used with clients (ISO codes), e.g. en, ta.
   languages     String[]       @default(["en"])
+  /// Largest discount (%) a proposal can carry without approval (Growth OS sales authority, default 10).
+  discountLimit Int            @default(10) @map("discount_limit")
   createdAt     DateTime       @default(now()) @map("created_at")
 
   memberships Membership[]
@@ -299,10 +301,45 @@ model Lead {
   updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
 
   activities Activity[]
+  proposals  Proposal[]
 
   @@index([agencyId, stage])
   @@index([agencyId, ownerId])
   @@map("leads")
+}
+
+/// A proposal to a lead (P1-16): a package's terms copied when it is made, with a discount. Discounts above the
+/// agency's limit wait for someone who may approve; the deal is won from an accepted proposal (P1-17).
+model Proposal {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  agencyId        String    @map("agency_id") @db.Uuid
+  leadId          String    @map("lead_id") @db.Uuid
+  packageId       String?   @map("package_id") @db.Uuid
+  packageName     String    @map("package_name")
+  /// The package's fee a month when the proposal was made.
+  listFee         Int       @map("list_fee")
+  discountPercent Int       @default(0) @map("discount_percent")
+  /// Fee a month after the discount.
+  monthlyFee      Int       @map("monthly_fee")
+  months          Int       @default(12)
+  /// Deliverables copied from the package.
+  deliverables    Json      @default("[]")
+  notes           String?
+  /// pending_approval · approved · rejected · sent · accepted · declined
+  status          String
+  decisionNote    String?   @map("decision_note")
+  decidedBy       String?   @map("decided_by")
+  decidedAt       DateTime? @map("decided_at")
+  sentAt          DateTime? @map("sent_at")
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  lead    Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  package Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId, leadId])
+  @@index([agencyId, status])
+  @@map("proposals")
 }
 
 /// Calls, meetings, messages and notes with a lead (P1-15).
@@ -391,6 +428,7 @@ model Package {
 
   agency     Agency      @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   agreements Agreement[]
+  proposals  Proposal[]
 
   @@unique([agencyId, name])
   @@map("packages")

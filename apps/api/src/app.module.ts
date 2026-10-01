@@ -10,9 +10,10 @@ import { Outbox } from "./auth/outbox.js";
 import { ClientsController } from "./clients/clients.controller.js";
 import { ClientsService } from "./clients/clients.service.js";
 import { ErrorFilter } from "./common/error.filter.js";
-import { LeadsController, PipelineController } from "./crm/crm.controller.js";
+import { LeadsController, PipelineController, ProposalsController } from "./crm/crm.controller.js";
 import { LeadsService } from "./crm/leads.service.js";
 import { PipelineService } from "./crm/pipeline.service.js";
+import { ProposalsService } from "./crm/proposals.service.js";
 import { RateLimitGuard } from "./common/rate-limit.js";
 import { ENV, type Env, loadEnv } from "./env.js";
 import { HealthController } from "./health/health.controller.js";
@@ -42,6 +43,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     ClientsController,
     PipelineController,
     LeadsController,
+    ProposalsController,
     ImportsController,
   ],
   providers: [
@@ -72,6 +74,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     ClientsService,
     PipelineService,
     LeadsService,
+    ProposalsService,
     ImportsService,
     // Order matters: rate limit first, then permissions; errors in one shape.
     { provide: APP_GUARD, useClass: RateLimitGuard },

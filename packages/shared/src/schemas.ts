@@ -169,6 +169,8 @@ export const agencyProfileInput = z
     windowDays: z.number().int("Whole days only").min(1, "At least 1 day").max(60, "At most 60 days"),
     reminderDays: z.array(z.number().int().min(1, "Reminders start from day 1").max(59)).max(5, "At most 5 reminders"),
     languages: z.array(z.enum(LANGUAGE_CODES)).min(1, "Choose at least one language"),
+    /** Largest discount (%) a proposal can carry without approval. */
+    discountLimit: z.number().int("Whole percent only").min(0).max(50, "At most 50%"),
   })
   .partial()
   .superRefine((v, ctx) => {
@@ -219,3 +221,16 @@ export const auditQuery = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(50),
 });
 export type AuditQuery = z.infer<typeof auditQuery>;
+
+/**
+ * Winning a deal (P1-17): the client (with its contact) is set up from the lead, and the agreement from the accepted
+ * proposal, in one go.
+ */
+export const winInput = z.object({
+  client: clientInput,
+  /** The proposal the client accepted; without one, only the client is set up. */
+  proposalId: z.uuid().optional(),
+  /** When the agreement starts. */
+  startDate: z.iso.date("Pick the start date"),
+});
+export type WinInput = z.input<typeof winInput>;

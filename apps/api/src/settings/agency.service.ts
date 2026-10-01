@@ -17,6 +17,7 @@ const PROFILE = {
   windowDays: true,
   reminderDays: true,
   languages: true,
+  discountLimit: true,
   plan: true,
 } as const;
 

@@ -93,7 +93,10 @@ function PackageDialog({ editing, open, onOpenChange }: { editing: Package | nul
       { id: editing?.id, input: parsed.data },
       {
         onSuccess: (p) => {
-          toast.success(editing ? `${p.name} saved` : `${p.name} added`, editing ? { description: "New agreements use the new terms; signed ones keep theirs." } : {});
+          toast.success(
+            editing ? `${p.name} saved` : `${p.name} added`,
+            editing ? { description: "New agreements use the new terms; signed ones keep theirs." } : {},
+          );
           onOpenChange(false);
         },
         onError: (err) => {
@@ -250,7 +253,8 @@ function PackageCard({ p, canEdit, onEdit }: { p: Package; canEdit: boolean; onE
           ))}
         </ul>
         <div className="text-body text-muted-foreground">
-          {p.shootDays} shoot {p.shootDays === 1 ? "day" : "days"} · {p.revisionsPerDeliverable} {p.revisionsPerDeliverable === 1 ? "revision" : "revisions"} each
+          {p.shootDays} shoot {p.shootDays === 1 ? "day" : "days"} · {p.revisionsPerDeliverable} {p.revisionsPerDeliverable === 1 ? "revision" : "revisions"}{" "}
+          each
         </div>
         {p.platforms.length > 0 && (
           <div className="flex flex-wrap gap-1">
@@ -287,9 +291,7 @@ function PackageCard({ p, canEdit, onEdit }: { p: Package; canEdit: boolean; onE
                   variant="ghost"
                   size="icon-sm"
                   aria-label={`Delete ${p.name}`}
-                  onClick={() =>
-                    remove.mutate(p.id, { onSuccess: () => toast.success(`${p.name} deleted`), onError: (e) => toast.error(errorMessage(e)) })
-                  }
+                  onClick={() => remove.mutate(p.id, { onSuccess: () => toast.success(`${p.name} deleted`), onError: (e) => toast.error(errorMessage(e)) })}
                 >
                   <Trash2 />
                 </Button>

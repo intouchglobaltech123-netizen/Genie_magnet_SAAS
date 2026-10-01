@@ -97,3 +97,24 @@ export const activityInput = z.object({
   nextFollowUp: z.iso.date("Pick a date").optional(),
 });
 export type ActivityInput = z.input<typeof activityInput>;
+
+// ─── Proposals and winning the deal (P1-16, P1-17) ────────────────────
+
+export const PROPOSAL_STATUSES = ["pending_approval", "approved", "rejected", "sent", "accepted", "declined"] as const;
+export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number];
+
+/** Fee a month after a discount, in whole rupees. */
+export const discountedFee = (listFee: number, discountPercent: number) => Math.round((listFee * (100 - discountPercent)) / 100);
+
+export const proposalInput = z.object({
+  packageId: z.uuid("Choose a package"),
+  discountPercent: z.number().int("Whole percent only").min(0).max(90, "At most 90%"),
+  months: z.number().int().min(1, "At least 1 month").max(60, "At most 60 months"),
+  notes: optionalText(1000),
+});
+export type ProposalInput = z.input<typeof proposalInput>;
+
+export const proposalApproval = z.object({ note: optionalText(500) });
+export const proposalRejection = z.object({ note: z.string().trim().min(2, "Say why, so the salesperson knows what to change").max(500) });
+export const proposalAnswer = z.object({ accepted: z.boolean(), note: optionalText(500) });
+export type ProposalAnswer = z.input<typeof proposalAnswer>;
