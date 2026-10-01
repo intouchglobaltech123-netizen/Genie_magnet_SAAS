@@ -34,12 +34,24 @@ export interface SeedClient {
 
 export interface SeedPackage {
   name: string;
+  description?: string;
   monthlyFee: number;
-  videosPerMonth: number;
-  postsPerMonth: number;
+  deliverables: { name: string; perMonth: number; kind: "video" | "post" | "story" | "other" }[];
   shootDays: number;
   revisionsPerDeliverable: number;
   platforms: string[];
+  billing?: string;
+}
+
+/** The agency's profile (Settings → Agency profile). */
+export interface SeedProfile {
+  brandColor?: string;
+  businessStage?: "struggle" | "survival" | "stability" | "success" | "scale";
+  phone?: string;
+  email?: string;
+  website?: string;
+  city?: string;
+  languages?: string[];
 }
 
 export interface SeedLead {
@@ -59,6 +71,7 @@ export interface SeedAgency {
   name: string;
   slug: string;
   plan: "starter" | "growth" | "pro" | "internal";
+  profile?: SeedProfile;
   people: SeedPerson[];
   packages: SeedPackage[];
   clients: SeedClient[];
@@ -73,6 +86,7 @@ export const genieMagnet: SeedAgency = {
   name: "Genie Magnet",
   slug: "genie-magnet",
   plan: "internal",
+  profile: { brandColor: "#1E3A8A", city: "Appakudal", phone: "+91 98400 11000", email: "hello@geniemagnet.test", languages: ["en", "ta"] },
   people: [
     { name: "Janarthanan", email: gm("jana"), role: "owner", title: "Founder & MD" },
     { name: "Ashwin", email: gm("ashwin"), role: "manager", title: "Company Manager" },
@@ -92,40 +106,68 @@ export const genieMagnet: SeedAgency = {
   packages: [
     {
       name: "Growth Video Pack",
+      description: "Reels, long-form videos and ad creatives for growing brands.",
       monthlyFee: 85000,
-      videosPerMonth: 12,
-      postsPerMonth: 0,
+      deliverables: [
+        { name: "Reels", perMonth: 8, kind: "video" },
+        { name: "Long-form videos", perMonth: 2, kind: "video" },
+        { name: "Ad creatives", perMonth: 2, kind: "video" },
+      ],
       shootDays: 2,
       revisionsPerDeliverable: 2,
       platforms: ["instagram", "youtube", "facebook"],
+      billing: "Monthly advance",
     },
     {
       name: "Social Starter Pack",
+      description: "Content and posting on the client's pages.",
       monthlyFee: 65000,
-      videosPerMonth: 10,
-      postsPerMonth: 12,
+      deliverables: [
+        { name: "Reels", perMonth: 10, kind: "video" },
+        { name: "Static posts", perMonth: 12, kind: "post" },
+        { name: "Stories", perMonth: 20, kind: "story" },
+      ],
       shootDays: 1,
       revisionsPerDeliverable: 2,
       platforms: ["instagram", "facebook"],
+      billing: "Monthly advance",
     },
     {
       name: "Authority Builder",
+      description: "Personal branding for doctors, coaches and founders.",
       monthlyFee: 48000,
-      videosPerMonth: 8,
-      postsPerMonth: 0,
+      deliverables: [
+        { name: "Explainer reels", perMonth: 6, kind: "video" },
+        { name: "Testimonial videos", perMonth: 2, kind: "video" },
+      ],
       shootDays: 1,
       revisionsPerDeliverable: 1,
       platforms: ["instagram", "youtube", "linkedin"],
+      billing: "Monthly arrears",
     },
-    { name: "Campaign Sprint", monthlyFee: 30000, videosPerMonth: 5, postsPerMonth: 0, shootDays: 1, revisionsPerDeliverable: 2, platforms: ["instagram"] },
+    {
+      name: "Campaign Sprint",
+      monthlyFee: 30000,
+      deliverables: [
+        { name: "Reels", perMonth: 4, kind: "video" },
+        { name: "Intro videos", perMonth: 1, kind: "video" },
+      ],
+      shootDays: 1,
+      revisionsPerDeliverable: 2,
+      platforms: ["instagram"],
+      billing: "50% advance",
+    },
     {
       name: "Property Showcase",
       monthlyFee: 40000,
-      videosPerMonth: 6,
-      postsPerMonth: 0,
+      deliverables: [
+        { name: "Walkthrough videos", perMonth: 2, kind: "video" },
+        { name: "Reels", perMonth: 4, kind: "video" },
+      ],
       shootDays: 1,
       revisionsPerDeliverable: 2,
       platforms: ["instagram", "youtube"],
+      billing: "Monthly arrears",
     },
   ],
   clients: [
@@ -384,7 +426,18 @@ export const zenStudio: SeedAgency = {
     { name: "Rahul Menon", email: "rahul@freelance.test", role: "freelancer", title: "Freelance Editor" },
   ],
   packages: [
-    { name: "Reels Monthly", monthlyFee: 25000, videosPerMonth: 8, postsPerMonth: 4, shootDays: 1, revisionsPerDeliverable: 2, platforms: ["instagram"] },
+    {
+      name: "Reels Monthly",
+      monthlyFee: 25000,
+      deliverables: [
+        { name: "Reels", perMonth: 8, kind: "video" },
+        { name: "Static posts", perMonth: 4, kind: "post" },
+      ],
+      shootDays: 1,
+      revisionsPerDeliverable: 2,
+      platforms: ["instagram"],
+      billing: "Monthly advance",
+    },
   ],
   clients: [
     {

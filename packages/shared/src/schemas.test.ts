@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clientInput, packageInput, questionnaireTemplateSchema } from "./schemas.js";
+import { agencyProfileInput, clientInput, EXAMPLE_PACKAGES, packageInput, packageTotals, questionnaireTemplateSchema } from "./schemas.js";
 
 describe("clientInput", () => {
   it("accepts a client with an approver", () => {
@@ -23,9 +23,39 @@ describe("clientInput", () => {
 describe("packageInput", () => {
   it("keeps money in whole rupees", () => {
     expect(
-      packageInput.safeParse({ name: "Growth Video Pack", monthlyFee: 85000.5, videosPerMonth: 12, postsPerMonth: 0, shootDays: 2, revisionsPerDeliverable: 2 })
-        .success,
+      packageInput.safeParse({
+        name: "Growth Video Pack",
+        monthlyFee: 85000.5,
+        deliverables: [{ name: "Reels", perMonth: 8 }],
+        shootDays: 2,
+        revisionsPerDeliverable: 2,
+      }).success,
     ).toBe(false);
+  });
+
+  it("needs at least one deliverable and counts videos and posts from them", () => {
+    expect(packageInput.safeParse({ name: "Empty", monthlyFee: 1000, deliverables: [], shootDays: 0, revisionsPerDeliverable: 1 }).success).toBe(false);
+    expect(
+      packageTotals([
+        { perMonth: 8, kind: "video" },
+        { perMonth: 12, kind: "post" },
+        { perMonth: 20, kind: "story" },
+      ]),
+    ).toEqual({ videosPerMonth: 8, postsPerMonth: 32 });
+    for (const p of EXAMPLE_PACKAGES) expect(packageInput.safeParse(p).success, p.name).toBe(true);
+  });
+});
+
+describe("agencyProfileInput", () => {
+  it("turns empty fields into nothing and keeps reminders inside the window, in order", () => {
+    expect(agencyProfileInput.parse({ phone: "", email: "", website: "", windowDays: 7, reminderDays: [5, 2, 5] })).toMatchObject({
+      phone: null,
+      email: null,
+      website: null,
+      reminderDays: [2, 5],
+    });
+    expect(agencyProfileInput.safeParse({ windowDays: 5, reminderDays: [2, 6] }).success).toBe(false);
+    expect(agencyProfileInput.safeParse({ logo: "data:image/svg+xml;base64,AAAA" }).success).toBe(false);
   });
 });
 

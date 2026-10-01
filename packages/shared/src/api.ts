@@ -1,5 +1,7 @@
 // What the API returns, as the web app receives it (dates are ISO strings). The API's e2e tests check these shapes.
 import type { PermissionMatrix } from "./permissions.js";
+import type { BusinessStage } from "./enums.js";
+import type { DeliverableInput } from "./schemas.js";
 
 /** Every error from the API (sign-in routes return `{ message, code }`). */
 export interface ApiErrorBody {
@@ -84,4 +86,41 @@ export interface TestPerson {
   name: string;
   email: string;
   agencies: { id: string; name: string; role: string; title: string | null }[];
+}
+
+/** GET /agency */
+export interface AgencyProfile {
+  id: string;
+  name: string;
+  slug: string;
+  logo: string | null;
+  brandColor: string | null;
+  businessStage: BusinessStage | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  city: string | null;
+  windowDays: number;
+  reminderDays: number[];
+  languages: string[];
+  plan: string;
+}
+
+/** GET /packages (one item) */
+export interface Package {
+  id: string;
+  name: string;
+  description: string | null;
+  monthlyFee: number;
+  deliverables: DeliverableInput[];
+  videosPerMonth: number;
+  postsPerMonth: number;
+  shootDays: number;
+  revisionsPerDeliverable: number;
+  platforms: string[];
+  billing: string | null;
+  active: boolean;
+  /** How many agreements use it (then it can be archived, not deleted). */
+  agreements: number;
+  createdAt: string;
 }

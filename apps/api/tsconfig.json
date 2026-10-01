@@ -5,6 +5,13 @@
     "outDir": "dist"
   },
   "include": ["src"],
-  "exclude": ["src/**/*.test.ts"],
-  "references": [{ "path": "../../packages/shared" }, { "path": "../../packages/db" }]
+  "exclude": ["src/**/*.test.ts", "src/test/**"],
+  "references": [
+    {
+      "path": "../../packages/shared"
+    },
+    {
+      "path": "../../packages/db"
+    }
+  ]
 }

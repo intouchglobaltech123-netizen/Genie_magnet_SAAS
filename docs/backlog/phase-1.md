@@ -87,9 +87,9 @@ As the owner, I want to decide for each role what it may see, change and approve
 
 ## Settings
 
-**P1-12 · Agency profile and branding (S)** — name, logo, colours, business stage, completion window (default 7 days), reminder days, languages used with clients.
+**P1-12 · Agency profile and branding (S)** — **Done.** Name, logo (resized in the browser, kept small until file storage), brand colour, business stage, contact details, onboarding window (default 7 days), reminder days (default day 2 and 5), languages used with clients. `GET/PATCH /agency`; screen Settings → Agency profile.
 
-**P1-13 · Packages (M)**
+**P1-13 · Packages (M)** — **Done.** Each package lists its deliverables a month (e.g. 8 reels, 2 long-form, 12 posts) instead of fixed video and post counts; one-click Growth OS example packages for a new agency. `/packages`; screen Settings → Packages.
 As the owner, I want to set up packages with price, videos and posts per month, platforms, shoot days and revision allowance, so agreements and quotas come from one place.
 
 - Create, edit, archive; changes never alter signed agreements retroactively.

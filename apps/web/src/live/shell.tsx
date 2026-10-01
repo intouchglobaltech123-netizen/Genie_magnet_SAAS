@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { Building2, Check, ChevronDown, FlaskConical, History, Home, LogOut, Menu, Moon, Plus, ShieldCheck, Sun, Users, X } from "lucide-react";
+import { Building2, Check, ChevronDown, FlaskConical, History, Home, Landmark, LogOut, Menu, Moon, Package, Plus, ShieldCheck, Sun, Users, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { AreaKey } from "@gm/shared";
@@ -44,6 +44,8 @@ const NAV: { title: string; items: NavItem[] }[] = [
   {
     title: "Settings",
     items: [
+      { title: "Agency profile", href: "/app/settings/agency", icon: Landmark, area: "settings" },
+      { title: "Packages", href: "/app/settings/packages", icon: Package },
       { title: "Team", href: "/app/settings/team", icon: Users, area: "team" },
       { title: "Roles and permissions", href: "/app/settings/roles", icon: ShieldCheck, area: "team" },
       { title: "Audit log", href: "/app/audit", icon: History, area: "audit" },
@@ -113,7 +115,12 @@ function AgencySwitcher() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="min-w-0 max-w-[60vw] justify-start gap-2 px-2">
-          <Building2 className="text-muted-foreground" />
+          {active?.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element -- the agency's logo, a small data URL
+            <img src={active.logo} alt="" className="size-6 shrink-0 rounded object-contain" />
+          ) : (
+            <Building2 className="text-muted-foreground" />
+          )}
           <span className="truncate font-semibold text-text-primary">{active?.name ?? "Choose an agency"}</span>
           <ChevronDown className="opacity-60" />
         </Button>

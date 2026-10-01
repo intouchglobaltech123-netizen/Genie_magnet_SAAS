@@ -30,16 +30,29 @@ enum Plan {
 }
 
 model Agency {
-  id         String   @id @default(uuid(7)) @db.Uuid
-  name       String
-  slug       String   @unique
-  logo       String?
+  id            String         @id @default(uuid(7)) @db.Uuid
+  name          String
+  slug          String         @unique
+  /// Small image as a data URL (resized in the browser) until file storage arrives.
+  logo          String?
   /// Better Auth organization metadata (JSON string).
-  metadata   String?
-  plan       Plan     @default(starter)
+  metadata      String?
+  plan          Plan           @default(starter)
+  /// Brand colour (#rrggbb) for the client portal and documents.
+  brandColor    String?        @map("brand_color")
+  /// The agency's own Growth OS stage.
+  businessStage BusinessStage? @map("business_stage")
+  phone         String?
+  email         String?
+  website       String?
+  city          String?
   /// Days to complete the deeper onboarding sections (Growth OS default 7).
-  windowDays Int      @default(7) @map("window_days")
-  createdAt  DateTime @default(now()) @map("created_at")
+  windowDays    Int            @default(7) @map("window_days")
+  /// Days after sending a questionnaire when reminders go out (Growth OS default day 2 and day 5).
+  reminderDays  Int[]          @default([2, 5]) @map("reminder_days")
+  /// Languages used with clients (ISO codes), e.g. en, ta.
+  languages     String[]       @default(["en"])
+  createdAt     DateTime       @default(now()) @map("created_at")
 
   memberships Membership[]
   invitations Invitation[]
@@ -301,13 +314,21 @@ model Package {
   id                      String   @id @default(uuid(7)) @db.Uuid
   agencyId                String   @map("agency_id") @db.Uuid
   name                    String
+  description             String?
   monthlyFee              Int      @map("monthly_fee")
+  /// What the package delivers each month: [{ name: "Reels", perMonth: 8, kind: "video" }, …] (packageInput in @gm/shared).
+  deliverables            Json     @default("[]")
+  /// Totals kept from `deliverables` (videos; posts and stories) for quotas and reports.
   videosPerMonth          Int      @map("videos_per_month")
   postsPerMonth           Int      @map("posts_per_month")
   shootDays               Int      @map("shoot_days")
   revisionsPerDeliverable Int      @map("revisions_per_deliverable")
   platforms               String[]
+  /// Default billing terms for agreements made from it, e.g. "Monthly advance".
+  billing                 String?
+  /// Archived packages stay on the agreements that use them but cannot be chosen for new ones.
   active                  Boolean  @default(true)
+  createdAt               DateTime @default(now()) @map("created_at")
 
   agency     Agency      @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   agreements Agreement[]

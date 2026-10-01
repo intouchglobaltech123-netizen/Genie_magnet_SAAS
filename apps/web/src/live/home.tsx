@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, SectionCard } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useAudit, useCan, useClients, useMe, useTeam } from "./queries";
+import { useAgency, useAudit, useCan, useClients, useMe, usePackages, useTeam } from "./queries";
 
 interface Step {
   title: string;
@@ -26,6 +26,8 @@ function SetupChecklist({ agencyId }: { agencyId: string }) {
   const team = useTeam(can("team", "view"));
   const clients = useClients(can("clients", "view"));
   const roleChanges = useAudit("entity=role&limit=1", can("audit", "view"));
+  const agency = useAgency();
+  const packages = usePackages();
   const storageKey = `gm-live-setup-hidden:${agencyId}`;
   // Rendered only in the browser (the shell waits for the session), so reading storage here is safe.
   const [hidden, setHidden] = useState(() => {
@@ -37,6 +39,18 @@ function SetupChecklist({ agencyId }: { agencyId: string }) {
   });
 
   const steps: Step[] = [
+    {
+      title: "Agency profile and branding",
+      why: "Your name, logo and colour for the client portal and documents, your contact details, and how long clients have to finish onboarding.",
+      href: "/app/settings/agency",
+      done: !!(agency.data?.logo || agency.data?.brandColor || agency.data?.businessStage),
+    },
+    {
+      title: "Packages",
+      why: "What you sell each month — price, deliverables, shoot days and revisions. Agreements and quotas come from these.",
+      href: "/app/settings/packages",
+      done: (packages.data?.length ?? 0) > 0,
+    },
     {
       title: "Check roles and permissions",
       why: "Each role starts from the Growth OS defaults. Decide what each one may see, change and approve — salaries stay with the owner until you grant them.",
@@ -57,8 +71,6 @@ function SetupChecklist({ agencyId }: { agencyId: string }) {
     },
   ];
   const coming: Step[] = [
-    { title: "Agency profile and branding", why: "Name, logo, colours, how long clients have to finish onboarding." },
-    { title: "Packages", why: "Price, videos and posts per month, shoot days and revisions — agreements and quotas come from these." },
     { title: "Import clients and leads from Excel", why: "Download a template or use your own sheet; check everything before it is saved." },
     { title: "Invoice settings", why: "GSTIN, invoice number format, bank details and payment terms." },
   ];

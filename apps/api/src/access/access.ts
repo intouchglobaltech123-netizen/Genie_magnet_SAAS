@@ -17,14 +17,23 @@ import { currentTenant, type TenantContext } from "../tenancy/tenant-context.js"
 
 export const PERMISSION = "gm:permission";
 type Needed = Exclude<PermissionLevel, "none">;
-export type PermissionRule = { area: AreaKey; level: Needed } | "public";
+export type PermissionRule = { area: AreaKey; level: Needed } | "public" | "staff";
 
 /** The access an endpoint needs, checked against the agency's saved matrix on every request (P1-11). */
 export const Can = (area: AreaKey, level: Needed) =>
   applyDecorators(SetMetadata(PERMISSION, { area, level } satisfies PermissionRule), ApiForbiddenResponse({ description: `Needs ${level} on ${area}` }));
 
-/** No agency or permission needed (health checks, who-am-I). Every other endpoint must use `@Can`. */
+/** No agency or permission needed (health checks, who-am-I). Every other endpoint must use `@Can` or `@Staff`. */
 export const Public = () => SetMetadata(PERMISSION, "public" satisfies PermissionRule);
+
+/**
+ * Anyone on the agency's team, whatever their role — for reference data everyone needs (the agency's profile,
+ * its packages). Not client people, whose roles reach only the client portal.
+ */
+export const Staff = () => SetMetadata(PERMISSION, "staff" satisfies PermissionRule);
+
+/** On the team: has access to at least one area other than the client portal. */
+export const isStaff = (m: PermissionMatrix) => Object.keys(m).some((area) => area !== "portal");
 
 /** Reads a member's permissions. Never cached between requests, so a change applies from the next request. */
 @Injectable()
@@ -74,6 +83,10 @@ export class PermissionGuard implements CanActivate {
     const tenant = currentTenant();
     if (!tenant) throw new UnauthorizedException("Sign in and choose an agency first.");
     const permissions = await this.access.load(tenant);
+    if (rule === "staff") {
+      if (!isStaff(permissions)) throw new ForbiddenException("This is for the agency's team.");
+      return true;
+    }
     if (!allows(permissions, rule.area, rule.level)) {
       throw new ForbiddenException(
         `Your role needs "${rule.level}" on ${permissionArea(rule.area).label} for this. An owner can change it in Settings → Roles.`,

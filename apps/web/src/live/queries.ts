@@ -2,6 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  type AgencyProfile,
+  type AgencyProfileInput,
   allows,
   type AreaKey,
   type AuditPage,
@@ -9,6 +11,8 @@ import {
   type ClientInput,
   type CreatedInvitation,
   type Me,
+  type Package,
+  type PackageInput,
   type PermissionLevel,
   type PermissionMatrix,
   type Role,
@@ -24,6 +28,8 @@ export const keys = {
   clients: ["clients"] as const,
   audit: (query: string) => ["audit", query] as const,
   testPeople: ["test-people"] as const,
+  agency: ["agency"] as const,
+  packages: ["packages"] as const,
 };
 
 // ─── Session ──────────────────────────────────────────────────────────
@@ -208,4 +214,36 @@ export function useCreateClient() {
 
 export function useAudit(query: string, enabled = true) {
   return useQuery({ queryKey: keys.audit(query), queryFn: () => api<AuditPage>(`/audit${query ? `?${query}` : ""}`), enabled });
+}
+
+// ─── Settings: agency profile and packages ────────────────────────────
+
+export const useAgency = () => useQuery({ queryKey: keys.agency, queryFn: () => api<AgencyProfile>("/agency") });
+
+export function useUpdateAgency() {
+  const refresh = useRefresh(keys.agency);
+  return useMutation({ mutationFn: (v: AgencyProfileInput) => api<AgencyProfile>("/agency", { method: "PATCH", body: v }), onSuccess: refresh });
+}
+
+/** Active packages, or all of them with archived ones last. */
+export const usePackages = (archived = false) =>
+  useQuery({ queryKey: [...keys.packages, archived], queryFn: () => api<Package[]>(`/packages${archived ? "?archived=1" : ""}`) });
+
+export function useSavePackage() {
+  const refresh = useRefresh(keys.packages);
+  return useMutation({
+    mutationFn: (v: { id?: string; input: PackageInput }) =>
+      v.id ? api<Package>(`/packages/${v.id}`, { method: "PATCH", body: v.input }) : api<Package>("/packages", { body: v.input }),
+    onSuccess: refresh,
+  });
+}
+
+export function useSetPackageActive() {
+  const refresh = useRefresh(keys.packages);
+  return useMutation({ mutationFn: (v: { id: string; active: boolean }) => api<Package>(`/packages/${v.id}/${v.active ? "restore" : "archive"}`, { body: {} }), onSuccess: refresh });
+}
+
+export function useDeletePackage() {
+  const refresh = useRefresh(keys.packages);
+  return useMutation({ mutationFn: (id: string) => api(`/packages/${id}`, { method: "DELETE" }), onSuccess: refresh });
 }

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { packageTotals } from "@gm/shared";
 import type { PrismaClient } from "../generated/prisma/client.js";
 import { ensureDefaultRoles } from "../roles.js";
 import { withAgency } from "../tenancy.js";
@@ -54,13 +55,13 @@ export async function seedSampleData(prisma: PrismaClient, agencies: SeedAgency[
     };
 
     await withAgency(prisma, a.id, async (tx) => {
-      await tx.agency.create({ data: { id: a.id, name: a.name, slug: a.slug, plan: a.plan } });
+      await tx.agency.create({ data: { id: a.id, name: a.name, slug: a.slug, plan: a.plan, ...a.profile } });
       await ensureDefaultRoles(tx, a.id);
       await tx.membership.createMany({ data: a.people.map((p) => ({ agencyId: a.id, userId: userId(p.email), role: p.role, title: p.title })) });
 
       const packages = new Map<string, string>();
       for (const pkg of a.packages) {
-        const created = await tx.package.create({ data: { agencyId: a.id, ...pkg }, select: { id: true } });
+        const created = await tx.package.create({ data: { agencyId: a.id, ...pkg, ...packageTotals(pkg.deliverables) }, select: { id: true } });
         packages.set(pkg.name, created.id);
       }
 
