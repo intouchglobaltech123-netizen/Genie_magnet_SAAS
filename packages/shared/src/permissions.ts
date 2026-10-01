@@ -186,7 +186,7 @@ export const DEFAULT_ROLE_DEFINITIONS: RoleDefinition[] = (Object.keys(DEFAULT_P
 }));
 
 export const roleInput = z.object({
-  name: z.string().trim().min(2).max(60),
+  name: z.string().trim().min(2, "Give the role a name (at least 2 characters)").max(60, "Keep the name under 60 characters"),
   description: z.string().trim().max(200).optional(),
   /** Start from another role's permissions (copy a role). Ignored when `permissions` is given. */
   copyFrom: z.string().max(60).optional(),
@@ -195,13 +195,16 @@ export const roleInput = z.object({
 export type RoleInput = z.infer<typeof roleInput>;
 
 export const roleUpdate = z.object({
-  name: z.string().trim().min(2).max(60).optional(),
+  name: z.string().trim().min(2, "Give the role a name (at least 2 characters)").max(60, "Keep the name under 60 characters").optional(),
   description: z.string().trim().max(200).nullable().optional(),
   permissions: permissionMatrix.optional(),
 });
 export type RoleUpdate = z.infer<typeof roleUpdate>;
 
-export const invitationInput = z.object({ email: z.email().transform((e) => e.toLowerCase()), role: z.string().min(1).max(60) });
+export const invitationInput = z.object({
+  email: z.email("Enter a valid email address").transform((e) => e.toLowerCase()),
+  role: z.string().min(1, "Choose a role").max(60),
+});
 export type InvitationInput = z.infer<typeof invitationInput>;
 
 export const memberUpdate = z.object({ role: z.string().min(1).max(60) });

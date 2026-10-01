@@ -1,6 +1,16 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { ensureDefaultRoles, type Prisma } from "@gm/db";
-import { exceeds, FULL_ACCESS, OWNER_ROLE, type PermissionMatrix, permissionArea, permissionMatrix, type RoleInput, type RoleUpdate } from "@gm/shared";
+import {
+  DEFAULT_ROLES,
+  exceeds,
+  FULL_ACCESS,
+  OWNER_ROLE,
+  type PermissionMatrix,
+  permissionArea,
+  permissionMatrix,
+  type RoleInput,
+  type RoleUpdate,
+} from "@gm/shared";
 import { AuditService, changes } from "../audit/audit.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 
@@ -59,7 +69,13 @@ export class RolesService {
     }
     const counts = await this.tenant.db.membership.groupBy({ by: ["role"], where: { agencyId }, _count: { _all: true } });
     const members = new Map(counts.map((c) => [c.role, c._count._all]));
-    return roles.map((r) => present(r, members.get(r.key) ?? 0));
+    // Default roles in their usual order (owner first), then the agency's own roles in the order they were made.
+    const rank = (key: string) => {
+      const i = (DEFAULT_ROLES as readonly string[]).indexOf(key);
+      return i === -1 ? DEFAULT_ROLES.length : i;
+    };
+    const ordered = roles.map((r, i) => ({ r, i })).sort((a, b) => rank(a.r.key) - rank(b.r.key) || a.i - b.i);
+    return ordered.map(({ r }) => present(r, members.get(r.key) ?? 0));
   }
 
   async find(key: string) {
@@ -103,7 +119,14 @@ export class RolesService {
         where: { id: role.id },
         data: { name: after.name, description: after.description, permissions: after.permissions as Prisma.InputJsonObject },
       });
-      await this.audit.record(tx, { action: "update", entity: "role", entityId: role.id, ...diff });
+      // The role's name is kept on both sides so the entry says which role changed, even when only permissions did.
+      await this.audit.record(tx, {
+        action: "update",
+        entity: "role",
+        entityId: role.id,
+        before: { name: role.name, ...diff.before },
+        after: { name: after.name, ...diff.after },
+      });
       return present(updated);
     });
   }

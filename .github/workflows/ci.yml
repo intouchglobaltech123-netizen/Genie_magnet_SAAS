@@ -21,6 +21,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # The web app uses @gm/shared's built output (types, permission rules).
+      - run: npm run build -w @gm/shared
       - run: npm run lint
       - run: npx tsc --noEmit -p apps/web
       - run: npm run build

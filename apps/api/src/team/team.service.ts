@@ -55,6 +55,7 @@ export class TeamService {
         role: { key: i.role, name: roleName.get(i.role) ?? i.role },
         expiresAt: i.expiresAt,
         invitedBy: names.get(i.inviterId) ?? null,
+        link: this.inviteLink(i.id),
       })),
     };
   }
@@ -83,14 +84,19 @@ export class TeamService {
       this.tenant.db.agency.findUnique({ where: { id: agencyId }, select: { name: true } }),
       this.tenant.db.user.findUnique({ where: { id: inviterId }, select: { name: true } }),
     ]);
-    const link = `${this.env.WEB_ORIGIN}/invite/${invitation.id}`;
+    const link = this.inviteLink(invitation.id);
     await this.outbox.send({
       to: input.email,
       subject: `${inviter?.name ?? "Someone"} invited you to ${agency?.name ?? "an agency"} on Genie Magnet OS`,
       text: link,
       link,
     });
-    return { id: invitation.id, email: invitation.email, role: { key: role.key, name: role.name }, expiresAt: invitation.expiresAt };
+    return { id: invitation.id, email: invitation.email, role: { key: role.key, name: role.name }, expiresAt: invitation.expiresAt, link };
+  }
+
+  /** The page where the invited person signs in or signs up and accepts. Shown to the inviter too, to share it themselves. */
+  private inviteLink(id: string) {
+    return `${this.env.WEB_ORIGIN}/app/invite/${id}`;
   }
 
   async cancelInvitation(id: string) {

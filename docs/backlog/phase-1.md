@@ -166,9 +166,9 @@ As the account manager, I want the client profile and a draft Business Canvas bu
 
 ## Web app
 
-**P1-26 · Data layer (M)** — generated API client (`packages/api-client`) with TanStack Query; session handling; role-aware navigation.
+**P1-26 · Data layer (M)** — **Done 1 Oct 2026.** Response types in `@gm/shared`, TanStack Query hooks in `apps/web/src/live`, session handling, menus that follow the person's permissions (generated client deferred; see [ADR 0005](../adr/0005-api-contract-openapi.md)).
 
-**P1-27 · Screens on real data (L)** — sign in (with the test sign-in picker), invitation, Settings, CRM, Clients, Agreements, Invoices, Onboarding (internal, assisted, public link). The demo stays available behind a flag until each module is live.
+**P1-27 · Screens on real data (L)** — under `/app`; the demo stays at `/` until each module is live. **Done 1 Oct 2026:** sign in (with the test sign-in picker), create an account and agency, accept an invitation, switch agency, Home, Clients (list, add), Team (invite with a shareable link, change role, remove), Roles and permissions (the matrix editor), Audit log. **Still to come:** CRM, Agreements, Invoices, Onboarding (internal, assisted, public link), agency settings and packages, client detail and editing.
 
 ## Operations
 
@@ -176,7 +176,7 @@ As the account manager, I want the client profile and a draft Business Canvas bu
 
 **P1-29 · Genie Magnet sets up its own workspace (S)** — like any new agency, using the in-app guide (P1-32): agency questionnaire, packages, team, roles and permissions, question changes, invoice settings, and their clients and leads imported by themselves (P1-31). We watch where they get stuck and improve the guide and the settings.
 
-**P1-32 · Guided set-up in the app (M)**
+**P1-32 · Guided set-up in the app (M)** — **Started 1 Oct 2026:** the checklist on Home (roles, team, clients) with the later steps shown as coming next.
 As the owner of a new agency, I want the app to show me what to set up next, where, and why, so I can get started without help.
 
 - A set-up checklist on the home screen: agency profile, packages, roles, invite the team, import clients and leads, invoice settings; later phases add their own steps (platforms, WhatsApp).

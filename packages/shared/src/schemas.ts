@@ -18,16 +18,16 @@ const phone = z
   .regex(/^\+?[0-9 ]{10,16}$/, "Enter a phone number with country code, e.g. +91 98400 11001");
 
 export const contactInput = z.object({
-  name: z.string().trim().min(1).max(120),
+  name: z.string().trim().min(1, "Enter the contact's name").max(120, "Keep the name under 120 characters"),
   title: z.string().trim().max(120).optional(),
-  email: z.email().optional(),
+  email: z.email("Enter a valid email address").optional(),
   phone,
   approver: z.boolean().default(false),
 });
 export type ContactInput = z.infer<typeof contactInput>;
 
 export const clientInput = z.object({
-  name: z.string().trim().min(2).max(160),
+  name: z.string().trim().min(2, "Enter the client's name (at least 2 characters)").max(160, "Keep the name under 160 characters"),
   code: z
     .string()
     .trim()
@@ -37,7 +37,7 @@ export const clientInput = z.object({
   stage: z.enum(BUSINESS_STAGES).optional(),
   fitment: z.enum(FITMENT_QUADRANTS).optional(),
   whatsappGroupUrl: z.url().optional(),
-  contacts: z.array(contactInput).min(1),
+  contacts: z.array(contactInput).min(1, "Add at least one contact person"),
 });
 export type ClientInput = z.infer<typeof clientInput>;
 

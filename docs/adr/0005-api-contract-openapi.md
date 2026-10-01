@@ -11,7 +11,7 @@ The web app, the future mobile app (Expo) and, later, SaaS customers' integratio
 - **REST + JSON**, resource-oriented (`/clients`, `/clients/:id/agreements`, `/videos/:id/versions`).
 - Request bodies are validated with the **same Zod schema** the web form uses (`@gm/shared`, see ADR 0006) through `ZodPipe`.
 - The OpenAPI document is generated from those schemas (`z.toJSONSchema`) and served at `/docs`.
-- A typed client (`packages/api-client`) is generated from the OpenAPI document with `openapi-typescript`, wrapped in TanStack Query hooks for the web app. Generation runs in CI; a changed contract fails the build until the client is regenerated.
+- ~~A typed client (`packages/api-client`) generated from the OpenAPI document.~~ **Changed at implementation (1 Oct 2026):** the web app uses the response types in `@gm/shared` (`src/api.ts`) with a small fetch helper and TanStack Query hooks (`apps/web/src/live`). The OpenAPI document describes request bodies but not yet responses, so a generated client would not have been typed end to end. A generated client returns when the mobile app or public API needs one (response schemas get added to OpenAPI then).
 - Errors use one shape: `{ message, issues?: [{ path, message }] }` with standard status codes (400 validation, 401 no session/agency, 403 permission matrix, 404, 409 conflicts).
 - Versioning: additive changes only; breaking changes get `/v2` routes (needed once the public API opens in Phase 7).
 

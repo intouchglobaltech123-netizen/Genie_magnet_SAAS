@@ -4,18 +4,26 @@ How to run, test and change Genie Magnet OS. Decisions behind this setup are in 
 
 ## Repository layout
 
-| Path              | What                                                                                    |
-| ----------------- | --------------------------------------------------------------------------------------- |
-| `apps/web`        | Next.js web app — today the clickable demo with sample data, hosted with an access code |
-| `apps/api`        | NestJS API (modular monolith) — health, tenant context, first module: clients           |
-| `apps/worker`     | BullMQ worker — notifications, Genie Assistant rules, publishing                        |
-| `packages/shared` | `@gm/shared` — domain enums and Zod schemas used by every app                           |
-| `packages/db`     | `@gm/db` — Prisma schema, migrations (incl. row-level security), tenant-scoped client   |
-| `packages/config` | `@gm/config` — shared TypeScript settings                                               |
-| `infra`           | Local stack: PostgreSQL, Redis, MinIO (files), Mailpit (email)                          |
-| `docs`            | ADRs, database design, plans for Genie Magnet                                           |
+| Path              | What                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `apps/web`        | Next.js web app — the real app under `/app` (`src/live`) and the clickable demo at `/` |
+| `apps/api`        | NestJS API (modular monolith) — health, tenant context, first module: clients          |
+| `apps/worker`     | BullMQ worker — notifications, Genie Assistant rules, publishing                       |
+| `packages/shared` | `@gm/shared` — domain enums and Zod schemas used by every app                          |
+| `packages/db`     | `@gm/db` — Prisma schema, migrations (incl. row-level security), tenant-scoped client  |
+| `packages/config` | `@gm/config` — shared TypeScript settings                                              |
+| `infra`           | Local stack: PostgreSQL, Redis, MinIO (files), Mailpit (email)                         |
+| `docs`            | ADRs, database design, plans for Genie Magnet                                          |
 
-## First-time setup
+## Quick start without Docker
+
+1. `npm install`
+2. `npm run dev:local` — PostgreSQL in `.pg-dev/` (port 5433), migrations, sample data and the API on http://localhost:4000, with test sign-in on and email confirmation off. Data stays between runs; delete `.pg-dev/` to start again.
+3. In a second terminal: `npm run dev` — the web app on http://localhost:3000. The real app is at **http://localhost:3000/app** (pick a sample person to sign in); the clickable demo stays at http://localhost:3000.
+
+The web app sends `/api/*` to the API (`apps/web/next.config.ts`), so the browser only ever talks to the web app and sign-in cookies are first-party. On a server, set `API_URL` for the web app at build time; without it, `/app` says the real app is not connected and the demo works as before.
+
+## First-time setup (with Docker)
 
 1. Node 22 (`.nvmrc`) and Docker Desktop.
 2. `npm install`

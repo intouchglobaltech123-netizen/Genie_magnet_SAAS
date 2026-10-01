@@ -54,7 +54,7 @@ export function WelcomeDialog() {
   };
 
   // Never on the login page or on a client's own questionnaire link.
-  if (pathname === "/login" || pathname.startsWith("/q/")) return null;
+  if (pathname === "/login" || pathname.startsWith("/q/") || pathname === "/app" || pathname.startsWith("/app/")) return null;
 
   return (
     <Dialog open={open} onOpenChange={close}>

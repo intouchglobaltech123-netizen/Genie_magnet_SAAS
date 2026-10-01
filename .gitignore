@@ -12,4 +12,5 @@ next-env.d.ts
 coverage
 packages/db/src/generated
 .pg-test
+.pg-dev
 ~$*
