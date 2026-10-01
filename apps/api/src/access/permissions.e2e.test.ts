@@ -211,6 +211,19 @@ describe("custom roles and changes", () => {
     expect(res.body.issues).toEqual([expect.objectContaining({ path: "permissions.audit.level" })]);
   });
 
+  it("while email confirmation is off (building and testing), an invited person signs up and joins straight away", async () => {
+    const invitation = await jana.post("/team/invitations").send({ email: "naveen@geniemagnet.test", role: "editor" }).expect(201);
+    const naveen = request.agent(app.getHttpServer());
+    await naveen
+      .post("/api/auth/sign-up/email")
+      .set("Origin", ORIGIN)
+      .send({ name: "Naveen Raj", email: "naveen@geniemagnet.test", password: "a-long-test-password-1" })
+      .expect(200);
+    await naveen.post("/api/auth/organization/accept-invitation").set("Origin", ORIGIN).send({ invitationId: invitation.body.id }).expect(200);
+    const team = (await jana.get("/team").expect(200)).body as { members: { user: { email: string }; role: { key: string } }[] };
+    expect(team.members.find((m) => m.user.email === "naveen@geniemagnet.test")?.role.key).toBe("editor");
+  });
+
   it("closes Better Auth's own people routes, so its fixed roles can never bypass the matrix", async () => {
     const post = (path: string, body: object) => jana.post(`/api/auth/organization/${path}`).set("Origin", ORIGIN).send(body);
     await post("invite-member", { email: "x@geniemagnet.test", role: "owner" }).expect(404);

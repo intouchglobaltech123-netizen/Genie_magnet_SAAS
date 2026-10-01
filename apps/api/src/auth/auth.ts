@@ -77,8 +77,9 @@ export function createAuth(env: Env, prisma: ReturnType<typeof createPrisma>, { 
       minPasswordLength: 10,
       sendResetPassword: async ({ user, url }) => outbox.send({ to: user.email, subject: "Reset your Genie Magnet OS password", text: url, link: url }),
     },
+    // Off while building and testing (no email is sent); on before real use — required in production (env.ts).
     emailVerification: {
-      sendOnSignUp: true,
+      sendOnSignUp: env.REQUIRE_EMAIL_VERIFICATION,
       autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, url }) => outbox.send({ to: user.email, subject: "Confirm your email for Genie Magnet OS", text: url, link: url }),
     },
@@ -87,8 +88,8 @@ export function createAuth(env: Env, prisma: ReturnType<typeof createPrisma>, { 
     plugins: [
       organization({
         creatorRole: "owner",
-        // Only a confirmed email address can accept an invitation, so an invitation cannot be claimed by guessing its id.
-        requireEmailVerificationOnInvitation: true,
+        // With verification on, only a confirmed email address can accept an invitation.
+        requireEmailVerificationOnInvitation: env.REQUIRE_EMAIL_VERIFICATION,
         schema: {
           organization: { modelName: "agency" },
           member: { modelName: "membership", fields: { organizationId: "agencyId" } },

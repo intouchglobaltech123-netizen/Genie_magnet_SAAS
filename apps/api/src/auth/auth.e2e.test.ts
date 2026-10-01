@@ -39,6 +39,8 @@ beforeAll(async () => {
     BETTER_AUTH_SECRET: "test-secret-that-is-long-enough-for-hmac-0123456789",
     BETTER_AUTH_URL: "http://localhost:4000",
     WEB_ORIGIN: ORIGIN,
+    // The real-use setting: email addresses are confirmed before an invitation can be accepted.
+    REQUIRE_EMAIL_VERIFICATION: "true",
   });
   const mod = await Test.createTestingModule({ imports: [AppModule] }).compile();
   app = configureApp(mod.createNestApplication<NestExpressApplication>({ bodyParser: false }));

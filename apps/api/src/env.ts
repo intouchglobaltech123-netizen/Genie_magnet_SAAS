@@ -20,6 +20,11 @@ export const envSchema = z
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     /** Pick a person and sign in without a password (test servers only — never with real data). */
     TEST_SIGN_IN: z.stringbool().default(false),
+    /**
+     * Confirm email addresses (a link on sign-up; required to accept an invitation). Off while the app is built
+     * and tested, switched on in the last step before real use; the API refuses to start without it in production.
+     */
+    REQUIRE_EMAIL_VERIFICATION: z.stringbool().default(false),
     /** Requests per minute per person (or per IP when not signed in) on each API route. */
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
     /** Proxies in front of the API (1 on Railway), so the caller's IP is read from X-Forwarded-For. 0 locally. */
@@ -32,6 +37,10 @@ export const envSchema = z
   .refine((e) => !(e.NODE_ENV === "production" && e.TEST_SIGN_IN), {
     message: "TEST_SIGN_IN is not allowed in production",
     path: ["TEST_SIGN_IN"],
+  })
+  .refine((e) => !(e.NODE_ENV === "production" && e.AUTH_MODE === "better-auth" && !e.REQUIRE_EMAIL_VERIFICATION), {
+    message: "REQUIRE_EMAIL_VERIFICATION must be on in production",
+    path: ["REQUIRE_EMAIL_VERIFICATION"],
   })
   .refine((e) => e.AUTH_MODE !== "better-auth" || (e.AUTH_DATABASE_URL && e.BETTER_AUTH_SECRET), {
     message: "AUTH_MODE=better-auth needs AUTH_DATABASE_URL and BETTER_AUTH_SECRET",

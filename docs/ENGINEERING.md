@@ -58,6 +58,8 @@ curl -c cookies.txt -H "Origin: http://localhost:3000" -H "Content-Type: applica
 curl -b cookies.txt http://localhost:4000/clients
 ```
 
+Email confirmation is off while testing (`REQUIRE_EMAIL_VERIFICATION=false`), so an invited person can sign up and accept straight away; the invitation link is in the API log. It is switched on in the last step and required in production.
+
 `GET /api/auth/test-sign-in/people` lists who can be picked; add `"agencyId"` to choose the agency. The API refuses to start with `TEST_SIGN_IN=true` in production, and it must stay off on any server that holds real data — anyone who can reach that server could sign in as anyone.
 
 ## Errors, logs and limits (API)

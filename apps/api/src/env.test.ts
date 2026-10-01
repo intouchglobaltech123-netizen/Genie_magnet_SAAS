@@ -21,6 +21,7 @@ describe("loadEnv", () => {
         AUTH_DATABASE_URL: "postgresql://y",
         BETTER_AUTH_SECRET: secret,
         AUTH_MODE: "better-auth",
+        REQUIRE_EMAIL_VERIFICATION: "true",
       }).AUTH_MODE,
     ).toBe("better-auth");
   });
@@ -39,9 +40,23 @@ describe("loadEnv", () => {
       AUTH_DATABASE_URL: "postgresql://y",
       BETTER_AUTH_SECRET: "x".repeat(32),
       AUTH_MODE: "better-auth",
+      REQUIRE_EMAIL_VERIFICATION: "true",
     };
     expect(() => loadEnv({ ...prod, TEST_SIGN_IN: "true" })).toThrow(/TEST_SIGN_IN is not allowed in production/);
     expect(loadEnv(prod).TEST_SIGN_IN).toBe(false);
     expect(loadEnv({ DATABASE_URL: "postgresql://x", TEST_SIGN_IN: "true" }).TEST_SIGN_IN).toBe(true);
+  });
+
+  it("leaves email confirmation off while testing, and refuses production without it", () => {
+    expect(loadEnv({ DATABASE_URL: "postgresql://x" }).REQUIRE_EMAIL_VERIFICATION).toBe(false);
+    expect(() =>
+      loadEnv({
+        NODE_ENV: "production",
+        DATABASE_URL: "postgresql://x",
+        AUTH_DATABASE_URL: "postgresql://y",
+        BETTER_AUTH_SECRET: "x".repeat(32),
+        AUTH_MODE: "better-auth",
+      }),
+    ).toThrow(/REQUIRE_EMAIL_VERIFICATION must be on in production/);
   });
 });

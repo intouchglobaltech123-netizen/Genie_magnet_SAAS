@@ -1,15 +1,15 @@
 # Phase 1 backlog — Foundation
 
-**Weeks 2–5 · Mon 19 Oct – Fri 13 Nov 2026.** Goal: the real application skeleton — sign-in, agencies, roles, audit — with clients won and onboarded on real data.
+**Goal:** the real application skeleton — sign-in, agencies, roles, audit — with clients won and onboarded on real data.
 **Exit gate:** a client can be won and onboarded in the real app (story P1-30).
 
 Sizes: **S** ≤ 2 days · **M** 3–5 days · **L** 6–10 days.
 
-**Testing first, then sign-in hardening (decided 1 Oct 2026).** While the phase is being built and tested, people sign in by picking a sample person (test sign-in, P1-02) — no passwords needed. Two-factor and Google sign-in are built last (P1-10), once everything else is tested.
+**Testing first, sign-in hardening last.** While the product is being built and tested, people sign in by picking a sample person (test sign-in, P1-02) — no passwords and no emails. Email sending, email confirmation, two-factor and Google sign-in are the last step (P1-10), once everything else is tested.
 
-**Everything is configurable by each agency (plan v1.1). Roles and permissions, packages, pipeline stages, onboarding questions and invoice settings are settings with Growth OS defaults — never hard-coded. Genie Magnet does not need to send them in advance; their team sets up their own workspace in a guided session in week 4 (P1-29). If they send the information request answers anyway, we pre-load them.
+**Everything is configurable by each agency (plan v1.1). Roles and permissions, packages, pipeline stages, onboarding questions and invoice settings are settings with Growth OS defaults — never hard-coded. **Built as a SaaS, with Genie Magnet as the first agency.** Nothing is asked of Genie Magnet in advance: like any agency, they set up and fill in their own workspace, and the app guides them step by step (P1-32).
 
-**Their data is theirs to bring in (decided 1 Oct 2026).** Genie Magnet enters or imports all of its own data — clients, contacts, leads, team, videos in progress — with self-service tools (P1-31, P2-16). We never receive or import their records; development and staging use the invented sample data (P1-02).
+**Their data is theirs to bring in.** Genie Magnet enters or imports all of its own data — clients, contacts, leads, team, videos in progress — with self-service tools (P1-31, P2-16). We never receive or import their records; development and staging use the invented sample data (P1-02).
 
 Already done in Phase 0: monorepo, `@gm/shared`, `@gm/db` schema v0 with forced RLS and the cross-tenant suite, API skeleton with tenant context and the clients endpoint, worker skeleton, CI, ADRs.
 
@@ -39,11 +39,11 @@ As the owner, I want every change to clients, agreements, packages, invoices, ro
 - Read-only list per record and per agency, filterable by user, entity and date.
 - The application role cannot update or delete entries (already enforced by the database).
 
-**P1-04 · Notifications, in-app and email (M)**
-As a team member, I want notifications in the app and by email, with preferences, so I do not miss approvals and reminders.
+**P1-04 · Notifications in the app (M)**
+As a team member, I want notifications in the app, with preferences, so I do not miss approvals and reminders.
 
-- In-app notification centre (unread count, mark read); email via the worker from the agency's sending domain.
-- Per-user preferences per notification type; quiet hours respected.
+- Notification centre (unread count, mark read); per-user preferences per notification type; quiet hours respected.
+- Built so email can be added as a second channel in the last step (P1-10) without changing the senders.
 
 **P1-05 · File storage (M)**
 As a user, I want to upload brand files and documents with previews, so onboarding and production files live with the record.
@@ -174,23 +174,33 @@ As the account manager, I want the client profile and a draft Business Canvas bu
 
 **P1-28 · Staging (M)** — deploy from `main` automatically with migrations; error tracking; uptime check; nightly backups; staging uses sample or consented data only.
 
-**P1-29 · Genie Magnet sets up its own workspace (S)** — a guided half-day session in week 4: Janarthanan and Ashwin answer the agency questionnaire and enter their packages, team, roles and permissions, question changes and invoice settings, and import their clients and leads themselves (P1-31). We note anything the settings could not handle and fix it before the exit gate.
+**P1-29 · Genie Magnet sets up its own workspace (S)** — like any new agency, using the in-app guide (P1-32): agency questionnaire, packages, team, roles and permissions, question changes, invoice settings, and their clients and leads imported by themselves (P1-31). We watch where they get stuck and improve the guide and the settings.
+
+**P1-32 · Guided set-up in the app (M)**
+As the owner of a new agency, I want the app to show me what to set up next, where, and why, so I can get started without help.
+
+- A set-up checklist on the home screen: agency profile, packages, roles, invite the team, import clients and leads, invoice settings; later phases add their own steps (platforms, WhatsApp).
+- Each step opens the right screen with a short explanation and a template or example where one helps (e.g. the import templates).
+- A step ticks itself when the real data exists (e.g. at least one package); the owner can hide the checklist once done.
 
 ## Last: before real use
 
-**P1-10 · Two-factor and Google sign-in (S)** — built after everything else in the phase is tested.
-As the owner, I want two-factor sign-in required for owner and finance roles, and the option to sign in with Google, so money and settings are protected.
+**P1-10 · Email, two-factor and Google sign-in (M)** — built after everything else is tested.
+As the owner, I want emails to reach people, addresses confirmed, two-factor sign-in for sensitive roles and the option to sign in with Google, so the agency is safe to use with real data.
 
+- Email sending (invitations, password reset, notifications) through an email service on our own sending domain.
+- Email confirmation switched on (`REQUIRE_EMAIL_VERIFICATION`; the API refuses to start in production without it).
 - Two-factor (authenticator app, with backup codes) required for the roles the agency marks as sensitive; owner and finance by default.
-- Google sign-in once Genie Magnet's Google Cloud project exists.
-- Test sign-in is switched off on every server that will hold Genie Magnet's real data.
+- Google sign-in through our own Google sign-in app.
+- Test sign-in switched off on every server that will hold real data.
+- Our platform accounts set up once: hosting, web address, email service, Google sign-in app.
 
 ## Exit gate
 
 **P1-30 · Exit-gate scenario (M)**
 An automated end-to-end test (and a live demo) of the whole phase:
 
-1. The owner signs in with two-factor (P1-10) and invites a manager.
+1. The owner signs in and invites a manager (with two-factor once P1-10 is done).
 1. The owner creates a custom role and changes one permission, edits an onboarding question and sets the invoice number format; each change takes effect at once and is in the audit log.
 1. The manager creates a lead, logs a call and sends a proposal with a discount that needs the owner's approval; the owner approves.
 1. The deal is won; client, agreement and questionnaire are created automatically.
@@ -200,4 +210,4 @@ An automated end-to-end test (and a live demo) of the whole phase:
 
 ---
 
-**What Genie Magnet provides:** demo feedback and scope sign-off (week 1), hosting decision and sending domain (by week 3), and the half-day set-up session (week 4). Meta Business verification, the WhatsApp number, the Google Cloud project and Razorpay KYC should start now — they are needed in Phase 3.
+**Nothing is needed from Genie Magnet to build this phase.** They use the product like any agency. Platform accounts — hosting, web address, email service, Google sign-in — are ours and are set up in the last step. Accounts that belong to an agency (its WhatsApp number, Instagram and YouTube pages, payment collection) are connected by the agency itself, with the app guiding them, when those features arrive.
