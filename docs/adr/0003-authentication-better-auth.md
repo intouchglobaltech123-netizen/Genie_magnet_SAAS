@@ -27,6 +27,7 @@ Proven by `apps/api/src/auth/auth.e2e.test.ts` and `packages/db/src/tenancy.test
 - **Live membership check.** On every request the API confirms the person is still a member of the session's active agency, so removing someone cuts access at once, even with a live session.
 - **Confirmed email before accepting an invitation** (`requireEmailVerificationOnInvitation`). A confirmation link is sent on sign-up.
 - **Roles.** Membership roles are strings chosen by each agency. Better Auth's own checks (who may invite or remove people) use its presets: owner, manager (admin preset), everyone else (member preset). What a role may do in the product comes from the agency's permission matrix (ADR 0004).
+- **People and roles moved to the API (1 Oct 2026, P1-11).** Inviting, changing roles and removing people go through `/team` and `/roles`, which check the agency's permission matrix and audit each change. Better Auth's own routes for those are closed; it keeps sign-in, sessions, creating and switching agencies, and accepting invitations (ADR 0004).
 - **Emails** (confirmation, invitation, password reset) go to an in-memory outbox that logs the link, until email sending is built (P1-04).
 
 ## Alternatives considered

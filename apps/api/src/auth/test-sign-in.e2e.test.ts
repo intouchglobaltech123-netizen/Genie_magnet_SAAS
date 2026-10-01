@@ -78,7 +78,9 @@ describe("test sign-in, when switched on", () => {
 
   it("lets a person in two agencies pick one, and only theirs", async () => {
     const { agent } = await signInAs(app, "rahul@freelance.test", zenStudio.id);
-    expect(codes(await agent.get("/clients").expect(200))).toEqual(["KVR", "MBC"]);
+    expect((await agent.get("/me").expect(200)).body).toMatchObject({ activeAgencyId: zenStudio.id, role: { key: "freelancer" } });
+    const zara = await signInAs(app, "zara@zenstudio.test");
+    expect(codes(await zara.agent.get("/clients").expect(200))).toEqual(["KVR", "MBC"]);
 
     // Zara (Zen Studio) cannot open Genie Magnet.
     await request(app.getHttpServer())

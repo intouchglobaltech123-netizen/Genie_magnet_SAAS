@@ -59,13 +59,13 @@ As an operator, I want failed jobs retried and then listed with their reason, so
 
 **P1-07 · Better Auth spike (M)** — **Done 30 Sep 2026.** Exit criteria and decisions in [ADR 0003](../adr/0003-authentication-better-auth.md); Google sign-in waits for the Google Cloud project.
 
-**P1-08 · Sign in and sessions (M)**
+**P1-08 · Sign in and sessions (M)** — **API done 1 Oct 2026** (Better Auth: sign-up, sign-in, sign-out, password reset by email, sessions, agency from the session); screens come with P1-27.
 As a team member, I want to sign in with email and password, so I can use the app securely. (Google sign-in moves to P1-10.)
 
 - Sign in, sign out, password reset by email; sessions expire after inactivity.
 - The active agency comes from the session and replaces the development `x-agency-id` header everywhere.
 
-**P1-09 · Invitations and roles (M)**
+**P1-09 · Invitations and roles (M)** — **API done 1 Oct 2026** (`/team`: invite, cancel, change role, remove; accepting through sign-in); screens come with P1-27.
 As the owner, I want to invite people by email with a role, so each person sees only what they should.
 
 - Default roles (Owner, Manager, Team leader, Editor, Shooter, Script writer, Social media manager, Finance, HR, Freelancer, Client approver, Client viewer) that the agency can rename, copy or add to.
@@ -74,11 +74,11 @@ As the owner, I want to invite people by email with a role, so each person sees 
 
 **P1-10 · Two-factor and Google sign-in** — moved to the end of the phase (see [Last: before real use](#last-before-real-use)).
 
-**P1-11 · Custom roles and the permission matrix (L)**
+**P1-11 · Custom roles and the permission matrix (L)** — **Done 1 Oct 2026** (API). `/roles` and the matrix in `@gm/shared`; see [ADR 0004](../adr/0004-authorization-casl.md). Built without CASL (reason in the ADR). The Settings screen comes with P1-27; record rules for videos come with them in Phase 2.
 As the owner, I want to decide for each role what it may see, change and approve, so salaries, costs and other clients' data stay private — without asking the developers.
 
 - A permission matrix in Settings (areas × roles: none / view / edit / approve), starting from the default for each role; sensitive areas (salaries, payroll, personal finance) are off unless granted.
-- CASL abilities are built from the agency's saved matrix, enforced by a guard on every endpoint and used by the web app to hide actions.
+- The agency's saved matrix is enforced by a guard on every endpoint and used by the web app to hide actions.
 - A permission change is audited and applies from the next request.
 - Record-level rules (e.g. editors see their assigned videos).
 - A permission-matrix test per role; a missing check fails CI.

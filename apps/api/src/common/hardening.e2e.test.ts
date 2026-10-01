@@ -7,6 +7,7 @@ import pg from "pg";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { startTestDatabase, type TestDatabase } from "@gm/db/testing";
+import { Public } from "../access/access.js";
 import { AppModule } from "../app.module.js";
 import { configureApp } from "../bootstrap.js";
 
@@ -15,6 +16,7 @@ const A = "0190f5a0-0000-7000-8000-0000000000a1";
 @Controller("boom")
 class BoomController {
   @Get()
+  @Public()
   boom() {
     throw new Error("connection string postgresql://secret@db/internal");
   }

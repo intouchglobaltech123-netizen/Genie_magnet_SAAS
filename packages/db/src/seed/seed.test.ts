@@ -59,6 +59,12 @@ describe("sample data (P1-02)", () => {
       expect(await gm.package.count()).toBe(5);
       expect(await gm.membership.count()).toBe(genieMagnet.people.length);
       expect(await zen.lead.count()).toBe(1);
+      expect(await gm.role.count()).toBe(12);
+      expect((await gm.role.findUnique({ where: { agencyId_key: { agencyId: genieMagnet.id, key: "editor" } } }))?.permissions).toEqual({
+        clients: { level: "view" },
+        content: { level: "view" },
+        production: { level: "edit", scope: "own" },
+      });
     } finally {
       await app.$disconnect();
     }

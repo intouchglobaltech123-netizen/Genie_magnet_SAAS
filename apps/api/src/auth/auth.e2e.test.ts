@@ -69,8 +69,11 @@ describe("sign-in and agencies (Better Auth spike)", () => {
     const owner = new pg.Client({ connectionString: db.ownerUrl });
     await owner.connect();
     const rows = await owner.query(`SELECT a.name, m.role FROM agencies a JOIN memberships m ON m.agency_id = a.id WHERE a.id = $1`, [genieMagnet.id]);
+    const roles = await owner.query(`SELECT count(*)::int AS n FROM roles WHERE agency_id = $1`, [genieMagnet.id]);
     await owner.end();
     expect(rows.rows).toEqual([{ name: "Genie Magnet", role: "owner" }]);
+    // A new agency starts with the default roles, which it can then change (P1-11).
+    expect(roles.rows[0].n).toBe(12);
 
     const created = await post(ashwin, "/clients", kaveri).expect(201);
     expect(created.body.agencyId).toBe(genieMagnet.id);
@@ -100,7 +103,9 @@ describe("sign-in and agencies (Better Auth spike)", () => {
     const url = new URL(verification!.link!);
     await priya.get(url.pathname + url.search).expect((r) => expect([200, 302]).toContain(r.status));
 
-    await post(ashwin, "/api/auth/organization/invite-member", { email: "priya@gm.test", role: "manager", organizationId: genieMagnet.id }).expect(200);
+    // People are invited through the API (permission matrix, audit); Better Auth's own invite route is closed.
+    await post(ashwin, "/api/auth/organization/invite-member", { email: "priya@gm.test", role: "manager", organizationId: genieMagnet.id }).expect(404);
+    await post(ashwin, "/team/invitations", { email: "priya@gm.test", role: "manager" }).expect(201);
     const email = app.get(Outbox).last("priya@gm.test");
     expect(email?.subject).toBe("Ashwin invited you to Genie Magnet on Genie Magnet OS");
     const invitationId = email!.link!.split("/").pop()!;
@@ -120,7 +125,9 @@ describe("sign-in and agencies (Better Auth spike)", () => {
     await post(priya, "/api/auth/organization/set-active", { organizationId: genieMagnet.id }).expect(200);
     await priya.get("/clients").expect(200);
 
-    await post(ashwin, "/api/auth/organization/remove-member", { memberIdOrEmail: "priya@gm.test", organizationId: genieMagnet.id }).expect(200);
+    const team = await ashwin.get("/team").expect(200);
+    const membership = team.body.members.find((m: { user: { email: string } }) => m.user.email === "priya@gm.test");
+    await ashwin.delete(`/team/members/${membership.id}`).set("Origin", ORIGIN).expect(204);
     await priya.get("/clients").expect(401);
   });
 

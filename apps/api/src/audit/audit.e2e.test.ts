@@ -101,14 +101,17 @@ describe("audit log", () => {
     ]);
   });
 
-  it("records invitations, role changes and removals made through sign-in, by the person who made them", async () => {
-    await post(jana, "/api/auth/organization/invite-member", { email: "new.editor@geniemagnet.test", role: "editor", organizationId: GM }).expect(200);
-    await post(jana, "/api/auth/organization/update-member-role", {
-      memberId: await membershipId("surya@geniemagnet.test"),
-      role: "team_leader",
-      organizationId: GM,
-    }).expect(200);
-    await post(jana, "/api/auth/organization/remove-member", { memberIdOrEmail: "rahul@freelance.test", organizationId: GM }).expect(200);
+  it("records invitations, role changes and removals, by the person who made them", async () => {
+    await post(jana, "/team/invitations", { email: "new.editor@geniemagnet.test", role: "editor" }).expect(201);
+    await jana
+      .patch(`/team/members/${await membershipId("surya@geniemagnet.test")}`)
+      .set("Origin", ORIGIN)
+      .send({ role: "team_leader" })
+      .expect(200);
+    await jana
+      .delete(`/team/members/${await membershipId("rahul@freelance.test")}`)
+      .set("Origin", ORIGIN)
+      .expect(204);
 
     const byJana = await entries(jana, `?actorId=${seedUserId("jana@geniemagnet.test")}`);
     expect(byJana.map((e) => `${e.action} ${e.entity}`)).toEqual(["delete membership", "update membership", "create invitation"]);

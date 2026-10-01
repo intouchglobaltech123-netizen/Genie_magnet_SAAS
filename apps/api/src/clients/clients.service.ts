@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { Prisma } from "@gm/db";
-import type { ClientInput, FitmentQuadrant } from "@gm/shared";
+import { type ClientInput, type FitmentQuadrant, scopeOf } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 
@@ -19,7 +19,11 @@ export class ClientsService {
   ) {}
 
   list() {
-    return this.tenant.db.client.findMany({ include: { contacts: true }, orderBy: { name: "asc" } });
+    return this.tenant.db.client.findMany({
+      where: this.tenant.ownOnly("clients", "accountOwnerId"),
+      include: { contacts: true },
+      orderBy: { name: "asc" },
+    });
   }
 
   async create(input: ClientInput) {
@@ -36,6 +40,8 @@ export class ClientsService {
             stage: input.stage ? (input.stage.toLowerCase() as Lowercase<typeof input.stage>) : undefined,
             fitment: input.fitment ? FITMENT[input.fitment] : undefined,
             whatsappGroupUrl: input.whatsappGroupUrl,
+            // Someone who may only handle their own clients becomes the account owner of the ones they add.
+            accountOwnerId: scopeOf(this.tenant.permissions, "clients") === "own" ? this.tenant.userId : undefined,
             contacts: { create: input.contacts.map((c) => ({ ...c, agencyId })) },
           },
           include: { contacts: true },

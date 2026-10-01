@@ -43,6 +43,7 @@ model Agency {
 
   memberships Membership[]
   invitations Invitation[]
+  roles       Role[]
   clients     Client[]
   packages    Package[]
 
@@ -133,6 +134,29 @@ model Membership {
   @@unique([agencyId, userId])
   @@index([userId])
   @@map("memberships")
+}
+
+/// The agency's roles and its permission matrix (P1-11). Memberships and invitations refer to a role by `key`.
+/// Every agency starts with the default roles from @gm/shared and edits its own copy. The "owner" role
+/// always has full access, whatever is stored here.
+model Role {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  agencyId    String   @map("agency_id") @db.Uuid
+  /// Stable key stored on memberships and invitations: the name can change, the key never does.
+  key         String
+  name        String
+  description String?
+  /// { area: { level, scope? } }, validated by permissionMatrix in @gm/shared. A missing area means no access.
+  permissions Json     @default("{}")
+  /// Client people (approvers, viewers) only ever use the client portal.
+  isClient    Boolean  @default(false) @map("is_client")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  agency Agency @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, key])
+  @@map("roles")
 }
 
 model Invitation {

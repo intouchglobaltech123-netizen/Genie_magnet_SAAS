@@ -67,6 +67,15 @@ curl -b cookies.txt http://localhost:4000/clients
 - **Rate limits**: sign-in and sign-up 3 tries per 10 seconds per IP, other sign-in routes 100 a minute (Better Auth); every API route 300 a minute per person, or per IP when not signed in (`RATE_LIMIT_PER_MINUTE`). Routes can set their own with `@RateLimit(...)`; health checks are exempt. Kept in memory — fine for one API process, moved to Redis when the API runs on several.
 - Behind a proxy (Railway) set `TRUST_PROXY=1` so the caller's IP is read correctly.
 
+## Permissions
+
+Each agency edits its own permission matrix (Settings → Roles): areas × roles, each cell none / view / edit / approve, some areas limited to "own records". Defaults and the check functions are in `packages/shared/src/permissions.ts`; the API reads the person's row on every request.
+
+- New endpoint: `@Can("clients", "edit")` (or `@Public()` for health and who-am-I). The guard refuses endpoints without a rule, and `access/coverage.test.ts` fails CI.
+- Areas with "own records": filter with `this.tenant.ownOnly("clients", "accountOwnerId")`.
+- People and roles: `/team` (members, invitations) and `/roles` (the matrix). Better Auth's own invite/role/remove routes are closed.
+- In `AUTH_MODE=dev-header`, add `x-role` to act as a role (owner when left out).
+
 ## Database roles
 
 | Role          | Used by               | Can reach                                                                                  |
@@ -79,7 +88,7 @@ curl -b cookies.txt http://localhost:4000/clients
 
 1. **Every new tenant table** gets `agency_id`, an index on it, and a line in the RLS migration. The schema guard test fails the build otherwise.
 2. **Services reach the database only through `TenantDb`** (`forAgency` / `withAgency`). Never create a Prisma client in a module.
-3. **Every endpoint** validates its body with a `@gm/shared` schema (`ZodPipe`) and checks permissions with CASL (Phase 1).
+3. **Every endpoint** validates its body with a `@gm/shared` schema (`ZodPipe`) and declares `@Can(area, level)` or `@Public()` ([ADR 0004](adr/0004-authorization-casl.md)); a missing rule fails CI.
 4. **Background jobs carry `agencyId`** and validate their payload (`apps/worker/src/jobs.ts`).
 5. **No secrets, personal data or real client data** in code, fixtures, logs or screenshots. Test data uses sample names.
 6. **Money is whole rupees.** No floats.

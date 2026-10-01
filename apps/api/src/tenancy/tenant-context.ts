@@ -1,8 +1,9 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { Inject, Injectable, type NestMiddleware, Optional, UnauthorizedException } from "@nestjs/common";
+import { ForbiddenException, Inject, Injectable, type NestMiddleware, Optional, UnauthorizedException } from "@nestjs/common";
 import type { NextFunction, Request, Response } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import { createPrisma, forAgency, type TenantClient, withAgency } from "@gm/db";
+import { type AreaKey, OWNER_ROLE, type PermissionMatrix, scopeOf } from "@gm/shared";
 import { AUTH, AUTH_PRISMA, type Auth } from "../auth/auth.js";
 import { locals } from "../common/request-context.js";
 import { ENV, type Env } from "../env.js";
@@ -12,7 +13,9 @@ export interface TenantContext {
   agencyId: string;
   userId?: string;
   /** The member's role key in this agency (permissions come from the agency's matrix). */
-  role?: string;
+  role: string;
+  /** The role's row of the agency's permission matrix, read fresh for every request by the permission guard. */
+  permissions?: PermissionMatrix;
 }
 
 const storage = new AsyncLocalStorage<TenantContext>();
@@ -25,7 +28,8 @@ export function currentTenant(): TenantContext | undefined {
  * Resolves the agency for the request and keeps it for everything that runs in it.
  * better-auth: the session's active agency, checked against a live membership on every request, so a person
  * removed from an agency loses access at once even if their session still points at it.
- * dev-header: `x-agency-id` (local development and tests only; refused in production by env.ts).
+ * dev-header: `x-agency-id`, `x-user-id` and `x-role` (owner when left out) — local development and tests only;
+ * refused in production by env.ts.
  */
 @Injectable()
 export class TenantMiddleware implements NestMiddleware {
@@ -43,7 +47,7 @@ export class TenantMiddleware implements NestMiddleware {
     if (this.env.AUTH_MODE === "dev-header") {
       const agencyId = req.header("x-agency-id");
       if (!agencyId) return next();
-      return run({ agencyId, userId: req.header("x-user-id") ?? undefined });
+      return run({ agencyId, userId: req.header("x-user-id") ?? undefined, role: req.header("x-role") ?? OWNER_ROLE });
     }
 
     if (!this.auth || !this.authDb) return next();
@@ -77,6 +81,24 @@ export class TenantDb {
 
   get role() {
     return this.ctx().role;
+  }
+
+  /** The caller's permissions (set by the permission guard before the handler runs). */
+  get permissions(): PermissionMatrix {
+    return this.ctx().permissions ?? {};
+  }
+
+  /**
+   * Prisma `where` for an area the role may see only partly: nothing extra for "all", `{ [field]: userId }`
+   * for "own" (records assigned to or owned by the person).
+   */
+  ownOnly(area: AreaKey, field: string): Record<string, string> {
+    const scope = scopeOf(this.permissions, area);
+    if (!scope) throw new ForbiddenException("Your role has no access to this.");
+    if (scope === "all") return {};
+    const userId = this.userId;
+    if (!userId) throw new ForbiddenException("Your role sees only your own records, so you need to be signed in.");
+    return { [field]: userId };
   }
 
   /** Single operations. */

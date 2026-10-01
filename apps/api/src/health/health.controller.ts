@@ -1,10 +1,12 @@
 import { Controller, Get, ServiceUnavailableException } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
+import { Public } from "../access/access.js";
 import { RateLimit } from "../common/rate-limit.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 
 @ApiTags("health")
 @RateLimit(false)
+@Public()
 @Controller("health")
 export class HealthController {
   constructor(private readonly prisma: PrismaService) {}

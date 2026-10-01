@@ -1,20 +1,18 @@
-import { Controller, ForbiddenException, Get, Query } from "@nestjs/common";
+import { Controller, Get, Query } from "@nestjs/common";
 import { ApiQuery, ApiTags } from "@nestjs/swagger";
 import { auditQuery, type AuditQuery } from "@gm/shared";
+import { Can } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
-import { TenantDb } from "../tenancy/tenant-context.js";
 import { AuditService } from "./audit.service.js";
 
 @ApiTags("audit")
 @Controller("audit")
 export class AuditController {
-  constructor(
-    private readonly audit: AuditService,
-    private readonly tenant: TenantDb,
-  ) {}
+  constructor(private readonly audit: AuditService) {}
 
   /** The agency's audit log, or one record's history with `entity` and `entityId`. */
   @Get()
+  @Can("audit", "view")
   @ApiQuery({ name: "entity", required: false })
   @ApiQuery({ name: "entityId", required: false })
   @ApiQuery({ name: "actorId", required: false })
@@ -23,9 +21,6 @@ export class AuditController {
   @ApiQuery({ name: "cursor", required: false, description: "`next` from the previous page" })
   @ApiQuery({ name: "limit", required: false })
   list(@Query(new ZodPipe(auditQuery)) q: AuditQuery) {
-    // Until the permission matrix (P1-11) decides this per role: owners and managers only.
-    const role = this.tenant.role;
-    if (role && role !== "owner" && role !== "manager") throw new ForbiddenException("Only owners and managers can see the audit log.");
     return this.audit.list(q);
   }
 }
