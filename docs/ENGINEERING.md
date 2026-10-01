@@ -22,11 +22,12 @@ How to run, test and change Genie Magnet OS. Decisions behind this setup are in 
 3. `cp .env.example .env`
 4. `npm run infra:up` — starts PostgreSQL, Redis, MinIO and Mailpit (inbox at http://localhost:8025).
 5. `npm run db:migrate` — applies migrations as the schema owner.
-6. Run what you need:
+6. `npm run db:seed` — sample agencies (Genie Magnet and Zen Studio) with people, packages, clients, agreements and leads.
+7. Run what you need:
    - `npm run dev` — web app on http://localhost:3000
    - `npm run dev:api` — API on http://localhost:4000, OpenAPI docs at `/docs`
    - `npm run dev:worker` — background worker
-7. Optional: `git config core.hooksPath .githooks` for the pre-commit checks.
+8. Optional: `git config core.hooksPath .githooks` for the pre-commit checks.
 
 ## Everyday commands
 
@@ -38,9 +39,26 @@ How to run, test and change Genie Magnet OS. Decisions behind this setup are in 
 | `npm run format`     | Prettier on service code and docs                                        |
 | `npm run db:migrate` | New migration from schema changes (development, needs a database)        |
 | `npm run db:diff`    | Print the SQL for schema changes using a temporary database (no Docker)  |
+| `npm run db:seed`    | Sample data (safe to run again; never in production)                     |
 | `npm run build`      | Web production build (what the hosted demo runs)                         |
 
 The cross-tenant tests need PostgreSQL. With Docker they can use the compose database; **without Docker they start an embedded PostgreSQL automatically** (first run downloads nothing — the binary comes with `npm install`). In CI they use a Postgres service container, one fresh database per suite.
+
+## Sample data and test sign-in
+
+`npm run db:seed` creates two invented agencies — never real client data:
+
+- **Genie Magnet** — the same people, clients, packages, agreements and leads as the web demo, plus Anitha (finance).
+- **Zen Studio (test agency)** — a second agency for checking that agencies never see each other. Rahul Menon (freelancer) works for both, so switching agencies can be tried.
+
+Every seeded email ends in `.test`, a domain that can never receive mail. Seeded people have **no password**: until two-factor and Google sign-in are built (P1-10, last in Phase 1), testing uses **test sign-in** — start the API with `TEST_SIGN_IN=true` and sign in as anyone:
+
+```bash
+curl -c cookies.txt -H "Origin: http://localhost:3000" -H "Content-Type: application/json" \n  -d '{"email":"ashwin@geniemagnet.test"}' http://localhost:4000/api/auth/test-sign-in
+curl -b cookies.txt http://localhost:4000/clients
+```
+
+`GET /api/auth/test-sign-in/people` lists who can be picked; add `"agencyId"` to choose the agency. The API refuses to start with `TEST_SIGN_IN=true` in production, and it must stay off on any server that holds real data — anyone who can reach that server could sign in as anyone.
 
 ## Database roles
 

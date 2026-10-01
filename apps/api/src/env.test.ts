@@ -31,4 +31,17 @@ describe("loadEnv", () => {
       loadEnv({ DATABASE_URL: "postgresql://x", AUTH_DATABASE_URL: "postgresql://y", BETTER_AUTH_SECRET: "short", AUTH_MODE: "better-auth" }),
     ).toThrow(/at least 32/);
   });
+
+  it("refuses test sign-in in production", () => {
+    const prod = {
+      NODE_ENV: "production",
+      DATABASE_URL: "postgresql://x",
+      AUTH_DATABASE_URL: "postgresql://y",
+      BETTER_AUTH_SECRET: "x".repeat(32),
+      AUTH_MODE: "better-auth",
+    };
+    expect(() => loadEnv({ ...prod, TEST_SIGN_IN: "true" })).toThrow(/TEST_SIGN_IN is not allowed in production/);
+    expect(loadEnv(prod).TEST_SIGN_IN).toBe(false);
+    expect(loadEnv({ DATABASE_URL: "postgresql://x", TEST_SIGN_IN: "true" }).TEST_SIGN_IN).toBe(true);
+  });
 });

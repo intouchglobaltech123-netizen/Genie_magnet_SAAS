@@ -14,7 +14,8 @@ export function configureApp(app: NestExpressApplication) {
   const auth = app.get<Auth | null>(AUTH, { strict: false });
   app.enableCors({ origin: env.WEB_ORIGIN, credentials: true });
   if (auth) {
-    const handler = toNodeHandler(auth);
+    // Express's request and response are Node's; the cast only bridges two copies of the Node types in the workspace.
+    const handler = toNodeHandler(auth) as unknown as (req: Request, res: Response) => Promise<void>;
     const express = app.getHttpAdapter().getInstance() as Express;
     express.all("/api/auth/*splat", (req: Request, res: Response) => void handler(req, res));
   }

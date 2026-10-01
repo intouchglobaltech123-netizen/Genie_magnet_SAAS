@@ -18,10 +18,16 @@ export const envSchema = z
     BETTER_AUTH_URL: z.url().default("http://localhost:4000"),
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_CLIENT_SECRET: z.string().optional(),
+    /** Pick a person and sign in without a password (test servers only — never with real data). */
+    TEST_SIGN_IN: z.stringbool().default(false),
   })
   .refine((e) => !(e.NODE_ENV === "production" && e.AUTH_MODE === "dev-header"), {
     message: "AUTH_MODE=dev-header is not allowed in production",
     path: ["AUTH_MODE"],
+  })
+  .refine((e) => !(e.NODE_ENV === "production" && e.TEST_SIGN_IN), {
+    message: "TEST_SIGN_IN is not allowed in production",
+    path: ["TEST_SIGN_IN"],
   })
   .refine((e) => e.AUTH_MODE !== "better-auth" || (e.AUTH_DATABASE_URL && e.BETTER_AUTH_SECRET), {
     message: "AUTH_MODE=better-auth needs AUTH_DATABASE_URL and BETTER_AUTH_SECRET",

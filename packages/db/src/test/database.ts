@@ -44,6 +44,15 @@ async function applyMigrations(ownerUrl: string) {
   }
 }
 
+/** Best effort: Windows can keep the data folder locked for a moment after the server stops; the next run sweeps it. */
+function removeQuietly(dir: string) {
+  try {
+    rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+  } catch {
+    // left for the next run
+  }
+}
+
 export async function startTestDatabase(): Promise<TestDatabase> {
   const ownerFromEnv = process.env.TEST_DATABASE_OWNER_URL;
   const appFromEnv = process.env.TEST_DATABASE_APP_URL;
@@ -77,6 +86,8 @@ export async function startTestDatabase(): Promise<TestDatabase> {
   const { default: EmbeddedPostgres } = await import("embedded-postgres");
   const parent = resolve(here, "../../../../.pg-test");
   mkdirSync(parent, { recursive: true });
+  // Folders a previous run could not remove (Windows sometimes keeps them locked for a while).
+  for (const old of readdirSync(parent)) removeQuietly(join(parent, old));
   const dir = mkdtempSync(join(parent, "run-"));
   const port = await freePort();
   const server = new EmbeddedPostgres({
@@ -84,7 +95,8 @@ export async function startTestDatabase(): Promise<TestDatabase> {
     user: "genie_owner",
     password: "owner-test",
     port,
-    persistent: false,
+    // We remove the folder ourselves (removeQuietly): the library's own removal fails when Windows still holds it.
+    persistent: true,
     onLog: () => {},
     initdbFlags: ["--encoding=UTF8", "--locale=C"],
   });
@@ -106,7 +118,7 @@ export async function startTestDatabase(): Promise<TestDatabase> {
     authUrl: `postgresql://genie_auth:auth-test@127.0.0.1:${port}/genie_test`,
     stop: async () => {
       await server.stop();
-      rmSync(dir, { recursive: true, force: true });
+      removeQuietly(dir);
     },
   };
 }

@@ -8,6 +8,7 @@ import type { createPrisma } from "@gm/db";
 import { DEFAULT_ROLES } from "@gm/shared";
 import type { Env } from "../env.js";
 import type { Outbox } from "./outbox.js";
+import { testSignIn } from "./test-sign-in.js";
 
 export const AUTH = Symbol("AUTH");
 export const AUTH_PRISMA = Symbol("AUTH_PRISMA");
@@ -70,6 +71,8 @@ export function createAuth(env: Env, prisma: ReturnType<typeof createPrisma>, ou
           });
         },
       }),
+      // Password-free sign-in for testing; never on in production (env.ts).
+      ...(env.TEST_SIGN_IN ? [testSignIn(prisma)] : []),
     ],
   });
 }

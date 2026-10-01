@@ -5,7 +5,9 @@
 
 Sizes: **S** ≤ 2 days · **M** 3–5 days · **L** 6–10 days.
 
-**Everything is configurable by each agency (plan v1.1).** Roles and permissions, packages, pipeline stages, onboarding questions and invoice settings are settings with Growth OS defaults — never hard-coded. Genie Magnet does not need to send them in advance; their team sets up their own workspace in a guided session in week 4 (P1-29). If they send the information request answers anyway, we pre-load them.
+**Testing first, then sign-in hardening (decided 1 Oct 2026).** While the phase is being built and tested, people sign in by picking a sample person (test sign-in, P1-02) — no passwords needed. Two-factor and Google sign-in are built last (P1-10), once everything else is tested.
+
+**Everything is configurable by each agency (plan v1.1). Roles and permissions, packages, pipeline stages, onboarding questions and invoice settings are settings with Growth OS defaults — never hard-coded. Genie Magnet does not need to send them in advance; their team sets up their own workspace in a guided session in week 4 (P1-29). If they send the information request answers anyway, we pre-load them.
 
 Already done in Phase 0: monorepo, `@gm/shared`, `@gm/db` schema v0 with forced RLS and the cross-tenant suite, API skeleton with tenant context and the clients endpoint, worker skeleton, CI, ADRs.
 
@@ -21,11 +23,12 @@ As the tech lead, I want every request logged, rate-limited and returning one er
 - Rate limits per IP and per session on auth and public-link routes.
 - `/health` and `/health/ready` used by staging uptime checks.
 
-**P1-02 · Seed and sample data (S)**
+**P1-02 · Seed and sample data (S)** — **Done 1 Oct 2026.** `npm run db:seed` and test sign-in; see [ENGINEERING.md](../ENGINEERING.md#sample-data-and-test-sign-in). Roles' permissions, pipeline stages and question sets are added to the seed with P1-11, P1-14 and P1-21.
 As a developer, I want `npm run db:seed` to create Genie Magnet (tenant #1) and a second test agency with sample data, so everyone works on the same realistic data.
 
 - Seeds the agency with the Growth OS defaults (roles, packages, stages, question sets) and sample clients — never real client data without Genie Magnet's approval.
 - A second agency exists in every environment except production, for cross-tenant checks.
+- **Test sign-in:** on local and test servers, pick a sample person and sign in without a password. Refused in production, and switched off on any server that holds real data.
 
 **P1-03 · Audit log (M)**
 As the owner, I want every change to clients, agreements, packages, invoices, roles and questionnaire answers recorded, so I can see who changed what and when.
@@ -57,7 +60,7 @@ As an operator, I want failed jobs retried and then listed with their reason, so
 **P1-07 · Better Auth spike (M)** — **Done 30 Sep 2026.** Exit criteria and decisions in [ADR 0003](../adr/0003-authentication-better-auth.md); Google sign-in waits for the Google Cloud project.
 
 **P1-08 · Sign in and sessions (M)**
-As a team member, I want to sign in with email and password or Google, so I can use the app securely.
+As a team member, I want to sign in with email and password, so I can use the app securely. (Google sign-in moves to P1-10.)
 
 - Sign in, sign out, password reset by email; sessions expire after inactivity.
 - The active agency comes from the session and replaces the development `x-agency-id` header everywhere.
@@ -69,8 +72,7 @@ As the owner, I want to invite people by email with a role, so each person sees 
 - An invitation expires after 7 days; accepting it creates the membership.
 - A person can belong to more than one agency and switch between them.
 
-**P1-10 · Two-factor authentication (S)**
-As the owner, I want two-factor sign-in required for owner and finance roles, so money and settings are protected.
+**P1-10 · Two-factor and Google sign-in** — moved to the end of the phase (see [Last: before real use](#last-before-real-use)).
 
 **P1-11 · Custom roles and the permission matrix (L)**
 As the owner, I want to decide for each role what it may see, change and approve, so salaries, costs and other clients' data stay private — without asking the developers.
@@ -155,7 +157,7 @@ As the account manager, I want the client profile and a draft Business Canvas bu
 
 **P1-26 · Data layer (M)** — generated API client (`packages/api-client`) with TanStack Query; session handling; role-aware navigation.
 
-**P1-27 · Screens on real data (L)** — sign in, invitation, two-factor, Settings, CRM, Clients, Agreements, Invoices, Onboarding (internal, assisted, public link). The demo stays available behind a flag until each module is live.
+**P1-27 · Screens on real data (L)** — sign in (with the test sign-in picker), invitation, Settings, CRM, Clients, Agreements, Invoices, Onboarding (internal, assisted, public link). The demo stays available behind a flag until each module is live.
 
 ## Operations
 
@@ -163,10 +165,21 @@ As the account manager, I want the client profile and a draft Business Canvas bu
 
 **P1-29 · Genie Magnet sets up its own workspace (S)** — a guided half-day session in week 4: Janarthanan and Ashwin answer the agency questionnaire and enter their packages, team, roles and permissions, question changes and invoice settings on staging. We note anything the settings could not handle and fix it before the exit gate.
 
+## Last: before real use
+
+**P1-10 · Two-factor and Google sign-in (S)** — built after everything else in the phase is tested.
+As the owner, I want two-factor sign-in required for owner and finance roles, and the option to sign in with Google, so money and settings are protected.
+
+- Two-factor (authenticator app, with backup codes) required for the roles the agency marks as sensitive; owner and finance by default.
+- Google sign-in once Genie Magnet's Google Cloud project exists.
+- Test sign-in is switched off on every server that will hold Genie Magnet's real data.
+
+## Exit gate
+
 **P1-30 · Exit-gate scenario (M)**
 An automated end-to-end test (and a live demo) of the whole phase:
 
-1. The owner signs in with two-factor and invites a manager.
+1. The owner signs in with two-factor (P1-10) and invites a manager.
 1. The owner creates a custom role and changes one permission, edits an onboarding question and sets the invoice number format; each change takes effect at once and is in the audit log.
 1. The manager creates a lead, logs a call and sends a proposal with a discount that needs the owner's approval; the owner approves.
 1. The deal is won; client, agreement and questionnaire are created automatically.
