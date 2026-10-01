@@ -30,7 +30,7 @@ As a developer, I want `npm run db:seed` to create Genie Magnet (tenant #1) and 
 - A second agency exists in every environment except production, for cross-tenant checks.
 - **Test sign-in:** on local and test servers, pick a sample person and sign in without a password. Refused in production, and switched off on any server that holds real data.
 
-**P1-03 · Audit log (M)**
+**P1-03 · Audit log (M)** — **Done 1 Oct 2026.** `GET /audit` (filters: `entity`, `entityId`, `actorId`, `from`, `to`; pages of up to 200). Agency, membership and invitation changes made through sign-in are recorded straight after the change, with the person who made it. Who may read the log moves to the permission matrix in P1-11 (owners and managers until then).
 As the owner, I want every change to clients, agreements, packages, invoices, roles and questionnaire answers recorded, so I can see who changed what and when.
 
 - Written in the same transaction as the change, with actor, before/after for changed fields.

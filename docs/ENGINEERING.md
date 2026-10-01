@@ -88,8 +88,9 @@ curl -b cookies.txt http://localhost:4000/clients
 
 1. `apps/api/src/<module>/` with `<module>.controller.ts` and `<module>.service.ts`; register both in `app.module.ts`.
 2. Input schemas in `packages/shared/src/schemas.ts`; tables in `schema.prisma` + RLS lines; `npm run db:migrate`.
-3. An e2e test that includes a cross-agency case (see `clients.e2e.test.ts`).
-4. PR with the template checklist filled in.
+3. Every change is audited inside its own transaction: `this.tenant.tx(async (tx) => { …; await this.audit.record(tx, { action, entity, entityId, before, after }) })`. For updates, pass only what changed: `changes(before, after)` from `audit.service.ts`.
+4. An e2e test that includes a cross-agency case (see `clients.e2e.test.ts`).
+5. PR with the template checklist filled in.
 
 ## Branches, commits and pull requests
 

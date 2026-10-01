@@ -39,10 +39,11 @@ export function forAgency(prisma: PrismaClient, agencyId: string, userId?: strin
 
 export type TenantClient = ReturnType<typeof forAgency>;
 
-type Tx = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
+/** The transaction client inside withAgency(). */
+export type TenantTx = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
 
 /** Several operations in one transaction, all inside the agency (e.g. create a client with its contacts). */
-export async function withAgency<T>(prisma: PrismaClient, agencyId: string, fn: (tx: Tx) => Promise<T>, userId?: string): Promise<T> {
+export async function withAgency<T>(prisma: PrismaClient, agencyId: string, fn: (tx: TenantTx) => Promise<T>, userId?: string): Promise<T> {
   assertAgencyId(agencyId);
   return prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT set_config('app.agency_id', ${agencyId}, TRUE)`;

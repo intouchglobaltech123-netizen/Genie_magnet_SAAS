@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { Logger } from "@nestjs/common";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { organization } from "better-auth/plugins";
@@ -6,7 +7,9 @@ import { createAccessControl } from "better-auth/plugins/access";
 import { adminAc, defaultStatements, memberAc, ownerAc } from "better-auth/plugins/organization/access";
 import type { createPrisma } from "@gm/db";
 import { DEFAULT_ROLES } from "@gm/shared";
+import type { AuditWriter } from "../audit/audit.service.js";
 import type { Env } from "../env.js";
+import { currentActorId } from "./mount.js";
 import type { Outbox } from "./outbox.js";
 import { testSignIn } from "./test-sign-in.js";
 
@@ -27,7 +30,17 @@ const betterAuthRoles = Object.fromEntries(
  * Sign-in for Genie Magnet OS (ADR 0003). An agency is a Better Auth organization; the session's active
  * organization is the agency every API request works in. Runs on the genie_auth database role.
  */
-export function createAuth(env: Env, prisma: ReturnType<typeof createPrisma>, outbox: Outbox) {
+export function createAuth(env: Env, prisma: ReturnType<typeof createPrisma>, outbox: Outbox, audit: AuditWriter) {
+  const log = new Logger("Auth");
+  /** Agency changes made here are audited right after they happen; a failed entry is logged, never hidden. */
+  const record = async (agencyId: string, fallbackActor: string | undefined, entry: Parameters<AuditWriter>[2]) => {
+    try {
+      await audit(agencyId, currentActorId() ?? fallbackActor, entry);
+    } catch (e) {
+      log.error(`Audit entry not written: ${entry.action} ${entry.entity} ${entry.entityId ?? ""}`, { agencyId, error: String(e) });
+    }
+  };
+
   return betterAuth({
     appName: "Genie Magnet OS",
     baseURL: env.BETTER_AUTH_URL,
@@ -63,6 +76,69 @@ export function createAuth(env: Env, prisma: ReturnType<typeof createPrisma>, ou
           organization: { modelName: "agency" },
           member: { modelName: "membership", fields: { organizationId: "agencyId" } },
           invitation: { modelName: "invitation", fields: { organizationId: "agencyId" } },
+        },
+        organizationHooks: {
+          afterCreateOrganization: ({ organization, user }) =>
+            record(organization.id, user.id, {
+              action: "create",
+              entity: "agency",
+              entityId: organization.id,
+              after: { name: organization.name, slug: organization.slug },
+            }),
+          afterUpdateOrganization: async ({ organization, user }) => {
+            if (organization)
+              await record(organization.id, user.id, {
+                action: "update",
+                entity: "agency",
+                entityId: organization.id,
+                after: { name: organization.name, slug: organization.slug, logo: organization.logo ?? null },
+              });
+          },
+          afterAddMember: ({ member, user, organization }) =>
+            record(organization.id, undefined, {
+              action: "create",
+              entity: "membership",
+              entityId: member.id,
+              after: { userId: user.id, name: user.name, role: member.role },
+            }),
+          afterUpdateMemberRole: ({ member, previousRole, user, organization }) =>
+            record(organization.id, undefined, {
+              action: "update",
+              entity: "membership",
+              entityId: member.id,
+              before: { name: user.name, role: previousRole },
+              after: { name: user.name, role: member.role },
+            }),
+          afterRemoveMember: ({ member, user, organization }) =>
+            record(organization.id, undefined, {
+              action: "delete",
+              entity: "membership",
+              entityId: member.id,
+              before: { userId: user.id, name: user.name, role: member.role },
+            }),
+          afterCreateInvitation: ({ invitation, inviter, organization }) =>
+            record(organization.id, inviter.id, {
+              action: "create",
+              entity: "invitation",
+              entityId: invitation.id,
+              after: { email: invitation.email, role: invitation.role },
+            }),
+          afterAcceptInvitation: ({ invitation, member, user, organization }) =>
+            record(organization.id, user.id, {
+              action: "accept",
+              entity: "invitation",
+              entityId: invitation.id,
+              after: { membershipId: member.id, name: user.name, role: member.role },
+            }),
+          afterRejectInvitation: ({ invitation, user, organization }) =>
+            record(organization.id, user.id, { action: "reject", entity: "invitation", entityId: invitation.id, after: { email: invitation.email } }),
+          afterCancelInvitation: ({ invitation, cancelledBy, organization }) =>
+            record(organization.id, cancelledBy.id, {
+              action: "cancel",
+              entity: "invitation",
+              entityId: invitation.id,
+              before: { email: invitation.email, role: invitation.role },
+            }),
         },
         sendInvitationEmail: async (data) => {
           const link = `${env.WEB_ORIGIN}/invite/${data.id}`;

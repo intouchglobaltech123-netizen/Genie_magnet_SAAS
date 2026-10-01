@@ -80,3 +80,15 @@ export type QuestionnaireTemplate = z.infer<typeof questionnaireTemplateSchema>;
 /** One answer as submitted: text, list or table rows. Validated against its question type server-side. */
 export const answerValue = z.union([z.string().max(10_000), z.array(z.string().max(500)).max(50), z.array(z.record(z.string(), z.string().max(500))).max(100)]);
 export type AnswerValue = z.infer<typeof answerValue>;
+
+/** Audit log filters (P1-03): per record (entity + entityId), per person, per date range; newest first. */
+export const auditQuery = z.object({
+  entity: z.string().trim().max(40).optional(),
+  entityId: z.string().trim().max(64).optional(),
+  actorId: z.string().trim().max(64).optional(),
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
+  cursor: z.uuid().optional(),
+  limit: z.coerce.number().int().min(1).max(200).default(50),
+});
+export type AuditQuery = z.infer<typeof auditQuery>;

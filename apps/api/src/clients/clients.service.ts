@@ -1,6 +1,7 @@
 import { ConflictException, Injectable } from "@nestjs/common";
 import { Prisma } from "@gm/db";
 import type { ClientInput, FitmentQuadrant } from "@gm/shared";
+import { AuditService } from "../audit/audit.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 
 const FITMENT: Record<FitmentQuadrant, "amazing" | "bread_winning" | "convenience" | "dangerous"> = {
@@ -12,7 +13,10 @@ const FITMENT: Record<FitmentQuadrant, "amazing" | "bread_winning" | "convenienc
 
 @Injectable()
 export class ClientsService {
-  constructor(private readonly tenant: TenantDb) {}
+  constructor(
+    private readonly tenant: TenantDb,
+    private readonly audit: AuditService,
+  ) {}
 
   list() {
     return this.tenant.db.client.findMany({ include: { contacts: true }, orderBy: { name: "asc" } });
@@ -20,7 +24,6 @@ export class ClientsService {
 
   async create(input: ClientInput) {
     const agencyId = this.tenant.agencyId;
-    const actorId = this.tenant.userId;
     try {
       return await this.tenant.tx(async (tx) => {
         const client = await tx.client.create({
@@ -37,9 +40,7 @@ export class ClientsService {
           },
           include: { contacts: true },
         });
-        await tx.auditLog.create({
-          data: { agencyId, actorId, action: "create", entity: "client", entityId: client.id, after: { code: client.code, name: client.name } },
-        });
+        await this.audit.record(tx, { action: "create", entity: "client", entityId: client.id, after: { code: client.code, name: client.name } });
         return client;
       });
     } catch (e) {
