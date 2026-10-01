@@ -3,7 +3,7 @@
 **Weeks 6–10 · Mon 16 Nov – Fri 18 Dec 2026.** Goal: a video goes from idea to published, with every step recorded.
 **Exit gate:** three to five real Genie Magnet videos flow from idea to published on staging.
 
-Stories are refined into full acceptance criteria during Phase 1 (week 4). Checklists (kit, edit steps, QC) are editable by each agency and start from Growth OS defaults, so nothing blocks on Genie Magnet; their M4, O1 and O2 answers (13 Nov) help us pre-load and test. The demo screens built in Phase 0 are the reference for each story.
+Stories are refined into full acceptance criteria during Phase 1 (week 4). Checklists (kit, edit steps, QC) are editable by each agency and start from Growth OS defaults, so nothing blocks on Genie Magnet; their M4 and O1 answers (13 Nov) help us pre-load and test. They import their own videos in progress (P2-16); we never import data for them. The demo screens built in Phase 0 are the reference for each story.
 
 | ID    | Story                                                                                                             | Size | Input  |
 | ----- | ----------------------------------------------------------------------------------------------------------------- | ---- | ------ |
@@ -22,5 +22,5 @@ Stories are refined into full acceptance criteria during Phase 1 (week 4). Check
 | P2-13 | Time entries against videos and shoots; calendar events for shoots and deadlines                                  | M    |        |
 | P2-14 | Notifications: assignment, due soon, QC failed, revision requested                                                | S    |        |
 | P2-15 | Screens on the API: Content, Production board/list, video detail, Shoots & Kit, QC, Revisions, Publishing, Cycles | L    |        |
-| P2-16 | Import the current tracking sheet (videos in flight) for the trial                                                | M    | O2     |
+| P2-16 | Self-service import of videos in progress from their tracking sheet (same importer as P1-31)                      | M    |        |
 | P2-17 | Exit-gate scenario test with 3–5 real videos                                                                      | M    |        |

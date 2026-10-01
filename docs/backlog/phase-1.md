@@ -9,6 +9,8 @@ Sizes: **S** ≤ 2 days · **M** 3–5 days · **L** 6–10 days.
 
 **Everything is configurable by each agency (plan v1.1). Roles and permissions, packages, pipeline stages, onboarding questions and invoice settings are settings with Growth OS defaults — never hard-coded. Genie Magnet does not need to send them in advance; their team sets up their own workspace in a guided session in week 4 (P1-29). If they send the information request answers anyway, we pre-load them.
 
+**Their data is theirs to bring in (decided 1 Oct 2026).** Genie Magnet enters or imports all of its own data — clients, contacts, leads, team, videos in progress — with self-service tools (P1-31, P2-16). We never receive or import their records; development and staging use the invented sample data (P1-02).
+
 Already done in Phase 0: monorepo, `@gm/shared`, `@gm/db` schema v0 with forced RLS and the cross-tenant suite, API skeleton with tenant context and the clients endpoint, worker skeleton, CI, ADRs.
 
 ---
@@ -122,6 +124,15 @@ As finance, I want to set up our own invoice details once and then raise GST inv
 - Tax split chosen automatically: CGST + SGST within the state, IGST for clients in other states.
 - Manual invoices; PDF download; status draft / sent / paid.
 
+**P1-31 · Import from Excel or CSV, self-service (M)**
+As the owner, I want to bring in our existing clients, contacts, leads and team from a spreadsheet myself, so we start on our real data without sending it to anyone.
+
+- A template to download for each kind of record, or upload our own sheet and match its columns to the fields.
+- A preview before anything is saved: every row checked with the same rules as the forms, problems shown by row and column; nothing is saved until every row passes or the bad rows are left out on purpose.
+- Team rows become invitations with an existing role, never accounts.
+- Needs edit access to each area being imported. Each import and every record it creates are in the audit log; an import can be undone within 24 hours if its records have not been changed since.
+- The uploaded file is read inside the agency's own space and deleted after the import.
+
 ## Onboarding engine
 
 **P1-21 · Question builder and versions (L)**
@@ -163,7 +174,7 @@ As the account manager, I want the client profile and a draft Business Canvas bu
 
 **P1-28 · Staging (M)** — deploy from `main` automatically with migrations; error tracking; uptime check; nightly backups; staging uses sample or consented data only.
 
-**P1-29 · Genie Magnet sets up its own workspace (S)** — a guided half-day session in week 4: Janarthanan and Ashwin answer the agency questionnaire and enter their packages, team, roles and permissions, question changes and invoice settings on staging. We note anything the settings could not handle and fix it before the exit gate.
+**P1-29 · Genie Magnet sets up its own workspace (S)** — a guided half-day session in week 4: Janarthanan and Ashwin answer the agency questionnaire and enter their packages, team, roles and permissions, question changes and invoice settings, and import their clients and leads themselves (P1-31). We note anything the settings could not handle and fix it before the exit gate.
 
 ## Last: before real use
 
