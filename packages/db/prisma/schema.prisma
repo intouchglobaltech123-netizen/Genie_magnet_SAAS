@@ -2789,3 +2789,37 @@ model Subscription {
 
   @@map("subscriptions")
 }
+
+/// Our invoice to an agency for its plan (P6-04): issued when a payment comes in, numbered across the platform.
+model PlatformInvoice {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  agencyId    String   @map("agency_id") @db.Uuid
+  number      String   @unique
+  issuedOn    DateTime @map("issued_on") @db.Date
+  periodStart DateTime @map("period_start") @db.Date
+  periodEnd   DateTime @map("period_end") @db.Date
+  planKey     String   @map("plan_key")
+  planName    String   @map("plan_name")
+  /// INR · USD
+  currency    String   @default("INR")
+  /// Before tax, in whole rupees or dollars.
+  amount      Int
+  cgst        Int      @default(0)
+  sgst        Int      @default(0)
+  igst        Int      @default(0)
+  total       Int
+  gstRate     Float    @default(0) @map("gst_rate")
+  /// Our details and the agency's, as they were when it was issued.
+  seller      Json
+  buyer       Json
+  sac         String   @default("")
+  /// outbox · razorpay · stripe
+  provider    String
+  paymentRef  String   @map("payment_ref")
+  paidAt      DateTime @default(now()) @map("paid_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([provider, paymentRef])
+  @@index([agencyId, issuedOn])
+  @@map("platform_invoices")
+}

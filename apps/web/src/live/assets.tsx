@@ -111,7 +111,12 @@ export function LiveAssets() {
       ) : (
         <div className="space-y-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard label="Cost of what is in use" value={inrCompact(cost)} icon={IndianRupee} hint={`${inUse.length} ${inUse.length === 1 ? "item" : "items"}`} />
+            <StatCard
+              label="Cost of what is in use"
+              value={inrCompact(cost)}
+              icon={IndianRupee}
+              hint={`${inUse.length} ${inUse.length === 1 ? "item" : "items"}`}
+            />
             <StatCard
               label="Worth now"
               value={inrCompact(worth)}
@@ -126,7 +131,13 @@ export function LiveAssets() {
               tone={overdue ? "danger" : "accent"}
               hint={overdue ? `${overdue} overdue` : "On shoots and trips"}
             />
-            <StatCard label="Out for repair" value={repairs} icon={Wrench} tone={repairs ? "warning" : "success"} hint={repairs ? "Not available" : "Everything in service"} />
+            <StatCard
+              label="Out for repair"
+              value={repairs}
+              icon={Wrench}
+              tone={repairs ? "warning" : "success"}
+              hint={repairs ? "Not available" : "Everything in service"}
+            />
           </div>
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList>
@@ -188,7 +199,13 @@ function Register({ rows, onOpen, onAdd }: { rows: AssetRow[]; onOpen: (id: stri
       <div className="flex flex-col gap-3 border-b border-border p-4 md:flex-row md:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search tag, item, serial number or who has it" aria-label="Search the register" className="pl-9" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search tag, item, serial number or who has it"
+            aria-label="Search the register"
+            className="pl-9"
+          />
         </div>
         <Select
           className="md:w-40"
@@ -515,7 +532,11 @@ function AssetBody({ a, onAction }: { a: AssetDetail; onAction: (x: Action) => v
         <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Metric label="Bought" value={inr(a.purchaseValue)} sub={longDate(a.purchaseDate)} />
           <Metric label="Worth now" value={inr(a.bookValue)} sub={`At the end ${inr(a.residualValue)}`} />
-          <Metric label="Depreciation a year" value={inr(annualDepreciation(a))} sub={`Over ${a.usefulLifeYears} ${a.usefulLifeYears === 1 ? "year" : "years"}`} />
+          <Metric
+            label="Depreciation a year"
+            value={inr(annualDepreciation(a))}
+            sub={`Over ${a.usefulLifeYears} ${a.usefulLifeYears === 1 ? "year" : "years"}`}
+          />
           <Metric
             label="An hour's use"
             value={a.perHour === null ? "—" : inr(a.perHour)}
@@ -557,9 +578,21 @@ function AssetBody({ a, onAction }: { a: AssetDetail; onAction: (x: Action) => v
                   <AreaChart data={bookValueSeries(a)} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                     <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
                     <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} minTickGap={24} />
-                    <YAxis tickLine={false} axisLine={false} width={56} tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} tickFormatter={(v: number) => inrCompact(v)} />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      width={56}
+                      tick={{ fill: "var(--color-text-muted)", fontSize: 12 }}
+                      tickFormatter={(v: number) => inrCompact(v)}
+                    />
                     <RTooltip
-                      contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 10, fontSize: 13, padding: "8px 10px" }}
+                      contentStyle={{
+                        background: "var(--color-popover)",
+                        border: "1px solid var(--color-border)",
+                        borderRadius: 10,
+                        fontSize: 13,
+                        padding: "8px 10px",
+                      }}
                       formatter={(v) => [inr(Number(v)), "Worth"]}
                     />
                     <Area type="linear" dataKey="value" stroke="var(--color-chart-1)" strokeWidth={2} fill="var(--color-chart-1)" fillOpacity={0.08} />
@@ -616,7 +649,13 @@ function AssetBody({ a, onAction }: { a: AssetDetail; onAction: (x: Action) => v
                         c.returnedAt ? "bg-success-soft text-success" : c.kind === "assigned" ? "bg-info-soft text-info" : "bg-primary-soft text-primary",
                       )}
                     >
-                      {c.returnedAt ? <ArrowDownLeft className="size-3" /> : c.kind === "assigned" ? <UserCheck className="size-3" /> : <ArrowUpRight className="size-3" />}
+                      {c.returnedAt ? (
+                        <ArrowDownLeft className="size-3" />
+                      ) : c.kind === "assigned" ? (
+                        <UserCheck className="size-3" />
+                      ) : (
+                        <ArrowUpRight className="size-3" />
+                      )}
                     </span>
                     <div className="text-body">
                       <span className="font-medium">
@@ -647,7 +686,9 @@ function AssetBody({ a, onAction }: { a: AssetDetail; onAction: (x: Action) => v
           </TabsContent>
 
           <TabsContent value="maintenance" className="space-y-2">
-            {a.maintenance.length === 0 && <EmptyState compact icon={Wrench} title="No services or repairs" description="Problems reported and services logged show here." />}
+            {a.maintenance.length === 0 && (
+              <EmptyState compact icon={Wrench} title="No services or repairs" description="Problems reported and services logged show here." />
+            )}
             {a.maintenance.map((m) => (
               <div key={m.id} className="flex items-start justify-between gap-3 rounded-xl border border-border p-3.5">
                 <div className="min-w-0">
@@ -672,7 +713,9 @@ function AssetBody({ a, onAction }: { a: AssetDetail; onAction: (x: Action) => v
           </TabsContent>
 
           <TabsContent value="reservations" className="space-y-2">
-            {a.reservations.length === 0 && <EmptyState compact icon={CalendarDays} title="No reservations ahead" description="Book it for a day or a shoot." />}
+            {a.reservations.length === 0 && (
+              <EmptyState compact icon={CalendarDays} title="No reservations ahead" description="Book it for a day or a shoot." />
+            )}
             {a.reservations.map((r) => (
               <div key={r.id} className="flex flex-wrap items-center gap-3 rounded-xl border border-border p-3.5">
                 <DateBlock date={r.date} />
@@ -778,7 +821,11 @@ function AssetForm({ asset, onClose, onSaved }: { asset: AssetDetail | null; onC
             <Input inputMode="numeric" value={f.hoursPerYear} onChange={(e) => set({ hoursPerYear: e.target.value })} />
           </Field>
           <Field label="Condition">
-            <Select value={f.condition} onValueChange={(v) => set({ condition: v as AssetCondition })} options={ASSET_CONDITIONS.map((c) => ({ value: c, label: c }))} />
+            <Select
+              value={f.condition}
+              onValueChange={(v) => set({ condition: v as AssetCondition })}
+              options={ASSET_CONDITIONS.map((c) => ({ value: c, label: c }))}
+            />
           </Field>
           <Field label="Kept at">
             <Input value={f.location} onChange={(e) => set({ location: e.target.value })} placeholder="Equipment room" />
@@ -925,15 +972,28 @@ function ReturnDialog({ a, onClose }: { a: AssetDetail; onClose: () => void }) {
         </DialogHeader>
         <DialogBody className="grid gap-3 sm:grid-cols-2">
           <Field label="Condition">
-            <Select value={f.condition} onValueChange={(v) => set({ condition: v as AssetCondition })} options={ASSET_CONDITIONS.map((c) => ({ value: c, label: c }))} />
+            <Select
+              value={f.condition}
+              onValueChange={(v) => set({ condition: v as AssetCondition })}
+              options={ASSET_CONDITIONS.map((c) => ({ value: c, label: c }))}
+            />
           </Field>
           <Field label="Hours of use" hint={a.perHour ? `At ${inr(a.perHour)} an hour` : undefined}>
-            <Input inputMode="decimal" value={f.hours} onChange={(e) => set({ hours: e.target.value })} placeholder={a.out?.shoot ? "Hours it was shooting" : ""} />
+            <Input
+              inputMode="decimal"
+              value={f.hours}
+              onChange={(e) => set({ hours: e.target.value })}
+              placeholder={a.out?.shoot ? "Hours it was shooting" : ""}
+            />
           </Field>
           <Field label={broken ? "What is wrong" : "Note"} className="sm:col-span-2">
             <Input value={f.note} onChange={(e) => set({ note: e.target.value })} />
           </Field>
-          {broken && <p className="text-body text-muted-foreground sm:col-span-2">It goes out for repair until someone who keeps the register puts it back in service.</p>}
+          {broken && (
+            <p className="text-body text-muted-foreground sm:col-span-2">
+              It goes out for repair until someone who keeps the register puts it back in service.
+            </p>
+          )}
         </DialogBody>
         <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
@@ -973,7 +1033,11 @@ function ReserveDialog({ a, onClose }: { a: AssetDetail; onClose: () => void }) 
         </DialogHeader>
         <DialogBody className="grid gap-3 sm:grid-cols-2">
           <Field label="For the shoot" className="sm:col-span-2">
-            <Select value={f.shootId} onValueChange={(v) => set({ shootId: v, ...(v !== "_none" && p.shootDate(v) ? { date: p.shootDate(v)! } : {}) })} options={p.shoots} />
+            <Select
+              value={f.shootId}
+              onValueChange={(v) => set({ shootId: v, ...(v !== "_none" && p.shootDate(v) ? { date: p.shootDate(v)! } : {}) })}
+              options={p.shoots}
+            />
           </Field>
           <Field label="Day">
             <Input type="date" value={f.date} onChange={(e) => set({ date: e.target.value })} />
@@ -1106,7 +1170,11 @@ function BackInServiceDialog({ a, onClose }: { a: AssetDetail; onClose: () => vo
             disabled={act.isPending || !a.openRepair}
             onClick={() =>
               act.mutate(
-                { step: "backInService", maintenanceId: a.openRepair!.id, body: { condition: f.condition, cost: f.cost.trim() === "" ? null : Number(f.cost), note: f.note } },
+                {
+                  step: "backInService",
+                  maintenanceId: a.openRepair!.id,
+                  body: { condition: f.condition, cost: f.cost.trim() === "" ? null : Number(f.cost), note: f.note },
+                },
                 { onSuccess: () => (toast.success("Back in service"), onClose()), onError },
               )
             }

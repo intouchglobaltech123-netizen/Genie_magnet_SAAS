@@ -98,6 +98,9 @@ import { AssetsService } from "./assets/assets.service.js";
 import { ProjectsController, TasksController } from "./projects/projects.controller.js";
 import { ProjectsService } from "./projects/projects.service.js";
 import { EntitlementsService } from "./billing/entitlements.js";
+import { BillingWebhookController, PlatformInvoicesController } from "./billing/billing.controller.js";
+import { BILLING_PROVIDER, LiveBillingProvider, OutboxBillingProvider } from "./billing/billing-provider.js";
+import { BillingService } from "./billing/billing.service.js";
 import { PlanController } from "./billing/plan.controller.js";
 import { PlanService } from "./billing/plan.service.js";
 import { PlatformSettingsService } from "./platform/platform-settings.service.js";
@@ -209,6 +212,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     TasksController,
     PlanController,
     PlatformController,
+    BillingWebhookController,
+    PlatformInvoicesController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -360,6 +365,21 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     EntitlementsService,
     PlanService,
     PlatformService,
+    {
+      provide: BILLING_PROVIDER,
+      inject: [ENV],
+      useFactory: (env: Env) =>
+        (env.BILLING_PROVIDER ?? (env.NODE_ENV === "production" ? "live" : "outbox")) === "live"
+          ? new LiveBillingProvider({
+              razorpayUrl: env.RAZORPAY_API_URL,
+              razorpayKeyId: env.RAZORPAY_BILLING_KEY_ID,
+              razorpayKeySecret: env.RAZORPAY_BILLING_KEY_SECRET,
+              stripeUrl: env.STRIPE_API_URL,
+              stripeSecret: env.STRIPE_SECRET_KEY,
+            })
+          : new OutboxBillingProvider(),
+    },
+    BillingService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

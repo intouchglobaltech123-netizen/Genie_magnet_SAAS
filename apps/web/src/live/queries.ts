@@ -110,7 +110,10 @@ import {
   type DiagnosticView,
   type PlannerData,
   type AssetDetail,
+  type ChoosePlanResult,
+  type PlanCurrency,
   type PlanPage,
+  type PlatformInvoiceRow,
   type PlatformAgencyRow,
   type PlatformSettings,
   type ProjectDetail,
@@ -2176,7 +2179,7 @@ export const usePlan = () => useQuery({ queryKey: ["plan"], queryFn: () => api<P
 export function usePlanAction() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (plan: string) => api<PlanPage>("/plan/choose", { body: { plan } }),
+    mutationFn: (v: { plan: string; currency: PlanCurrency }) => api<ChoosePlanResult>("/plan/choose", { body: v }),
     onSuccess: (page) => {
       qc.setQueryData(["plan"], page);
       // The menu and the banner follow the new plan.
@@ -2184,6 +2187,9 @@ export function usePlanAction() {
     },
   });
 }
+
+export const usePlanInvoice = (id: string) => useQuery({ queryKey: ["plan", "invoice", id], queryFn: () => api<PlatformInvoiceRow>(`/plan/invoices/${id}`) });
+export const usePlatformInvoices = () => useQuery({ queryKey: ["platform", "invoices"], queryFn: () => api<PlatformInvoiceRow[]>("/platform/invoices") });
 
 export const usePlatformAgencies = (enabled = true) =>
   useQuery({ queryKey: ["platform", "agencies"], queryFn: () => api<PlatformAgencyRow[]>("/platform/agencies"), enabled });

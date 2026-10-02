@@ -4,7 +4,16 @@
 // read-only until a plan is chosen; and signing up starts a trial that the daily check ends.
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { type Me, type PlanPage, type PlatformAgencyRow, type PlatformSettings, SUITE_KEYS } from "@gm/shared";
+import {
+  type ChoosePlanResult,
+  financialYear,
+  type Me,
+  type PlanPage,
+  type PlatformAgencyRow,
+  type PlatformInvoiceRow,
+  type PlatformSettings,
+  SUITE_KEYS,
+} from "@gm/shared";
 import { JobRunner } from "../jobs/job-runner.js";
 import { type Agent, ORIGIN, type SeededApp, startSeededApp } from "../test/seeded-app.js";
 
@@ -189,5 +198,98 @@ describe("signing up", () => {
     expect((await me(agent)).entitlements).toMatchObject({ status: "expired", readOnly: true });
     const n = (await agent.get("/notifications").expect(200)).body.items as { kind: string; title: string; link: string }[];
     expect(n.find((x) => x.kind === "billing")).toMatchObject({ title: "The trial has ended", link: "/app/settings/plan" });
+  });
+});
+
+describe("our invoices (pretend payments)", () => {
+  const fy = financialYear(day(0)).short;
+  const morning = (days: number) => new Date(`${new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10)}T03:00:00Z`);
+
+  it("are issued for each payment with our details and the agency's, GST split by state, numbered across agencies", async () => {
+    // Zen chose Growth (₹4,999) before our invoice details were set; Zen has no state on record, so it is IGST.
+    const zen1 = ((await zara.get("/plan").expect(200)).body as PlanPage).invoices;
+    expect(zen1).toEqual([
+      expect.objectContaining({
+        number: `INV/${fy}/0001`,
+        plan: { key: "growth", name: "Growth" },
+        currency: "INR",
+        amount: 4999,
+        cgst: 0,
+        sgst: 0,
+        igst: 900,
+        total: 5899,
+        provider: "outbox",
+        buyer: expect.objectContaining({ name: "Zen Studio (test agency)" }),
+      }),
+    ]);
+
+    settings = (
+      await anitha
+        .put("/platform/settings")
+        .send({
+          ...settings,
+          invoice: {
+            legalName: "Agency OS Technologies Pvt Ltd",
+            gstin: "33AAACA1234B1Z5",
+            stateCode: "33",
+            address: "1 Mount Road, Chennai 600002",
+            sac: "998314",
+            prefix: "AOS",
+            gstRate: 18,
+          },
+          plans: settings.plans.map((p) => (p.key === "scale" ? { ...p, priceInr: 9999 } : p.key === "enterprise" ? { ...p, priceUsd: 199 } : p)),
+        })
+        .expect(200)
+    ).body as PlatformSettings;
+    expect((await jana.post("/plan/choose").send({ plan: "starter" }).expect(409)).body.message).toBe("Starter's price in rupees is not set yet.");
+
+    // Genie Magnet is in Tamil Nadu, like us: CGST and SGST.
+    const chosen = (await jana.post("/plan/choose").send({ plan: "scale", currency: "INR" }).expect(200)).body as ChoosePlanResult;
+    expect(chosen).toMatchObject({ payUrl: null, entitlements: { plan: { key: "scale" }, status: "active" }, billing: { provider: "outbox" } });
+    expect(chosen.invoices[0]).toMatchObject({
+      number: `AOS/${fy}/0001`,
+      amount: 9999,
+      cgst: 900,
+      sgst: 900,
+      igst: 0,
+      total: 11799,
+      gstRate: 18,
+      sac: "998314",
+      totalInWords: "Rupees eleven thousand seven hundred and ninety-nine only",
+      seller: { name: "Agency OS Technologies Pvt Ltd", gstin: "33AAACA1234B1Z5", address: "1 Mount Road, Chennai 600002", state: "Tamil Nadu" },
+      buyer: { name: "Genie Magnet Media LLP", gstin: "33AAKFG5512R1Z1", address: "12 Bhavani Main Road, Appakudal, Erode 638315", state: "Tamil Nadu" },
+    });
+
+    // An agency abroad pays in dollars: an export, with no GST.
+    const usd = (await zara.post("/plan/choose").send({ plan: "enterprise", currency: "USD" }).expect(200)).body as ChoosePlanResult;
+    expect(usd.invoices[0]).toMatchObject({ number: `AOS/${fy}/0002`, currency: "USD", amount: 199, igst: 0, total: 199, totalInWords: "US dollars 199 only" });
+  });
+
+  it("renew each period with a new invoice, once", async () => {
+    const gm = (await t.sql(`SELECT agency_id FROM subscriptions WHERE plan_key = 'scale' AND provider = 'outbox' AND status = 'active'`)) as {
+      agency_id: string;
+    }[];
+    await t.sql(`UPDATE subscriptions SET current_period_end = now() - interval '1 hour' WHERE agency_id = '${gm[0]!.agency_id}'`);
+    await t.app.get(JobRunner).tick(morning(2));
+    await t.app.get(JobRunner).tick(morning(2));
+    const invoices = ((await jana.get("/plan").expect(200)).body as PlanPage).invoices;
+    expect(invoices.map((i) => i.number)).toEqual([`AOS/${fy}/0003`, `AOS/${fy}/0001`]);
+    expect(((await me(jana)).entitlements!.currentPeriodEnd ?? "") > new Date().toISOString()).toBe(true);
+  });
+
+  it("are the agency's own, and all of them are listed in the platform console", async () => {
+    const mine = ((await jana.get("/plan").expect(200)).body as PlanPage).invoices[0]!;
+    expect(((await jana.get(`/plan/invoices/${mine.id}`).expect(200)).body as PlatformInvoiceRow).number).toBe(mine.number);
+    const zens = ((await zara.get("/plan").expect(200)).body as PlanPage).invoices[0]!;
+    await jana.get(`/plan/invoices/${zens.id}`).expect(404);
+    await divya.get("/platform/invoices").expect(403);
+    const all = (await anitha.get("/platform/invoices").expect(200)).body as PlatformInvoiceRow[];
+    expect(all.map((i) => [i.number, i.agency.name])).toEqual(
+      expect.arrayContaining([
+        [`AOS/${fy}/0001`, "Genie Magnet"],
+        [`AOS/${fy}/0002`, "Zen Studio (test agency)"],
+        [`INV/${fy}/0001`, "Zen Studio (test agency)"],
+      ]),
+    );
   });
 });

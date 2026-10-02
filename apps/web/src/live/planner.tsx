@@ -42,7 +42,11 @@ const fresh = (name: string, month: string): PlannerSaved => ({
 });
 
 /** A saved planner; one kept before the month was recorded takes it from its log. */
-const toSaved = (d: PlannerData, month: string): PlannerSaved => ({ ...d, month: d.month ?? d.log[0]?.date.slice(0, 7) ?? month, answers: d.answers as Answers });
+const toSaved = (d: PlannerData, month: string): PlannerSaved => ({
+  ...d,
+  month: d.month ?? d.log[0]?.date.slice(0, 7) ?? month,
+  answers: d.answers as Answers,
+});
 
 const toData = (s: PlannerState): PlannerData => ({
   month: s.month,
@@ -245,7 +249,9 @@ function Planner({ saved, name }: { saved: PlannerData | null; name: string }) {
             <DialogTitle>Start your planner again?</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <p className="text-body text-muted-foreground">Your setup, every spend in the daily log and your diagnostic answers are cleared. This cannot be undone.</p>
+            <p className="text-body text-muted-foreground">
+              Your setup, every spend in the daily log and your diagnostic answers are cleared. This cannot be undone.
+            </p>
           </DialogBody>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setResetting(false)}>

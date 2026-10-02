@@ -73,7 +73,12 @@ export function LiveProjects({ taskId, projectId }: { taskId?: string; projectId
       />
       <div className="mb-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StatCard label="My open tasks" value={openTasks.length} icon={ListTodo} tone="accent" />
-        <StatCard label="Overdue" value={openTasks.filter((t) => t.overdue).length} icon={CalendarClock} tone={openTasks.some((t) => t.overdue) ? "danger" : "success"} />
+        <StatCard
+          label="Overdue"
+          value={openTasks.filter((t) => t.overdue).length}
+          icon={CalendarClock}
+          tone={openTasks.some((t) => t.overdue) ? "danger" : "success"}
+        />
         <StatCard label="Waiting to start" value={openTasks.filter((t) => t.blocked).length} icon={Hourglass} tone="warning" hint="For a task before them" />
         <StatCard label="Active projects" value={(projects.data ?? []).filter((p) => p.status === "active").length} icon={FolderKanban} tone="info" />
       </div>
@@ -115,7 +120,9 @@ export function LiveProjects({ taskId, projectId }: { taskId?: string; projectId
       </Tabs>
       {open && <ProjectPanel id={open} onClose={() => setOpen(null)} />}
       {newTask && <TaskDialog task={null} project={null} onClose={() => setNewTask(false)} />}
-      {newProject && <ProjectForm project={null} onClose={() => setNewProject(false)} onSaved={(p) => (setNewProject(false), setTab("projects"), setOpen(p.id))} />}
+      {newProject && (
+        <ProjectForm project={null} onClose={() => setNewProject(false)} onSaved={(p) => (setNewProject(false), setTab("projects"), setOpen(p.id))} />
+      )}
     </>
   );
 }
@@ -463,7 +470,11 @@ function ProjectForm({ project, onClose, onSaved }: { project: ProjectDetail | n
             <Input value={f.name} onChange={(e) => set({ name: e.target.value })} placeholder="Website for Kovai Crafts" />
           </Field>
           <Field label="Run by">
-            <Select value={f.ownerId} onValueChange={(v) => set({ ownerId: v })} options={(people.data ?? []).map((p) => ({ value: p.id, label: p.name ?? "—" }))} />
+            <Select
+              value={f.ownerId}
+              onValueChange={(v) => set({ ownerId: v })}
+              options={(people.data ?? []).map((p) => ({ value: p.id, label: p.name ?? "—" }))}
+            />
           </Field>
           <Field label="For a client">
             <Select
@@ -491,7 +502,10 @@ function ProjectForm({ project, onClose, onSaved }: { project: ProjectDetail | n
               <Select
                 value={f.templateKey}
                 onValueChange={(v) => set({ templateKey: v })}
-                options={[{ value: "_none", label: "No list: add the tasks myself" }, ...templates.map((t) => ({ value: t.key, label: `${t.name} (${t.tasks.length} tasks)` }))]}
+                options={[
+                  { value: "_none", label: "No list: add the tasks myself" },
+                  ...templates.map((t) => ({ value: t.key, label: `${t.name} (${t.tasks.length} tasks)` })),
+                ]}
               />
             </Field>
           )}
@@ -569,7 +583,11 @@ function TaskDialog({ task, project, onClose }: { task: TaskRow | null; project:
             <Input type="date" value={f.dueOn} onChange={(e) => set({ dueOn: e.target.value })} />
           </Field>
           <Field label="Priority">
-            <Select value={f.priority} onValueChange={(v) => set({ priority: v as TaskPriority })} options={TASK_PRIORITIES.map((p) => ({ value: p, label: TASK_PRIORITY_LABEL[p] }))} />
+            <Select
+              value={f.priority}
+              onValueChange={(v) => set({ priority: v as TaskPriority })}
+              options={TASK_PRIORITIES.map((p) => ({ value: p, label: TASK_PRIORITY_LABEL[p] }))}
+            />
           </Field>
           {inProject && (
             <Field label="Waits for">
@@ -657,8 +675,8 @@ function TaskListsForm({ initial }: { initial: ProjectTemplate[] }) {
   return (
     <div className="space-y-4">
       <Alert tone="info">
-        Start projects from these lists. The joining list becomes each new person&apos;s joining project when they accept their invitation, run by the opening&apos;s
-        hiring manager; its tasks for the joiner go to them. Days count from the project&apos;s start (the joining day).
+        Start projects from these lists. The joining list becomes each new person&apos;s joining project when they accept their invitation, run by the
+        opening&apos;s hiring manager; its tasks for the joiner go to them. Days count from the project&apos;s start (the joining day).
       </Alert>
       {lists.map((l, i) => (
         <Card key={l.key} className="p-4">
@@ -679,7 +697,12 @@ function TaskListsForm({ initial }: { initial: ProjectTemplate[] }) {
               <li key={k} className="grid gap-2 rounded-lg border border-border p-2.5 sm:grid-cols-[2rem_1fr_6rem_9rem_9rem_2.5rem] sm:items-center">
                 <span className="text-body tabular text-muted-foreground">{k + 1}.</span>
                 <Input aria-label="Task" value={x.title} onChange={(e) => changeTask(i, k, { title: e.target.value })} />
-                <Input aria-label="Days after the start" inputMode="numeric" value={String(x.days)} onChange={(e) => changeTask(i, k, { days: Number(e.target.value) || 0 })} />
+                <Input
+                  aria-label="Days after the start"
+                  inputMode="numeric"
+                  value={String(x.days)}
+                  onChange={(e) => changeTask(i, k, { days: Number(e.target.value) || 0 })}
+                />
                 <Select
                   aria-label="Who"
                   value={x.to}
@@ -717,7 +740,12 @@ function TaskListsForm({ initial }: { initial: ProjectTemplate[] }) {
               </li>
             ))}
           </ol>
-          <Button className="mt-2" variant="outline" size="sm" onClick={() => change(i, { tasks: [...l.tasks, { title: "", days: 0, to: "owner", after: null }] })}>
+          <Button
+            className="mt-2"
+            variant="outline"
+            size="sm"
+            onClick={() => change(i, { tasks: [...l.tasks, { title: "", days: 0, to: "owner", after: null }] })}
+          >
             <Plus /> Add a task
           </Button>
         </Card>
@@ -726,7 +754,17 @@ function TaskListsForm({ initial }: { initial: ProjectTemplate[] }) {
         <Button
           variant="outline"
           onClick={() =>
-            setLists((ls) => [...ls, { key: keyFrom(`list ${ls.length + 1}`, ls.map((x) => x.key)), name: "New list", tasks: [{ title: "", days: 0, to: "owner", after: null }] }])
+            setLists((ls) => [
+              ...ls,
+              {
+                key: keyFrom(
+                  `list ${ls.length + 1}`,
+                  ls.map((x) => x.key),
+                ),
+                name: "New list",
+                tasks: [{ title: "", days: 0, to: "owner", after: null }],
+              },
+            ])
           }
         >
           <Plus /> New list

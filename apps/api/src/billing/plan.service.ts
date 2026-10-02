@@ -1,10 +1,12 @@
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import type { TenantTx } from "@gm/db";
-import { LIMIT_LABEL, type PlanPage, type PlatformSettings, type UsageNow } from "@gm/shared";
+import { type ChoosePlanResult, LIMIT_LABEL, type PlanCurrency, type PlanPage, type PlatformSettings, type UsageNow } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
+import { ENV, type Env } from "../env.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { PlatformSettingsService } from "../platform/platform-settings.service.js";
 import { currentTenant, TenantDb } from "../tenancy/tenant-context.js";
+import { BillingService, invoiceRow, priceOf } from "./billing.service.js";
 import { EntitlementsService } from "./entitlements.js";
 
 const DAY = 86_400_000;
@@ -43,6 +45,8 @@ export class PlanService {
     private readonly notifications: NotificationsService,
     private readonly entitlements: EntitlementsService,
     private readonly platform: PlatformSettingsService,
+    private readonly billing: BillingService,
+    @Inject(ENV) private readonly env: Env,
   ) {}
 
   private ctx() {
@@ -53,10 +57,12 @@ export class PlanService {
 
   async page(): Promise<PlanPage> {
     const ctx = this.ctx();
-    const [entitlements, settings, used] = await Promise.all([
+    const [entitlements, settings, used, invoices, agency] = await Promise.all([
       this.entitlements.load(ctx),
       this.platform.get(),
       this.tenant.tx((tx) => usageOf(tx, ctx.agencyId)),
+      this.tenant.db.platformInvoice.findMany({ orderBy: [{ issuedOn: "desc" }, { createdAt: "desc" }], take: 60 }),
+      this.tenant.db.agency.findUnique({ where: { id: ctx.agencyId }, select: { name: true } }),
     ]);
     const { invited: _invited, ...usage } = used;
     return {
@@ -66,33 +72,64 @@ export class PlanService {
       plans: settings.plans
         .filter((p) => p.offered)
         .map((p) => ({ key: p.key, name: p.name, description: p.description, suites: p.suites, limits: p.limits, priceInr: p.priceInr, priceUsd: p.priceUsd })),
+      billing: { provider: this.billing.provider.kind, currencies: this.billing.provider.currencies() },
+      invoices: invoices.map((r) => invoiceRow(r, agency?.name ?? "")),
     };
   }
 
   /**
-   * The owner chooses a plan. Until the billing provider is set up (P6-04) it starts at once, for a month; a
-   * downgrade hides suites the new plan does not have, keeping their data.
+   * The owner chooses a plan and pays for it (P6-04): through our payment page, after which the provider's webhook
+   * starts the plan and issues our invoice — or at once with pretend billing. A downgrade hides suites the new plan
+   * does not have, keeping their data.
    */
-  async choose(planKey: string) {
+  async choose(planKey: string, currency: PlanCurrency): Promise<ChoosePlanResult> {
     const settings = await this.platform.get();
     const plan = settings.plans.find((p) => p.key === planKey && p.offered);
     if (!plan) throw new BadRequestException({ message: "Choose one of the plans offered.", issues: [{ path: "plan", message: "Choose a plan" }] });
+    const price = priceOf(settings, planKey, currency);
+    if (!price) throw new ConflictException(`${plan.name}'s price in ${currency === "INR" ? "rupees" : "US dollars"} is not set yet.`);
+    if (!this.billing.provider.currencies().includes(currency))
+      throw new ConflictException(`Paying in ${currency === "INR" ? "rupees" : "US dollars"} is not switched on yet.`);
     const ctx = this.ctx();
     const agencyId = ctx.agencyId;
-    await this.tenant.tx(async (tx) => {
-      const before = await tx.subscription.findUnique({ where: { agencyId } });
-      const data = { planKey, status: "active", trialEndsAt: null, currentPeriodEnd: addMonth(new Date()), graceUntil: null };
-      await tx.subscription.upsert({ where: { agencyId }, create: { agencyId, ...data }, update: data });
-      await this.audit.record(tx, {
+    const [agency, me, before] = await Promise.all([
+      this.tenant.db.agency.findUnique({ where: { id: agencyId }, select: { name: true } }),
+      this.tenant.db.user.findUnique({ where: { id: ctx.userId ?? "" }, select: { email: true } }),
+      this.tenant.db.subscription.findUnique({ where: { agencyId } }),
+    ]);
+    const started = await this.billing.provider.subscribe({
+      agencyId,
+      agencyName: agency?.name ?? "",
+      email: me?.email ?? "",
+      plan: { key: plan.key, name: plan.name },
+      currency,
+      charge: price.charge,
+      returnUrl: `${this.env.WEB_ORIGIN}/app/settings/plan`,
+    });
+    await this.tenant.tx((tx) =>
+      this.audit.record(tx, {
         action: "update",
         entity: "subscription",
         entityId: agencyId,
         before: before ? { plan: before.planKey, status: before.status } : null,
-        after: { plan: planKey, status: "active" },
+        after: { plan: planKey, currency, paid: started.paidNow ? "at once" : "on the payment page" },
+      }),
+    );
+    if (started.paidNow) {
+      const now = new Date();
+      await this.billing.paid({
+        agencyId,
+        planKey,
+        currency,
+        provider: started.provider,
+        ref: started.ref,
+        paymentRef: started.ref,
+        periodStart: now,
+        periodEnd: addMonth(now),
       });
-    });
+    }
     ctx.entitlements = undefined;
-    return this.page();
+    return { ...(await this.page()), payUrl: started.payUrl };
   }
 
   /** Room for `adding` more people or clients on the plan; refused, naming the plan, when it is full. */
@@ -137,8 +174,21 @@ export class PlanService {
       if (left === 3) await tell("The trial ends in 3 days", "Choose a plan in Settings → Plan to keep working without a break.");
       return { trial: `${left} days left` };
     }
+    // Pretend billing renews by itself, with its invoice; real providers renew through their webhooks.
     if (sub.status === "active" && sub.provider === "outbox" && sub.currentPeriodEnd && sub.currentPeriodEnd < now) {
-      await tx.subscription.update({ where: { agencyId }, data: { currentPeriodEnd: addMonth(sub.currentPeriodEnd) } });
+      const start = sub.currentPeriodEnd;
+      const currency: PlanCurrency =
+        (await tx.platformInvoice.findFirst({ orderBy: { issuedOn: "desc" }, select: { currency: true } }))?.currency === "USD" ? "USD" : "INR";
+      await this.billing.paid({
+        agencyId,
+        planKey: sub.planKey,
+        currency,
+        provider: "outbox",
+        ref: sub.providerRef ?? `outbox-${agencyId}`,
+        paymentRef: `${sub.providerRef ?? "outbox"}:${start.toISOString()}`,
+        periodStart: start,
+        periodEnd: addMonth(start),
+      });
       return { renewed: true };
     }
     return { status: sub.status };

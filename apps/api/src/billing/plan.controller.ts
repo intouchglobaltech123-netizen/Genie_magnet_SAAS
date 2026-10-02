@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Post } from "@nestjs/common";
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { choosePlanInput } from "@gm/shared";
@@ -21,11 +21,20 @@ export class PlanController {
     return this.plans.page();
   }
 
+  /** One of our invoices to the agency, to print or save. */
+  @Get("invoices/:id")
+  @Staff()
+  async invoice(@Param("id", ParseUUIDPipe) id: string) {
+    const found = (await this.plans.page()).invoices.find((i) => i.id === id);
+    if (!found) throw new NotFoundException("No invoice of yours with that id.");
+    return found;
+  }
+
   @Post("choose")
   @Can("settings", "edit")
   @HttpCode(200)
   @ApiBody({ schema: schema(choosePlanInput) })
   choose(@Body(new ZodPipe(choosePlanInput)) b: z.output<typeof choosePlanInput>) {
-    return this.plans.choose(b.plan);
+    return this.plans.choose(b.plan, b.currency);
   }
 }

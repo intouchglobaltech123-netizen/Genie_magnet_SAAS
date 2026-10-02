@@ -64,6 +64,18 @@ export const envSchema = z
     PAYMENTS_PROVIDER: z.enum(["razorpay", "outbox"]).optional(),
     RAZORPAY_API_URL: z.url().default("https://api.razorpay.com/v1"),
     /**
+     * How agencies pay us for their plans (P6-04, ADR 0011): "live" through our own Razorpay account (rupees, with GST)
+     * and Stripe (US dollars, abroad); "outbox" takes every payment at once (development, tests, and until our
+     * accounts are set up). Defaults to live in production; a currency whose keys are missing cannot be paid in.
+     */
+    BILLING_PROVIDER: z.enum(["live", "outbox"]).optional(),
+    RAZORPAY_BILLING_KEY_ID: z.string().optional(),
+    RAZORPAY_BILLING_KEY_SECRET: z.string().optional(),
+    RAZORPAY_BILLING_WEBHOOK_SECRET: z.string().optional(),
+    STRIPE_SECRET_KEY: z.string().optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().optional(),
+    STRIPE_API_URL: z.url().default("https://api.stripe.com/v1"),
+    /**
      * How clients' Instagram, Facebook Pages, YouTube, LinkedIn pages and X are reached (P3-11, P5-22): "live" through our
      * Meta app (META_APP_ID, META_APP_SECRET), Google app (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, also used for Google
      * sign-in), LinkedIn app (LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET) and X app (X_CLIENT_ID, X_CLIENT_SECRET); a platform

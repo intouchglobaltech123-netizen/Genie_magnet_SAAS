@@ -2,6 +2,7 @@
 // much it may use; an agency's subscription; and the platform's own settings, which the platform admin keeps in the
 // platform console. The plans below are placeholders so development works — names, contents and prices are set there.
 import { z } from "zod";
+import { gstRate } from "./invoices.js";
 
 const text = (max: number) => z.string().trim().max(max);
 
@@ -74,6 +75,8 @@ export const platformSettingsInput = z
       stateCode: text(2).default(""),
       sac: text(8).default(""),
       prefix: text(12).default("INV"),
+      /** GST on our plans (a percentage), entered here like every other rate. */
+      gstRate: gstRate.default(18),
     }),
   })
   .superRefine((s, ctx) => {
@@ -135,7 +138,7 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
       offered: true,
     },
   ],
-  invoice: { legalName: "", gstin: "", address: "", stateCode: "", sac: "", prefix: "INV" },
+  invoice: { legalName: "", gstin: "", address: "", stateCode: "", sac: "", prefix: "INV", gstRate: 18 },
 };
 
 // ─── Subscriptions ────────────────────────────────────────────────────
@@ -176,15 +179,50 @@ export interface UsageNow {
 /** A plan as agencies see it. */
 export type PlanOffer = Pick<PlanDef, "key" | "name" | "description" | "suites" | "limits" | "priceInr" | "priceUsd">;
 
-/** GET /plan: the agency's plan, what it uses, and the plans it may choose. */
+/** The currencies a plan is paid in: rupees in India (with GST, through Razorpay), US dollars abroad (Stripe). */
+export const PLAN_CURRENCIES = ["INR", "USD"] as const;
+export type PlanCurrency = (typeof PLAN_CURRENCIES)[number];
+
+/** GET /plan: the agency's plan, what it uses, the plans it may choose, and our invoices to it. */
 export interface PlanPage {
   brandName: string;
   entitlements: Entitlements;
   usage: UsageNow;
   plans: PlanOffer[];
+  /** "outbox": pretend payments (development and tests, and until our billing accounts are set up). */
+  billing: { provider: "outbox" | "live"; currencies: PlanCurrency[] };
+  invoices: PlatformInvoiceRow[];
 }
 
-export const choosePlanInput = z.object({ plan: z.string().min(1).max(40) });
+export const choosePlanInput = z.object({ plan: z.string().min(1).max(40), currency: z.enum(PLAN_CURRENCIES).default("INR") });
+
+/** POST /plan/choose: the plan page, and the page to pay on when the plan starts after paying. */
+export type ChoosePlanResult = PlanPage & { payUrl: string | null };
+
+/** Our invoice to an agency for its plan (P6-04), issued when a payment comes in. */
+export interface PlatformInvoiceRow {
+  id: string;
+  number: string;
+  agency: { id: string; name: string };
+  issuedOn: string;
+  periodStart: string;
+  periodEnd: string;
+  plan: { key: string; name: string };
+  currency: PlanCurrency;
+  /** Before tax, in whole rupees or dollars. */
+  amount: number;
+  cgst: number;
+  sgst: number;
+  igst: number;
+  total: number;
+  totalInWords: string;
+  gstRate: number;
+  seller: { name: string; gstin: string; address: string; state: string };
+  buyer: { name: string; gstin: string; address: string; state: string };
+  sac: string;
+  provider: string;
+  paidAt: string;
+}
 
 // ─── The platform console ─────────────────────────────────────────────
 

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Building, Pencil, Plus, Settings2, Trash2 } from "lucide-react";
+import { Building, Pencil, Plus, ReceiptText, Settings2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
+  GST_RATES,
   LIMIT_LABEL,
   type PlanDef,
   type PlanLimits,
@@ -28,7 +29,8 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fmtDate } from "@/lib/utils";
 import { errorMessage } from "./api";
-import { useMe, usePlatformConsoleAction, usePlatformAgencies, usePlatformSettings } from "./queries";
+import { money } from "./plan";
+import { useMe, usePlatformAgencies, usePlatformConsoleAction, usePlatformInvoices, usePlatformSettings } from "./queries";
 
 const onError = (e: unknown) => toast.error(errorMessage(e));
 const STATUS_TONE: Record<string, BadgeTone> = { trialing: "info", active: "success", past_due: "warning", expired: "danger", cancelled: "neutral" };
@@ -52,12 +54,15 @@ export function LivePlatform() {
           <TabsTrigger value="agencies">
             <Building /> Agencies
           </TabsTrigger>
+          <TabsTrigger value="invoices">
+            <ReceiptText /> Invoices
+          </TabsTrigger>
           <TabsTrigger value="settings">
             <Settings2 /> Plans and settings
           </TabsTrigger>
         </TabsList>
       </Tabs>
-      {tab === "agencies" ? <Agencies /> : <PlatformSettingsForm />}
+      {tab === "agencies" ? <Agencies /> : tab === "invoices" ? <Invoices /> : <PlatformSettingsForm />}
     </>
   );
 }
@@ -95,7 +100,11 @@ function Agencies() {
                 {a.plan ? (
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span>{a.plan.name}</span>
-                    {a.status && <Badge tone={a.readOnly ? "danger" : (STATUS_TONE[a.status] ?? "neutral")}>{a.readOnly ? "Read-only" : SUBSCRIPTION_STATUS_LABEL[a.status]}</Badge>}
+                    {a.status && (
+                      <Badge tone={a.readOnly ? "danger" : (STATUS_TONE[a.status] ?? "neutral")}>
+                        {a.readOnly ? "Read-only" : SUBSCRIPTION_STATUS_LABEL[a.status]}
+                      </Badge>
+                    )}
                   </div>
                 ) : (
                   <span className="text-muted-foreground">Not on a plan (everything)</span>
@@ -154,7 +163,11 @@ function SubscriptionDialog({ a, onClose }: { a: PlatformAgencyRow; onClose: () 
           {f.plan !== "_none" && (
             <>
               <Field label="Status">
-                <Select value={f.status} onValueChange={(v) => set({ status: v as SubscriptionStatus })} options={SUBSCRIPTION_STATUSES.map((s) => ({ value: s, label: SUBSCRIPTION_STATUS_LABEL[s] }))} />
+                <Select
+                  value={f.status}
+                  onValueChange={(v) => set({ status: v as SubscriptionStatus })}
+                  options={SUBSCRIPTION_STATUSES.map((s) => ({ value: s, label: SUBSCRIPTION_STATUS_LABEL[s] }))}
+                />
               </Field>
               {f.status === "trialing" ? (
                 <Field label="Trial ends on">
@@ -196,6 +209,50 @@ function SubscriptionDialog({ a, onClose }: { a: PlatformAgencyRow; onClose: () 
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function Invoices() {
+  const q = usePlatformInvoices();
+  if (q.isPending) return <SkeletonRows rows={5} />;
+  if (q.error) return <Alert tone="danger">{errorMessage(q.error)}</Alert>;
+  if (!q.data.length)
+    return <EmptyState icon={ReceiptText} title="No invoices yet" description="Our invoice is issued each time an agency's payment comes in." />;
+  return (
+    <Card>
+      <Table>
+        <THead>
+          <TR>
+            <TH className="pl-5">Number</TH>
+            <TH>Date</TH>
+            <TH>Agency</TH>
+            <TH>Plan</TH>
+            <TH>Paid through</TH>
+            <TH numeric>Before tax</TH>
+            <TH numeric>GST</TH>
+            <TH numeric className="pr-5">
+              Total
+            </TH>
+          </TR>
+        </THead>
+        <TBody>
+          {q.data.map((i) => (
+            <TR key={i.id}>
+              <TD className="pl-5 font-mono">{i.number}</TD>
+              <TD>{fmtDate(i.issuedOn, { day: "numeric", month: "short", year: "numeric" })}</TD>
+              <TD>{i.agency.name}</TD>
+              <TD>{i.plan.name}</TD>
+              <TD className="capitalize text-muted-foreground">{i.provider === "outbox" ? "Pretend" : i.provider}</TD>
+              <TD numeric>{money(i.amount, i.currency)}</TD>
+              <TD numeric>{money(i.cgst + i.sgst + i.igst, i.currency)}</TD>
+              <TD numeric className="pr-5 font-medium">
+                {money(i.total, i.currency)}
+              </TD>
+            </TR>
+          ))}
+        </TBody>
+      </Table>
+    </Card>
   );
 }
 
@@ -258,6 +315,13 @@ function SettingsEditor({ initial }: { initial: PlatformSettings }) {
           </Field>
           <Field label="Invoice number prefix">
             <Input value={s.invoice.prefix} onChange={(e) => setInvoice({ prefix: e.target.value })} />
+          </Field>
+          <Field label="GST on plans">
+            <Select
+              value={String(s.invoice.gstRate)}
+              onValueChange={(v) => setInvoice({ gstRate: Number(v) as PlatformSettings["invoice"]["gstRate"] })}
+              options={GST_RATES.map((r) => ({ value: String(r), label: `${r}%` }))}
+            />
           </Field>
         </div>
       </SectionCard>
