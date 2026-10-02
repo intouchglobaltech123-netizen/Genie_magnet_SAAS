@@ -7,10 +7,13 @@ import { PrismaService } from "../prisma/prisma.service.js";
 import { asSystem, TenantDb } from "../tenancy/tenant-context.js";
 import { PaymentsService } from "../payments/payments.service.js";
 import { ReportsService } from "../reports/reports.service.js";
+import { SocialService } from "../social/social.service.js";
 import { WhatsAppService } from "../whatsapp/whatsapp.service.js";
 import { DailyChecks } from "./daily-checks.service.js";
 
 type Handler = (tx: TenantTx, payload: Record<string, unknown>) => Promise<unknown>;
+/** Work that waits on other services for minutes (uploading a video): it opens its own short transactions. */
+type LongHandler = { long: (payload: Record<string, unknown>, attempt: { last: boolean }) => Promise<unknown> };
 
 /** A job left running this long is taken to belong to a runner that stopped. */
 const STUCK_MINUTES = 15;
@@ -33,7 +36,7 @@ const dayOf = (p: Record<string, unknown>) => {
 @Injectable()
 export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly log = new Logger("Jobs");
-  private readonly handlers: Record<JobName, Handler>;
+  private readonly handlers: Record<JobName, Handler | LongHandler>;
   private timer?: NodeJS.Timeout;
   private round?: Promise<number>;
   private scheduledHour = "";
@@ -47,6 +50,7 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
     whatsapp: WhatsAppService,
     reports: ReportsService,
     payments: PaymentsService,
+    social: SocialService,
   ) {
     this.handlers = {
       "videos.due": (tx, p) => checks.videosDue(tx, dayOf(p)),
@@ -59,6 +63,8 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
       "reports.draft": (tx, p) => reports.draftAll(tx, dayOf(p)),
       "payments.link": (tx, p) => payments.makeLink(tx, String(p.invoiceId)),
       "payments.cancel": (tx, p) => payments.cancelLink(tx, String(p.invoiceId)),
+      "social.publish": { long: (p, attempt) => social.publishJob(p, attempt) },
+      "social.metrics": { long: () => social.metricsJob() },
     };
   }
 
@@ -111,22 +117,29 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
   }
 
   private async run(j: ClaimedJob, now: Date) {
-    const handler = this.handlers[j.name as JobName] as Handler | undefined;
+    const handler = this.handlers[j.name as JobName] as Handler | LongHandler | undefined;
     const payload = (j.payload ?? {}) as Record<string, unknown>;
+    const done = (tx: TenantTx, result: unknown) =>
+      tx.job.update({
+        where: { id: j.id },
+        data: { status: "done", result: (result ?? {}) as Prisma.InputJsonValue, lockedAt: null, lastError: null, finishedAt: new Date() },
+      });
     try {
       if (!handler) throw new Error(`There is no job called "${j.name}".`);
-      await asSystem(j.agencyId, () =>
-        this.tenant.tx(
-          async (tx) => {
-            const result = await handler(tx, payload);
-            await tx.job.update({
-              where: { id: j.id },
-              data: { status: "done", result: (result ?? {}) as Prisma.InputJsonValue, lockedAt: null, lastError: null, finishedAt: new Date() },
-            });
-          },
-          { timeout: JOB_TIMEOUT_MS },
-        ),
-      );
+      if (typeof handler === "function")
+        await asSystem(j.agencyId, () =>
+          this.tenant.tx(
+            async (tx) => {
+              await done(tx, await handler(tx, payload));
+            },
+            { timeout: JOB_TIMEOUT_MS },
+          ),
+        );
+      else
+        await asSystem(j.agencyId, async () => {
+          const result = await handler.long(payload, { last: j.attempts >= j.maxAttempts });
+          await this.tenant.tx((tx) => done(tx, result));
+        });
     } catch (e) {
       const message = (e instanceof Error ? e.message : String(e)).slice(0, 2000);
       const last = !handler || j.attempts >= j.maxAttempts;

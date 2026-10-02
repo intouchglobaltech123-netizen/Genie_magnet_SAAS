@@ -72,13 +72,13 @@ describe("daily jobs", () => {
     expect(await runner.tick(at("2030-06-10T01:00:00Z"))).toBe(0); // queued for 02:30, not due yet
     expect(await runner.tick(at("2030-06-10T01:30:00Z"))).toBe(0);
     const queued = await jobs(`SELECT name, status FROM jobs WHERE key LIKE '%:2030-06-10'`);
-    expect(queued).toHaveLength(14); // seven daily jobs × two agencies, never twice
+    expect(queued).toHaveLength(16); // eight daily jobs × two agencies, never twice
     expect(queued.every((j) => j.status === "queued")).toBe(true);
 
-    expect(await runner.tick(at("2030-06-10T03:00:00Z"))).toBe(14);
+    expect(await runner.tick(at("2030-06-10T03:00:00Z"))).toBe(16);
     expect((await jobs(`SELECT name, status FROM jobs WHERE key LIKE '%:2030-06-10'`)).every((j) => j.status === "done")).toBe(true);
     const overview = (await jana.get("/jobs/overview").expect(200)).body as JobOverview;
-    expect(overview.daily).toHaveLength(7);
+    expect(overview.daily).toHaveLength(8);
     expect(overview.daily.every((d) => d.status === "done" && d.date === "2030-06-10")).toBe(true);
   });
 

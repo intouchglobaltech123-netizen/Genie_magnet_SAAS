@@ -2,6 +2,7 @@
 import type { PermissionMatrix } from "./permissions.js";
 import type { BusinessStage } from "./enums.js";
 import type { ImportKind, ImportReport } from "./imports.js";
+import type { ConnectionStatus, PostStatus } from "./social.js";
 import type { DeliverableInput } from "./schemas.js";
 import type { AnswerValue, ChecklistState, Progress, Question, QuestionnaireDefinition, WindowState } from "./onboarding.js";
 
@@ -635,10 +636,16 @@ export interface PublishingItem {
     connectionId: string;
     scheduledAt: string;
     caption: string | null;
-    status: "scheduled" | "published";
+    status: PostStatus;
     publishedUrl: string | null;
     publishedAt: string | null;
     proofFileId: string | null;
+    /** By the app through the connected platform, or marked by the team. */
+    via: "manual" | "connector";
+    /** Goes out by itself at its time (a connected platform with posting on). */
+    auto: boolean;
+    /** Why the app could not post it. */
+    publishError: string | null;
   }[];
 }
 
@@ -666,8 +673,16 @@ export interface PlatformConnectionRow {
   id: string;
   platform: string;
   handle: string;
-  status: string;
+  status: ConnectionStatus;
   connectedAt: string;
+  /** The platform account it is connected to (P3-11). */
+  linked: { id: string; name: string } | null;
+  /** Connected posts go out by themselves at their time unless this is off. */
+  autoPublish: boolean;
+  /** Why the last sign-in or post did not work. */
+  lastError: string | null;
+  /** Instagram, Facebook and YouTube connect, when switched on for this server. */
+  canConnect: boolean;
 }
 
 /** A background job as Settings → Background jobs shows it. */

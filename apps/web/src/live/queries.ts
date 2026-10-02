@@ -30,6 +30,8 @@ import {
   type SetupStatus,
   type JobRow,
   type PlatformConnectionRow,
+  type SocialAccountChoice,
+  type SocialSettings,
   type PostInput,
   type ProductionSettings,
   type ProductionSettingsInput,
@@ -924,9 +926,12 @@ export function usePublishingAction() {
         | { step: "schedule"; input: PostInput }
         | { step: "reschedule"; id: string; scheduledAt?: string; caption?: string }
         | { step: "unschedule"; id: string }
-        | { step: "published"; id: string; input: PublishedInput },
+        | { step: "published"; id: string; input: PublishedInput }
+        | { step: "post-now"; id: string },
     ) => {
       switch (v.step) {
+        case "post-now":
+          return api<PublishingItem[]>(`/publishing/posts/${v.id}/post-now`, { body: {} });
         case "schedule":
           return api<PublishingItem[]>("/publishing/posts", { body: v.input });
         case "reschedule":
@@ -947,13 +952,46 @@ export const usePlatforms = (clientId: string, enabled = true) =>
 export function usePlatformAction(clientId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (v: { step: "add"; platform: string; handle: string } | { step: "remove"; id: string }) =>
-      v.step === "add"
-        ? api<PlatformConnectionRow[]>(`/clients/${clientId}/platforms`, { body: { platform: v.platform, handle: v.handle } })
-        : api<PlatformConnectionRow[]>(`/clients/${clientId}/platforms/${v.id}`, { method: "DELETE" }),
+    mutationFn: (
+      v:
+        | { step: "add"; platform: string; handle: string }
+        | { step: "remove"; id: string }
+        | { step: "choose"; id: string; accountId: string }
+        | { step: "disconnect"; id: string }
+        | { step: "auto"; id: string; autoPublish: boolean },
+    ) => {
+      const base = `/clients/${clientId}/platforms`;
+      switch (v.step) {
+        case "add":
+          return api<PlatformConnectionRow[]>(base, { body: { platform: v.platform, handle: v.handle } });
+        case "remove":
+          return api<PlatformConnectionRow[]>(`${base}/${v.id}`, { method: "DELETE" });
+        case "choose":
+          return api<PlatformConnectionRow[]>(`${base}/${v.id}/choose`, { body: { accountId: v.accountId } });
+        case "disconnect":
+          return api<PlatformConnectionRow[]>(`${base}/${v.id}/disconnect`, { body: {} });
+        case "auto":
+          return api<PlatformConnectionRow[]>(`${base}/${v.id}/auto-publish`, { method: "PUT", body: { autoPublish: v.autoPublish } });
+      }
+    },
     onSuccess: (data) => qc.setQueryData(["platforms", clientId], data),
   });
 }
+
+/** Whether connecting Instagram, Facebook and YouTube is switched on here (P3-11). */
+export const useSocial = () => useQuery({ queryKey: ["social"], queryFn: () => api<SocialSettings>("/social"), staleTime: 5 * 60_000 });
+
+/** The platform's sign-in page for one of a client's platforms. */
+export const useConnectPlatform = (clientId: string) =>
+  useMutation({ mutationFn: (id: string) => api<{ url: string }>(`/clients/${clientId}/platforms/${id}/connect`, { body: {} }) });
+
+/** The accounts a sign-in reached, to choose the one to post to. */
+export const usePlatformAccounts = (clientId: string, id: string | null) =>
+  useQuery({
+    queryKey: ["platforms", clientId, id, "accounts"],
+    queryFn: () => api<SocialAccountChoice[]>(`/clients/${clientId}/platforms/${id}/accounts`),
+    enabled: !!id,
+  });
 
 export const useCycles = (month: string) => useQuery({ queryKey: [...keys.cycles, month], queryFn: () => api<CycleRow[]>(`/cycles?month=${month}`) });
 

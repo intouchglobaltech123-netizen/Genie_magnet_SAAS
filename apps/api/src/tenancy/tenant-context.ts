@@ -51,10 +51,11 @@ export function asPortal<T>(agencyId: string, portal: PortalPerson, fn: () => Pr
 
 /**
  * Runs `fn` inside one agency as the app itself: a background job (ADR 0010). Nobody is signed in, so nothing is
- * recorded against a person and nobody is left out of a notification.
+ * recorded against a person and nobody is left out of a notification — unless the work finishes something a person
+ * started elsewhere (a platform's sign-in coming back, P3-11), when it is recorded as theirs.
  */
-export function asSystem<T>(agencyId: string, fn: () => Promise<T>): Promise<T> {
-  return storage.run({ agencyId, role: "system", permissions: FULL_ACCESS }, fn);
+export function asSystem<T>(agencyId: string, fn: () => Promise<T>, onBehalfOf?: string): Promise<T> {
+  return storage.run({ agencyId, role: "system", permissions: FULL_ACCESS, ...(onBehalfOf && { userId: onBehalfOf }) }, fn);
 }
 
 /**

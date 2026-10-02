@@ -66,6 +66,9 @@ import { ReportsService } from "./reports/reports.service.js";
 import { ClientMessages } from "./whatsapp/client-messages.service.js";
 import { WhatsAppInbound } from "./whatsapp/inbound.service.js";
 import { CloudApiProvider, OutboxProvider, WHATSAPP_PROVIDER } from "./whatsapp/provider.js";
+import { LiveSocialNetworks, OutboxSocialNetworks, SOCIAL_NETWORKS } from "./social/provider.js";
+import { ClientSocialController, SocialController, SocialWebhookController } from "./social/social.controller.js";
+import { SocialService } from "./social/social.service.js";
 import { ContactWhatsAppController, WhatsAppController, WhatsAppWebhookController } from "./whatsapp/whatsapp.controller.js";
 import { WhatsAppService } from "./whatsapp/whatsapp.service.js";
 import { AgencyService } from "./settings/agency.service.js";
@@ -128,6 +131,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     PaymentsController,
     InvoicePayLinkController,
     RazorpayWebhookController,
+    SocialController,
+    ClientSocialController,
+    SocialWebhookController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -200,6 +206,22 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
           : new OutboxPaymentsProvider(),
     },
     PaymentsService,
+    // Clients' Instagram, Facebook Pages and YouTube through our Meta and Google apps in production; pretend platforms elsewhere.
+    {
+      provide: SOCIAL_NETWORKS,
+      inject: [ENV],
+      useFactory: (env: Env) =>
+        (env.SOCIAL_PROVIDER ?? (env.NODE_ENV === "production" ? "live" : "outbox")) === "live"
+          ? new LiveSocialNetworks({
+              metaAppId: env.META_APP_ID,
+              metaAppSecret: env.META_APP_SECRET,
+              graphUrl: env.META_GRAPH_URL,
+              googleClientId: env.GOOGLE_CLIENT_ID,
+              googleClientSecret: env.GOOGLE_CLIENT_SECRET,
+            })
+          : new OutboxSocialNetworks(),
+    },
+    SocialService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

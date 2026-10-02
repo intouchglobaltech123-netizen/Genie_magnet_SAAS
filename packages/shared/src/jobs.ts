@@ -11,6 +11,8 @@ export const JOB_NAMES = {
   "whatsapp.send": "A WhatsApp message",
   "payments.link": "A payment link for an invoice",
   "payments.cancel": "A payment link switched off",
+  "social.publish": "A post on a connected platform",
+  "social.metrics": "Numbers for posts on connected platforms",
 } as const;
 export type JobName = keyof typeof JOB_NAMES;
 
@@ -23,6 +25,7 @@ export const DAILY_JOBS: JobName[] = [
   "cycles.month",
   "files.cleanup",
   "reports.draft",
+  "social.metrics",
 ];
 
 export const JOB_STATUSES = ["queued", "running", "done", "failed"] as const;

@@ -64,6 +64,16 @@ export const envSchema = z
     PAYMENTS_PROVIDER: z.enum(["razorpay", "outbox"]).optional(),
     RAZORPAY_API_URL: z.url().default("https://api.razorpay.com/v1"),
     /**
+     * How clients' Instagram, Facebook Pages and YouTube are reached (P3-11): "live" through our Meta app (META_APP_ID,
+     * META_APP_SECRET) and Google app (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, also used for Google sign-in); a platform
+     * whose app keys are missing is posted by hand. "outbox" uses pretend platforms (development and tests). Defaults
+     * to live in production.
+     */
+    SOCIAL_PROVIDER: z.enum(["live", "outbox"]).optional(),
+    META_APP_ID: z.string().optional(),
+    META_APP_SECRET: z.string().optional(),
+    META_GRAPH_URL: z.url().default("https://graph.facebook.com/v21.0"),
+    /**
      * Run background jobs in this process (ADR 0010). On for a single server; off on the API when a separate worker
      * process (`node dist/worker.js`, always on) runs them. Off in tests, which run the jobs themselves.
      */

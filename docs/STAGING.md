@@ -49,6 +49,7 @@ RUN_JOBS="true"
 SECRETS_KEY="${{secret(48)}}"
 WHATSAPP_PROVIDER="outbox"
 PAYMENTS_PROVIDER="outbox"
+SOCIAL_PROVIDER="outbox"
 ```
 
 ### `web` variables
@@ -66,6 +67,7 @@ The web app forwards `/api/*` to the API over Railway's private network, so sign
 - `RUN_JOBS="true"` runs the background jobs (the morning checks and reminders) inside the API. When the API needs more than one copy, turn it off there and add a `worker` service with the same settings and start command `node apps/api/dist/worker.js`.
 - `FILES_DIR` keeps uploads on the volume; without the volume they are lost on each deploy.
 - `WHATSAPP_PROVIDER="outbox"` keeps WhatsApp messages in the app: the sample contacts' phone numbers are made up and may belong to real people. Switch to `cloud` only to test with your own numbers as contacts.
+- `PAYMENTS_PROVIDER="outbox"` and `SOCIAL_PROVIDER="outbox"` make pretend payment links and pretend Instagram, Facebook and YouTube: no money moves and nothing is posted. Switch social to `live` once our Meta and Google apps exist (their keys go in `META_APP_ID`, `META_APP_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`).
 
 ## Optional
 

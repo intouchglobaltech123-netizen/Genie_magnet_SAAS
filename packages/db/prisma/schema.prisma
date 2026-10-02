@@ -1326,11 +1326,25 @@ model PlatformConnection {
   clientId    String   @map("client_id") @db.Uuid
   /// instagram | facebook | youtube | linkedin | x | threads | pinterest | gbp
   platform    String
-  handle      String
-  status      String   @default("connected")
-  /// Reference into the secrets store — tokens are never stored in this table.
-  tokenRef    String?  @map("token_ref")
-  connectedAt DateTime @default(now()) @map("connected_at")
+  handle         String
+  /// manual · linked · choose · expired · error (P3-11)
+  status         String    @default("manual")
+  connectedAt    DateTime  @default(now()) @map("connected_at")
+  /// The platform account it posts to (Instagram account, Facebook Page or YouTube channel) and its name.
+  externalId     String?   @map("external_id")
+  externalName   String?   @map("external_name")
+  /// Encrypted. Never shown back.
+  accessToken    String?   @map("access_token")
+  /// Encrypted (YouTube).
+  refreshToken   String?   @map("refresh_token")
+  tokenExpiresAt DateTime? @map("token_expires_at")
+  /// Encrypted: the sign-in and the accounts it gave, while the team chooses one.
+  pending        String?
+  /// Scheduled posts go out by themselves at their time.
+  autoPublish    Boolean   @default(true) @map("auto_publish")
+  lastError      String?   @map("last_error")
+  linkedAt       DateTime? @map("linked_at")
+  linkedBy       String?   @map("linked_by")
 
   client Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
   posts  ScheduledPost[]
@@ -1345,8 +1359,14 @@ model ScheduledPost {
   videoId      String    @map("video_id") @db.Uuid
   connectionId String    @map("connection_id") @db.Uuid
   scheduledAt  DateTime  @map("scheduled_at")
+  /// scheduled · publishing · published · failed
   status       String    @default("scheduled")
   publishedUrl String?   @map("published_url")
+  /// manual · connector (posted by the app, P3-11)
+  publishedVia String    @default("manual") @map("published_via")
+  /// The platform's id for the post (or, while Instagram processes it, for the upload).
+  externalId   String?   @map("external_id")
+  publishError String?   @map("publish_error")
   publishedAt  DateTime? @map("published_at")
   proofFileId  String?   @map("proof_file_id") @db.Uuid
   caption      String?

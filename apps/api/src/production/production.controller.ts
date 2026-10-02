@@ -617,6 +617,14 @@ export class PublishingController {
     return this.publishing.unschedule(id);
   }
 
+  /** Posts it now through the client's connected platform: one that is due, or one the app could not post before. */
+  @Post("posts/:id/post-now")
+  @Can("publishing", "approve")
+  @HttpCode(200)
+  postNow(@Param("id", ParseUUIDPipe) id: string) {
+    return this.publishing.postNow(id);
+  }
+
   /** Marks a post as published, with its link and a screenshot as proof (approve on publishing). */
   @Post("posts/:id/published")
   @Can("publishing", "approve")
