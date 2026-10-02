@@ -15,3 +15,4 @@ export * from "./jobs.js";
 export * from "./portal.js";
 export * from "./whatsapp.js";
 export * from "./reports.js";
+export * from "./payments.js";

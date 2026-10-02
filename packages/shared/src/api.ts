@@ -190,6 +190,10 @@ export interface Invoice {
   /** Sent, unpaid and past its due date. */
   overdue: boolean;
   createdAt: string;
+  /** The online payment link (P3-10), when the agency takes payments through its Razorpay. */
+  payLink: { url: string | null; status: string | null; error: string | null } | null;
+  /** Payments received online. */
+  payments: { amount: number; method: string | null; paidAt: string; reference: string }[];
 }
 
 /** GET /clients/:id */
@@ -787,6 +791,8 @@ export interface PortalInvoiceRow {
   total: number;
   status: "sent" | "paid";
   paidOn: string | null;
+  /** Pay online, while it is unpaid and the agency takes payments through Razorpay. */
+  payUrl: string | null;
 }
 
 export interface ClientRequestRow {
@@ -896,4 +902,22 @@ export interface MonthlyReport {
 export interface ReportRow {
   client: { id: string; name: string; code: string };
   report: { id: string; status: "draft" | "released"; updatedAt: string; releasedAt: string | null } | null;
+}
+
+// ─── Payments (P3-10) ──────────────────────────────────────────────────
+
+export interface PaymentSettings {
+  connection: {
+    keyId: string;
+    mode: "test" | "live";
+    secretHint: string;
+    status: "unchecked" | "connected" | "error";
+    lastError: string | null;
+    checkedAt: string | null;
+    /** Paste these into Razorpay → Settings → Webhooks, with the event payment_link.paid. */
+    webhookUrl: string;
+    webhookSecret: string;
+  } | null;
+  /** "outbox" while links are pretend ones in the app (development); "razorpay" when they are real. */
+  provider: "razorpay" | "outbox";
 }

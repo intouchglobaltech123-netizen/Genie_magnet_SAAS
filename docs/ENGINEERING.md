@@ -97,6 +97,7 @@ Work that happens outside a request (ADR 0010): the daily checks each agency get
 
 - **Secrets in the database** (an agency's WhatsApp token and app secret, payment keys, the raw token of a private link the app sends on) are encrypted with AES-256-GCM by `Secrets` (`common/secrets.ts`), keyed by `SECRETS_KEY`. Never return them; show `Secrets.hint()` instead, and keep them out of the audit log.
 - **WhatsApp** (`apps/api/src/whatsapp`): each agency enters its own Cloud API details. `ClientMessages` decides who hears what (approvers who agreed, with their own portal link); `WhatsAppService.queue` logs every message — skipped ones with the reason — and sends through the `whatsapp.send` job outside the agency's quiet hours. `WHATSAPP_PROVIDER=outbox` (the default outside production) keeps messages in the app; tests read them from the `OutboxProvider`.
+- **Payments** (`apps/api/src/payments`): each agency's own Razorpay keys. Issuing an invoice queues the `payments.link` job; Razorpay's signed `payment_link.paid` records a `Payment` (unique per payment, so a repeated notice counts once) and marks the invoice paid when the full amount arrived. `PAYMENTS_PROVIDER=outbox` (the default outside production) makes pretend links.
 - **Webhooks** live under `/webhooks/…`, are `@Public`, and check a signature over `req.rawBody` (the app is created with `rawBody: true`) before believing anything. WhatsApp's address carries the connection id, found with `findWhatsAppConnection` (an RLS policy like the private links').
 
 ## Permissions

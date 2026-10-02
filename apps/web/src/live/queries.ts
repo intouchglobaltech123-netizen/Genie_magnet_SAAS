@@ -21,6 +21,7 @@ import {
   type CalendarEvent,
   type ClientRequestRow,
   type JobOverview,
+  type PaymentSettings,
   type MonthlyReport,
   type ReportRow,
   type WhatsAppMessageRow,
@@ -1106,3 +1107,28 @@ export const usePostMetrics = () =>
     mutationFn: (v: { postId: string; values: Record<string, number | null> }) =>
       api(`/publishing/posts/${v.postId}/metrics`, { method: "PUT", body: v.values }),
   });
+
+// ─── Payments ─────────────────────────────────────────────────────────
+
+export const usePayments = (enabled = true) => useQuery({ queryKey: ["payments"], queryFn: () => api<PaymentSettings>("/payments"), enabled });
+
+export function usePaymentsAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { step: "connect"; body: unknown } | { step: "check" } | { step: "disconnect" }) =>
+      v.step === "connect"
+        ? api<PaymentSettings>("/payments/connection", { method: "PUT", body: v.body })
+        : v.step === "check"
+          ? api<PaymentSettings>("/payments/connection/check", { body: {} })
+          : api<PaymentSettings>("/payments/connection", { method: "DELETE" }),
+    onSuccess: (data) => qc.setQueryData(["payments"], data),
+  });
+}
+
+export function useRequestPayLink() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (invoiceId: string) => api(`/invoices/${invoiceId}/pay-link`, { body: {} }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.invoices }),
+  });
+}

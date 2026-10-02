@@ -423,6 +423,7 @@ export class PortalService {
         total: r.total,
         status: r.status as "sent" | "paid",
         paidOn: day(r.paidOn),
+        payUrl: r.status === "sent" && r.payLinkStatus === "created" ? r.payLinkUrl : null,
       }));
     });
   }

@@ -16,6 +16,7 @@ import { AuditService, changes } from "../audit/audit.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { ClientMessages } from "../whatsapp/client-messages.service.js";
+import { PaymentsService } from "../payments/payments.service.js";
 
 type Settings = Prisma.InvoiceSettingsGetPayload<object>;
 const WITH = {
@@ -66,6 +67,7 @@ export class InvoicesService {
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
     private readonly messages: ClientMessages,
+    private readonly payments: PaymentsService,
   ) {}
 
   // ─── Settings ─────────────────────────────────────────────────────
@@ -153,6 +155,9 @@ export class InvoicesService {
 
   private async present(rows: Row[]) {
     const [s, look] = rows.some((r) => r.status === "draft") ? await Promise.all([this.settingsRow(), this.agencyLook()]) : [null, null];
+    const received = rows.length
+      ? await this.tenant.db.payment.findMany({ where: { invoiceId: { in: rows.map((r) => r.id) } }, orderBy: { paidAt: "asc" } })
+      : [];
     const on = today();
     return rows.map((r) => {
       const lines = r.lines as unknown as InvoiceLine[];
@@ -188,6 +193,10 @@ export class InvoicesService {
         cancelReason: r.cancelReason,
         overdue: r.status === "sent" && !!r.dueDate && day(r.dueDate)! < on,
         createdAt: r.createdAt,
+        payLink: r.payLinkStatus ? { url: r.payLinkUrl, status: r.payLinkStatus, error: r.payLinkError } : null,
+        payments: received
+          .filter((p) => p.invoiceId === r.id)
+          .map((p) => ({ amount: p.amount, method: p.method, paidAt: p.paidAt.toISOString(), reference: p.providerPaymentId })),
       };
     });
   }
@@ -378,6 +387,7 @@ export class InvoicesService {
           before: { status: "draft" },
           after: { status: "sent", number, issueDate, client: current.client.name, total: t.total },
         });
+        await this.payments.queueLink(tx, id);
         await this.messages.invoiceIssued(tx, current.clientId, { id, number, total: t.total, dueDate: addDays(issueDate, s.paymentTermsDays) });
       });
     } catch (e) {
@@ -422,6 +432,7 @@ export class InvoicesService {
       throw new ConflictException(current.status === "draft" ? "Delete the draft instead." : "A paid invoice cannot be cancelled.");
     await this.tenant.tx(async (tx) => {
       await tx.invoice.update({ where: { id }, data: { status: "cancelled", cancelReason: reason } });
+      if (current.payLinkId) await this.payments.queueCancel(tx, id);
       await this.audit.record(tx, {
         action: "cancel",
         entity: "invoice",

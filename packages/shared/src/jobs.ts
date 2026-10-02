@@ -9,6 +9,8 @@ export const JOB_NAMES = {
   "files.cleanup": "Unfinished uploads cleared",
   "reports.draft": "Monthly reports drafted (on the 25th)",
   "whatsapp.send": "A WhatsApp message",
+  "payments.link": "A payment link for an invoice",
+  "payments.cancel": "A payment link switched off",
 } as const;
 export type JobName = keyof typeof JOB_NAMES;
 

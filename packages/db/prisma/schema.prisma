@@ -523,6 +523,46 @@ model PortalLink {
   @@map("portal_links")
 }
 
+/// An agency's own Razorpay account (P3-10): the keys it entered, secrets encrypted (P3-06).
+model PaymentConnection {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  agencyId      String    @unique @map("agency_id") @db.Uuid
+  provider      String    @default("razorpay")
+  keyId         String    @map("key_id")
+  /// Encrypted.
+  keySecret     String    @map("key_secret")
+  secretHint    String    @map("secret_hint")
+  /// Encrypted. Made by the app; the agency pastes it into Razorpay's webhook settings.
+  webhookSecret String    @map("webhook_secret")
+  /// unchecked · connected · error
+  status        String    @default("unchecked")
+  lastError     String?   @map("last_error")
+  checkedAt     DateTime? @map("checked_at")
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("payment_connections")
+}
+
+/// A payment received for an invoice (P3-10): one row per provider payment, so a repeated notice never counts twice.
+model Payment {
+  id                String   @id @default(uuid(7)) @db.Uuid
+  agencyId          String   @map("agency_id") @db.Uuid
+  invoiceId         String   @map("invoice_id") @db.Uuid
+  provider          String   @default("razorpay")
+  providerPaymentId String   @map("provider_payment_id")
+  /// Rupees.
+  amount            Int
+  method            String?
+  paidAt            DateTime @map("paid_at")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@unique([agencyId, providerPaymentId])
+  @@index([agencyId, invoiceId])
+  @@map("payments")
+}
+
 /// An agency's own WhatsApp Business number (P3-07): the Cloud API details it entered, secrets encrypted (P3-06).
 model WhatsAppConnection {
   id            String    @id @default(uuid(7)) @db.Uuid
@@ -759,6 +799,12 @@ model Invoice {
   sentAt        DateTime? @map("sent_at")
   paidOn        DateTime? @map("paid_on") @db.Date
   paymentNote   String?   @map("payment_note")
+  /// The online payment link (P3-10): made through the agency's own Razorpay when the invoice is issued.
+  payLinkId     String?   @map("pay_link_id")
+  payLinkUrl    String?   @map("pay_link_url")
+  /// created · paid · cancelled · failed
+  payLinkStatus String?   @map("pay_link_status")
+  payLinkError  String?   @map("pay_link_error")
   cancelReason  String?   @map("cancel_reason")
   createdBy     String?   @map("created_by")
   createdAt     DateTime  @default(now()) @map("created_at")

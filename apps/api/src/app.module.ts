@@ -59,6 +59,9 @@ import { PortalService } from "./portal/portal.service.js";
 import { PrismaService } from "./prisma/prisma.service.js";
 import { Secrets } from "./common/secrets.js";
 import { PostMetricsController, ReportsController } from "./reports/reports.controller.js";
+import { InvoicePayLinkController, PaymentsController, RazorpayWebhookController } from "./payments/payments.controller.js";
+import { PaymentsService } from "./payments/payments.service.js";
+import { OutboxPaymentsProvider, PAYMENTS_PROVIDER, RazorpayProvider } from "./payments/provider.js";
 import { ReportsService } from "./reports/reports.service.js";
 import { ClientMessages } from "./whatsapp/client-messages.service.js";
 import { WhatsAppInbound } from "./whatsapp/inbound.service.js";
@@ -122,6 +125,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     WhatsAppWebhookController,
     ReportsController,
     PostMetricsController,
+    PaymentsController,
+    InvoicePayLinkController,
+    RazorpayWebhookController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -184,6 +190,16 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     ClientMessages,
     WhatsAppInbound,
     ReportsService,
+    // Payment links through each agency's own Razorpay in production; pretend links elsewhere.
+    {
+      provide: PAYMENTS_PROVIDER,
+      inject: [ENV],
+      useFactory: (env: Env) =>
+        (env.PAYMENTS_PROVIDER ?? (env.NODE_ENV === "production" ? "razorpay" : "outbox")) === "razorpay"
+          ? new RazorpayProvider(env.RAZORPAY_API_URL)
+          : new OutboxPaymentsProvider(),
+    },
+    PaymentsService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

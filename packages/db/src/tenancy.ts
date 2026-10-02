@@ -77,6 +77,15 @@ export async function findWhatsAppConnection(prisma: PrismaClient, id: string) {
   });
 }
 
+/** Razorpay's notices arrive at an address carrying a payment connection's id (P3-10): finds it and its agency. */
+export async function findPaymentConnection(prisma: PrismaClient, id: string) {
+  if (!UUID.test(id)) return null;
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT set_config('app.payment_connection', ${id}, TRUE)`;
+    return tx.paymentConnection.findUnique({ where: { id }, select: { id: true, agencyId: true, webhookSecret: true } });
+  });
+}
+
 /** Several operations in one transaction, all inside the agency (e.g. create a client with its contacts). */
 export async function withAgency<T>(
   prisma: PrismaClient,

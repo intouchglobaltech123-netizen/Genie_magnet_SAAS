@@ -58,6 +58,12 @@ export const envSchema = z
     WHATSAPP_PROVIDER: z.enum(["cloud", "outbox"]).optional(),
     WHATSAPP_API_URL: z.url().default("https://graph.facebook.com/v21.0"),
     /**
+     * How payment links are made (P3-10): "razorpay" through each agency's own account; "outbox" makes pretend links in
+     * the app only (development and tests). Defaults to razorpay in production.
+     */
+    PAYMENTS_PROVIDER: z.enum(["razorpay", "outbox"]).optional(),
+    RAZORPAY_API_URL: z.url().default("https://api.razorpay.com/v1"),
+    /**
      * Run background jobs in this process (ADR 0010). On for a single server; off on the API when a separate worker
      * process (`node dist/worker.js`, always on) runs them. Off in tests, which run the jobs themselves.
      */

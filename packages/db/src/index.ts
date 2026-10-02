@@ -3,6 +3,7 @@ import { PrismaClient } from "./generated/prisma/client.js";
 
 export * from "./generated/prisma/client.js";
 export {
+  findPaymentConnection,
   findPortalLink,
   findQuestionnaireLink,
   findWhatsAppConnection,

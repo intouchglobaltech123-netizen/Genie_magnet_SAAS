@@ -407,6 +407,13 @@ function Invoices({ token }: { token: string }) {
               ) : (
                 <Badge tone="warning">Due{r.dueDate ? ` ${fmtDate(r.dueDate)}` : ""}</Badge>
               )}
+              {r.payUrl && (
+                <Button size="sm" asChild>
+                  <a href={r.payUrl} target="_blank" rel="noreferrer">
+                    Pay now
+                  </a>
+                </Button>
+              )}
               <Button size="sm" variant="secondary" onClick={() => setOpen(r.id)}>
                 View
               </Button>

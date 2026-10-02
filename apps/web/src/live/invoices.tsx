@@ -3,13 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Ban, CheckCircle2, FileText, Pencil, Plus, Printer, ReceiptIndianRupee, Send, Settings, Trash2, X } from "lucide-react";
+import { ArrowLeft, Ban, CheckCircle2, Copy, FileText, Pencil, Plus, Printer, ReceiptIndianRupee, Send, Settings, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { type Agreement, type Invoice, invoiceLine, type InvoiceSettings, stateName } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, EmptyState, SkeletonRows } from "@/components/ui/feedback";
 import { Field, Input, Textarea } from "@/components/ui/input";
@@ -29,6 +29,7 @@ import {
   useInvoices,
   useInvoiceSettings,
   useInvoiceStep,
+  useRequestPayLink,
   useSaveInvoice,
 } from "./queries";
 
@@ -637,6 +638,67 @@ function PaidDialog({ inv, open, onOpenChange }: { inv: Invoice; open: boolean; 
   );
 }
 
+/** The online payment link (P3-10) and payments received, when the agency takes payments through its Razorpay. */
+function InvoicePayment({ inv, canEdit }: { inv: Invoice; canEdit: boolean }) {
+  const request = useRequestPayLink();
+  const link = inv.payLink;
+  if (!link && !inv.payments.length && inv.status !== "sent") return null;
+  const status: Record<string, string> = {
+    created: "Waiting for payment",
+    paid: "Paid",
+    cancelled: "Switched off",
+    expired: "Expired",
+    failed: "Razorpay refused it",
+  };
+  return (
+    <Card className="mb-4">
+      <CardContent className="space-y-2 p-4 text-body">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="font-medium">Online payment</span>
+          {link?.status && (
+            <Badge tone={link.status === "paid" ? "success" : link.status === "failed" ? "danger" : "neutral"}>{status[link.status] ?? link.status}</Badge>
+          )}
+        </div>
+        {link?.url && link.status === "created" && (
+          <div className="flex flex-wrap items-center gap-2">
+            <a href={link.url} target="_blank" rel="noreferrer" className="font-mono text-primary hover:underline">
+              {link.url}
+            </a>
+            <Button size="xs" variant="ghost" onClick={() => navigator.clipboard.writeText(link.url!).then(() => toast.success("Copied"))}>
+              <Copy />
+              Copy
+            </Button>
+          </div>
+        )}
+        {link?.error && <p className="text-danger">{link.error}</p>}
+        {!link && inv.status === "sent" && (
+          <p className="text-muted-foreground">No payment link — connect Razorpay in Settings → Payments to add one to every invoice.</p>
+        )}
+        {inv.payments.map((p) => (
+          <p key={p.reference} className="text-muted-foreground">
+            Received {inr(p.amount)} by {p.method ?? "Razorpay"} on {fmtDate(p.paidAt)} ({p.reference})
+          </p>
+        ))}
+        {canEdit && inv.status === "sent" && (!link || link.status === "failed" || link.status === "expired") && (
+          <Button
+            size="sm"
+            variant="secondary"
+            disabled={request.isPending}
+            onClick={() =>
+              request.mutate(inv.id, {
+                onSuccess: () => toast.success("Making the link — it shows here in a moment"),
+                onError: (e) => toast.error(errorMessage(e)),
+              })
+            }
+          >
+            Make a payment link
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function LiveInvoice({ id }: { id: string }) {
   const router = useRouter();
   const can = useCan();
@@ -730,6 +792,7 @@ export function LiveInvoice({ id }: { id: string }) {
             Someone who may approve invoices (finance or the owner) issues it.
           </Alert>
         )}
+        {i.status !== "draft" && <InvoicePayment inv={i} canEdit={canEdit} />}
         <p className="mb-3 text-body text-muted-foreground">To save it as a PDF, choose “Save as PDF” in the print window.</p>
       </div>
       <InvoiceDocument inv={i} />

@@ -48,6 +48,7 @@ FILES_SECRET="${{secret(48)}}"
 RUN_JOBS="true"
 SECRETS_KEY="${{secret(48)}}"
 WHATSAPP_PROVIDER="outbox"
+PAYMENTS_PROVIDER="outbox"
 ```
 
 ### `web` variables
