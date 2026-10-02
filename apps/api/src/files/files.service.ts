@@ -41,6 +41,17 @@ export class FilesService {
       throw new ForbiddenException(level === "view" ? "Your role cannot see these files." : "Your role cannot add or remove these files.");
   }
 
+  /** Like can(), but an expense's receipts are also the business of whoever submitted it (while it waits, to change). */
+  private async canOn(entity: FileEntity, entityId: string | null, level: "view" | "edit") {
+    if (entity === "expense" && entityId && !allows(this.tenant.permissions, "finance", level)) {
+      const e = /^[0-9a-f-]{36}$/i.test(entityId)
+        ? await this.tenant.db.expense.findFirst({ where: { id: entityId }, select: { submittedBy: true, status: true } })
+        : null;
+      if (e && e.submittedBy === this.tenant.userId && (level === "view" || e.status === "submitted")) return;
+    }
+    this.can(entity, level);
+  }
+
   /** The record a file is attached to must exist in this agency. */
   private async exists(entity: FileEntity, entityId: string) {
     const db = this.tenant.db;
@@ -56,7 +67,9 @@ export class FilesService {
               ? !!(await db.questionnaireResponse.findFirst({ where: { id: entityId }, select: { id: true } }))
               : entity === "video" || entity === "publishing"
                 ? !!(await db.video.findFirst({ where: { id: entityId }, select: { id: true } }))
-                : !!(await db.contentItem.findFirst({ where: { id: entityId }, select: { id: true } }));
+                : entity === "expense"
+                  ? !!(await db.expense.findFirst({ where: { id: entityId }, select: { id: true } }))
+                  : !!(await db.contentItem.findFirst({ where: { id: entityId }, select: { id: true } }));
     if (!found) throw new NotFoundException("The record these files belong to was not found.");
   }
 
@@ -101,7 +114,7 @@ export class FilesService {
   }
 
   async start(input: FileStart & { mime: string }) {
-    this.can(input.entity, "edit");
+    await this.canOn(input.entity, input.entityId, "edit");
     await this.exists(input.entity, input.entityId);
     return this.begin(input, this.tenant.userId ?? null);
   }
@@ -156,7 +169,7 @@ export class FilesService {
   }
 
   async list(entity: FileEntity, entityId: string) {
-    this.can(entity, "view");
+    await this.canOn(entity, entityId, "view");
     return this.listFor(entity, entityId);
   }
 
@@ -169,7 +182,7 @@ export class FilesService {
   async remove(id: string) {
     const f = await this.tenant.db.fileObject.findFirst({ where: { id } });
     if (!f) throw new NotFoundException("No file with that id.");
-    this.can((f.entity ?? "agency") as FileEntity, "edit");
+    await this.canOn((f.entity ?? "agency") as FileEntity, f.entityId, "edit");
     await this.tenant.tx(async (tx) => {
       await tx.fileObject.delete({ where: { id } });
       await this.audit.record(tx, { action: "delete", entity: "file", entityId: id, before: { name: f.name, belongsTo: `${f.entity}:${f.entityId}` } });

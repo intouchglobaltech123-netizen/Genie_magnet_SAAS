@@ -1608,3 +1608,80 @@ model AskMessage {
   @@index([agencyId, conversationId])
   @@map("ask_messages")
 }
+
+// ───────────────────────────── Finance and costing ─────────────────────────────
+
+/// What an hour of a person's time costs the agency (P5-01), from a day on: the rate in force on a day is the latest
+/// that started by then. Restricted like salaries.
+model PersonCostRate {
+  id            String   @id @default(uuid(7)) @db.Uuid
+  agencyId      String   @map("agency_id") @db.Uuid
+  userId        String   @map("user_id")
+  /// What the person costs the agency a month, in rupees (salary and what goes with it).
+  monthlyCost   Int      @map("monthly_cost")
+  /// The working hours that cost covers.
+  hoursPerMonth Int      @default(176) @map("hours_per_month")
+  effectiveFrom DateTime @map("effective_from") @db.Date
+  createdBy     String?  @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@unique([agencyId, userId, effectiveFrom])
+  @@index([agencyId, userId])
+  @@map("person_cost_rates")
+}
+
+/// The agency's costing settings (P5-01): each kit's day rate and the month's overheads not booked as expenses.
+model CostSettings {
+  agencyId        String   @id @map("agency_id") @db.Uuid
+  /// { kitKey: rupees a shoot day }
+  kitRates        Json     @default("{}") @map("kit_rates")
+  /// Rupees a month: rent, software, utilities and the like.
+  monthlyOverhead Int      @default(0) @map("monthly_overhead")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("cost_settings")
+}
+
+model Vendor {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  name      String
+  gstin     String?
+  phone     String?
+  category  String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  expenses Expense[]
+
+  @@unique([agencyId, name])
+  @@map("vendors")
+}
+
+/// Money the agency spent (P5-02): submitted with a receipt, approved by finance, and allocated to a video, to a
+/// client (shared across its videos) or to overheads (neither).
+model Expense {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  agencyId     String    @map("agency_id") @db.Uuid
+  date         DateTime  @db.Date
+  vendorId     String?   @map("vendor_id") @db.Uuid
+  category     String
+  description  String
+  /// Rupees before GST, and the GST on it.
+  amount       Int
+  gst          Int       @default(0)
+  /// submitted · approved · rejected
+  status       String    @default("submitted")
+  videoId      String?   @map("video_id") @db.Uuid
+  clientId     String?   @map("client_id") @db.Uuid
+  submittedBy  String?   @map("submitted_by")
+  decidedBy    String?   @map("decided_by")
+  decidedAt    DateTime? @map("decided_at")
+  decisionNote String?   @map("decision_note")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  vendor Vendor? @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId, date])
+  @@index([agencyId, status])
+  @@map("expenses")
+}

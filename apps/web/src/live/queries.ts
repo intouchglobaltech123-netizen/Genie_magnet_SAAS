@@ -86,6 +86,15 @@ import {
   type AiSettingsInput,
   type AiUsageSummary,
   type AskConversationRow,
+  type ClientCostRow,
+  type CostingSummary,
+  type CostRateInput,
+  type CostRateRow,
+  type CostSettings,
+  type CostSettingsInput,
+  type ExpenseInput,
+  type ExpenseRow,
+  type VideoCostRow,
   type DraftRequest,
   type DraftRow,
   type GenieEvaluation,
@@ -1114,6 +1123,74 @@ export function useRunGenie() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["genie"] }),
   });
 }
+
+// ─── Finance and costing ──────────────────────────────────────────────
+
+export const useExpenses = (f: { month: string; status?: string }) => {
+  const q = new URLSearchParams({ month: f.month, ...(f.status && { status: f.status }) });
+  return useQuery({ queryKey: ["expenses", q.toString()], queryFn: () => api<ExpenseRow[]>(`/expenses?${q}`) });
+};
+
+export function useExpenseAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "create"; body: ExpenseInput }
+        | { step: "update"; id: string; body: ExpenseInput }
+        | { step: "remove"; id: string }
+        | { step: "decide"; id: string; approved: boolean; note?: string },
+    ) => {
+      switch (v.step) {
+        case "create":
+          return api<ExpenseRow>("/expenses", { body: v.body });
+        case "update":
+          return api<ExpenseRow>(`/expenses/${v.id}`, { method: "PUT", body: v.body });
+        case "remove":
+          return api(`/expenses/${v.id}`, { method: "DELETE" });
+        case "decide":
+          return api<ExpenseRow>(`/expenses/${v.id}/decision`, { body: { approved: v.approved, note: v.note } });
+      }
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["expenses"] });
+      void qc.invalidateQueries({ queryKey: ["vendors"] });
+      void qc.invalidateQueries({ queryKey: ["costing"] });
+    },
+  });
+}
+
+export const useVendors = () => useQuery({ queryKey: ["vendors"], queryFn: () => api<{ id: string; name: string; category: string | null }[]>("/vendors") });
+
+export const useCostRates = () => useQuery({ queryKey: ["costing", "rates"], queryFn: () => api<CostRateRow[]>("/costing/rates") });
+
+export function useSaveCostRate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { userId: string; body: CostRateInput }) => api<CostRateRow[]>(`/costing/rates/${v.userId}`, { method: "PUT", body: v.body }),
+    onSuccess: (data) => {
+      qc.setQueryData(["costing", "rates"], data);
+      void qc.invalidateQueries({ queryKey: ["costing"] });
+    },
+  });
+}
+
+export const useCostSettings = () => useQuery({ queryKey: ["costing", "settings"], queryFn: () => api<CostSettings>("/costing/settings") });
+
+export function useSaveCostSettings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: CostSettingsInput) => api<CostSettings>("/costing/settings", { method: "PUT", body: v }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["costing"] }),
+  });
+}
+
+export const useCostingSummary = (month: string) =>
+  useQuery({ queryKey: ["costing", "summary", month], queryFn: () => api<CostingSummary>(`/costing/summary?month=${month}`) });
+export const useClientCosts = (month: string, enabled = true) =>
+  useQuery({ queryKey: ["costing", "clients", month], queryFn: () => api<ClientCostRow[]>(`/costing/clients?month=${month}`), enabled });
+export const useVideoCosts = (month: string, enabled = true) =>
+  useQuery({ queryKey: ["costing", "videos", month], queryFn: () => api<VideoCostRow[]>(`/costing/videos?month=${month}`), enabled });
 
 // ─── Calendar and time ────────────────────────────────────────────────
 

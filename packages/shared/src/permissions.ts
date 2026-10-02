@@ -145,7 +145,7 @@ export const DEFAULT_PERMISSIONS: Record<DefaultRole, PermissionMatrix> = {
   shooter: { clients: g("view"), content: g("view"), production: g("edit", "own") },
   script_writer: { clients: g("view"), onboarding: g("view"), content: g("edit", "own") },
   social_media_manager: { clients: g("view"), content: g("view"), production: g("view"), publishing: g("approve"), reports: g("view") },
-  finance: { crm: g("view"), clients: g("view"), agreements: g("view"), invoices: g("approve"), finance: g("edit"), reports: g("view") },
+  finance: { crm: g("view"), clients: g("view"), agreements: g("view"), invoices: g("approve"), finance: g("approve"), reports: g("view") },
   hr: { team: g("view"), hr: g("approve") },
   freelancer: { content: g("view", "own"), production: g("edit", "own") },
   client_approver: { portal: g("approve") },

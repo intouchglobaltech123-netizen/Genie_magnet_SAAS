@@ -11,6 +11,8 @@ export const NOTIFICATION_KINDS = [
   { key: "onboarding_progress", group: "Clients", label: "A client I look after finishes onboarding (the required part, or all of it)" },
   { key: "invoice_to_issue", group: "Money", label: "A draft invoice waits to be issued" },
   { key: "invoice_paid", group: "Money", label: "An invoice I drafted is paid" },
+  { key: "expense_to_approve", group: "Money", label: "An expense waits for my approval" },
+  { key: "expense_decided", group: "Money", label: "My expense is approved or rejected" },
   { key: "script_approval", group: "Delivery", label: "A script waits for approval" },
   { key: "script_decided", group: "Delivery", label: "My script is approved or sent back" },
   { key: "video_assigned", group: "Delivery", label: "A video or shoot is assigned to me" },
