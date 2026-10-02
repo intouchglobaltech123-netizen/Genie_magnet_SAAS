@@ -73,6 +73,10 @@ import { GenieController } from "./genie/genie.controller.js";
 import { CollectionsService } from "./finance/collections.service.js";
 import { FinanceReportService } from "./finance/finance-report.service.js";
 import { PeriodLock } from "./finance/period-lock.js";
+import { AttendanceService } from "./people/attendance.service.js";
+import { EmployeesService } from "./people/employees.service.js";
+import { LeaveService } from "./people/leave.service.js";
+import { AttendanceController, LeaveController, PeopleController } from "./people/people.controller.js";
 import { CostingService } from "./finance/costing.service.js";
 import { ExpensesService } from "./finance/expenses.service.js";
 import { CollectionsController, CostingController, ExpensesController, FinanceController, VendorsController } from "./finance/finance.controller.js";
@@ -151,6 +155,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     CostingController,
     CollectionsController,
     FinanceController,
+    PeopleController,
+    AttendanceController,
+    LeaveController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -258,6 +265,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     CollectionsService,
     FinanceReportService,
     PeriodLock,
+    EmployeesService,
+    AttendanceService,
+    LeaveService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

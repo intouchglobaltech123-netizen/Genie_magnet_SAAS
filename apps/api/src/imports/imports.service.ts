@@ -2,6 +2,9 @@ import { BadRequestException, ConflictException, ForbiddenException, Injectable,
 import type { Prisma } from "@gm/db";
 import {
   AGREEMENT_IMPORT_STATUS_LABEL,
+  ATTENDANCE_STATUS_LABEL,
+  type AttendanceImport,
+  dayStatus,
   AGREEMENT_IMPORT_STATUSES,
   type AgreementImport,
   allows,
@@ -31,6 +34,7 @@ import { ProductionSettingsService } from "../production/production-settings.ser
 import { VideosService } from "../production/videos.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { matrixOf } from "../team/roles.service.js";
+import { AttendanceService, offDay } from "../people/attendance.service.js";
 import { TeamService } from "../team/team.service.js";
 import { CheckReport, dateText, money } from "./check-report.js";
 
@@ -71,10 +75,11 @@ export class ImportsService {
     private readonly productionSettings: ProductionSettingsService,
     private readonly agreements: AgreementsService,
     private readonly notifications: NotificationsService,
+    private readonly attendance: AttendanceService,
   ) {}
 
   private canEdit(kind: ImportKind) {
-    const area = ({ clients: "clients", leads: "crm", team: "team", videos: "production", agreements: "agreements" } as const)[kind];
+    const area = ({ clients: "clients", leads: "crm", team: "team", videos: "production", agreements: "agreements", attendance: "hr" } as const)[kind];
     return allows(this.tenant.permissions, area, "edit") && (kind !== "videos" || scopeOf(this.tenant.permissions, "production") === "all");
   }
 
@@ -97,7 +102,7 @@ export class ImportsService {
   }
 
   async list() {
-    const kinds = (["clients", "team", "leads", "videos", "agreements"] as const).filter((k) => this.canEdit(k));
+    const kinds = (["clients", "team", "leads", "videos", "agreements", "attendance"] as const).filter((k) => this.canEdit(k));
     return this.present(await this.tenant.db.import.findMany({ where: { kind: { in: kinds } }, orderBy: { createdAt: "desc" }, take: 50 }));
   }
 
@@ -617,6 +622,103 @@ export class ImportsService {
     );
   }
 
+  // ─── Attendance ─────────────────────────────────────────────────────
+
+  /**
+   * People's days from the agency's attendance export (P5-07): each row is matched to someone in the team by employee
+   * code, email or name, and its status worked out by the agency's rules. A day already corrected by HR or taken as
+   * leave keeps that; anything else is replaced by the export.
+   */
+  async importAttendance(input: AttendanceImport) {
+    const { fileName, rows } = input;
+    const agencyId = this.tenant.agencyId;
+    const userId = this.tenant.userId;
+    if (!userId) throw new UnauthorizedException("Sign in to import.");
+    const [members, profiles, settings] = await Promise.all([
+      this.tenant.db.membership.findMany({ where: { agencyId }, select: { user: { select: { id: true, name: true, email: true } } } }),
+      this.tenant.db.employeeProfile.findMany({ where: { employeeCode: { not: null } }, select: { userId: true, employeeCode: true } }),
+      this.attendance.settings(),
+    ]);
+    const byCode = new Map(profiles.map((p) => [p.employeeCode!.toLowerCase(), p.userId]));
+    const byEmail = new Map(members.map((m) => [m.user.email.toLowerCase(), m.user.id]));
+    const byName = new Map<string, string | null>();
+    for (const m of members) {
+      const k = m.user.name.trim().toLowerCase();
+      byName.set(k, byName.has(k) ? null : m.user.id); // two people with one name cannot be told apart
+    }
+    const issues: Issue[] = [];
+    const who: string[] = [];
+    const seen = new Map<string, number>();
+    rows.forEach((r, i) => {
+      const k = r.employee.trim().toLowerCase();
+      const id = byCode.get(k) ?? byEmail.get(k) ?? byName.get(k) ?? null;
+      if (!id)
+        issues.push({
+          path: `rows.${i}.employee`,
+          message: byName.get(k) === null ? "Two people have this name — use their employee code" : "No one in your team has this code, email or name",
+        });
+      who.push(id ?? "");
+      const key = `${id}:${r.date}`;
+      const first = seen.get(key);
+      if (id && first !== undefined) issues.push({ path: `rows.${i}.date`, message: `Same person and day as row ${first + 2}` });
+      else seen.set(key, i);
+    });
+    refuse(issues);
+
+    const report = new CheckReport(input).groupedInto("days");
+    const kept = await this.tenant.db.attendanceRecord.findMany({
+      where: {
+        userId: { in: [...new Set(who)] },
+        date: { in: [...new Set(rows.map((r) => new Date(`${r.date}T00:00:00Z`)))] },
+        source: { in: ["correction", "leave"] },
+      },
+      select: { userId: true, date: true, source: true },
+    });
+    const keep = new Set(kept.map((k) => `${k.userId}:${k.date.toISOString().slice(0, 10)}`));
+    const statuses: string[] = [];
+    return this.tenant.tx(
+      async (tx) => {
+        const ids: string[] = [];
+        const record = await tx.import.create({ data: { agencyId, kind: "attendance", fileName, rowCount: rows.length, createdIds: [], createdBy: userId } });
+        for (const [i, r] of rows.entries()) {
+          if (keep.has(`${who[i]}:${r.date}`)) {
+            report.note(i, `${r.employee} on ${dateText(r.date)}: kept as HR corrected it or as leave`);
+            continue;
+          }
+          const { status, minutes } = dayStatus(settings, r.firstIn ?? null, r.lastOut ?? null);
+          statuses.push(status);
+          const off = offDay(settings, r.date);
+          if (off && r.firstIn)
+            report.note(i, `${r.employee} came in on ${dateText(r.date)}, a ${off.status === "holiday" ? `holiday (${off.name})` : "weekly off"}`);
+          const data = { firstIn: r.firstIn ?? null, lastOut: r.lastOut ?? null, minutes, status, source: "import", importId: record.id, note: null };
+          const saved = await tx.attendanceRecord.upsert({
+            where: { agencyId_userId_date: { agencyId, userId: who[i]!, date: new Date(`${r.date}T00:00:00Z`) } },
+            create: { agencyId, userId: who[i]!, date: new Date(`${r.date}T00:00:00Z`), ...data },
+            update: data,
+          });
+          ids.push(saved.id);
+        }
+        const dates = rows.map((r) => r.date).sort();
+        report
+          .total("Days", rows.length)
+          .total("People", new Set(who).size)
+          .total("From", dateText(dates[0]!))
+          .total("To", dateText(dates.at(-1)!))
+          .groups(
+            statuses,
+            (s) => s,
+            (s) => ATTENDANCE_STATUS_LABEL[s as keyof typeof ATTENDANCE_STATUS_LABEL] ?? s,
+            ["present", "late", "half_day", "absent"],
+          );
+        const done = report.done(ids.length);
+        await tx.import.update({ where: { id: record.id }, data: { createdIds: ids, report: json(done) } });
+        await this.audit.record(tx, { action: "import", entity: "import", entityId: record.id, after: { kind: "attendance", fileName, rows: rows.length } });
+        return { id: record.id, created: ids.length, report: done };
+      },
+      { timeout: 120_000 },
+    );
+  }
+
   // ─── Undo ───────────────────────────────────────────────────────────
 
   async undo(id: string) {
@@ -646,6 +748,9 @@ export class ImportsService {
       ]);
       if (changed || versions || logs || posts || requests || inShoots)
         throw new ConflictException("Some of these videos have been worked on since the import, so undoing it would lose that work.");
+    }
+    if (kind === "attendance") {
+      // Days HR corrected since stay; the rest of what the import brought in goes.
     }
     if (kind === "agreements") {
       const [changed, invoices, videos, renewals] = await Promise.all([
@@ -686,6 +791,8 @@ export class ImportsService {
           await this.audit.record(tx, { action: "delete", entity: "video", entityId: v.id, before: { code: v.code, title: v.title, via: "undo import" } });
         }
         removed = videos.length;
+      } else if (kind === "attendance") {
+        removed = (await tx.attendanceRecord.deleteMany({ where: { importId: id, source: "import" } })).count;
       } else if (kind === "agreements") {
         const agreements = await tx.agreement.findMany({ where: { id: { in: ids } }, select: { id: true, title: true, status: true } });
         for (const a of agreements) {

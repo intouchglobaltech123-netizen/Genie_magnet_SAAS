@@ -26,6 +26,8 @@ export const NOTIFICATION_KINDS = [
   { key: "month_to_close", group: "Delivery", label: "Last month's delivery waits to be closed" },
   { key: "client_portal", group: "Clients", label: "A client I look after picks topics, comments on a video or asks something in their portal" },
   { key: "report_draft", group: "Clients", label: "A client's monthly report is drafted and waits to be released" },
+  { key: "leave_to_approve", group: "People", label: "A leave request or attendance correction waits for my approval" },
+  { key: "leave_decided", group: "People", label: "My leave or attendance correction is approved or not" },
   { key: "post_failed", group: "Delivery", label: "The app could not post a video, or a client's platform needs connecting again" },
   { key: "genie_insight", group: "Genie Assistant", label: "Genie Assistant finds something I should act on" },
   { key: "job_failed", group: "Settings", label: "Background work failed after all its tries" },

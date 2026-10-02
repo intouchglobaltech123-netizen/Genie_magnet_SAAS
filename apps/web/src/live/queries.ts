@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  OWNER_ROLE,
   type AgencyProfile,
   type AgencyProfileInput,
   type Agreement,
@@ -93,6 +94,17 @@ import {
   type CostSettings,
   type CostSettingsInput,
   type AgeingReport,
+  type AttendanceCorrectionInput,
+  type AttendanceCorrectionRow,
+  type AttendanceMonth,
+  type AttendanceSettings,
+  type EmployeeBankInput,
+  type EmployeeInput,
+  type EmployeeRow,
+  type LeaveBalanceRow,
+  type LeaveRequestInput,
+  type LeaveRequestRow,
+  type LeaveTypeRow,
   type FinanceMonthRow,
   type ExpenseInput,
   type ExpenseRow,
@@ -170,6 +182,13 @@ export function useMe() {
 export function useCan() {
   const me = useMe().data;
   return (area: AreaKey, level: Exclude<PermissionLevel, "none">) => !!me?.permissions && allows(me.permissions, area, level);
+}
+
+/** Whether the signed-in person may approve this request: someone else decides your own, unless you are the owner. */
+export function useMayDecide() {
+  const me = useMe().data;
+  const can = useCan();
+  return (area: AreaKey, requestedBy: string | null | undefined) => can(area, "approve") && (requestedBy !== me?.user.id || me?.role?.key === OWNER_ROLE);
 }
 
 /** People who can be picked on a test server; `null` when test sign-in is off. */
@@ -464,16 +483,16 @@ export const useImports = () => useQuery({ queryKey: keys.imports, queryFn: () =
 export const useImportDetail = (id: string) => useQuery({ queryKey: [...keys.imports, id], queryFn: () => api<ImportDetail>(`/imports/${id}`) });
 
 export function useImport(kind: ImportKind) {
-  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads, keys.videos, keys.cycles, keys.agreements);
+  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads, keys.videos, keys.cycles, keys.agreements, ["attendance"]);
   return useMutation({
-    mutationFn: (v: { fileName: string; rows: unknown[]; lines: number[]; leftOut: { line: number; problems: string[] }[] }) =>
+    mutationFn: (v: { fileName: string; rows: unknown[]; lines: number[]; fileRows?: number; leftOut: { line: number; problems: string[] }[] }) =>
       api<ImportResult>(`/imports/${kind}`, { body: v }),
     onSuccess: refresh,
   });
 }
 
 export function useUndoImport() {
-  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads, keys.videos, keys.cycles, keys.agreements);
+  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads, keys.videos, keys.cycles, keys.agreements, ["attendance"]);
   return useMutation({ mutationFn: (id: string) => api<{ removed: number; kept: number }>(`/imports/${id}`, { method: "DELETE" }), onSuccess: refresh });
 }
 
@@ -1208,6 +1227,101 @@ export const useClientCosts = (month: string, enabled = true) =>
   useQuery({ queryKey: ["costing", "clients", month], queryFn: () => api<ClientCostRow[]>(`/costing/clients?month=${month}`), enabled });
 export const useVideoCosts = (month: string, enabled = true) =>
   useQuery({ queryKey: ["costing", "videos", month], queryFn: () => api<VideoCostRow[]>(`/costing/videos?month=${month}`), enabled });
+
+// ─── People: employees, attendance, leave ─────────────────────────────
+
+export const usePeople = () => useQuery({ queryKey: ["people"], queryFn: () => api<EmployeeRow[]>("/people") });
+export const useDepartments = () =>
+  useQuery({
+    queryKey: ["people", "departments"],
+    queryFn: () => api<{ id: string; name: string; headId: string | null; people: number }[]>("/people/departments"),
+  });
+
+export function usePeopleAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "update"; userId: string; body: EmployeeInput }
+        | { step: "bank"; userId: string; body: EmployeeBankInput }
+        | { step: "addDepartment"; name: string }
+        | { step: "removeDepartment"; id: string },
+    ) => {
+      switch (v.step) {
+        case "update":
+          return api(`/people/${v.userId}`, { method: "PUT", body: v.body });
+        case "bank":
+          return api(`/people/${v.userId}/bank`, { method: "PUT", body: v.body });
+        case "addDepartment":
+          return api("/people/departments", { body: { name: v.name } });
+        case "removeDepartment":
+          return api(`/people/departments/${v.id}`, { method: "DELETE" });
+      }
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["people"] }),
+  });
+}
+
+export const useAttendance = (month: string) =>
+  useQuery({ queryKey: ["attendance", month], queryFn: () => api<AttendanceMonth>(`/attendance?month=${month}`) });
+export const useAttendanceSettings = () => useQuery({ queryKey: ["attendance", "settings"], queryFn: () => api<AttendanceSettings>("/attendance/settings") });
+export const useCorrections = (state = "") =>
+  useQuery({
+    queryKey: ["attendance", "corrections", state],
+    queryFn: () => api<AttendanceCorrectionRow[]>(`/attendance/corrections${state ? `?state=${state}` : ""}`),
+  });
+
+export function useAttendanceAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "settings"; body: AttendanceSettings }
+        | { step: "correct"; body: AttendanceCorrectionInput }
+        | { step: "decide"; id: string; approved: boolean; note?: string },
+    ) =>
+      v.step === "settings"
+        ? api<AttendanceSettings>("/attendance/settings", { method: "PUT", body: v.body })
+        : v.step === "correct"
+          ? api("/attendance/corrections", { body: v.body })
+          : api(`/attendance/corrections/${v.id}/decision`, { body: { approved: v.approved, note: v.note } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["attendance"] }),
+  });
+}
+
+export const useLeaveTypes = () => useQuery({ queryKey: ["leave", "types"], queryFn: () => api<LeaveTypeRow[]>("/leave/types") });
+export const useLeaveRequests = (status = "") =>
+  useQuery({ queryKey: ["leave", "requests", status], queryFn: () => api<LeaveRequestRow[]>(`/leave${status ? `?status=${status}` : ""}`) });
+export const useLeaveBalances = (year: number) =>
+  useQuery({ queryKey: ["leave", "balances", year], queryFn: () => api<LeaveBalanceRow[]>(`/leave/balances?year=${year}`) });
+
+export function useLeaveAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "request"; body: LeaveRequestInput }
+        | { step: "cancel"; id: string }
+        | { step: "decide"; id: string; approved: boolean; note?: string }
+        | { step: "types"; types: (Omit<LeaveTypeRow, "id"> & { id?: string })[] },
+    ) => {
+      switch (v.step) {
+        case "request":
+          return api("/leave", { body: v.body });
+        case "cancel":
+          return api(`/leave/${v.id}/cancel`, { body: {} });
+        case "decide":
+          return api(`/leave/${v.id}/decision`, { body: { approved: v.approved, note: v.note } });
+        case "types":
+          return api("/leave/types", { method: "PUT", body: { types: v.types } });
+      }
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["leave"] });
+      void qc.invalidateQueries({ queryKey: ["attendance"] });
+    },
+  });
+}
 
 // ─── Calendar and time ────────────────────────────────────────────────
 

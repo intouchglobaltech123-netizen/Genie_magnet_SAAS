@@ -7,6 +7,10 @@ import { CheckCircle2, ClipboardCheck, Download, FileSpreadsheet, RotateCcw, Upl
 import { toast } from "sonner";
 import Papa from "papaparse";
 import {
+  ATTENDANCE_IMPORT_COLUMNS,
+  attendanceImportRow,
+  parseDateTimeDate,
+  parseTimeText,
   AGREEMENT_IMPORT_COLUMNS,
   AGREEMENT_IMPORT_STATUS_LABEL,
   agreementEndDate,
@@ -22,6 +26,7 @@ import {
   parseRupees,
   PLATFORM_LABELS,
   type ImportColumn,
+  type EmployeeRow,
   type ImportKind,
   type ImportResult,
   matchColumns,
@@ -49,7 +54,20 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn, inr } from "@/lib/utils";
 import { ApiError, errorMessage } from "./api";
 import { CheckReportView } from "./import-report";
-import { useCan, useClients, useImport, useImports, useMe, usePackages, useProductionSettings, useRoles, useStages, useTeam, useUndoImport } from "./queries";
+import {
+  useCan,
+  useClients,
+  useImport,
+  useImports,
+  useMe,
+  usePackages,
+  usePeople,
+  useProductionSettings,
+  useRoles,
+  useStages,
+  useTeam,
+  useUndoImport,
+} from "./queries";
 
 const COLUMNS: Record<ImportKind, ImportColumn[]> = {
   clients: CLIENT_IMPORT_COLUMNS,
@@ -57,18 +75,20 @@ const COLUMNS: Record<ImportKind, ImportColumn[]> = {
   leads: LEAD_IMPORT_COLUMNS,
   videos: VIDEO_IMPORT_COLUMNS,
   agreements: AGREEMENT_IMPORT_COLUMNS,
+  attendance: ATTENDANCE_IMPORT_COLUMNS,
 };
-const MAX_ROWS: Record<ImportKind, number> = { clients: 1000, team: 500, leads: 2000, videos: 2000, agreements: 1000 };
-const WHAT: Record<ImportKind, string> = { clients: "clients", team: "people", leads: "leads", videos: "videos", agreements: "agreements" };
-const ONE: Record<ImportKind, string> = { clients: "client", team: "person", leads: "lead", videos: "video", agreements: "agreement" };
+const MAX_ROWS: Record<ImportKind, number> = { clients: 1000, team: 500, leads: 2000, videos: 2000, agreements: 1000, attendance: 60000 };
+const WHAT: Record<ImportKind, string> = { clients: "clients", team: "people", leads: "leads", videos: "videos", agreements: "agreements", attendance: "days" };
+const ONE: Record<ImportKind, string> = { clients: "client", team: "person", leads: "lead", videos: "video", agreements: "agreement", attendance: "day" };
 const count = (n: number, kind: ImportKind) => `${n} ${n === 1 ? ONE[kind] : WHAT[kind]}`;
-const AREA = { clients: "clients", team: "team", leads: "crm", videos: "production", agreements: "agreements" } as const;
+const AREA = { clients: "clients", team: "team", leads: "crm", videos: "production", agreements: "agreements", attendance: "hr" } as const;
 const DONE_LINK: Record<ImportKind, { href: string; label: string }> = {
   clients: { href: "/app/clients", label: "See the clients" },
   team: { href: "/app/settings/team", label: "See the team" },
   leads: { href: "/app/sales", label: "See the pipeline" },
   videos: { href: "/app/production?tab=sheet", label: "See the videos" },
   agreements: { href: "/app/agreements", label: "See the agreements" },
+  attendance: { href: "/app/attendance", label: "See the attendance" },
 };
 /** The API's field names for videos, as the importer's columns. */
 const VIDEO_PATHS: Record<string, string> = { clientCode: "client", editorEmail: "editor" };
@@ -418,6 +438,90 @@ function useAgreementRows(sheet: Sheet | null, mapping: Record<string, number | 
   }, [sheet, mapping, clients.data, packages.data, can]);
 }
 
+/**
+ * Attendance from the agency's export (P5-07): one row per person and day (In and Out columns), or one row per punch
+ * (a time column) — then each person's first and last punch of each day are kept.
+ */
+function useAttendanceRows(sheet: Sheet | null, mapping: Record<string, number | null>) {
+  const team = usePeople().data;
+  return useMemo(() => {
+    if (!sheet || !team) return null;
+    const byCode = new Map(team.filter((p) => p.employeeCode).map((p) => [p.employeeCode!.toLowerCase(), p]));
+    const byEmail = new Map(team.map((p) => [p.user.email.toLowerCase(), p]));
+    const names = new Map<string, EmployeeRow | null>();
+    for (const p of team) {
+      const k = p.user.name.trim().toLowerCase();
+      names.set(k, names.has(k) ? null : p);
+    }
+    const punches = mapping.time != null && mapping.firstIn == null;
+    const out: PreviewRow[] = [];
+    const days = new Map<string, { row: PreviewRow; times: string[] }>();
+    sheet.rows.forEach((r, i) => {
+      const get = (k: string) => (mapping[k] == null ? "" : (r[mapping[k]!] ?? "").trim());
+      const raw = get("employee");
+      const stamp = get("time");
+      const date = get("date") ? parseDateText(get("date")) : stamp ? parseDateTimeDate(stamp) : undefined;
+      const k = raw.toLowerCase();
+      const person = byCode.get(k) ?? byEmail.get(k) ?? names.get(k) ?? null;
+      const issues: Record<string, string> = {};
+      if (!raw) issues.employee = "Who is it?";
+      else if (!person)
+        issues.employee = names.get(k) === null ? "Two people have this name — use their employee code" : "No one in your team has this code, email or name";
+      if (!date) issues.date = "Use a date like 2026-10-05 or 05/10/2026";
+      const values: Record<string, string> = {
+        employee: person ? `${person.user.name}` : raw,
+        date: date ?? get("date"),
+        time: stamp,
+        firstIn: get("firstIn"),
+        lastOut: get("lastOut"),
+      };
+      if (Object.keys(issues).length) {
+        out.push({ line: i + 2, values, issues, payload: null });
+        return;
+      }
+      const key = `${person!.user.id}:${date}`;
+      if (punches) {
+        const t = parseTimeText(stamp);
+        if (!t) {
+          out.push({ line: i + 2, values, issues: { time: "Use a time like 09:12 or 2026-10-05 09:12" }, payload: null });
+          return;
+        }
+        const day = days.get(key);
+        if (day) day.times.push(t);
+        else {
+          const row: PreviewRow = { line: i + 2, values, issues: {}, payload: null };
+          days.set(key, { row, times: [t] });
+          out.push(row);
+        }
+        return;
+      }
+      const firstIn = values.firstIn ? parseTimeText(values.firstIn) : undefined;
+      const lastOut = values.lastOut ? parseTimeText(values.lastOut) : undefined;
+      if (values.firstIn && !firstIn) issues.firstIn = "Use a time like 09:12";
+      if (values.lastOut && !lastOut) issues.lastOut = "Use a time like 18:40";
+      const seen = days.get(key);
+      if (seen) issues.date = `Same person and day as row ${seen.row.line}`;
+      const row: PreviewRow = {
+        line: i + 2,
+        values: { ...values, firstIn: firstIn ?? values.firstIn!, lastOut: lastOut ?? values.lastOut! },
+        issues,
+        payload: Object.keys(issues).length ? null : attendanceImportRow.parse({ employee: raw, date, firstIn, lastOut }),
+      };
+      if (!seen) days.set(key, { row, times: [] });
+      out.push(row);
+    });
+    if (punches)
+      for (const { row, times } of days.values()) {
+        const sorted = [...times].sort();
+        const firstIn = sorted[0]!;
+        const lastOut = sorted.length > 1 ? sorted.at(-1) : undefined;
+        row.values = { ...row.values, time: `${sorted.length} ${sorted.length === 1 ? "punch" : "punches"}`, firstIn, lastOut: lastOut ?? "" };
+        row.payload = attendanceImportRow.parse({ employee: sheet.rows[row.line - 2]![mapping.employee!]!.trim(), date: row.values.date, firstIn, lastOut });
+      }
+    return out;
+  }, [sheet, mapping, team]);
+}
+
 // ─── Screens ──────────────────────────────────────────────────────────
 
 function Importer({ kind }: { kind: ImportKind }) {
@@ -437,10 +541,11 @@ function Importer({ kind }: { kind: ImportKind }) {
   const leadRows = useLeadRows(kind === "leads" ? sheet : null, mapping);
   const videoRows = useVideoRows(kind === "videos" ? sheet : null, mapping);
   const agreementRows = useAgreementRows(kind === "agreements" ? sheet : null, mapping);
+  const attendanceRows = useAttendanceRows(kind === "attendance" ? sheet : null, mapping);
   const rows = useMemo(() => {
-    const base = { clients: clientRows, leads: leadRows, videos: videoRows, team: teamRows, agreements: agreementRows }[kind];
+    const base = { clients: clientRows, leads: leadRows, videos: videoRows, team: teamRows, agreements: agreementRows, attendance: attendanceRows }[kind];
     return base?.map((r, i) => (serverIssues[i] ? { ...r, issues: { ...serverIssues[i], ...r.issues } } : r)) ?? null;
-  }, [kind, clientRows, teamRows, leadRows, videoRows, agreementRows, serverIssues]);
+  }, [kind, clientRows, teamRows, leadRows, videoRows, agreementRows, attendanceRows, serverIssues]);
   const good = rows?.filter((r) => !Object.keys(r.issues).length && r.payload) ?? [];
   const bad = (rows?.length ?? 0) - good.length;
   const missingRequired = columns.filter((c) => c.required && mapping[c.key] == null && !(kind === "clients" && c.key === "code"));
@@ -471,7 +576,7 @@ function Importer({ kind }: { kind: ImportKind }) {
       .filter((r) => !sent.includes(r))
       .map((r) => ({ line: r.line, problems: Object.entries(r.issues).map(([k, m]) => `${label(k)}: ${m}`) }));
     run.mutate(
-      { fileName: sheet.fileName, rows: sent.map((r) => r.payload), lines: sent.map((r) => r.line), leftOut },
+      { fileName: sheet.fileName, rows: sent.map((r) => r.payload), lines: sent.map((r) => r.line), fileRows: sheet.rows.length, leftOut },
       {
         onSuccess: (r) => {
           setDone({ ...r, fileName: sheet.fileName });
@@ -660,7 +765,7 @@ function Importer({ kind }: { kind: ImportKind }) {
             {bad > 0 && (
               <label className="flex items-center gap-2 text-body">
                 <Checkbox checked={leaveOut} onCheckedChange={(v) => setLeaveOut(v === true)} />
-                Leave out the {bad} rows that need fixing
+                {bad === 1 ? "Leave out the row that needs fixing" : `Leave out the ${bad} rows that need fixing`}
               </label>
             )}
             {run.error && !(run.error instanceof ApiError && run.error.body.issues) && <span className="text-body text-danger">{errorMessage(run.error)}</span>}
@@ -739,7 +844,7 @@ export function LiveImport() {
   const router = useRouter();
   const params = useSearchParams();
   const me = useMe().data;
-  const kinds = (["clients", "leads", "team", "agreements", "videos"] as const).filter(
+  const kinds = (["clients", "leads", "team", "agreements", "videos", "attendance"] as const).filter(
     (k) => can(AREA[k], "edit") && (k !== "videos" || (!!me?.permissions && scopeOf(me.permissions, "production") === "all")),
   );
   const wanted = params.get("kind");
@@ -762,6 +867,7 @@ export function LiveImport() {
                 {kinds.includes("leads") && <TabsTrigger value="leads">Leads</TabsTrigger>}
                 {kinds.includes("team") && <TabsTrigger value="team">Team</TabsTrigger>}
                 {kinds.includes("agreements") && <TabsTrigger value="agreements">Agreements</TabsTrigger>}
+                {kinds.includes("attendance") && <TabsTrigger value="attendance">Attendance</TabsTrigger>}
                 {kinds.includes("videos") && <TabsTrigger value="videos">Videos in progress</TabsTrigger>}
               </TabsList>
             </Tabs>

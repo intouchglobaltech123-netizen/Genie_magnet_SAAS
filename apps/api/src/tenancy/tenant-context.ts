@@ -117,6 +117,11 @@ export class TenantDb {
     return this.ctx().role;
   }
 
+  /** People do not approve what they asked for themselves; the owner may, having no one above them. */
+  notOwnRequest(requestedBy: string | null | undefined, what: string) {
+    if (requestedBy && requestedBy === this.userId && this.role !== OWNER_ROLE) throw new ForbiddenException(`Someone else decides your own ${what}.`);
+  }
+
   /** The caller's permissions (set by the permission guard before the handler runs). */
   get permissions(): PermissionMatrix {
     return this.ctx().permissions ?? {};

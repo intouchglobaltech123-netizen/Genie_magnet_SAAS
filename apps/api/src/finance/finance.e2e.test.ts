@@ -165,7 +165,11 @@ describe("expenses", () => {
     const software = await expense(anitha, { date: TODAY, category: "Software", description: "Editing suite, monthly", amount: 5000 });
     const lunch = await expense(divya, { date: TODAY, category: "Food", description: "Team lunch", amount: 2500 });
     await anitha.post(`/expenses/${travel.id}/decision`).send({ approved: true }).expect(200);
-    await anitha.post(`/expenses/${software.id}/decision`).send({ approved: true }).expect(200);
+    // Someone else decides finance's own expense; the owner has no one above them.
+    expect((await anitha.post(`/expenses/${software.id}/decision`).send({ approved: true }).expect(403)).body.message).toBe(
+      "Someone else decides your own expense.",
+    );
+    await jana.post(`/expenses/${software.id}/decision`).send({ approved: true }).expect(200);
     await anitha.post(`/expenses/${lunch.id}/decision`).send({ approved: false }).expect(400);
     await anitha.post(`/expenses/${lunch.id}/decision`).send({ approved: false, note: "Not a client cost" }).expect(200);
     const n = (await divya.get("/notifications").expect(200)).body.items as { kind: string; title: string }[];

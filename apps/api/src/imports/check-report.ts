@@ -14,7 +14,15 @@ export class CheckReport {
   private readonly totals: ImportReport["totals"] = [];
   private readonly notes: ImportReport["notes"] = [];
 
-  constructor(private readonly input: { rows: unknown[]; lines?: number[]; leftOut: ImportReport["leftOut"] }) {}
+  private into: string | null = null;
+
+  constructor(private readonly input: { rows: unknown[]; lines?: number[]; fileRows?: number; leftOut: ImportReport["leftOut"] }) {}
+
+  /** The importer put several rows of the file together into one of these ("days"). */
+  groupedInto(into: string) {
+    this.into = into;
+    return this;
+  }
 
   /** The line in the file of the row at this index. */
   line(i: number) {
@@ -49,6 +57,7 @@ export class CheckReport {
   done(imported: number): ImportReport {
     return {
       rows: imported + this.input.leftOut.length,
+      ...(this.into && this.input.fileRows && { grouped: { fileRows: this.input.fileRows, into: this.into } }),
       imported,
       leftOut: [...this.input.leftOut].sort((a, b) => a.line - b.line),
       totals: this.totals,

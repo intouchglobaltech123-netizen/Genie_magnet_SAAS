@@ -4,6 +4,8 @@ import { z } from "zod";
 import {
   agreementImport,
   type AgreementImport,
+  attendanceImport,
+  type AttendanceImport,
   clientImport,
   type ClientImport,
   leadImport,
@@ -64,6 +66,14 @@ export class ImportsController {
   @ApiBody({ schema: schema(videoImport) })
   videos(@Body(new ZodPipe(videoImport)) body: VideoImport) {
     return this.imports.importVideos(body);
+  }
+
+  /** People's days from the agency's attendance export (one row per person and day, punches already grouped). */
+  @Post("attendance")
+  @Can("hr", "edit")
+  @ApiBody({ schema: schema(attendanceImport) })
+  attendance(@Body(new ZodPipe(attendanceImport)) body: AttendanceImport) {
+    return this.imports.importAttendance(body);
   }
 
   /** Agreements the agency already has; clients by code and packages by id (the importer matches names). */

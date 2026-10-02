@@ -199,6 +199,7 @@ export class ExpensesService {
   async decide(id: string, d: { approved: boolean; note?: string }) {
     const e = await this.find(id);
     if (e.status !== "submitted") throw new ConflictException("Only an expense that waits is approved or rejected.");
+    this.tenant.notOwnRequest(e.submittedBy, "expense");
     await this.lock.assertOpen(e.date);
     await this.tenant.tx(async (tx) => {
       await tx.expense.update({

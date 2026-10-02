@@ -2,12 +2,13 @@
 // which checks them again with these same rules before saving anything.
 import { z } from "zod";
 import { agreementInput } from "./clients.js";
+import { attendanceImportRow } from "./people.js";
 import { PLATFORMS, type Platform } from "./enums.js";
 import { leadInput } from "./pipeline.js";
 import { URGENCIES, VIDEO_STAGE_KEYS, VIDEO_STAGE_LABEL, type VideoStageKey } from "./production.js";
 import { clientInput, type DeliverableInput, type DeliverableKind } from "./schemas.js";
 
-export const IMPORT_KINDS = ["clients", "team", "leads", "videos", "agreements"] as const;
+export const IMPORT_KINDS = ["clients", "team", "leads", "videos", "agreements", "attendance"] as const;
 export type ImportKind = (typeof IMPORT_KINDS)[number];
 
 const fileName = z.string().trim().min(1).max(200);
@@ -17,6 +18,8 @@ const meta = {
   fileName,
   /** The line in the file of each row sent (the heading is line 1). */
   lines: z.array(z.number().int().min(1)).max(5000).optional(),
+  /** Rows in the file, when the importer put several together into one (attendance punches into days). */
+  fileRows: z.number().int().min(1).max(100000).optional(),
   /** Rows the importer left out because they need fixing. */
   leftOut: z
     .array(z.object({ line: z.number().int().min(1), problems: z.array(z.string().max(300)).max(30) }))
@@ -31,6 +34,8 @@ const meta = {
 export interface ImportReport {
   /** Rows in the file: those imported plus those left out. */
   rows: number;
+  /** When several rows of the file became one (attendance punches into days): the file's rows, and what they became. */
+  grouped?: { fileRows: number; into: string };
   imported: number;
   leftOut: { line: number; problems: string[] }[];
   totals: { label: string; value: string }[];
@@ -393,6 +398,60 @@ export const AGREEMENT_IMPORT_COLUMNS: ImportColumn[] = [
   { key: "notes", label: "Notes", aliases: ["notes", "remarks", "comments", "details"], example: "Festive month: 2 extra reels in October" },
 ];
 
+/** One person's day, from the agency's attendance export (P5-07): one row per day, or one row per punch. */
+export const attendanceImport = z.object({
+  ...meta,
+  rows: z.array(attendanceImportRow).min(1, "There are no rows to import").max(20000, "Import at most 20,000 rows at a time"),
+});
+export type AttendanceImport = z.output<typeof attendanceImport>;
+
+export const ATTENDANCE_IMPORT_COLUMNS: ImportColumn[] = [
+  {
+    key: "employee",
+    label: "Employee",
+    required: true,
+    aliases: [
+      "employee",
+      "employee id",
+      "employee code",
+      "emp id",
+      "emp code",
+      "person id",
+      "id",
+      "name",
+      "employee name",
+      "person",
+      "user",
+      "staff",
+      "card no",
+    ],
+    hint: "Their employee code, email or name, as in your team",
+    example: "GM007",
+  },
+  {
+    key: "date",
+    label: "Date",
+    aliases: ["date", "day", "attendance date", "punch date"],
+    hint: "Not needed when the time column has the date too",
+    example: "2026-10-05",
+  },
+  {
+    key: "time",
+    label: "Punch time",
+    aliases: ["time", "punch time", "date time", "datetime", "event time", "check time", "access time", "authentication time", "record time"],
+    hint: "For exports with one row per punch: the first and last punch of each day are kept",
+    example: "2026-10-05 09:12",
+  },
+  {
+    key: "firstIn",
+    label: "In",
+    aliases: ["in", "in time", "check in", "first in", "punch in", "entry", "time in"],
+    hint: "For exports with one row per day",
+    example: "09:12",
+  },
+  { key: "lastOut", label: "Out", aliases: ["out", "out time", "check out", "last out", "punch out", "exit", "time out"], example: "18:40" },
+];
+
 export const TEAM_IMPORT_COLUMNS: ImportColumn[] = [
   { key: "email", label: "Email", required: true, aliases: ["email", "email id", "mail", "e mail", "email address"], example: "priya@youragency.example" },
   { key: "role", label: "Role", required: true, aliases: ["role", "position", "designation", "access", "job"], example: "Editor" },
@@ -618,4 +677,23 @@ const AGREEMENT_STATUS_WORDS: Record<string, AgreementImportStatus> = {
 /** An agreement's status as people write it — "Running", "On hold", "Expired" — or undefined when unclear. */
 export function parseAgreementStatus(v: string): AgreementImportStatus | undefined {
   return AGREEMENT_STATUS_WORDS[norm(v)];
+}
+
+/** A time of day as devices write it — "09:12", "9:12:33", "6:40 PM", or inside a date-time — as HH:MM, or undefined. */
+export function parseTimeText(v: string): string | undefined {
+  const m = /(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)?/i.exec(v.trim());
+  if (!m) return undefined;
+  let h = Number(m[1]);
+  const min = Number(m[2]);
+  const ampm = m[3]?.toLowerCase();
+  if (ampm === "pm" && h < 12) h += 12;
+  if (ampm === "am" && h === 12) h = 0;
+  if (h > 23 || min > 59) return undefined;
+  return `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+}
+
+/** The date part of a date-time as devices write it ("2026-10-05 09:12:33", "05/10/2026 09:12"), or undefined. */
+export function parseDateTimeDate(v: string): string | undefined {
+  const part = v.trim().split(/[ T]/)[0] ?? "";
+  return parseDateText(part);
 }

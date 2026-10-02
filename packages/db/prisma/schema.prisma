@@ -1707,3 +1707,157 @@ model FinancialPeriod {
   @@unique([agencyId, month])
   @@map("financial_periods")
 }
+
+// ───────────────────────────── People ─────────────────────────────
+
+model Department {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  name      String
+  headId    String?  @map("head_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([agencyId, name])
+  @@map("departments")
+}
+
+/// A team member's employee record (P5-06). Personal details are for HR; bank account and PAN are encrypted and for
+/// payroll only.
+model EmployeeProfile {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  agencyId       String    @map("agency_id") @db.Uuid
+  userId         String    @map("user_id")
+  /// The code the attendance device and payroll use.
+  employeeCode   String?   @map("employee_code")
+  departmentId   String?   @map("department_id") @db.Uuid
+  designation    String?
+  /// full_time · part_time · intern · freelancer
+  employmentType String    @default("full_time") @map("employment_type")
+  joiningDate    DateTime? @map("joining_date") @db.Date
+  exitDate       DateTime? @map("exit_date") @db.Date
+  phone          String?
+  personalEmail  String?   @map("personal_email")
+  dateOfBirth    DateTime? @map("date_of_birth") @db.Date
+  address        String?
+  emergencyName  String?   @map("emergency_name")
+  emergencyPhone String?   @map("emergency_phone")
+  /// Encrypted; the last digits are kept apart to show.
+  bankAccount    String?   @map("bank_account")
+  bankHint       String?   @map("bank_hint")
+  ifsc           String?
+  /// Encrypted.
+  pan            String?
+  panHint        String?   @map("pan_hint")
+  uan            String?
+  esiNumber      String?   @map("esi_number")
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([agencyId, userId])
+  @@unique([agencyId, employeeCode])
+  @@map("employee_profiles")
+}
+
+/// The agency's attendance rules (P5-07).
+model AttendanceSettings {
+  agencyId     String   @id @map("agency_id") @db.Uuid
+  /// 24-hour time the working day starts.
+  workdayStart String   @default("09:30") @map("workday_start")
+  /// Minutes after the start that count as late.
+  lateAfter    Int      @default(15) @map("late_after")
+  /// Fewer minutes than this between first in and last out is a half day.
+  halfDayBelow Int      @default(240) @map("half_day_below")
+  /// Days of the week off: 0 Sunday … 6 Saturday.
+  weeklyOffs   Int[]    @default([0]) @map("weekly_offs")
+  /// [{ date: "2026-10-20", name: "Deepavali" }]
+  holidays     Json     @default("[]")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("attendance_settings")
+}
+
+/// One person's day (P5-07): from the attendance export, a correction, or approved leave.
+model AttendanceRecord {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  userId    String   @map("user_id")
+  date      DateTime @db.Date
+  firstIn   String?  @map("first_in")
+  lastOut   String?  @map("last_out")
+  minutes   Int      @default(0)
+  /// present · late · half_day · absent · leave · holiday · weekly_off
+  status    String
+  /// import · correction · leave
+  source    String   @default("import")
+  importId  String?  @map("import_id") @db.Uuid
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([agencyId, userId, date])
+  @@index([agencyId, date])
+  @@map("attendance_records")
+}
+
+model AttendanceCorrection {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  agencyId  String    @map("agency_id") @db.Uuid
+  userId    String    @map("user_id")
+  date      DateTime  @db.Date
+  firstIn   String?   @map("first_in")
+  lastOut   String?   @map("last_out")
+  reason    String
+  /// pending · approved · rejected
+  state     String    @default("pending")
+  decidedBy String?   @map("decided_by")
+  decidedAt DateTime? @map("decided_at")
+  note      String?
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([agencyId, state])
+  @@map("attendance_corrections")
+}
+
+/// The agency's own kinds of leave (P5-08).
+model LeaveType {
+  id           String   @id @default(uuid(7)) @db.Uuid
+  agencyId     String   @map("agency_id") @db.Uuid
+  name         String
+  /// Days a year; 0 means no limit (e.g. unpaid leave).
+  daysPerYear  Int      @map("days_per_year")
+  paid         Boolean  @default(true)
+  /// Unused days that carry into the next year, at most.
+  carryForward Int      @default(0) @map("carry_forward")
+  active       Boolean  @default(true)
+  position     Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  requests LeaveRequest[]
+
+  @@unique([agencyId, name])
+  @@map("leave_types")
+}
+
+model LeaveRequest {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  agencyId  String    @map("agency_id") @db.Uuid
+  userId    String    @map("user_id")
+  typeId    String    @map("type_id") @db.Uuid
+  from      DateTime  @db.Date
+  to        DateTime  @db.Date
+  halfDay   Boolean   @default(false) @map("half_day")
+  /// Working days it takes (weekly offs and holidays are not counted).
+  days      Float
+  reason    String
+  /// pending · approved · rejected · cancelled
+  status    String    @default("pending")
+  decidedBy String?   @map("decided_by")
+  decidedAt DateTime? @map("decided_at")
+  note      String?
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  type LeaveType @relation(fields: [typeId], references: [id], onDelete: Restrict)
+
+  @@index([agencyId, userId])
+  @@index([agencyId, status])
+  @@map("leave_requests")
+}

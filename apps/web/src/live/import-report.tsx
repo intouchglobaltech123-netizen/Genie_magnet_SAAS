@@ -12,7 +12,14 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { errorMessage } from "./api";
 import { useImportDetail } from "./queries";
 
-const WHAT: Record<ImportKind, string> = { clients: "Clients", team: "Team", leads: "Leads", videos: "Videos in progress", agreements: "Agreements" };
+const WHAT: Record<ImportKind, string> = {
+  clients: "Clients",
+  team: "Team",
+  leads: "Leads",
+  videos: "Videos in progress",
+  agreements: "Agreements",
+  attendance: "Attendance",
+};
 
 /**
  * The check report of an import (P3-12): the figures to compare with the sheet's own totals, the rows left out and
@@ -23,7 +30,11 @@ export function CheckReportView({ report }: { report: ImportReport }) {
     <div className="space-y-4">
       <SectionCard
         title="Compare with your sheet"
-        description={`${report.rows} rows in the file: ${report.imported} imported${report.leftOut.length ? `, ${report.leftOut.length} left out` : ""}. These figures should match your sheet's own totals.`}
+        description={
+          report.grouped
+            ? `${report.grouped.fileRows} rows in the file: ${report.imported} ${report.grouped.into} imported${report.leftOut.length ? `, ${report.leftOut.length} ${report.leftOut.length === 1 ? "row" : "rows"} left out` : ""}. These figures should match your sheet's own totals.`
+            : `${report.rows} rows in the file: ${report.imported} imported${report.leftOut.length ? `, ${report.leftOut.length} left out` : ""}. These figures should match your sheet's own totals.`
+        }
       >
         <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
           {report.totals.map((t) => (

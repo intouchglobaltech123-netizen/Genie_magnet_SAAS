@@ -39,6 +39,7 @@ import {
   useCostSettings,
   useExpenseAction,
   useExpenses,
+  useMayDecide,
   useFinanceMonthAction,
   useFinanceMonths,
   useMe,
@@ -184,6 +185,7 @@ function ExpenseDetail({ e, onClose }: { e: ExpenseRow; onClose: () => void }) {
   const [note, setNote] = useState("");
   const [editing, setEditing] = useState(false);
   const mine = e.submittedBy?.id === me.user.id;
+  const mayDecide = useMayDecide();
   const changeable = e.status !== "approved" && (can("finance", "edit") || (mine && e.status === "submitted"));
   const decide = (approved: boolean) =>
     act.mutate(
@@ -211,7 +213,7 @@ function ExpenseDetail({ e, onClose }: { e: ExpenseRow; onClose: () => void }) {
           <Badge tone={STATUS[e.status].tone}>{STATUS[e.status].label}</Badge>
           {e.decisionNote && <Alert tone={e.status === "rejected" ? "danger" : "info"}>{e.decisionNote}</Alert>}
           <FilesCard entity="expense" entityId={e.id} title="Receipts" canEdit={changeable} />
-          {e.status === "submitted" && can("finance", "approve") && (
+          {e.status === "submitted" && mayDecide("finance", e.submittedBy?.id) && (
             <Field label="Note" hint="Needed when rejecting">
               <Input value={note} onChange={(x) => setNote(x.target.value)} />
             </Field>
@@ -238,7 +240,7 @@ function ExpenseDetail({ e, onClose }: { e: ExpenseRow; onClose: () => void }) {
               </Button>
             </>
           )}
-          {e.status === "submitted" && can("finance", "approve") && (
+          {e.status === "submitted" && mayDecide("finance", e.submittedBy?.id) && (
             <>
               <Button variant="ghost" disabled={act.isPending || !note.trim()} onClick={() => decide(false)}>
                 <X />
@@ -761,8 +763,8 @@ function Months() {
         </TBody>
       </Table>
       <p className="border-t border-border-subtle px-4 py-2 text-body text-muted-foreground">
-        Earned is each agreement&rsquo;s fee in proportion to the videos delivered; invoiced is before GST, collected with it. A closed month keeps its figures, and
-        time and expenses dated in it cannot change until it is reopened.
+        Earned is each agreement&rsquo;s fee in proportion to the videos delivered; invoiced is before GST, collected with it. A closed month keeps its figures,
+        and time and expenses dated in it cannot change until it is reopened.
       </p>
       {reopening && <ReopenDialog month={reopening} onClose={() => setReopening(null)} />}
     </Card>
