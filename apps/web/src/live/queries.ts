@@ -105,6 +105,16 @@ import {
   type LeaveRequestInput,
   type LeaveRequestRow,
   type LeaveTypeRow,
+  type CadenceInput,
+  type CadenceRow,
+  type CommitmentInput,
+  type CommitmentRow,
+  type DecisionInput,
+  type DecisionRow,
+  type MeetingInput,
+  type MeetingRow,
+  type MeetingUpdate,
+  type ReviewCadence,
   type CascadeInputs,
   type CascadeView,
   type CheckInInput,
@@ -1360,6 +1370,62 @@ export function useLeaveAction() {
       void qc.invalidateQueries({ queryKey: ["leave"] });
       void qc.invalidateQueries({ queryKey: ["attendance"] });
     },
+  });
+}
+
+// ─── Reviews, decisions and commitments ───────────────────────────────
+
+export const useCadences = (enabled = true) =>
+  useQuery({ queryKey: ["reviews", "cadences"], queryFn: () => api<CadenceRow[]>("/reviews/cadences"), enabled, retry: false });
+export const useMeetings = () =>
+  useQuery({
+    queryKey: ["reviews", "meetings"],
+    queryFn: () => api<Pick<MeetingRow, "id" | "cadence" | "number" | "title" | "startsAt" | "status">[]>("/reviews/meetings"),
+  });
+export const useMeeting = (id: string | null) =>
+  useQuery({ queryKey: ["reviews", "meeting", id], queryFn: () => api<MeetingRow>(`/reviews/meetings/${id}`), enabled: !!id });
+export const useCommitments = (filter: { status?: string; mine?: boolean }) =>
+  useQuery({
+    queryKey: ["reviews", "commitments", filter.status ?? "", !!filter.mine],
+    queryFn: () =>
+      api<CommitmentRow[]>(`/commitments?${new URLSearchParams({ ...(filter.status && { status: filter.status }), ...(filter.mine && { mine: "true" }) })}`),
+  });
+export const useDecisions = () => useQuery({ queryKey: ["reviews", "decisions"], queryFn: () => api<DecisionRow[]>("/decisions") });
+
+export function useReviewAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "cadence"; cadence: ReviewCadence; body: CadenceInput }
+        | { step: "schedule"; body: MeetingInput }
+        | { step: "update"; id: string; body: MeetingUpdate }
+        | { step: "lock"; id: string }
+        | { step: "commit"; body: CommitmentInput }
+        | { step: "mark"; id: string; mark: "BT" | "BD"; note: string; meetingId?: string; due?: string }
+        | { step: "done"; id: string }
+        | { step: "decide"; body: DecisionInput },
+    ) => {
+      switch (v.step) {
+        case "cadence":
+          return api(`/reviews/cadences/${v.cadence}`, { method: "PUT", body: v.body });
+        case "schedule":
+          return api<MeetingRow>("/reviews/meetings", { body: v.body });
+        case "update":
+          return api(`/reviews/meetings/${v.id}`, { method: "PUT", body: v.body });
+        case "lock":
+          return api(`/reviews/meetings/${v.id}/lock`, { body: {} });
+        case "commit":
+          return api("/commitments", { body: v.body });
+        case "mark":
+          return api(`/commitments/${v.id}/mark`, { body: { mark: v.mark, note: v.note, meetingId: v.meetingId, due: v.due } });
+        case "done":
+          return api(`/commitments/${v.id}/done`, { body: {} });
+        case "decide":
+          return api("/decisions", { body: v.body });
+      }
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["reviews"] }),
   });
 }
 

@@ -51,6 +51,7 @@ import {
   Gauge,
   GraduationCap,
   Target,
+  CalendarCheck,
   Users,
   X,
 } from "lucide-react";
@@ -134,7 +135,10 @@ const NAV: { title: string; items: NavItem[] }[] = [
   },
   {
     title: "Management",
-    items: [{ title: "Goals", href: "/app/goals", icon: Target }],
+    items: [
+      { title: "Goals", href: "/app/goals", icon: Target },
+      { title: "Reviews", href: "/app/reviews", icon: CalendarCheck },
+    ],
   },
   {
     title: "Settings",

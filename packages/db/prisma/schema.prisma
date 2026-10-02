@@ -1436,39 +1436,105 @@ enum ReviewCadence {
   strategic
 }
 
+/// A STOP review rhythm as the agency runs it (P5-14): its agenda, people, and the figures it looks at.
+model ReviewCadenceSetting {
+  id             String        @id @default(uuid(7)) @db.Uuid
+  agencyId       String        @map("agency_id") @db.Uuid
+  cadence        ReviewCadence
+  name           String
+  everyDays      Int           @map("every_days")
+  purpose        String        @default("")
+  minutes        Int
+  schedule       String        @default("")
+  mandatory      Boolean       @default(false)
+  facilitatorId  String?       @map("facilitator_id")
+  participantIds String[]      @map("participant_ids")
+  /// [{ title, minutes, note }]
+  agenda         Json          @default("[]")
+  blocks         String[]
+
+  @@unique([agencyId, cadence])
+  @@map("review_cadences")
+}
+
+/// A review meeting (P5-14): attendance, notes against the agenda, recognitions, and the figures as they were when locked.
 model Meeting {
-  id       String        @id @default(uuid(7)) @db.Uuid
-  agencyId String        @map("agency_id") @db.Uuid
-  cadence  ReviewCadence
-  number   Int
-  title    String
-  startsAt DateTime      @map("starts_at")
-  status   String        @default("scheduled")
-  lockedAt DateTime?     @map("locked_at")
-  lockedBy String?       @map("locked_by")
+  id             String        @id @default(uuid(7)) @db.Uuid
+  agencyId       String        @map("agency_id") @db.Uuid
+  cadence        ReviewCadence
+  number         Int
+  title          String
+  startsAt       DateTime      @map("starts_at")
+  /// scheduled · locked
+  status         String        @default("scheduled")
+  lockedAt       DateTime?     @map("locked_at")
+  lockedBy       String?       @map("locked_by")
+  venue          String?
+  facilitatorId  String?       @map("facilitator_id")
+  participantIds String[]      @default([]) @map("participant_ids")
+  /// The agenda as it was when scheduled.
+  agenda         Json          @default("[]")
+  /// { agendaIndex: text }
+  notes          Json          @default("{}")
+  /// { userId: present | late | absent }
+  attendance     Json          @default("{}")
+  /// [{ personId, title, story, by }]
+  recognitions   Json          @default("[]")
+  /// The figures reviewed, kept as they were when it was locked.
+  snapshot       Json?
+  createdBy      String?       @map("created_by")
+  createdAt      DateTime      @default(now()) @map("created_at")
 
   commitments Commitment[]
+  decisions   Decision[]
 
   @@unique([agencyId, cadence, number])
+  @@index([agencyId, startsAt])
   @@map("meetings")
 }
 
+/// A commitment (P5-16): what an owner will do by a day, marked breakthrough or breakdown at each review and carried
+/// forward until done.
 model Commitment {
   id        String    @id @default(uuid(7)) @db.Uuid
   agencyId  String    @map("agency_id") @db.Uuid
-  meetingId String    @map("meeting_id") @db.Uuid
+  /// The meeting it was made in, when it was.
+  meetingId String?   @map("meeting_id") @db.Uuid
   text      String
   ownerId   String?   @map("owner_id")
   due       DateTime? @db.Date
+  /// open · done
   status    String    @default("open")
-  /// BT (breakthrough) | BD (breakdown)
+  /// BT (breakthrough) | BD (breakdown): the last mark.
   mark      String?
+  markNote  String?   @map("mark_note")
   carried   Int       @default(0)
+  /// [{ mark, note, at, meetingId }]
+  history   Json      @default("[]")
+  doneAt    DateTime? @map("done_at")
+  createdBy String?   @map("created_by")
+  createdAt DateTime  @default(now()) @map("created_at")
 
-  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meeting Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
 
   @@index([agencyId, status])
   @@map("commitments")
+}
+
+/// A decision (P5-16), in a review or on its own, with who carries it out.
+model Decision {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  meetingId String?  @map("meeting_id") @db.Uuid
+  text      String
+  ownerId   String?  @map("owner_id")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  meeting Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId, createdAt])
+  @@map("decisions")
 }
 
 // ───────────────────────────── Genie Assistant ─────────────────────────────

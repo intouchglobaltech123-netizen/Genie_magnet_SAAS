@@ -37,6 +37,8 @@ export const NOTIFICATION_KINDS = [
   { key: "sheet_returned", group: "People", label: "My daily sheet is sent back to me" },
   { key: "post_failed", group: "Delivery", label: "The app could not post a video, or a client's platform needs connecting again" },
   { key: "goal_breakdown", group: "Management", label: "A breakdown is reported on a goal I own, or one serving it" },
+  { key: "review_scheduled", group: "Management", label: "A review I take part in is scheduled" },
+  { key: "commitment_assigned", group: "Management", label: "A commitment is given to me" },
   { key: "genie_insight", group: "Genie Assistant", label: "Genie Assistant finds something I should act on" },
   { key: "job_failed", group: "Settings", label: "Background work failed after all its tries" },
 ] as const;

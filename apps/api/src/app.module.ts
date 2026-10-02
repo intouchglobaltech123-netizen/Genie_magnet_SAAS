@@ -83,6 +83,9 @@ import { DailySheetController } from "./daily-sheet/daily-sheet.controller.js";
 import { GoalMetrics } from "./goals/goal-metrics.js";
 import { GoalsController } from "./goals/goals.controller.js";
 import { GoalsService } from "./goals/goals.service.js";
+import { ReviewFigures } from "./reviews/review-figures.js";
+import { ReviewsController } from "./reviews/reviews.controller.js";
+import { ReviewsService } from "./reviews/reviews.service.js";
 import { DailySheetService } from "./daily-sheet/daily-sheet.service.js";
 import { LearningService } from "./performance/learning.service.js";
 import { PerformanceMetrics } from "./performance/metrics.js";
@@ -179,6 +182,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     LearningController,
     DailySheetController,
     GoalsController,
+    ReviewsController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -299,6 +303,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     DailySheetService,
     GoalMetrics,
     GoalsService,
+    ReviewFigures,
+    ReviewsService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.
