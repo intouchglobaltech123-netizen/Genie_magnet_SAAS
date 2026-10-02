@@ -105,6 +105,16 @@ import {
   type LeaveRequestInput,
   type LeaveRequestRow,
   type LeaveTypeRow,
+  type ClientDiagnosticRow,
+  type DiagnosticInput,
+  type DiagnosticView,
+  type PlannerData,
+  type FitmentQuadrant,
+  type RoadMapInput,
+  type RoadMapRow,
+  type ScenarioInput,
+  type ScenarioInputs,
+  type ScenarioRow,
   type SopInput,
   type SopRow,
   type SopRunInput,
@@ -1381,6 +1391,55 @@ export function useLeaveAction() {
   });
 }
 
+// ─── Business diagnostic, road map and scenarios ──────────────────────
+
+export const useDiagnostic = () => useQuery({ queryKey: ["diagnostic"], queryFn: () => api<DiagnosticView>("/diagnostic"), retry: false });
+export const useDiagnosticClients = () =>
+  useQuery({
+    queryKey: ["diagnostic", "clients"],
+    queryFn: () => api<{ rows: ClientDiagnosticRow[]; medianFee: number; medianHours: number }>("/diagnostic/clients"),
+  });
+export const useRoadMap = () => useQuery({ queryKey: ["diagnostic", "road-map"], queryFn: () => api<RoadMapRow[]>("/road-map") });
+export const useScenarios = () => useQuery({ queryKey: ["diagnostic", "scenarios"], queryFn: () => api<ScenarioRow[]>("/scenarios") });
+export const useScenarioBaseline = () => useQuery({ queryKey: ["diagnostic", "baseline"], queryFn: () => api<ScenarioInputs>("/scenarios/baseline") });
+
+export function useDiagnosticAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "take"; body: DiagnosticInput }
+        | { step: "fitment"; clientId: string; fitment: FitmentQuadrant | null }
+        | { step: "item"; id?: string; body: RoadMapInput }
+        | { step: "removeItem"; id: string }
+        | { step: "draft" }
+        | { step: "scenario"; id?: string; body: ScenarioInput }
+        | { step: "removeScenario"; id: string },
+    ) => {
+      switch (v.step) {
+        case "take":
+          return api("/diagnostic", { body: v.body });
+        case "fitment":
+          return api(`/diagnostic/clients/${v.clientId}`, { method: "PUT", body: { fitment: v.fitment } });
+        case "item":
+          return api(v.id ? `/road-map/${v.id}` : "/road-map", { method: v.id ? "PUT" : "POST", body: v.body });
+        case "removeItem":
+          return api(`/road-map/${v.id}`, { method: "DELETE" });
+        case "draft":
+          return api("/road-map/draft", { body: {} });
+        case "scenario":
+          return api<ScenarioRow[]>(v.id ? `/scenarios/${v.id}` : "/scenarios", { method: v.id ? "PUT" : "POST", body: v.body });
+        case "removeScenario":
+          return api(`/scenarios/${v.id}`, { method: "DELETE" });
+      }
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["diagnostic"] });
+      void qc.invalidateQueries({ queryKey: keys.clients });
+    },
+  });
+}
+
 // ─── SOPs and checklists ──────────────────────────────────────────────
 
 export const useSops = () => useQuery({ queryKey: ["sops"], queryFn: () => api<SopRow[]>("/sops") });
@@ -1983,3 +2042,8 @@ export function useRequestPayLink() {
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.invoices }),
   });
 }
+
+// ─── Financial planner ─────────────────────────────────────────────────
+
+/** The signed-in person's own financial planner; `null` until they first save it. */
+export const useMyPlanner = () => useQuery({ queryKey: ["planner"], queryFn: () => api<PlannerData | null>("/planner"), retry: false, staleTime: Infinity });

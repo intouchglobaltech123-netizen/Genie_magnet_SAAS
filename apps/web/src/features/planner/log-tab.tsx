@@ -43,13 +43,22 @@ const leakHint: Record<LeakType, string> = {
 
 type Filter = "all" | SpendKind | "leaks";
 
+/** Days in a yyyy-mm month. */
+const daysIn = (month: string) => new Date(Number(month.slice(0, 4)), Number(month.slice(5, 7)), 0).getDate();
+
 export function LogTab() {
   const log = usePlanner((s) => s.log);
   const addEntry = usePlanner((s) => s.addEntry);
   const updateEntry = usePlanner((s) => s.updateEntry);
   const removeEntry = usePlanner((s) => s.removeEntry);
+  const month = usePlanner((s) => s.month);
+  const days = daysIn(month);
 
-  const [day, setDay] = useState(25);
+  // Today, when the log is for this month; otherwise late in the month, as the demo shows.
+  const [day, setDay] = useState(() => {
+    const now = new Date();
+    return month === `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}` ? now.getDate() : Math.min(25, days);
+  });
   const [item, setItem] = useState("");
   const [amount, setAmount] = useState("");
   const [kind, setKind] = useState<SpendKind>("Want");
@@ -75,7 +84,7 @@ export function LogTab() {
       toast.error("Add what you spent on and the amount");
       return;
     }
-    addEntry({ day, date: `2026-09-${String(day).padStart(2, "0")}`, item: item.trim(), amount: amt, kind, leakType, emotion, mood, rule48 });
+    addEntry({ day, date: `${month}-${String(day).padStart(2, "0")}`, item: item.trim(), amount: amt, kind, leakType, emotion, mood, rule48 });
     const l = leakage({ kind, amount: amt, rule48 });
     if (l > 0) toast.warning(`${inr(l)} leakage logged`, { description: `If invested monthly, that's ${inr(opportunityCost15(l))} in 15 years.` });
     else toast.success("Spend logged — no leakage", { description: kind === "Want" ? "Nice — the 48-hr rule saved you." : undefined });
@@ -103,16 +112,28 @@ export function LogTab() {
             <Select
               value={String(day)}
               onValueChange={(v) => setDay(Number(v))}
-              options={Array.from({ length: 30 }, (_, i) => ({ value: String(i + 1), label: `Day ${i + 1}` }))}
+              options={Array.from({ length: days }, (_, i) => ({ value: String(i + 1), label: `Day ${i + 1}` }))}
             />
           </Field>
           <Field label="What did I spend on?" required className="min-w-[200px] flex-1">
-            <Input value={item} onChange={(e) => setItem(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} placeholder="e.g. Swiggy biryani at 11 pm" />
+            <Input
+              value={item}
+              onChange={(e) => setItem(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submit()}
+              placeholder="e.g. Swiggy biryani at 11 pm"
+            />
           </Field>
           <Field label="Amount" required className="w-[120px]">
             <div className="relative">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-body text-muted-foreground">₹</span>
-              <Input value={amount} inputMode="numeric" onChange={(e) => setAmount(e.target.value)} onKeyDown={(e) => e.key === "Enter" && submit()} className="pl-7 tabular" placeholder="0" />
+              <Input
+                value={amount}
+                inputMode="numeric"
+                onChange={(e) => setAmount(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && submit()}
+                className="pl-7 tabular"
+                placeholder="0"
+              />
             </div>
           </Field>
           <Field label="Need / Want / Craving">
@@ -182,7 +203,7 @@ export function LogTab() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-5 text-body">
           <span>
-            <span className="text-muted-foreground">Days logged</span> <span className="font-semibold tabular">{daysLogged}/30</span>
+            <span className="text-muted-foreground">Days logged</span> <span className="font-semibold tabular">{daysLogged}/{days}</span>
           </span>
           <span>
             <span className="text-muted-foreground">Spent</span> <span className="font-semibold tabular">{inr(totals.spent)}</span>
@@ -227,9 +248,7 @@ export function LogTab() {
               compact
               icon={Plus}
               title={rows.length === 0 ? "No spends here yet" : "Nothing matches this filter"}
-              description={
-                rows.length === 0 ? "Add your first one above — be 100% honest with yourself." : "Try another filter to see the rest of your month."
-              }
+              description={rows.length === 0 ? "Add your first one above — be 100% honest with yourself." : "Try another filter to see the rest of your month."}
               action={
                 rows.length > 0 && filter !== "all" ? (
                   <Button variant="secondary" size="sm" onClick={() => setFilter("all")}>
@@ -291,7 +310,11 @@ export function LogTab() {
                           }}
                           className={cn(
                             "cursor-pointer rounded-lg px-1.5 py-0.5 text-body font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
-                            e.rule48 === "Yes" ? "bg-success-soft text-success" : e.rule48 === "No" ? "bg-danger-soft text-danger" : "bg-muted text-muted-foreground",
+                            e.rule48 === "Yes"
+                              ? "bg-success-soft text-success"
+                              : e.rule48 === "No"
+                                ? "bg-danger-soft text-danger"
+                                : "bg-muted text-muted-foreground",
                           )}
                         >
                           {e.rule48}
@@ -325,7 +348,8 @@ export function LogTab() {
       <CardContent className="flex items-start gap-2 p-0 text-body text-muted-foreground">
         <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
         <span>
-          Leakage = 100% of a Craving, or 50% of a Want bought without the 48-hr rule. 15-yr cost = that amount invested every month for 15 years at 12% (1%/month, 180 months).
+          Leakage = 100% of a Craving, or 50% of a Want bought without the 48-hr rule. 15-yr cost = that amount invested every month for 15 years at 12%
+          (1%/month, 180 months).
         </span>
       </CardContent>
     </div>

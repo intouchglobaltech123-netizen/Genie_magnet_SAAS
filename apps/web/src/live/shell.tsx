@@ -52,6 +52,8 @@ import {
   GraduationCap,
   Target,
   CalendarCheck,
+  Stethoscope,
+  PiggyBank,
   Users,
   X,
 } from "lucide-react";
@@ -131,6 +133,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Learning", href: "/app/learning", icon: GraduationCap },
       { title: "Payroll", href: "/app/payroll", icon: Banknote, area: "salaries" },
       { title: "My payslips", href: "/app/payslips", icon: ReceiptText },
+      { title: "My financial planner", href: "/app/planner", icon: PiggyBank, area: "personal_finance" },
     ],
   },
   {
@@ -140,6 +143,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Reviews", href: "/app/reviews", icon: CalendarCheck },
       { title: "Round Table", href: "/app/round-table", icon: Users },
       { title: "SOPs and checklists", href: "/app/sops", icon: ListChecks },
+      { title: "Business diagnostic", href: "/app/diagnostic", icon: Stethoscope, area: "reports" },
     ],
   },
   {

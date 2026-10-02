@@ -20,6 +20,7 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
   const setIdx = usePlanner((s) => s.setQuizIndex);
   const applySample = usePlanner((s) => s.applySampleAnswers);
   const resetQuiz = usePlanner((s) => s.resetQuiz);
+  const demo = usePlanner((s) => s.demo);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const q = questions[Math.min(idx, questions.length - 1)];
@@ -48,9 +49,12 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  useEffect(() => () => {
-    if (timer.current) clearTimeout(timer.current);
-  }, []);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
 
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-[1fr_300px]">
@@ -59,26 +63,16 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Badge tone={isFlow ? "accent" : "gold"}>{isFlow ? "Part A · Money Flow Pattern" : "Part B · Money Belief"}</Badge>
-              <span className="text-body text-muted-foreground">
-                {sectionIndex} of 27
-              </span>
+              <span className="text-body text-muted-foreground">{sectionIndex} of 27</span>
             </div>
-            <span className="text-body text-muted-foreground tabular">
-              {answeredCount}/54 answered
-            </span>
+            <span className="text-body text-muted-foreground tabular">{answeredCount}/54 answered</span>
           </div>
           <Progress value={(answeredCount / 54) * 100} className="mt-3" />
         </div>
 
         <div className="relative min-h-[340px] px-6 py-10 md:px-12">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={q.n}
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -24 }}
-              transition={{ duration: 0.18 }}
-            >
+            <motion.div key={q.n} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.18 }}>
               <div className="text-body font-medium text-muted-foreground tabular">Question {q.n}</div>
               <h2 className="mt-2 max-w-2xl text-heading font-semibold leading-snug tracking-tight">{q.q}</h2>
               <div className="mt-8 grid grid-cols-5 gap-2 md:gap-3">
@@ -132,9 +126,7 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
       <div className="space-y-4">
         <Card className="p-4">
           <div className="text-body font-semibold">Money Behaviour Diagnostic</div>
-          <p className="mt-1 text-body text-muted-foreground">
-            54 honest answers → your flow patterns, belief blocks and a Money Behaviour Score out of 100.
-          </p>
+          <p className="mt-1 text-body text-muted-foreground">54 honest answers → your flow patterns, belief blocks and a Money Behaviour Score out of 100.</p>
           <div className="mt-4 space-y-3">
             {[
               { label: "Part A · Flow patterns", from: 1, to: 27 },
@@ -170,20 +162,26 @@ export function QuizTab({ onFinish }: { onFinish: () => void }) {
           </div>
         </Card>
         <Card className="p-4">
-          <div className="text-body font-semibold">Short on time?</div>
-          <p className="mt-1 text-body text-muted-foreground">Load the workbook&apos;s sample answers and jump straight to the profile.</p>
+          <div className="text-body font-semibold">{demo ? "Short on time?" : "Answers"}</div>
+          <p className="mt-1 text-body text-muted-foreground">
+            {demo
+              ? "Load the workbook’s sample answers and jump straight to the profile."
+              : "Your answers are saved as you go. Start over to take the diagnostic again."}
+          </p>
           <div className="mt-3 flex flex-col gap-2">
-            <Button
-              variant="soft"
-              size="sm"
-              onClick={() => {
-                applySample();
-                toast.success("Sample answers loaded", { description: "Raw score 311 → Money Behaviour Score 61.8" });
-                onFinish();
-              }}
-            >
-              <Wand2 /> Jump to results with sample answers
-            </Button>
+            {demo && (
+              <Button
+                variant="soft"
+                size="sm"
+                onClick={() => {
+                  applySample();
+                  toast.success("Sample answers loaded", { description: "Raw score 311 → Money Behaviour Score 61.8" });
+                  onFinish();
+                }}
+              >
+                <Wand2 /> Jump to results with sample answers
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"

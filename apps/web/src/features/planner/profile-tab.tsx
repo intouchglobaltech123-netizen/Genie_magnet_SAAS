@@ -81,7 +81,12 @@ function GroupList({ rows, title, desc, icon: Icon }: { rows: Row[]; title: stri
                   <div className="truncate text-body text-muted-foreground">{g.subtitle}</div>
                 </div>
                 <div className="hidden h-2 overflow-hidden rounded-full bg-muted sm:block">
-                  <motion.div className={cn("h-full rounded-full", tone)} initial={{ width: 0 }} animate={{ width: `${(g.score / 15) * 100}%` }} transition={{ duration: 0.6 }} />
+                  <motion.div
+                    className={cn("h-full rounded-full", tone)}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${(g.score / 15) * 100}%` }}
+                    transition={{ duration: 0.6 }}
+                  />
                 </div>
                 <div className="text-right text-body font-semibold tabular">
                   {g.score}
@@ -119,6 +124,7 @@ function GroupList({ rows, title, desc, icon: Icon }: { rows: Row[]; title: stri
 export function ProfileTab({ onStartQuiz }: { onStartQuiz: () => void }) {
   const answers = usePlanner((s) => s.answers);
   const applySample = usePlanner((s) => s.applySampleAnswers);
+  const demo = usePlanner((s) => s.demo);
   const joined = usePlanner((s) => s.detoxJoined);
   const setJoined = usePlanner((s) => s.setDetoxJoined);
   const name = usePlanner((s) => s.setup.name);
@@ -130,15 +136,24 @@ export function ProfileTab({ onStartQuiz }: { onStartQuiz: () => void }) {
         <EmptyState
           icon={Brain}
           title="Your Money Profile appears here"
-          description="Answer the 54-question Money Behaviour Diagnostic, or load the sample answers to preview a completed profile."
+          description={
+            demo
+              ? "Answer the 54-question Money Behaviour Diagnostic, or load the sample answers to preview a completed profile."
+              : "Answer the 54-question Money Behaviour Diagnostic to see your profile."
+          }
           action={
             <div className="flex flex-wrap justify-center gap-2">
-              <Button variant="outline" onClick={() => {
-                applySample();
-                toast.success("Sample answers loaded");
-              }}>
-                <Wand2 /> Use sample answers
-              </Button>
+              {demo && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    applySample();
+                    toast.success("Sample answers loaded");
+                  }}
+                >
+                  <Wand2 /> Use sample answers
+                </Button>
+              )}
               <Button variant="accent" onClick={onStartQuiz}>
                 Start the diagnostic
               </Button>
@@ -173,11 +188,7 @@ export function ProfileTab({ onStartQuiz }: { onStartQuiz: () => void }) {
             <p className="mx-auto mt-1 max-w-xs text-body text-muted-foreground">{band.tagline}</p>
             <div className="mt-5 flex h-2 overflow-hidden rounded-full">
               {[...PROFILE_BANDS].reverse().map((b) => (
-                <div
-                  key={b.key}
-                  className={cn("h-full flex-1", b.key === band.key ? "opacity-100" : "opacity-25")}
-                  style={{ background: bandColor[b.key] }}
-                />
+                <div key={b.key} className={cn("h-full flex-1", b.key === band.key ? "opacity-100" : "opacity-25")} style={{ background: bandColor[b.key] }} />
               ))}
             </div>
             <div className="mt-1.5 grid grid-cols-4 text-body text-muted-foreground">
@@ -203,7 +214,12 @@ export function ProfileTab({ onStartQuiz }: { onStartQuiz: () => void }) {
             <Card key={kind} className="p-5">
               <div>
                 <div className="flex items-center justify-between">
-                  <span className={cn("inline-flex size-9 items-center justify-center rounded-xl", tone === "accent" ? "bg-primary-soft text-primary" : "bg-accent-soft text-accent-strong")}>
+                  <span
+                    className={cn(
+                      "inline-flex size-9 items-center justify-center rounded-xl",
+                      tone === "accent" ? "bg-primary-soft text-primary" : "bg-accent-soft text-accent-strong",
+                    )}
+                  >
                     <Icon className="size-4" />
                   </span>
                   <IntensityChip intensity={g.intensity} />
@@ -240,8 +256,8 @@ export function ProfileTab({ onStartQuiz }: { onStartQuiz: () => void }) {
             </Badge>
             <h3 className="mt-3 text-heading font-semibold tracking-tight">5-Day 5AM Finance Detox</h3>
             <p className="mt-1.5 text-body text-muted-foreground">
-              No matter what your score is — the {WTF_TOOL.remedy} is designed to rewire your patterns, dissolve your beliefs, and build a system that works even when
-              you are tired.
+              No matter what your score is — the {WTF_TOOL.remedy} is designed to rewire your patterns, dissolve your beliefs, and build a system that works
+              even when you are tired.
             </p>
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <Button

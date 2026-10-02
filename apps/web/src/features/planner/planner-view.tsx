@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { usePlanner } from "@/features/planner/store";
+import { demoPlanner, usePlanner } from "@/features/planner/store";
 import { SetupTab } from "@/features/planner/setup-tab";
 import { LogTab } from "@/features/planner/log-tab";
 import { MonthlyTab, WeeklyTab } from "@/features/planner/summary-tabs";
@@ -21,7 +21,7 @@ export function PlannerView() {
   const resetAll = usePlanner((s) => s.resetAll);
 
   useEffect(() => {
-    usePlanner.persist.rehydrate();
+    demoPlanner.persist.rehydrate();
   }, []);
 
   return (
@@ -93,8 +93,8 @@ export function PlannerView() {
         <div className="text-body">
           <span className="font-medium">Private to you.</span>{" "}
           <span className="text-muted-foreground">
-            Personal-finance entries are visible only to the employee who owns them. This module has its own permission, separate from company finance — managers, HR and
-            Finance cannot open it, and nothing here feeds payroll or reports.
+            Personal-finance entries are visible only to the employee who owns them. This module has its own permission, separate from company finance —
+            managers, HR and Finance cannot open it, and nothing here feeds payroll or reports.
           </span>
         </div>
       </div>

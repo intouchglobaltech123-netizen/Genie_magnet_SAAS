@@ -2510,3 +2510,70 @@ model SopRun {
   @@index([agencyId, by, createdAt])
   @@map("sop_runs")
 }
+
+// ───────────────────────────── Business diagnostic ─────────────────────────────
+
+/// The BFA taken at a time (P5-18): each function, the challenges and notes — first from the agency questionnaire.
+model DiagnosticSnapshot {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  agencyId   String   @map("agency_id") @db.Uuid
+  /// questionnaire · review
+  source     String   @default("review")
+  rows       Json
+  challenges Json     @default("[]")
+  notes      String   @default("")
+  createdBy  String?  @map("created_by")
+  takenAt    DateTime @default(now()) @map("taken_at")
+
+  @@index([agencyId, takenAt])
+  @@map("diagnostic_snapshots")
+}
+
+/// An item on the Strategic Road Map (P5-18).
+model RoadMapItem {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  agencyId   String   @map("agency_id") @db.Uuid
+  function   String
+  title      String
+  detail     String   @default("")
+  startMonth String   @map("start_month")
+  endMonth   String   @map("end_month")
+  ownerId    String?  @map("owner_id")
+  /// planned · in_progress · done · dropped
+  status     String   @default("planned")
+  priority   Int      @default(5)
+  goalId     String?  @map("goal_id") @db.Uuid
+  createdBy  String?  @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([agencyId, startMonth])
+  @@map("road_map_items")
+}
+
+/// A saved what-if (P5-18): clients, fees, churn, team and overheads, projected month by month.
+model Scenario {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  name      String
+  inputs    Json
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("scenarios")
+}
+
+// ───────────────────────────── Financial planner ─────────────────────────────
+
+/// A person's own financial planner (P5-19): setup, daily spending log, money behaviour answers. Theirs alone.
+model PersonalPlanner {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  userId    String   @map("user_id")
+  data      Json
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([agencyId, userId])
+  @@map("personal_planners")
+}
