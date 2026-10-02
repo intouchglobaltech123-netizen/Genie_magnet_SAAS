@@ -296,6 +296,7 @@ export class BillingService {
       ]),
     );
     const names = new Map(agencies.map((a) => [a.id, a.name]));
-    return rows.map((r) => invoiceRow(r, names.get(r.agencyId) ?? ""));
+    // An agency whose workspace was deleted (P6-10) keeps its invoices here, under the name it was billed as.
+    return rows.map((r) => invoiceRow(r, names.get(r.agencyId) ?? (r.buyer as Party).name));
   }
 }

@@ -116,6 +116,7 @@ import {
   type PlanPage,
   type PlatformInvoiceRow,
   type SupportGrantInput,
+  type DataExportRow,
   type SupportGrantRow,
   type PlatformAgencyRow,
   type PlatformSettings,
@@ -2235,6 +2236,33 @@ export function useSupportAction() {
         ? api<SupportGrantRow[]>("/support-access", { body: v.body })
         : api<SupportGrantRow[]>(`/support-access/${v.id}/revoke`, { method: "POST" }),
     onSuccess: (rows) => qc.setQueryData(["support"], rows),
+  });
+}
+
+// ─── The agency's own data (P6-10) ─────────────────────────────────────
+
+/** The owner's exports; looked at again every few seconds while one is being made. */
+export const useDataExports = (enabled: boolean) =>
+  useQuery({
+    queryKey: ["data", "exports"],
+    queryFn: () => api<DataExportRow[]>("/data/exports"),
+    enabled,
+    refetchInterval: (q) => (q.state.data?.some((e) => e.status === "queued") ? 4_000 : false),
+  });
+
+export function useDataAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { step: "export" } | { step: "delete"; confirm: string } | { step: "keep" }) =>
+      v.step === "export"
+        ? api<DataExportRow[]>("/data/exports", { method: "POST" })
+        : v.step === "delete"
+          ? api("/data/deletion", { body: { confirm: v.confirm } })
+          : api("/data/deletion", { method: "DELETE" }),
+    onSuccess: (rows, v) =>
+      v.step === "export"
+        ? qc.setQueryData(["data", "exports"], rows)
+        : Promise.all([qc.invalidateQueries({ queryKey: keys.me }), qc.invalidateQueries({ queryKey: keys.notifications })]),
   });
 }
 

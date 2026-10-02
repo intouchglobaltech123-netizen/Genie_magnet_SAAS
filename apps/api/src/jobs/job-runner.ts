@@ -8,6 +8,7 @@ import { asSystem, TenantDb } from "../tenancy/tenant-context.js";
 import { PaymentsService } from "../payments/payments.service.js";
 import { ReportsService } from "../reports/reports.service.js";
 import { PlanService } from "../billing/plan.service.js";
+import { DataService } from "../data/data.service.js";
 import { CollectionsService } from "../finance/collections.service.js";
 import { GenieService } from "../genie/genie.service.js";
 import { SocialService } from "../social/social.service.js";
@@ -57,6 +58,7 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
     genie: GenieService,
     collections: CollectionsService,
     plans: PlanService,
+    private readonly data: DataService,
   ) {
     /** A daily job looks at the agency as of its morning, however late it runs. */
     const morning = (p: Record<string, unknown>) => new Date(`${dayOf(p)}T${this.env.JOBS_DAILY_AT}:00Z`);
@@ -77,6 +79,8 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
       // Each draft opens its own transaction (one agreement's problem does not stop the rest).
       "invoices.schedule": { long: (p) => collections.draftDue(dayOf(p)) },
       "billing.daily": (tx, p) => plans.daily(tx, morning(p)),
+      // Reads every table in its own short transactions.
+      "data.export": { long: (p) => data.build(String(p.exportId)) },
     };
   }
 
@@ -125,6 +129,8 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
       this.prisma.client,
       DAILY_JOBS.map((name) => ({ name, key: `${name}:${day}`, payload: { date: day }, runAt })),
     );
+    // Workspaces whose grace period is over are deleted (P6-10).
+    await this.data.purgeDue().catch((e: unknown) => this.log.error(`Deleting workspaces failed: ${String(e)}`));
     this.scheduledHour = hour;
   }
 

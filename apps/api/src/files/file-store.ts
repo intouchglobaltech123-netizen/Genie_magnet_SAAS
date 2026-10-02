@@ -63,6 +63,11 @@ export class FileStore {
     await rm(this.path(key), { force: true });
   }
 
+  /** Everything under a folder — an agency's own, when its workspace is deleted (P6-10). */
+  async removeFolder(prefix: string) {
+    await rm(this.path(prefix), { recursive: true, force: true });
+  }
+
   // ─── Signed links ─────────────────────────────────────────────────
 
   private sign(payload: string) {

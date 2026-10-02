@@ -108,6 +108,8 @@ import { PlatformController } from "./platform/platform.controller.js";
 import { PlatformService } from "./platform/platform.service.js";
 import { PlatformSupportController, SupportAccessController } from "./support/support.controller.js";
 import { SupportService } from "./support/support.service.js";
+import { DataController } from "./data/data.controller.js";
+import { DataService } from "./data/data.service.js";
 import { DailySheetService } from "./daily-sheet/daily-sheet.service.js";
 import { LearningService } from "./performance/learning.service.js";
 import { PerformanceMetrics } from "./performance/metrics.js";
@@ -218,6 +220,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     PlatformInvoicesController,
     SupportAccessController,
     PlatformSupportController,
+    DataController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -385,6 +388,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     },
     BillingService,
     SupportService,
+    DataService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

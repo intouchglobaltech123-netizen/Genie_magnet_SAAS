@@ -16,6 +16,7 @@ export const JOB_NAMES = {
   "genie.rules": "Genie Assistant's morning look at what has slipped",
   "invoices.schedule": "Invoices drafted on each agreement's billing day",
   "billing.daily": "The agency's trial ending, and its paid period renewing",
+  "data.export": "A full export of the agency's data",
 } as const;
 export type JobName = keyof typeof JOB_NAMES;
 

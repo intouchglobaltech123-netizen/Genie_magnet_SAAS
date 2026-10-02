@@ -61,6 +61,7 @@ import {
   Building,
   Layers,
   LifeBuoy,
+  DatabaseBackup,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -78,9 +79,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Alert, Skeleton } from "@/components/ui/feedback";
 import { BrandMark, BrandWordmark } from "@/components/shell/brand";
-import { cn } from "@/lib/utils";
+import { cn, fmtDate } from "@/lib/utils";
 import { errorMessage } from "./api";
 import { NotificationBell } from "./notifications";
+import { istDay } from "./plan";
 import { useCan, useMe, useSignOut, useSupportVisit, useSwitchAgency } from "./queries";
 
 /** On the team (not a client's person, whose role reaches only the client portal). */
@@ -173,6 +175,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Genie Assistant", href: "/app/settings/genie", icon: Sparkles, area: "settings", suite: "genie" },
       { title: "Background jobs", href: "/app/settings/jobs", icon: Timer, area: "settings" },
       { title: "Support access", href: "/app/settings/support", icon: LifeBuoy, area: "settings" },
+      { title: "Your data", href: "/app/settings/data", icon: DatabaseBackup, area: "settings" },
       { title: "Audit log", href: "/app/audit", icon: History, area: "audit" },
     ],
   },
@@ -389,6 +392,22 @@ function SupportBanner() {
   );
 }
 
+/** The workspace is to be deleted (P6-10): when, and where the owner can stop it. */
+function DeletionBanner() {
+  const deletion = useMe().data?.deletion;
+  if (!deletion) return null;
+  return (
+    <Alert tone="danger" className="mb-5 print:hidden">
+      This workspace will be deleted on {fmtDate(istDay(deletion.deleteAfter), { day: "numeric", month: "long", year: "numeric" })}, with everything in it.
+      Export what you need, or stop it, in{" "}
+      <Link href="/app/settings/data" className="font-medium underline underline-offset-2">
+        Settings → Your data
+      </Link>
+      .
+    </Alert>
+  );
+}
+
 /** The plan's state above every page (ADR 0011): read-only and why, a payment due, or the trial's days left. */
 function PlanBanner() {
   const plan = useMe().data?.entitlements;
@@ -532,6 +551,7 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
         </header>
         <main className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 print:max-w-none print:p-0">
           <SupportBanner />
+          <DeletionBanner />
           <PlanBanner />
           <Announcements />
           {children}

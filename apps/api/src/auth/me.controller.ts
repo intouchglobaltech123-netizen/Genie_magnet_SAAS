@@ -6,6 +6,7 @@ import type { createPrisma } from "@gm/db";
 import { AccessService, Public } from "../access/access.js";
 import { noticesFor } from "@gm/shared";
 import { EntitlementsService } from "../billing/entitlements.js";
+import { DataService } from "../data/data.service.js";
 import { PlatformSettingsService } from "../platform/platform-settings.service.js";
 import { ENV, type Env } from "../env.js";
 import { currentTenant, TenantDb } from "../tenancy/tenant-context.js";
@@ -26,6 +27,7 @@ export class MeController {
     private readonly entitlements: EntitlementsService,
     @Inject(ENV) private readonly env: Env,
     private readonly platform: PlatformSettingsService,
+    private readonly data: DataService,
   ) {}
 
   @Get()
@@ -80,6 +82,7 @@ export class MeController {
             new Date(Date.now() + 330 * 60_000).toISOString().slice(0, 10),
           )
         : { announcements: [], flags: [] }),
+      deletion: active ? await this.data.deletion() : null,
     };
   }
 }

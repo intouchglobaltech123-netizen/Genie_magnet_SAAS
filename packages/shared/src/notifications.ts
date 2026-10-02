@@ -24,6 +24,8 @@ export const NOTIFICATION_KINDS = [
   { key: "renewal_due", group: "Clients", label: "An agreement comes up for renewal, or ends without one" },
   { key: "invoice_overdue", group: "Money", label: "An invoice becomes overdue" },
   { key: "billing", group: "Money", label: "Our agency's trial or payment needs attention" },
+  { key: "data_export", group: "Agency", label: "An export of the agency's data I asked for is ready" },
+  { key: "workspace_deletion", group: "Agency", label: "The owner asks for the workspace to be deleted, or stops it" },
   { key: "month_to_close", group: "Delivery", label: "Last month's delivery waits to be closed" },
   { key: "client_portal", group: "Clients", label: "A client I look after picks topics, comments on a video or asks something in their portal" },
   { key: "report_draft", group: "Clients", label: "A client's monthly report is drafted and waits to be released" },

@@ -2842,3 +2842,34 @@ model SupportGrant {
   @@index([agencyId, expiresAt])
   @@map("support_grants")
 }
+
+/// A full export of the agency's data (P6-10): a ZIP with CSV per table and a JSON archive, for the owner.
+model DataExport {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  agencyId    String    @map("agency_id") @db.Uuid
+  /// queued · ready · failed
+  status      String    @default("queued")
+  requestedBy String    @map("requested_by")
+  storageKey  String?   @map("storage_key")
+  size        BigInt?
+  tables      Int?
+  rows        Int?
+  error       String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  readyAt     DateTime? @map("ready_at")
+
+  @@index([agencyId, createdAt])
+  @@map("data_exports")
+}
+
+/// The owner asked for the workspace to be deleted (P6-10): it is, after the grace period, unless stopped.
+model WorkspaceDeletion {
+  agencyId    String    @id @map("agency_id") @db.Uuid
+  requestedBy String    @map("requested_by")
+  requestedAt DateTime  @default(now()) @map("requested_at")
+  deleteAfter DateTime  @map("delete_after")
+  cancelledAt DateTime? @map("cancelled_at")
+  cancelledBy String?   @map("cancelled_by")
+
+  @@map("workspace_deletions")
+}

@@ -2,6 +2,7 @@
 import type { PermissionMatrix } from "./permissions.js";
 import type { AnnouncementView, Entitlements } from "./plans.js";
 import type { SupportVisit } from "./support.js";
+import type { WorkspaceDeletion } from "./data.js";
 import type { BusinessStage } from "./enums.js";
 import type { ImportKind, ImportReport } from "./imports.js";
 import type { ConnectionStatus, PostStatus } from "./social.js";
@@ -36,6 +37,8 @@ export interface Me {
   /** The platform's announcements for the active agency today, and the feature flags on for it (P6-09). */
   announcements: AnnouncementView[];
   flags: string[];
+  /** Set while the active agency is due to be deleted (P6-10). */
+  deletion: WorkspaceDeletion | null;
 }
 
 /** GET /team */
