@@ -346,3 +346,43 @@ describe("usage", () => {
     expect(row).toMatchObject({ aiDraftsThisMonth: 1, storageBytes: 1073741824, whatsappThisMonth: 0 });
   });
 });
+
+describe("announcements and feature flags", () => {
+  it("reach the agencies chosen, between their days", async () => {
+    const gm = (await me(jana)).activeAgencyId!;
+    await anitha
+      .put("/platform/settings")
+      .send({
+        ...settings,
+        announcements: [
+          {
+            id: "maintenance",
+            title: "Maintenance on Sunday night",
+            body: "The app is down from 1 to 2 am.",
+            tone: "warning",
+            from: day(0),
+            until: day(3),
+            plans: [],
+          },
+          { id: "scale-webinar", title: "A webinar for Scale agencies", body: "", tone: "info", from: day(0), until: day(3), plans: ["scale"] },
+          { id: "old", title: "Last month's news", body: "", tone: "info", from: day(-40), until: day(-10), plans: [] },
+        ],
+        flags: [
+          { key: "beta_reports", description: "The new reports", everyone: true, agencies: [] },
+          { key: "new_editor", description: "The new editor", everyone: false, agencies: [zen] },
+        ],
+      })
+      .expect(200);
+    // Genie Magnet is on Scale by now; Zen Studio is on the "One draft" plan.
+    expect(await me(jana)).toMatchObject({
+      activeAgencyId: gm,
+      announcements: [expect.objectContaining({ id: "maintenance", tone: "warning" }), expect.objectContaining({ id: "scale-webinar" })],
+      flags: ["beta_reports"],
+    });
+    expect(await me(zara)).toMatchObject({ announcements: [expect.objectContaining({ id: "maintenance" })], flags: ["beta_reports", "new_editor"] });
+    await anitha
+      .put("/platform/settings")
+      .send({ ...settings, announcements: [{ id: "bad", title: "x", from: day(0), until: day(1) }] })
+      .expect(400); // the title is too short
+  });
+});

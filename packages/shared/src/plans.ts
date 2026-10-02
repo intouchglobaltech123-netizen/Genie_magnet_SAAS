@@ -78,6 +78,34 @@ export const platformSettingsInput = z
       /** GST on our plans (a percentage), entered here like every other rate. */
       gstRate: gstRate.default(18),
     }),
+    /** Notes to agencies shown above every page between two days, to everyone or only those on some plans (P6-09). */
+    announcements: z
+      .array(
+        z.object({
+          id: z.string().regex(/^[a-z0-9_-]{1,40}$/),
+          title: text(120).min(2, "Give it a title"),
+          body: text(1000).default(""),
+          tone: z.enum(["info", "warning"]).default("info"),
+          from: z.iso.date("Pick the first day"),
+          until: z.iso.date("Pick the last day"),
+          /** Empty: every agency. */
+          plans: z.array(z.string().max(40)).max(12).default([]),
+        }),
+      )
+      .max(20)
+      .default([]),
+    /** Switches for what is being tried out: on for every agency, or only for some (P6-09). */
+    flags: z
+      .array(
+        z.object({
+          key: z.string().regex(/^[a-z][a-z0-9_]{1,40}$/, "Lowercase letters, numbers and _"),
+          description: text(200).default(""),
+          everyone: z.boolean().default(false),
+          agencies: z.array(z.uuid()).max(500).default([]),
+        }),
+      )
+      .max(50)
+      .default([]),
   })
   .superRefine((s, ctx) => {
     const keys = new Set<string>();
@@ -139,7 +167,27 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
     },
   ],
   invoice: { legalName: "", gstin: "", address: "", stateCode: "", sac: "", prefix: "INV", gstRate: 18 },
+  announcements: [],
+  flags: [],
 };
+
+/** On GET /me: an announcement for this agency today. */
+export interface AnnouncementView {
+  id: string;
+  title: string;
+  body: string;
+  tone: "info" | "warning";
+}
+
+/** The announcements an agency on `plan` sees on `today`, and the flags on for it. */
+export function noticesFor(s: PlatformSettings, agencyId: string, plan: string | null, today: string) {
+  return {
+    announcements: s.announcements
+      .filter((a) => a.from <= today && today <= a.until && (!a.plans.length || (plan !== null && a.plans.includes(plan))))
+      .map((a): AnnouncementView => ({ id: a.id, title: a.title, body: a.body, tone: a.tone })),
+    flags: s.flags.filter((f) => f.everyone || f.agencies.includes(agencyId)).map((f) => f.key),
+  };
+}
 
 // ─── Subscriptions ────────────────────────────────────────────────────
 

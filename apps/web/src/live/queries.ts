@@ -274,6 +274,11 @@ export function useMe() {
   });
 }
 
+/** Whether a feature flag the platform's team switched on is on for the active agency (P6-09). */
+export function useFlag(key: string) {
+  return !!useMe().data?.flags.includes(key);
+}
+
 /** `can("clients", "edit")` — the same rule the API enforces, used to hide what the person cannot do. */
 export function useCan() {
   const me = useMe().data;

@@ -329,6 +329,41 @@ function UserMenu() {
   );
 }
 
+/** The platform's announcements for this agency today (P6-09); each can be put away, in this browser. */
+function Announcements() {
+  const list = useMe().data?.announcements ?? [];
+  const [hidden, setHidden] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem("gm-announcements-hidden") ?? "[]") as string[];
+    } catch {
+      return [];
+    }
+  });
+  const shown = list.filter((a) => !hidden.includes(a.id));
+  if (!shown.length) return null;
+  const hide = (id: string) => {
+    const next = [...hidden, id];
+    setHidden(next);
+    try {
+      localStorage.setItem("gm-announcements-hidden", JSON.stringify(next.slice(-50)));
+    } catch {}
+  };
+  return (
+    <div className="mb-5 space-y-2 print:hidden">
+      {shown.map((a) => (
+        <Alert key={a.id} tone={a.tone} title={a.title}>
+          <div className="flex items-start justify-between gap-3">
+            <span className="whitespace-pre-line">{a.body}</span>
+            <Button size="xs" variant="ghost" aria-label="Put away" onClick={() => hide(a.id)}>
+              <X />
+            </Button>
+          </div>
+        </Alert>
+      ))}
+    </div>
+  );
+}
+
 /** While the platform's support team is in an agency on its consent (P6-08): whose, how far, until when, and a way out. */
 function SupportBanner() {
   const support = useMe().data?.support;
@@ -498,6 +533,7 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
         <main className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 print:max-w-none print:p-0">
           <SupportBanner />
           <PlanBanner />
+          <Announcements />
           {children}
         </main>
       </div>

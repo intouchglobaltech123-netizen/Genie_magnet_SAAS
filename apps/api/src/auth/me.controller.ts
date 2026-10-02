@@ -4,7 +4,9 @@ import type { Request } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import type { createPrisma } from "@gm/db";
 import { AccessService, Public } from "../access/access.js";
+import { noticesFor } from "@gm/shared";
 import { EntitlementsService } from "../billing/entitlements.js";
+import { PlatformSettingsService } from "../platform/platform-settings.service.js";
 import { ENV, type Env } from "../env.js";
 import { currentTenant, TenantDb } from "../tenancy/tenant-context.js";
 import { AUTH, AUTH_PRISMA, type Auth } from "./auth.js";
@@ -23,6 +25,7 @@ export class MeController {
     private readonly tenant: TenantDb,
     private readonly entitlements: EntitlementsService,
     @Inject(ENV) private readonly env: Env,
+    private readonly platform: PlatformSettingsService,
   ) {}
 
   @Get()
@@ -69,6 +72,14 @@ export class MeController {
       agencies: memberships.map((m) => ({ ...m.agency, role: m.role })),
       platformAdmin: this.env.PLATFORM_ADMIN_EMAILS.includes(session.user.email.toLowerCase()),
       support,
+      ...(active
+        ? noticesFor(
+            await this.platform.get(),
+            active.agencyId,
+            active.entitlements.plan?.key ?? null,
+            new Date(Date.now() + 330 * 60_000).toISOString().slice(0, 10),
+          )
+        : { announcements: [], flags: [] }),
     };
   }
 }

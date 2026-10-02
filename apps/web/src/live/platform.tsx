@@ -342,6 +342,9 @@ function SettingsEditor({ initial }: { initial: PlatformSettings }) {
         </div>
       </SectionCard>
 
+      <AnnouncementsEditor s={s} set={set} />
+      <FlagsEditor s={s} set={set} />
+
       <div className="grid gap-4 lg:grid-cols-2">
         {s.plans.map((p, i) => (
           <Card key={i} className="p-4">
@@ -435,5 +438,124 @@ function SettingsEditor({ initial }: { initial: PlatformSettings }) {
         </Button>
       </div>
     </div>
+  );
+}
+
+type SetSettings = (patch: Partial<PlatformSettings>) => void;
+const today = () => new Date(Date.now() + 330 * 60_000).toISOString().slice(0, 10);
+
+function AnnouncementsEditor({ s, set }: { s: PlatformSettings; set: SetSettings }) {
+  const change = (i: number, patch: Partial<PlatformSettings["announcements"][number]>) =>
+    set({ announcements: s.announcements.map((a, j) => (j === i ? { ...a, ...patch } : a)) });
+  return (
+    <SectionCard title="Announcements" description="Shown above every page to the agencies chosen, between the two days.">
+      <div className="space-y-3">
+        {s.announcements.map((a, i) => (
+          <div key={a.id} className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Field label="Title" className="lg:col-span-2">
+              <Input value={a.title} onChange={(e) => change(i, { title: e.target.value })} />
+            </Field>
+            <Field label="From">
+              <Input type="date" value={a.from} onChange={(e) => change(i, { from: e.target.value })} />
+            </Field>
+            <Field label="Until">
+              <Input type="date" value={a.until} onChange={(e) => change(i, { until: e.target.value })} />
+            </Field>
+            <Field label="Message" className="sm:col-span-2 lg:col-span-4">
+              <Input value={a.body} onChange={(e) => change(i, { body: e.target.value })} />
+            </Field>
+            <Field label="Tone">
+              <Select
+                value={a.tone}
+                onValueChange={(v) => change(i, { tone: v as "info" | "warning" })}
+                options={[
+                  { value: "info", label: "Information" },
+                  { value: "warning", label: "Warning" },
+                ]}
+              />
+            </Field>
+            <div className="sm:col-span-2 lg:col-span-2">
+              <div className="mb-1 text-body font-medium">For</div>
+              <div className="flex flex-wrap gap-3">
+                {s.plans.map((p) => (
+                  <label key={p.key} className="flex items-center gap-1.5 text-body">
+                    <Checkbox
+                      checked={a.plans.includes(p.key)}
+                      onCheckedChange={(on) => change(i, { plans: on ? [...a.plans, p.key] : a.plans.filter((k) => k !== p.key) })}
+                    />
+                    {p.name}
+                  </label>
+                ))}
+                <span className="text-body text-muted-foreground">{a.plans.length ? "" : "· every agency"}</span>
+              </div>
+            </div>
+            <div className="flex items-end justify-end">
+              <Button size="sm" variant="ghost" onClick={() => set({ announcements: s.announcements.filter((_, j) => j !== i) })}>
+                <Trash2 /> Remove
+              </Button>
+            </div>
+          </div>
+        ))}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            set({
+              announcements: [
+                ...s.announcements,
+                { id: `a-${Date.now().toString(36)}`, title: "", body: "", tone: "info", from: today(), until: today(), plans: [] },
+              ],
+            })
+          }
+        >
+          <Plus /> Add an announcement
+        </Button>
+      </div>
+    </SectionCard>
+  );
+}
+
+function FlagsEditor({ s, set }: { s: PlatformSettings; set: SetSettings }) {
+  const agencies = usePlatformAgencies();
+  const change = (i: number, patch: Partial<PlatformSettings["flags"][number]>) => set({ flags: s.flags.map((f, j) => (j === i ? { ...f, ...patch } : f)) });
+  return (
+    <SectionCard title="Feature flags" description="Switches for what is being tried out: on for every agency, or only for the agencies chosen.">
+      <div className="space-y-3">
+        {s.flags.map((f, i) => (
+          <div key={i} className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-[14rem_1fr_auto]">
+            <Field label="Key">
+              <Input value={f.key} onChange={(e) => change(i, { key: e.target.value })} placeholder="new_editor" />
+            </Field>
+            <Field label="What it switches">
+              <Input value={f.description} onChange={(e) => change(i, { description: e.target.value })} />
+            </Field>
+            <div className="flex items-end justify-end">
+              <Button size="sm" variant="ghost" onClick={() => set({ flags: s.flags.filter((_, j) => j !== i) })}>
+                <Trash2 /> Remove
+              </Button>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 sm:col-span-3">
+              <label className="flex items-center gap-2 text-body">
+                <Switch checked={f.everyone} onCheckedChange={(on) => change(i, { everyone: on })} aria-label="On for every agency" />
+                On for every agency
+              </label>
+              {!f.everyone &&
+                (agencies.data ?? []).map((a) => (
+                  <label key={a.id} className="flex items-center gap-1.5 text-body">
+                    <Checkbox
+                      checked={f.agencies.includes(a.id)}
+                      onCheckedChange={(on) => change(i, { agencies: on ? [...f.agencies, a.id] : f.agencies.filter((x) => x !== a.id) })}
+                    />
+                    {a.name}
+                  </label>
+                ))}
+            </div>
+          </div>
+        ))}
+        <Button variant="outline" size="sm" onClick={() => set({ flags: [...s.flags, { key: "", description: "", everyone: false, agencies: [] }] })}>
+          <Plus /> Add a flag
+        </Button>
+      </div>
+    </SectionCard>
   );
 }
