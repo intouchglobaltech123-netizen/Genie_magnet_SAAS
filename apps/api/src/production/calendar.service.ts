@@ -13,8 +13,8 @@ const ist = (d: Date) => {
 const PLATFORM_LABEL: Record<string, string> = PLATFORM_LABELS;
 
 /**
- * The production calendar and time (P2-13): shoots, videos due and to publish, scheduled posts and agreements ending,
- * by day; and the time logged on videos and shoots. Roles limited to their own work see only what they edit, shoot
+ * The production calendar and time (P2-13): shoots, videos due and to publish, scheduled posts, sales follow-ups
+ * (P3-13) and agreements ending, by day; and the time logged on videos and shoots. Roles limited to their own work see only what they edit, shoot
  * or direct, and only their own time.
  */
 @Injectable()
@@ -106,6 +106,28 @@ export class CalendarService {
       }
     }
 
+    if (allows(perms, "crm", "view")) {
+      // Sales follow-ups on open leads; roles that keep their own leads see only theirs.
+      const stages = await this.tenant.db.pipelineStage.findMany({ where: { kind: "open" }, select: { key: true } });
+      const own = scopeOf(perms, "crm") === "own" ? this.tenant.userId : null;
+      const leads = await this.tenant.db.lead.findMany({
+        where: { nextFollowUp: { gte: a, lte: b }, stage: { in: stages.map((s) => s.key) }, ...(own && { ownerId: own }) },
+        select: { id: true, name: true, company: true, nextFollowUp: true },
+      });
+      const today = day(new Date());
+      for (const l of leads)
+        events.push({
+          kind: "followup",
+          date: day(l.nextFollowUp!),
+          time: null,
+          title: `Follow up ${l.company ?? l.name}`,
+          detail: l.company ? l.name : null,
+          client: null,
+          link: `/app/sales?lead=${l.id}`,
+          state: day(l.nextFollowUp!) < today ? "late" : "open",
+        });
+    }
+
     if (allows(perms, "agreements", "view")) {
       const ending = await this.tenant.db.agreement.findMany({
         where: { endDate: { gte: a, lte: b }, status: { in: ["active", "renewal_due", "paused"] } },
@@ -124,7 +146,7 @@ export class CalendarService {
         });
     }
 
-    const order = { shoot: 0, post: 1, due: 2, publish: 3, renewal: 4 };
+    const order = { shoot: 0, post: 1, followup: 2, due: 3, publish: 4, renewal: 5 };
     return events.sort((x, y) => x.date.localeCompare(y.date) || (x.time ?? "99").localeCompare(y.time ?? "99") || order[x.kind] - order[y.kind]);
   }
 

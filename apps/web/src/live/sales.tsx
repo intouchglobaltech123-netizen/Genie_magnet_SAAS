@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { BadgeCheck, CalendarClock, LayoutGrid, List, Mail, MessageCircle, NotebookPen, Phone, Plus, Search, Trash2, Users, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { ACTIVITY_KINDS, type ActivityKind, type Lead, leadInput, LEAD_SOURCES, type LeadUpdate, type PipelineStage } from "@gm/shared";
@@ -596,7 +597,8 @@ export function LiveSales() {
   const [q, setQ] = useState("");
   const [mine, setMine] = useState(false);
   const [dueOnly, setDueOnly] = useState(false);
-  const [open, setOpen] = useState<string | null>(null);
+  // A follow-up on the calendar links here with ?lead=, which opens that lead.
+  const [open, setOpen] = useState<string | null>(useSearchParams().get("lead"));
   const [adding, setAdding] = useState(false);
   const [winning, setWinning] = useState<string | null>(null);
   const [losing, setLosing] = useState<string | null>(null);

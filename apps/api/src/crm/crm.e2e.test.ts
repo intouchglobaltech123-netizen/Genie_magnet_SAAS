@@ -115,6 +115,29 @@ describe("leads and activities", () => {
       .send({ name: "Someone Else's", source: "Referral", ownerId: seedUserId("priya@geniemagnet.test") })
       .expect(403);
   });
+
+  it("puts follow-ups on open leads on the calendar — a role limited to its own leads sees only its own", async () => {
+    const day = (n: number) => new Date(Date.now() + n * 86_400_000).toISOString().slice(0, 10);
+    type Event = { kind: string; date: string; title: string; state: string; link: string };
+    const calendar = async (who: Agent) =>
+      ((await who.get(`/calendar?from=${day(-3)}&to=${day(10)}`).expect(200)).body as Event[]).filter((e) => e.kind === "followup");
+
+    const all = await calendar(priya);
+    expect(all.find((e) => e.link === `/app/sales?lead=${lead.id}`)).toMatchObject({ date: day(-1), title: "Follow up Anitha Flowers", state: "late" });
+    const rep = await t.signInAs("meena@geniemagnet.test");
+    const [mine] = (await rep.get("/leads").expect(200)).body as Lead[];
+    await rep
+      .patch(`/leads/${mine!.id}`)
+      .send({ nextFollowUp: day(2) })
+      .expect(200);
+    expect((await calendar(rep)).map((e) => `${e.title}:${e.state}`)).toEqual(["Follow up Meena's Lead:open"]);
+    expect((await calendar(priya)).length).toBe(all.length + 1);
+
+    await priya.patch(`/leads/${lead.id}`).send({ stage: "lost", lostReason: "Went with another agency" }).expect(200);
+    expect((await calendar(priya)).some((e) => e.link.endsWith(lead.id))).toBe(false); // closed leads drop off
+    const divya = await t.signInAs("divya@geniemagnet.test"); // editor: no sales
+    expect(await calendar(divya)).toEqual([]);
+  });
 });
 
 describe("importing leads", () => {

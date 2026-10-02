@@ -24,6 +24,7 @@ const KIND: Record<CalendarEvent["kind"], { label: string; bar: string }> = {
   due: { label: "Due", bar: "border-l-warning" },
   publish: { label: "To publish", bar: "border-l-success" },
   renewal: { label: "Agreement ends", bar: "border-l-accent-strong" },
+  followup: { label: "Follow-up", bar: "border-l-secondary" },
 };
 
 /** The Monday on or before the 1st to the Sunday on or after the last day: whole weeks. */
@@ -73,7 +74,7 @@ export function LiveCalendar() {
     <>
       <PageHeader
         title="Calendar"
-        description="Shoots, videos due and to publish, scheduled posts and agreements ending — what you work on."
+        description="Shoots, videos due and to publish, scheduled posts, sales follow-ups and agreements ending — what you work on."
         actions={
           <>
             {clients.length > 1 && (

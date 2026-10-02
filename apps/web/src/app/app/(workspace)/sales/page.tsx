@@ -1,5 +1,10 @@
+import { Suspense } from "react";
 import { LiveSales } from "@/live/sales";
 
 export default function Page() {
-  return <LiveSales />;
+  return (
+    <Suspense>
+      <LiveSales />
+    </Suspense>
+  );
 }
