@@ -117,8 +117,9 @@ Times are stored without a time zone and read as UTC. The database is set to UTC
 1. `apps/api/src/<module>/` with `<module>.controller.ts` and `<module>.service.ts`; register both in `app.module.ts`.
 2. Input schemas in `packages/shared/src/schemas.ts`; tables in `schema.prisma` + RLS lines; `npm run db:migrate`.
 3. Every change is audited inside its own transaction: `this.tenant.tx(async (tx) => { …; await this.audit.record(tx, { action, entity, entityId, before, after }) })`. For updates, pass only what changed: `changes(before, after)` from `audit.service.ts`.
-4. An e2e test that includes a cross-agency case (see `clients.e2e.test.ts`).
-5. PR with the template checklist filled in.
+4. Changing one entry of a JSON column (ticks, checks, signatures) means reading it and writing it back: do both inside the transaction after `lockRow(tx, table, id)` from `common/lock-row.ts`, or two changes made at the same moment overwrite each other.
+5. An e2e test that includes a cross-agency case (see `clients.e2e.test.ts`).
+6. PR with the template checklist filled in.
 
 ## Branches, commits and pull requests
 

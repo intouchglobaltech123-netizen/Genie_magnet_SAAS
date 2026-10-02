@@ -11,6 +11,31 @@ import {
   type AgreementUpdate,
   type ClientDetail,
   type AnswerValue,
+  type ChangeRequestInput,
+  type ChangeRequestRow,
+  type ClientDecision,
+  type ContentInput,
+  type ContentItem,
+  type ContentUpdate,
+  type CycleRow,
+  type PlatformConnectionRow,
+  type PostInput,
+  type ProductionSettings,
+  type ProductionSettingsInput,
+  type PublishedInput,
+  type PublishingItem,
+  type QuotaRow,
+  type ScriptInput,
+  type ShootDetail,
+  type ShootInput,
+  type ShootSummary,
+  type TopicList,
+  type VersionInput,
+  type VideoDetail,
+  type VideoInput,
+  type VideoStageKey,
+  type VideoSummary,
+  type VideoUpdate,
   type NotificationList,
   type NotificationPreferences,
   type StoredFile,
@@ -77,6 +102,14 @@ export const keys = {
   questionnaires: ["questionnaires"] as const,
   notifications: ["notifications"] as const,
   files: ["files"] as const,
+  videos: ["videos"] as const,
+  content: ["content"] as const,
+  topicLists: ["topic-lists"] as const,
+  shoots: ["shoots"] as const,
+  publishing: ["publishing"] as const,
+  cycles: ["cycles"] as const,
+  changeRequests: ["change-requests"] as const,
+  productionSettings: ["production-settings"] as const,
 };
 
 // ─── Session ──────────────────────────────────────────────────────────
@@ -679,5 +712,231 @@ export function useDeleteFile() {
   return useMutation({
     mutationFn: (id: string) => api(`/files/${id}`, { method: "DELETE" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.files }),
+  });
+}
+
+// ─── Production (Phase 2) ─────────────────────────────────────────────
+
+/** Production changes ripple: videos, content, shoots, publishing, cycles and the revisions list. */
+function useRefreshProduction() {
+  const qc = useQueryClient();
+  return () =>
+    Promise.all(
+      [keys.videos, keys.content, keys.topicLists, keys.shoots, keys.publishing, keys.cycles, keys.changeRequests, keys.notifications].map((queryKey) =>
+        qc.invalidateQueries({ queryKey }),
+      ),
+    );
+}
+
+export const useProductionSettings = () => useQuery({ queryKey: keys.productionSettings, queryFn: () => api<ProductionSettings>("/production-settings") });
+
+export function useSaveProductionSettings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: ProductionSettingsInput) => api<ProductionSettings>("/production-settings", { method: "PUT", body: v }),
+    onSuccess: (data) => qc.setQueryData(keys.productionSettings, data),
+  });
+}
+
+export const useVideos = (query = "", enabled = true) =>
+  useQuery({ queryKey: [...keys.videos, query], queryFn: () => api<VideoSummary[]>(`/videos${query ? `?${query}` : ""}`), enabled });
+
+export const useVideo = (id: string) => useQuery({ queryKey: [...keys.videos, "one", id], queryFn: () => api<VideoDetail>(`/videos/${id}`) });
+
+/** Any change to one video: the page refreshes from the answer, the lists in the background. */
+export function useVideoAction(id: string) {
+  const qc = useQueryClient();
+  const refresh = useRefreshProduction();
+  return useMutation({
+    mutationFn: (v: { path: string; method?: "POST" | "PUT" | "PATCH" | "DELETE"; body?: unknown }) =>
+      api<VideoDetail>(`/videos/${id}${v.path}`, { method: v.method ?? "POST", body: v.method === "DELETE" ? undefined : (v.body ?? {}) }),
+    onSuccess: (data) => {
+      if (data) qc.setQueryData([...keys.videos, "one", id], data);
+      return refresh();
+    },
+  });
+}
+
+export function useCreateVideo() {
+  const refresh = useRefreshProduction();
+  return useMutation({ mutationFn: (v: VideoInput) => api<VideoDetail>("/videos", { body: v }), onSuccess: refresh });
+}
+
+/** Moving a card on the board: shown at once, put back if the checks refuse it. */
+export function useMoveVideo() {
+  const qc = useQueryClient();
+  const refresh = useRefreshProduction();
+  return useMutation({
+    mutationFn: (v: { id: string; to: VideoStageKey; note?: string }) => api<VideoDetail>(`/videos/${v.id}/move`, { body: { to: v.to, note: v.note } }),
+    onMutate: async (v) => {
+      await qc.cancelQueries({ queryKey: keys.videos });
+      const before = qc.getQueriesData<VideoSummary[]>({ queryKey: keys.videos });
+      qc.setQueriesData<VideoSummary[]>({ queryKey: keys.videos }, (list) =>
+        Array.isArray(list) ? list.map((x) => (x.id === v.id ? { ...x, stage: v.to } : x)) : list,
+      );
+      return { before };
+    },
+    onError: (_e, _v, ctx) => ctx?.before.forEach(([key, data]) => qc.setQueryData(key, data)),
+    onSettled: refresh,
+  });
+}
+
+export const useChangeRequests = (status = "", enabled = true) =>
+  useQuery({
+    queryKey: [...keys.changeRequests, status],
+    queryFn: () => api<ChangeRequestRow[]>(`/change-requests${status ? `?status=${status}` : ""}`),
+    enabled,
+  });
+
+export function useCreateChangeRequest() {
+  const qc = useQueryClient();
+  const refresh = useRefreshProduction();
+  return useMutation({
+    mutationFn: (v: ChangeRequestInput) => api<{ id: string; video: VideoDetail }>("/change-requests", { body: v }),
+    onSuccess: (r) => {
+      qc.setQueryData([...keys.videos, "one", r.video.id], r.video);
+      return refresh();
+    },
+  });
+}
+
+export function useChangeRequestStatus() {
+  const qc = useQueryClient();
+  const refresh = useRefreshProduction();
+  return useMutation({
+    mutationFn: (v: { id: string; status: string }) => api<VideoDetail>(`/change-requests/${v.id}/status`, { body: { status: v.status } }),
+    onSuccess: (video) => {
+      qc.setQueryData([...keys.videos, "one", video.id], video);
+      return refresh();
+    },
+  });
+}
+
+export const useContentList = (query = "", enabled = true) =>
+  useQuery({ queryKey: [...keys.content, query], queryFn: () => api<ContentItem[]>(`/content${query ? `?${query}` : ""}`), enabled });
+
+export const useContent = (id: string) => useQuery({ queryKey: [...keys.content, "one", id], queryFn: () => api<ContentItem>(`/content/${id}`) });
+
+export function useContentAction(id: string) {
+  const qc = useQueryClient();
+  const refresh = useRefreshProduction();
+  return useMutation({
+    mutationFn: (v: { path: string; method?: "POST" | "PUT" | "PATCH" | "DELETE"; body?: unknown }) =>
+      api<(ContentItem & { videoId?: string }) | undefined>(`/content/${id}${v.path}`, {
+        method: v.method ?? "POST",
+        body: v.method === "DELETE" ? undefined : (v.body ?? {}),
+      }),
+    onSuccess: (data) => {
+      if (data) qc.setQueryData([...keys.content, "one", id], data);
+      return refresh();
+    },
+  });
+}
+
+export function useCreateContent() {
+  const refresh = useRefreshProduction();
+  return useMutation({ mutationFn: (v: ContentInput) => api<ContentItem>("/content", { body: v }), onSuccess: refresh });
+}
+
+export type { ContentUpdate, ScriptInput, ClientDecision, VersionInput, VideoUpdate };
+
+export const useTopicLists = (month: string) =>
+  useQuery({ queryKey: [...keys.topicLists, month], queryFn: () => api<TopicList[]>(`/topic-lists?month=${month}`) });
+
+export function useTopicListAction() {
+  const refresh = useRefreshProduction();
+  return useMutation({
+    mutationFn: (v: { step: "save"; clientId: string; month: string; needed: number } | { step: "send" | "confirm"; id: string }) =>
+      v.step === "save"
+        ? api<TopicList[]>("/topic-lists", { method: "PUT", body: { clientId: v.clientId, month: v.month, needed: v.needed } })
+        : api<TopicList[]>(`/topic-lists/${v.id}/${v.step}`, { body: {} }),
+    onSuccess: refresh,
+  });
+}
+
+export function useSavePillars(clientId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (pillars: string[]) => api<{ pillars: string[] }>(`/clients/${clientId}/pillars`, { method: "PUT", body: { pillars } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.clients }),
+  });
+}
+
+export const useShoots = (query = "") =>
+  useQuery({ queryKey: [...keys.shoots, query], queryFn: () => api<ShootSummary[]>(`/shoots${query ? `?${query}` : ""}`) });
+export const useShoot = (id: string) => useQuery({ queryKey: [...keys.shoots, "one", id], queryFn: () => api<ShootDetail>(`/shoots/${id}`) });
+
+export function useShootAction(id: string) {
+  const qc = useQueryClient();
+  const refresh = useRefreshProduction();
+  return useMutation({
+    mutationFn: (v: { path: string; method?: "POST" | "PUT" | "PATCH"; body?: unknown }) =>
+      api<ShootDetail>(`/shoots/${id}${v.path}`, { method: v.method ?? "POST", body: v.body ?? {} }),
+    onSuccess: (data) => {
+      qc.setQueryData([...keys.shoots, "one", id], data);
+      return refresh();
+    },
+  });
+}
+
+export function useCreateShoot() {
+  const refresh = useRefreshProduction();
+  return useMutation({ mutationFn: (v: ShootInput) => api<ShootDetail>("/shoots", { body: v }), onSuccess: refresh });
+}
+
+export const usePublishingQueue = (month: string, enabled = true) =>
+  useQuery({ queryKey: [...keys.publishing, month], queryFn: () => api<PublishingItem[]>(`/publishing?month=${month}`), enabled });
+export const useQuotas = (month: string, enabled = true) =>
+  useQuery({ queryKey: [...keys.publishing, "quotas", month], queryFn: () => api<QuotaRow[]>(`/publishing/quotas?month=${month}`), enabled });
+
+export function usePublishingAction() {
+  const refresh = useRefreshProduction();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "schedule"; input: PostInput }
+        | { step: "reschedule"; id: string; scheduledAt?: string; caption?: string }
+        | { step: "unschedule"; id: string }
+        | { step: "published"; id: string; input: PublishedInput },
+    ) => {
+      switch (v.step) {
+        case "schedule":
+          return api<PublishingItem[]>("/publishing/posts", { body: v.input });
+        case "reschedule":
+          return api<PublishingItem[]>(`/publishing/posts/${v.id}`, { method: "PATCH", body: { scheduledAt: v.scheduledAt, caption: v.caption } });
+        case "unschedule":
+          return api<PublishingItem[]>(`/publishing/posts/${v.id}`, { method: "DELETE" });
+        case "published":
+          return api<PublishingItem[]>(`/publishing/posts/${v.id}/published`, { body: v.input });
+      }
+    },
+    onSuccess: refresh,
+  });
+}
+
+export const usePlatforms = (clientId: string, enabled = true) =>
+  useQuery({ queryKey: ["platforms", clientId], queryFn: () => api<PlatformConnectionRow[]>(`/clients/${clientId}/platforms`), enabled });
+
+export function usePlatformAction(clientId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { step: "add"; platform: string; handle: string } | { step: "remove"; id: string }) =>
+      v.step === "add"
+        ? api<PlatformConnectionRow[]>(`/clients/${clientId}/platforms`, { body: { platform: v.platform, handle: v.handle } })
+        : api<PlatformConnectionRow[]>(`/clients/${clientId}/platforms/${v.id}`, { method: "DELETE" }),
+    onSuccess: (data) => qc.setQueryData(["platforms", clientId], data),
+  });
+}
+
+export const useCycles = (month: string) => useQuery({ queryKey: [...keys.cycles, month], queryFn: () => api<CycleRow[]>(`/cycles?month=${month}`) });
+
+export function useCycleAction() {
+  const refresh = useRefreshProduction();
+  return useMutation({
+    mutationFn: (v: { step: "generate"; month: string } | { step: "close"; id: string; decision?: "carry" | "credit" | "forfeit"; note?: string }) =>
+      v.step === "generate"
+        ? api(`/cycles/generate`, { body: { month: v.month } })
+        : api(`/cycles/${v.id}/close`, { body: { decision: v.decision, note: v.note } }),
+    onSuccess: refresh,
   });
 }

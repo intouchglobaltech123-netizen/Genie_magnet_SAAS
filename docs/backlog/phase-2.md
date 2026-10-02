@@ -24,3 +24,37 @@ Stories are refined into full acceptance criteria near the end of Phase 1. Check
 | P2-15 | Screens on the API: Content, Production board/list, video detail, Shoots & Kit, QC, Revisions, Publishing, Cycles | L    |
 | P2-16 | Self-service import of videos in progress from their tracking sheet (same importer as P1-31)                      | M    |
 | P2-17 | Exit-gate scenario test with 3–5 real videos                                                                      | M    |
+
+## Progress
+
+**P2-01 · Monthly cycles** — **Done.** A month per running agreement (set up when its first video is made, or for every running agreement from Monthly delivery): promised (including anything carried in) against delivered, in the making, planned and not started. A past month is closed by someone who may approve agreements: carry the shortfall to the next month, credit the client (the month's fee per video), or the client gives them up (with a reason). `/cycles`; screen Monthly delivery.
+
+**P2-02 · Idea bank and pillars** — **Done**, without suggestions: each client's content pillars, ideas per pillar and format. Suggested ideas come with the assistant.
+
+**P2-03 · Topic list** — **Done.** The month's list per client from the idea bank, sent, the client's picks recorded by the team; confirming moves the picks to research and the rest back to the bank.
+
+**P2-04 · Research** — **Done.** Notes and reference links per item; "research done" moves it to scripting.
+
+**P2-05 · Scripts** — **Done.** Hook, script, call to action and on-screen text, saved as versions; review, then approved and sent by someone who may approve content; the client's answer recorded (changes with their note go back to the writer). Approval makes the video with the next code.
+
+**P2-06 · Shoots** — **Done.** Schedule with crew, call time, location, batch and kit (videos added move to Shoot scheduled); the kit list packed, used and back; the before-the-shoot list; signatures (kit out, kit back, the client's sign-off, each with who and when) that set the status; clip numbers and footage protected per video; incidents for anything missing.
+
+**P2-07 · Video codes and the sheet** — **Done.** The code format is set in Settings → Production (`{CLIENT}`, `{MM}`, `{YY}`, `{YYYY}`, `{00}`); the Sheet tab is the tracking sheet, with clip number and footage protected edited in place.
+
+**P2-08 · Stage machine** — **Done.** Ten stages; each move is checked (footage protected before leaving Shot, every edit step before the quality check, the check passed and a version before the client, editing time over plan explained, published only from Publishing); the move menu shows why a stage is closed; every move kept in the history. Drag and drop on the board.
+
+**P2-09 · Editing** — **Done.** The edit steps (Settings → Production) ticked with who and when, the editor, director and camera on each video, due and publish dates; editors see only their own videos.
+
+**P2-10 · Quality check** — **Done.** The checks are passed or failed by someone who may approve production; a failure needs a note and goes back to the editor; after a revision the check starts again. Checklists can be ticked quickly or by two people at once without losing a tick.
+
+**P2-11 · Revisions** — **Done.** The client's feedback is classified: our correction (no allowance used), included revision (counted against the agreement's allowance; refused once used up), or change request (estimate and days added, approved by the client before it is done).
+
+**P2-12 · Publishing** — **Done** (by hand). Platforms per client on the client page; posts scheduled per platform with a caption; marked published with the post's link, the time and a screenshot, confirming the approved file was posted unchanged; the video is Published once all its posts are; the month's quota per client. Posting directly comes with the platform connections.
+
+**P2-13 · Time and calendar** — **Partly done:** time logged against videos, with planned editing time per format. Time against shoots and a calendar view are still to do.
+
+**P2-14 · Notifications** — **Partly done:** video assigned, ready for the quality check, check failed, revision asked, script to approve and decided. "Due soon" comes with background jobs.
+
+**P2-15 · Screens** — **Done.** Content (board, topic lists, idea bank) and the item page; Production (board, sheet, quality check, revisions) and the video page; Shoots and the shoot sheet; Publishing (to publish, quotas, published); Monthly delivery; Settings → Production; videos and platforms on the client page; shortcuts on Home.
+
+**P2-16 · Import of videos in progress** and **P2-17 · Exit-gate scenario test** — to do.

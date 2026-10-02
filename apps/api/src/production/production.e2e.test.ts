@@ -33,6 +33,7 @@ type Video = {
   code: string;
   stage: string;
   revisionsUsed: number;
+  qc: { key: string; result: "pass" | "fail" | null }[];
   versions: { id: string; label: string; status: string; comments: { author: string; text: string }[] }[];
   moves: { to: string; blocked: string | null }[];
 };
@@ -165,7 +166,8 @@ describe("a video through production", () => {
     await divya.put(`/videos/${v.id}/protect`).send({ done: true }).expect(200);
     await divya.post(`/videos/${v.id}/move`).send({ to: "editing" }).expect(200);
     expect((await divya.post(`/videos/${v.id}/move`).send({ to: "internal_qc" }).expect(409)).body.message).toBe("9 of 9 edit steps are still open.");
-    for (const step of DEFAULT_PRODUCTION_SETTINGS.editSteps) await divya.put(`/videos/${v.id}/edit-steps`).send({ step, done: true }).expect(200);
+    // All at once, as ticking quickly does: none of the ticks may be lost.
+    await Promise.all(DEFAULT_PRODUCTION_SETTINGS.editSteps.map((step) => divya.put(`/videos/${v.id}/edit-steps`).send({ step, done: true }).expect(200)));
     await divya
       .post(`/videos/${v.id}/time`)
       .send({ date: iso(new Date()), minutes: 360, note: "Colour took long" })
@@ -183,7 +185,7 @@ describe("a video through production", () => {
     expect(((await divya.get("/notifications").expect(200)).body as NotificationList).items[0]).toMatchObject({ kind: "qc_failed", body: "BGM too loud" });
     await divya.post(`/videos/${v.id}/versions`).send({ link: "https://drive.example/tnd-v1" }).expect(201);
     expect((await divya.post(`/videos/${v.id}/versions/send`).expect(409)).body.message).toBe("Failed quality check: Audio levels & clarity.");
-    for (const c of DEFAULT_PRODUCTION_SETTINGS.qcChecks) await karthik.put(`/videos/${v.id}/qc`).send({ check: c.key, result: "pass" }).expect(200);
+    await Promise.all(DEFAULT_PRODUCTION_SETTINGS.qcChecks.map((c) => karthik.put(`/videos/${v.id}/qc`).send({ check: c.key, result: "pass" }).expect(200)));
     v = (await divya.post(`/videos/${v.id}/versions/send`).expect(200)).body;
     expect(v).toMatchObject({ stage: "client_review", versions: [{ label: "v1", status: "sent" }] });
   });
@@ -216,8 +218,11 @@ describe("a video through production", () => {
 
   it("is checked again, sent as v2 and approved", async () => {
     expect((await divya.post(`/videos/${v.id}/move`).send({ to: "client_review" }).expect(409)).body.message).toMatch(/quality check again/);
-    await divya.post(`/videos/${v.id}/move`).send({ to: "internal_qc" }).expect(200);
+    v = (await divya.post(`/videos/${v.id}/move`).send({ to: "internal_qc" }).expect(200)).body;
+    expect(v.qc.every((c) => c.result === null)).toBe(true);
     await divya.post(`/videos/${v.id}/versions`).send({ link: "https://drive.example/tnd-v2", duration: "00:42" }).expect(201);
+    expect((await divya.post(`/videos/${v.id}/versions/send`).expect(409)).body.message).toMatch(/quality check/i);
+    await Promise.all(DEFAULT_PRODUCTION_SETTINGS.qcChecks.map((c) => karthik.put(`/videos/${v.id}/qc`).send({ check: c.key, result: "pass" }).expect(200)));
     await divya.post(`/videos/${v.id}/versions/send`).expect(200);
     v = (await divya.post(`/videos/${v.id}/decision`).send({ approved: true }).expect(200)).body;
     expect(v.stage).toBe("approved");
@@ -270,6 +275,7 @@ describe("a shoot", () => {
     ).body as {
       id: string;
       status: string;
+      signatures: Record<string, { byName: string | null }>;
       kit: { items: string[] };
       videos: { stage: string }[];
     };
@@ -277,7 +283,8 @@ describe("a shoot", () => {
     expect((await ashwin.post(`/shoots/${s.id}/sign`).send({ as: "giver" }).expect(409)).body.message).toMatch(/not packed/);
     await ashwin.post(`/shoots/${s.id}/kit/all`).send({ column: "packed" }).expect(200);
     s = (await ashwin.post(`/shoots/${s.id}/sign`).send({ as: "giver" }).expect(200)).body;
-    expect(s.status).toBe("packed");
+    expect(s).toMatchObject({ status: "packed", signatures: { giver: { byName: "Ashwin" } } });
+    await ashwin.post(`/shoots/${s.id}/sign`).send({ as: "giver" }).expect(409);
     await ashwin.post(`/shoots/${s.id}/start`).expect(200);
     s = (await ashwin.post(`/shoots/${s.id}/videos-shot`).expect(200)).body;
     expect(s.videos[0]!.stage).toBe("shot");

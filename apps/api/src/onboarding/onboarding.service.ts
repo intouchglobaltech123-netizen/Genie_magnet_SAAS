@@ -25,6 +25,7 @@ import {
   windowOf,
 } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
+import { lockRow } from "../common/lock-row.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { ENV, type Env } from "../env.js";
 import { FilesService } from "../files/files.service.js";
@@ -363,10 +364,12 @@ export class OnboardingService {
     const item = (row.template.definition as unknown as QuestionnaireDefinition).checklist.find((c) => c.key === key);
     if (!item) throw new NotFoundException("No checklist item with that key.");
     if (item.tick.kind !== "manual") throw new ConflictException("This item ticks itself — it cannot be ticked by hand.");
-    const manual = { ...(row.checklist as Record<string, { at: string; by: string | null }>) };
-    if (done) manual[key] = { at: new Date().toISOString(), by: this.tenant.userId ?? null };
-    else delete manual[key];
     await this.tenant.tx(async (tx) => {
+      await lockRow(tx, "questionnaire_responses", id);
+      const cur = await tx.questionnaireResponse.findUniqueOrThrow({ where: { id }, select: { checklist: true } });
+      const manual = { ...(cur.checklist as Record<string, { at: string; by: string | null }>) };
+      if (done) manual[key] = { at: new Date().toISOString(), by: this.tenant.userId ?? null };
+      else delete manual[key];
       await tx.questionnaireResponse.update({ where: { id }, data: { checklist: manual as Prisma.InputJsonValue } });
       await this.audit.record(tx, { action: done ? "tick" : "untick", entity: "onboarding", entityId: id, after: { item: item.label } });
     });

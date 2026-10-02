@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Archive, ArchiveRestore, ArrowLeft, Building2, FileSignature, MessageCircle, Pencil, Plus, Trash2, Trophy, UserRound } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, FileSignature, MessageCircle, Pencil, Plus, Trash2, Trophy, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import {
   BUSINESS_STAGES,
@@ -30,6 +30,8 @@ import { AgreementCard, AgreementDialog } from "./agreements";
 import { ApiError, errorMessage } from "./api";
 import { FITMENT, FITMENT_TONE } from "./clients";
 import { FilesCard } from "./files";
+import { ClientVideos } from "./production";
+import { ClientPlatforms } from "./publishing";
 import { InvoiceTable, NewInvoiceDialog } from "./invoices";
 import { onboardingStatus } from "./onboarding";
 import { inr } from "./packages";
@@ -606,10 +608,8 @@ export function LiveClient({ id }: { id: string }) {
             <Alert tone="info">Your role does not show agreements.</Alert>
           )}
           {can("onboarding", "view") && <ClientOnboarding clientId={c.id} archived={!!c.archivedAt} />}
+          {can("production", "view") && <ClientVideos clientId={c.id} />}
           {can("invoices", "view") && <ClientInvoices clientId={c.id} />}
-          <Alert tone="info" icon={Building2}>
-            Content and videos for this client will show here as those parts of the app arrive.
-          </Alert>
         </div>
 
         <div className="grid content-start gap-4 md:grid-cols-2 xl:grid-cols-1">
@@ -646,6 +646,7 @@ export function LiveClient({ id }: { id: string }) {
           </SectionCard>
           <Contacts client={c} canEdit={canEdit} />
           <FilesCard entity="client" entityId={c.id} title="Brand files" description="Logos, brand guide, fonts, photos." canEdit={canEdit && !c.archivedAt} />
+          {can("publishing", "view") && <ClientPlatforms clientId={c.id} canEdit={can("publishing", "edit")} />}
           <SectionCard title="Billing" description="Used on invoices.">
             <dl>
               <Row label="Name on invoices">{c.legalName ?? c.name}</Row>

@@ -79,6 +79,8 @@ export interface Client {
   state: string | null;
   billingAddress: string | null;
   notes: string | null;
+  /** Content pillars (Phase 2). */
+  pillars: string[];
   archivedAt: string | null;
   createdAt: string;
   contacts: Contact[];
@@ -420,4 +422,234 @@ export interface UploadStart {
   id: string;
   uploadUrl: string;
   expiresIn: number;
+}
+
+// ─── Production (Phase 2) ─────────────────────────────────────────────
+
+type Who = { id: string; name: string | null } | null;
+type ClientRef = { id: string; name: string; code: string };
+
+/** GET /videos (one item) */
+export interface VideoSummary {
+  id: string;
+  code: string;
+  title: string;
+  client: ClientRef;
+  format: string;
+  aspect: string;
+  urgency: "rush" | "priority" | "standard";
+  stage: import("./production.js").VideoStageKey;
+  dueDate: string | null;
+  publishDate: string | null;
+  editor: Who;
+  director: Who;
+  camera: Who;
+  clipNo: string | null;
+  protected: boolean;
+  editProgress: { done: number; total: number };
+  qcProgress: { passed: number; failed: number; total: number };
+  revisionsUsed: number;
+  allowance: number | null;
+  overdue: boolean;
+  month: string | null;
+  shootId: string | null;
+  latestVersion: { label: string; status: string } | null;
+  platforms: string[];
+}
+
+/** GET /videos/:id */
+export interface VideoDetail extends VideoSummary {
+  agreement: { id: string; title: string; revisionsPerDeliverable: number } | null;
+  plannedMinutes: number;
+  loggedMinutes: number;
+  delayReason: string | null;
+  notes: string | null;
+  protectedAt: string | null;
+  protectedBy: Who;
+  editSteps: { step: string; done: boolean; by: Who; at: string | null }[];
+  qc: { key: string; label: string; hint: string; result: "pass" | "fail" | null; note: string | null; by: Who; at: string | null }[];
+  versions: {
+    id: string;
+    label: string;
+    number: number;
+    status: "internal" | "sent" | "changes_requested" | "approved";
+    duration: string | null;
+    notes: string | null;
+    link: string | null;
+    file: StoredFile | null;
+    sentAt: string | null;
+    decidedAt: string | null;
+    by: Who;
+    createdAt: string;
+    comments: { id: string; author: string; at: number | null; text: string; resolved: boolean; createdAt: string }[];
+  }[];
+  changeRequests: {
+    id: string;
+    kind: string;
+    summary: string;
+    estimate: number | null;
+    dateImpactDays: number | null;
+    status: string;
+    by: Who;
+    createdAt: string;
+  }[];
+  history: { from: string | null; to: string; note: string | null; by: Who; at: string }[];
+  timeLogs: { id: string; date: string; minutes: number; note: string | null; by: Who }[];
+  content: { id: string; title: string; script: { hook: string; body: string; cta: string; onScreen: string } | null } | null;
+  shoot: { id: string; title: string; date: string; status: string } | null;
+  files: StoredFile[];
+  moves: { to: import("./production.js").VideoStageKey; blocked: string | null }[];
+}
+
+/** GET /content (one item), GET /content/:id */
+export interface ContentItem {
+  id: string;
+  client: ClientRef;
+  title: string;
+  pillar: string;
+  format: string;
+  source: string;
+  stage: "idea" | "topic" | "research" | "script" | "approval" | "ready";
+  owner: Who;
+  month: string;
+  due: string | null;
+  pick: "picked" | "skipped" | null;
+  notes: string;
+  research: string;
+  links: { label: string; url: string }[];
+  scripts: {
+    id: string;
+    number: number;
+    label: string;
+    hook: string;
+    body: string;
+    cta: string;
+    onScreen: string;
+    status: "draft" | "review" | "sent" | "changes" | "approved";
+    clientNote: string | null;
+    by: Who;
+    createdAt: string;
+    sentAt: string | null;
+    decidedAt: string | null;
+  }[];
+  video: { id: string; code: string; stage: string } | null;
+  updatedAt: string;
+}
+
+/** GET /topic-lists (one item) */
+export interface TopicList {
+  id: string;
+  month: string;
+  client: ClientRef;
+  needed: number;
+  status: "draft" | "sent" | "confirmed";
+  sentAt: string | null;
+  confirmedAt: string | null;
+  items: ContentItem[];
+  picked: number;
+}
+
+/** GET /cycles (one item) */
+export interface CycleRow {
+  id: string;
+  month: string;
+  agreement: { id: string; title: string; monthlyFee: number };
+  client: ClientRef;
+  promised: number;
+  carriedIn: number;
+  delivered: number;
+  inMaking: number;
+  planned: number;
+  notStarted: number;
+  status: "upcoming" | "in_progress" | "reconciling" | "closed";
+  decision: "carry" | "credit" | "forfeit" | null;
+  decisionNote: string | null;
+  credit: number | null;
+  closedAt: string | null;
+}
+
+/** GET /shoots (one item) */
+export interface ShootSummary {
+  id: string;
+  title: string;
+  client: ClientRef;
+  date: string;
+  callTime: string | null;
+  location: string | null;
+  batchNo: string | null;
+  kit: string;
+  status: import("./production.js").ShootStatus;
+  camera: Who;
+  director: Who;
+  videos: number;
+  packed: number;
+  received: number;
+  items: number;
+  openIncidents: number;
+}
+
+/** GET /shoots/:id */
+export interface ShootDetail extends Omit<ShootSummary, "kit" | "videos" | "packed" | "received" | "items" | "openIncidents"> {
+  kit: { key: string; name: string; items: string[] };
+  notes: string | null;
+  kitTicks: Record<string, { packed?: boolean; shot?: boolean; received?: boolean }>;
+  preShootItems: string[];
+  preShoot: Record<string, boolean>;
+  /** `name` is the client's own name on their sign-off; `byName` is the team member who signed or recorded it. */
+  signatures: Partial<Record<"giver" | "receiver" | "client", { by: string | null; byName: string | null; name: string | null; at: string }>>;
+  videos: { id: string; code: string; title: string; urgency: string; clipNo: string | null; protected: boolean; editor: Who; stage: string }[];
+  incidents: { id: string; items: string[]; note: string; resolved: boolean; by: Who; createdAt: string }[];
+}
+
+/** GET /publishing (one item) */
+export interface PublishingItem {
+  id: string;
+  code: string;
+  title: string;
+  client: ClientRef;
+  stage: string;
+  publishDate: string | null;
+  platforms: string[];
+  approvedVersion: string | null;
+  posts: {
+    id: string;
+    videoId: string;
+    platform: string;
+    handle: string;
+    connectionId: string;
+    scheduledAt: string;
+    caption: string | null;
+    status: "scheduled" | "published";
+    publishedUrl: string | null;
+    publishedAt: string | null;
+    proofFileId: string | null;
+  }[];
+}
+
+/** GET /publishing/quotas (one item) */
+export interface QuotaRow extends CycleRow {
+  scheduled: number;
+  atRisk: boolean;
+}
+
+/** GET /change-requests (one item) */
+export interface ChangeRequestRow {
+  id: string;
+  kind: string;
+  summary: string;
+  estimate: number | null;
+  dateImpactDays: number | null;
+  status: string;
+  createdAt: string;
+  client: string | null;
+  video: { id: string; code: string; title: string; revisionsUsed: number; allowance: number | null } | null;
+}
+
+/** GET /clients/:id/platforms (one item) */
+export interface PlatformConnectionRow {
+  id: string;
+  platform: string;
+  handle: string;
+  status: string;
+  connectedAt: string;
 }

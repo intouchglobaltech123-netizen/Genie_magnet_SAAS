@@ -113,6 +113,7 @@ export class ClientsService {
         state: c.state,
         billingAddress: c.billingAddress,
         notes: c.notes,
+        pillars: c.pillars,
         archivedAt: c.archivedAt,
         createdAt: c.createdAt,
         contacts: c.contacts.map((p) => ({ id: p.id, ...contactTerms(p) })),

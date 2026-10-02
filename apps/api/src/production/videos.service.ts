@@ -17,6 +17,7 @@ import {
   type VideoUpdate,
 } from "@gm/shared";
 import { AuditService, changes } from "../audit/audit.service.js";
+import { lockRow } from "../common/lock-row.js";
 import { FilesService } from "../files/files.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
@@ -395,7 +396,9 @@ export class VideosService {
   }
 
   private async moveIn(tx: TenantTx, v: { id: string; code: string; title: string; stage: string; editorId: string | null }, to: VideoStageKey, note?: string) {
-    await tx.video.update({ where: { id: v.id }, data: { stage: to } });
+    // A revision is a new cut, so its quality check starts again.
+    const recheck = v.stage === "revision";
+    await tx.video.update({ where: { id: v.id }, data: { stage: to, ...(recheck ? { qc: {} } : {}) } });
     await tx.videoStageChange.create({
       data: { agencyId: this.tenant.agencyId, videoId: v.id, from: v.stage as VideoStageKey, to, note, by: this.tenant.userId },
     });
@@ -404,7 +407,7 @@ export class VideosService {
       entity: "video",
       entityId: v.id,
       before: { code: v.code, stage: v.stage },
-      after: { code: v.code, stage: to, note: note ?? null },
+      after: { code: v.code, stage: to, note: note ?? null, ...(recheck ? { qualityCheck: "starts again" } : {}) },
     });
     if (to === "internal_qc")
       await this.notifications.notify(
@@ -448,13 +451,17 @@ export class VideosService {
   }
 
   async editStep(id: string, step: string, done: boolean) {
-    const v = await this.find(id);
+    await this.find(id);
     const s = await this.settings.get();
     if (!s.editSteps.includes(step)) throw new BadRequestException("That is not one of your edit steps.");
-    const steps = { ...(v.editSteps as StepMap) };
-    if (done) steps[step] = { by: this.tenant.userId ?? null, at: new Date().toISOString() };
-    else delete steps[step];
-    await this.tenant.db.video.update({ where: { id }, data: { editSteps: steps as Prisma.InputJsonValue } });
+    await this.tenant.tx(async (tx) => {
+      await lockRow(tx, "videos", id);
+      const cur = await tx.video.findUniqueOrThrow({ where: { id }, select: { editSteps: true } });
+      const steps = { ...(cur.editSteps as StepMap) };
+      if (done) steps[step] = { by: this.tenant.userId ?? null, at: new Date().toISOString() };
+      else delete steps[step];
+      await tx.video.update({ where: { id }, data: { editSteps: steps as Prisma.InputJsonValue } });
+    });
     return this.get(id);
   }
 
@@ -481,10 +488,12 @@ export class VideosService {
     if (!c) throw new BadRequestException("That is not one of your quality checks.");
     if (result === "fail" && !note)
       throw new BadRequestException({ message: "Say what must be fixed.", issues: [{ path: "note", message: "Say what must be fixed" }] });
-    const qc = { ...(v.qc as QcMap) };
-    if (result) qc[check] = { result, note: note ?? null, by: this.tenant.userId ?? null, at: new Date().toISOString() };
-    else delete qc[check];
     await this.tenant.tx(async (tx) => {
+      await lockRow(tx, "videos", id);
+      const cur = await tx.video.findUniqueOrThrow({ where: { id }, select: { qc: true } });
+      const qc = { ...(cur.qc as QcMap) };
+      if (result) qc[check] = { result, note: note ?? null, by: this.tenant.userId ?? null, at: new Date().toISOString() };
+      else delete qc[check];
       await tx.video.update({ where: { id }, data: { qc: qc as Prisma.InputJsonValue } });
       await this.audit.record(tx, { action: "qc", entity: "video", entityId: id, after: { code: v.code, check: c.label, result, note: note ?? null } });
       if (result === "fail")

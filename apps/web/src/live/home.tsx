@@ -39,6 +39,8 @@ import {
   useProposals,
   useStages,
   useTeam,
+  useVideos,
+  useContentList,
 } from "./queries";
 
 interface Step {
@@ -200,6 +202,11 @@ export function LiveHome() {
   const toIssue = useInvoices("status=draft", can("invoices", "approve"));
   const overdue = useInvoices("overdue=1", can("invoices", "view"));
   const onboarding = useOnboardingList(can("onboarding", "view"));
+  const videos = useVideos("", can("production", "view"));
+  const scripts = useContentList("stage=script", can("content", "approve"));
+  const toQc = (videos.data ?? []).filter((v) => v.stage === "internal_qc").length;
+  const late = (videos.data ?? []).filter((v) => v.overdue).length;
+  const toReview = (scripts.data ?? []).filter((c) => c.scripts[0]?.status === "review").length;
   const attention = (onboarding.data ?? []).filter((o) => o.remindersDue.length > 0 || o.window.state === "overdue").length;
   const renewals = useAgreements("renewal=1", can("agreements", "view"));
   const stages = useStages();
@@ -227,6 +234,11 @@ export function LiveHome() {
           {can("crm", "approve") && !!approvals.data?.length && (
             <Shortcut href="/app/sales" icon={BadgePercent} title="Discounts waiting for your approval" value={approvals.data.length} />
           )}
+          {can("production", "approve") && toQc > 0 && (
+            <Shortcut href="/app/production?tab=qc" icon={ShieldCheck} title="Videos waiting for the quality check" value={toQc} />
+          )}
+          {can("content", "approve") && toReview > 0 && <Shortcut href="/app/content" icon={FileText} title="Scripts to review" value={toReview} />}
+          {can("production", "view") && late > 0 && <Shortcut href="/app/production" icon={CalendarClock} title="Videos past their due date" value={late} />}
           {can("onboarding", "view") && attention > 0 && (
             <Shortcut href="/app/onboarding" icon={ClipboardList} title="Onboarding: reminders due or overdue" value={attention} />
           )}
