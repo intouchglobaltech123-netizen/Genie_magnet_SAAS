@@ -47,6 +47,10 @@ import { ENV, type Env, loadEnv } from "./env.js";
 import { HealthController } from "./health/health.controller.js";
 import { ImportsController } from "./imports/imports.controller.js";
 import { ImportsService } from "./imports/imports.service.js";
+import { DailyChecks } from "./jobs/daily-checks.service.js";
+import { JobRunner } from "./jobs/job-runner.js";
+import { JobsController } from "./jobs/jobs.controller.js";
+import { JobsService } from "./jobs/jobs.service.js";
 import { PrismaService } from "./prisma/prisma.service.js";
 import { AgencyService } from "./settings/agency.service.js";
 import { PackagesService } from "./settings/packages.service.js";
@@ -93,6 +97,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     LeadsController,
     ProposalsController,
     ImportsController,
+    JobsController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -137,6 +142,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     LeadsService,
     ProposalsService,
     ImportsService,
+    JobsService,
+    DailyChecks,
+    JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.
     { provide: APP_GUARD, useClass: RateLimitGuard },
     { provide: APP_GUARD, useClass: PermissionGuard },

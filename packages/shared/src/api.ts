@@ -653,3 +653,27 @@ export interface PlatformConnectionRow {
   status: string;
   connectedAt: string;
 }
+
+/** A background job as Settings → Background jobs shows it. */
+export interface JobRow {
+  id: string;
+  name: string;
+  label: string;
+  status: "queued" | "running" | "done" | "failed";
+  /** The day a daily job is for. */
+  date: string | null;
+  attempts: number;
+  maxAttempts: number;
+  runAt: string;
+  lastError: string | null;
+  result: unknown;
+  createdAt: string;
+  finishedAt: string | null;
+}
+
+export interface JobOverview {
+  failed: number;
+  waiting: number;
+  /** The latest run of each daily job. */
+  daily: { name: string; label: string; date: string | null; status: JobRow["status"] | null; finishedAt: string | null }[];
+}

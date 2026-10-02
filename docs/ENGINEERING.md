@@ -8,11 +8,10 @@ How to run, test and change Genie Magnet OS. Decisions behind this setup are in 
 | ----------------- | -------------------------------------------------------------------------------------- |
 | `apps/web`        | Next.js web app — the real app under `/app` (`src/live`) and the clickable demo at `/` |
 | `apps/api`        | NestJS API (modular monolith) — health, tenant context, first module: clients          |
-| `apps/worker`     | BullMQ worker — notifications, Genie Assistant rules, publishing                       |
 | `packages/shared` | `@gm/shared` — domain enums and Zod schemas used by every app                          |
 | `packages/db`     | `@gm/db` — Prisma schema, migrations (incl. row-level security), tenant-scoped client  |
 | `packages/config` | `@gm/config` — shared TypeScript settings                                              |
-| `infra`           | Local stack: PostgreSQL, Redis, MinIO (files), Mailpit (email)                         |
+| `infra`           | Local stack: PostgreSQL, MinIO (files), Mailpit (email)                                |
 | `docs`            | ADRs, database design, plans for Genie Magnet                                          |
 
 ## Quick start without Docker
@@ -28,7 +27,7 @@ The web app sends `/api/*` to the API (`apps/web/next.config.ts`), so the browse
 1. Node 22 (`.nvmrc`) and Docker Desktop.
 2. `npm install`
 3. `cp .env.example .env`
-4. `npm run infra:up` — starts PostgreSQL, Redis, MinIO and Mailpit (inbox at http://localhost:8025).
+4. `npm run infra:up` — starts PostgreSQL, MinIO and Mailpit (inbox at http://localhost:8025).
 5. `npm run db:migrate` — applies migrations as the schema owner.
 6. `npm run db:seed` — sample agencies (Genie Magnet and Zen Studio) with people, packages, clients, agreements and leads.
 7. Run what you need:
@@ -82,6 +81,16 @@ Email confirmation is off while testing (`REQUIRE_EMAIL_VERIFICATION=false`), so
 - **Files** (`/files`): an upload starts with a record and a signed upload link valid for an hour; the browser sends the file straight to the API (`PUBLIC_API_URL`), not through the web app, which would hold it in memory (cut off at 10 MB). Downloads use signed links valid for an hour. Files are kept under `FILES_DIR`, one folder per agency (on Railway: a volume mounted there), up to `FILE_MAX_MB` each, of the kinds listed in `packages/shared/src/files.ts`. Who may upload, see or remove a file follows the area of the record it belongs to. Clients upload through their onboarding link the same way.
 - **Notifications** (`/notifications`): written in the same transaction as the change they report, never to the person who made it, and not for kinds the person has switched off. Kinds are in `packages/shared/src/notifications.ts`; email joins as a second channel in the last step.
 
+## Background jobs
+
+Work that happens outside a request (ADR 0010): the daily checks each agency gets every morning (videos due tomorrow or late, onboarding reminders to send, agreements coming up for renewal, invoices that became overdue, the month's delivery set up and last month to close, unfinished uploads cleared), and later WhatsApp, email and posting to platforms.
+
+- **Queue a job inside the transaction that needs it:** `jobs.enqueue(tx, name, payload, { key, runAt })`. Give it a business key (e.g. `onboarding.remind:<id>:day2`) so it is never queued twice.
+- **A job runs inside its agency** in one transaction that also marks it done. Write its work against the `tx` it is given; a job that calls an outside service keeps that call short and has a key so a retry does not send twice.
+- **Failures** are tried again after 1 minute, 5 minutes, 30 minutes and 2 hours, then kept as failed: Settings → Background jobs lists them with Try again, and people who may change settings are notified.
+- **Running them:** `RUN_JOBS=true` runs them in the API process (`npm run dev:local` does this); `npm run dev:worker` runs them on their own. Daily jobs run at `JOBS_DAILY_AT` UTC (default 02:30, 08:00 in India). Tests call `JobRunner.tick(now)` with the time they need.
+- **Adding a job:** a name and label in `packages/shared/src/jobs.ts`, a handler in `JobRunner`, and a test.
+
 ## Permissions
 
 Each agency edits its own permission matrix (Settings → Roles): areas × roles, each cell none / view / edit / approve, some areas limited to "own records". Defaults and the check functions are in `packages/shared/src/permissions.ts`; the API reads the person's row on every request.
@@ -108,7 +117,7 @@ Times are stored without a time zone and read as UTC. The database is set to UTC
 1. **Every new tenant table** gets `agency_id`, an index on it, and a line in the RLS migration. The schema guard test fails the build otherwise.
 2. **Services reach the database only through `TenantDb`** (`forAgency` / `withAgency`). Never create a Prisma client in a module.
 3. **Every endpoint** validates its body with a `@gm/shared` schema (`ZodPipe`) and declares `@Can(area, level)` or `@Public()` ([ADR 0004](adr/0004-authorization-casl.md)); a missing rule fails CI.
-4. **Background jobs carry `agencyId`** and validate their payload (`apps/worker/src/jobs.ts`).
+4. **Background jobs carry `agencyId`** and run inside that agency (`apps/api/src/jobs`, ADR 0010).
 5. **No secrets, personal data or real client data** in code, fixtures, logs or screenshots. Test data uses sample names.
 6. **Money is whole rupees.** No floats.
 

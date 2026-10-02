@@ -28,7 +28,7 @@ jobs:
       - run: npm run build
 
   services:
-    name: API, worker and cross-tenant suite
+    name: API, background jobs and cross-tenant suite
     runs-on: ubuntu-latest
     timeout-minutes: 20
     services:
@@ -72,6 +72,6 @@ jobs:
           DATABASE_OWNER_URL: ${{ env.TEST_DATABASE_OWNER_URL }}
           SHADOW_DATABASE_URL: postgresql://genie_owner:owner-ci@localhost:5432/genie_shadow
       - name: Unit tests
-        run: npm test -w @gm/shared -w worker
+        run: npm test -w @gm/shared
       - name: Cross-tenant suite (database and API) — a failure blocks the merge
         run: npm test -w @gm/db -w api

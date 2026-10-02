@@ -51,7 +51,7 @@ As a user, I want to upload brand files and documents with previews, so onboardi
 - S3-compatible storage (MinIO locally), per-agency key prefix, signed upload and download links that expire.
 - Size and type limits; files linked to records through `files`.
 
-**P1-06 · Job reliability (S)**
+**P1-06 · Job reliability (S)** — **Done**, with jobs kept in PostgreSQL instead of Redis ([ADR 0010](../adr/0010-background-jobs-postgres.md)): queued in the same transaction as the change, a business key so nothing is queued twice, tried again after 1 minute, 5 minutes, 30 minutes and 2 hours, then listed in Settings → Background jobs with Try again (and the people who may change settings are told). Daily checks for every agency each morning: videos due tomorrow or late, onboarding reminders to send and onboarding past its window, agreements coming up for renewal or ended without one, invoices that became overdue, the month's delivery set up and last month to close, unfinished uploads cleared. They run in the API process (`RUN_JOBS`) or on their own (`dist/worker.js`). `/jobs`.
 As an operator, I want failed jobs retried and then listed with their reason, so nothing silently disappears.
 
 - Retries with exponential back-off; after the last try the job lands in an exceptions list with a retry action.

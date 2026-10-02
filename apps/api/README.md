@@ -1,3 +1,3 @@
 # api (planned)
 
-NestJS + Prisma + PostgreSQL + Redis/BullMQ + Better Auth + CASL. Not part of the frontend demo.
+NestJS + Prisma + PostgreSQL + Better Auth; background jobs in PostgreSQL (`dist/worker.js`, ADR 0010). Not part of the frontend demo.

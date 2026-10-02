@@ -95,6 +95,8 @@ const api = spawn(process.execPath, [join(root, "apps/api/dist/main.js")], {
     WEB_ORIGIN: "http://localhost:3000",
     TEST_SIGN_IN: "true",
     REQUIRE_EMAIL_VERIFICATION: "false",
+    // Background jobs in the same process (ADR 0010): the daily reminders and checks.
+    RUN_JOBS: "true",
   },
 });
 

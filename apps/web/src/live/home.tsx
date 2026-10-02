@@ -15,6 +15,7 @@ import {
   ReceiptIndianRupee,
   RefreshCcw,
   ShieldCheck,
+  TriangleAlert,
   Users,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
@@ -41,6 +42,7 @@ import {
   useTeam,
   useVideos,
   useContentList,
+  useJobOverview,
 } from "./queries";
 
 interface Step {
@@ -209,6 +211,7 @@ export function LiveHome() {
   const toReview = (scripts.data ?? []).filter((c) => c.scripts[0]?.status === "review").length;
   const attention = (onboarding.data ?? []).filter((o) => o.remindersDue.length > 0 || o.window.state === "overdue").length;
   const renewals = useAgreements("renewal=1", can("agreements", "view"));
+  const jobs = useJobOverview(can("settings", "edit"));
   const stages = useStages();
   const open = new Set((stages.data ?? []).filter((s) => s.kind === "open").map((s) => s.key));
   const today = new Date().toISOString().slice(0, 10);
@@ -231,6 +234,9 @@ export function LiveHome() {
           )}
         </div>
         <div className="space-y-3">
+          {can("settings", "edit") && !!jobs.data?.failed && (
+            <Shortcut href="/app/settings/jobs" icon={TriangleAlert} title="Background jobs that failed" value={jobs.data.failed} />
+          )}
           {can("crm", "approve") && !!approvals.data?.length && (
             <Shortcut href="/app/sales" icon={BadgePercent} title="Discounts waiting for your approval" value={approvals.data.length} />
           )}

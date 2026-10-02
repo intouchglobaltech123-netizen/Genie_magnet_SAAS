@@ -1,6 +1,6 @@
 # ADR 0007 — Background jobs with BullMQ and Redis
 
-- **Status:** Accepted · Phase 0 · skeleton implemented (`apps/worker`)
+- **Status:** Superseded by [ADR 0010](0010-background-jobs-postgres.md) — jobs moved to PostgreSQL and the API's code; `apps/worker` removed.
 
 ## Context
 

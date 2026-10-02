@@ -17,6 +17,12 @@ export const NOTIFICATION_KINDS = [
   { key: "qc_ready", group: "Delivery", label: "A video waits for the internal quality check" },
   { key: "qc_failed", group: "Delivery", label: "My video failed the quality check" },
   { key: "revision_requested", group: "Delivery", label: "The client asks for changes to a video I edit" },
+  { key: "video_due", group: "Delivery", label: "A video I work on is due tomorrow, or is late" },
+  { key: "onboarding_reminder", group: "Clients", label: "A client's onboarding reminder is due, or their onboarding is past its window" },
+  { key: "renewal_due", group: "Clients", label: "An agreement comes up for renewal, or ends without one" },
+  { key: "invoice_overdue", group: "Money", label: "An invoice becomes overdue" },
+  { key: "month_to_close", group: "Delivery", label: "Last month's delivery waits to be closed" },
+  { key: "job_failed", group: "Settings", label: "Background work failed after all its tries" },
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number]["key"];
 export const NOTIFICATION_KEYS = NOTIFICATION_KINDS.map((k) => k.key) as [NotificationKind, ...NotificationKind[]];

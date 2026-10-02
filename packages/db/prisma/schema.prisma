@@ -291,6 +291,33 @@ model NotificationPreference {
   @@map("notification_preferences")
 }
 
+/// Background work (ADR 0010): written in the same transaction as the change that needs it, claimed by the job runner,
+/// retried with back-off and kept as an exception after the last try.
+model Job {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  agencyId    String    @map("agency_id") @db.Uuid
+  /// One of JOB_NAMES in @gm/shared.
+  name        String
+  payload     Json      @default("{}")
+  /// Business key; the same key is never queued twice for an agency (no double reminders on retry or reschedule).
+  key         String?
+  /// queued (waiting, or waiting to retry), running, done, failed (an exception after the last try)
+  status      String    @default("queued")
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(5) @map("max_attempts")
+  runAt       DateTime  @default(now()) @map("run_at")
+  lockedAt    DateTime? @map("locked_at")
+  lastError   String?   @map("last_error")
+  result      Json?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  finishedAt  DateTime? @map("finished_at")
+
+  @@unique([agencyId, key])
+  @@index([status, runAt])
+  @@index([agencyId, status, createdAt])
+  @@map("jobs")
+}
+
 // ───────────────────────────── Sales, clients & packages ─────────────────────────────
 
 enum BusinessStage {

@@ -3,7 +3,7 @@ import { ForbiddenException, Inject, Injectable, type NestMiddleware, Optional, 
 import type { NextFunction, Request, Response } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import { createPrisma, forAgency, type TenantClient, withAgency } from "@gm/db";
-import { type AreaKey, OWNER_ROLE, type PermissionMatrix, scopeOf } from "@gm/shared";
+import { type AreaKey, FULL_ACCESS, OWNER_ROLE, type PermissionMatrix, scopeOf } from "@gm/shared";
 import { AUTH, AUTH_PRISMA, type Auth } from "../auth/auth.js";
 import { locals } from "../common/request-context.js";
 import { ENV, type Env } from "../env.js";
@@ -30,6 +30,14 @@ export function currentTenant(): TenantContext | undefined {
  */
 export function asLinkHolder<T>(agencyId: string, fn: () => Promise<T>): Promise<T> {
   return storage.run({ agencyId, role: "link", permissions: {} }, fn);
+}
+
+/**
+ * Runs `fn` inside one agency as the app itself: a background job (ADR 0010). Nobody is signed in, so nothing is
+ * recorded against a person and nobody is left out of a notification.
+ */
+export function asSystem<T>(agencyId: string, fn: () => Promise<T>): Promise<T> {
+  return storage.run({ agencyId, role: "system", permissions: FULL_ACCESS }, fn);
 }
 
 /**
@@ -115,9 +123,9 @@ export class TenantDb {
     return forAgency(this.prisma.client, agencyId, userId);
   }
 
-  /** Several operations in one transaction. */
-  tx<T>(fn: Parameters<typeof withAgency<T>>[2]) {
+  /** Several operations in one transaction (5 seconds at most unless `timeout` says otherwise). */
+  tx<T>(fn: Parameters<typeof withAgency<T>>[2], options?: { timeout?: number }) {
     const { agencyId, userId } = this.ctx();
-    return withAgency(this.prisma.client, agencyId, fn, userId);
+    return withAgency(this.prisma.client, agencyId, fn, userId, options);
   }
 }

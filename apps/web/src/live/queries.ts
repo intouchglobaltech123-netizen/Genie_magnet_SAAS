@@ -18,6 +18,8 @@ import {
   type ContentItem,
   type ContentUpdate,
   type CycleRow,
+  type JobOverview,
+  type JobRow,
   type PlatformConnectionRow,
   type PostInput,
   type ProductionSettings,
@@ -110,6 +112,7 @@ export const keys = {
   cycles: ["cycles"] as const,
   changeRequests: ["change-requests"] as const,
   productionSettings: ["production-settings"] as const,
+  jobs: ["jobs"] as const,
 };
 
 // ─── Session ──────────────────────────────────────────────────────────
@@ -938,5 +941,21 @@ export function useCycleAction() {
         ? api(`/cycles/generate`, { body: { month: v.month } })
         : api(`/cycles/${v.id}/close`, { body: { decision: v.decision, note: v.note } }),
     onSuccess: refresh,
+  });
+}
+
+// ─── Background jobs ──────────────────────────────────────────────────
+
+export const useJobs = (status: "" | "failed") =>
+  useQuery({ queryKey: [...keys.jobs, status], queryFn: () => api<JobRow[]>(`/jobs${status ? `?status=${status}` : ""}`), refetchInterval: 30_000 });
+
+export const useJobOverview = (enabled = true) =>
+  useQuery({ queryKey: [...keys.jobs, "overview"], queryFn: () => api<JobOverview>("/jobs/overview"), enabled, refetchInterval: 60_000 });
+
+export function useRetryJob() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api<JobRow>(`/jobs/${id}/retry`, { body: {} }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.jobs }),
   });
 }

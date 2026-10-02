@@ -10,6 +10,7 @@ Short records of decisions that are expensive to change. Add one when a decision
 | [0004](0004-authorization-casl.md)         | Permissions: the agency's own matrix, shared by API and web | Accepted · implemented  |
 | [0005](0005-api-contract-openapi.md)       | REST + OpenAPI generated from shared schemas                | Accepted · started      |
 | [0006](0006-shared-zod-schemas.md)         | One set of Zod schemas and enums                            | Accepted · implemented  |
-| [0007](0007-background-jobs-bullmq.md)     | BullMQ + Redis; jobs carry `agencyId`                       | Accepted · skeleton     |
+| [0007](0007-background-jobs-bullmq.md)     | BullMQ + Redis; jobs carry `agencyId`                       | Superseded by 0010      |
 | [0008](0008-genie-assistant-ai-adapter.md) | Genie Assistant: rules first, model drafts, human decides   | Accepted · Phase 4      |
 | [0009](0009-esm-prisma7-toolchain.md)      | ESM packages, Prisma 7, pinned versions                     | Accepted                |
+| [0010](0010-background-jobs-postgres.md)   | Background jobs in PostgreSQL, run by the API's code        | Accepted · implemented  |

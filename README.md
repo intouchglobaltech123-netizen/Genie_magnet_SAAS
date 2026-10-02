@@ -8,11 +8,10 @@ The operating system for Genie Magnet's content agency — built by InTouch Glob
 | ----------------- | ----------------------------------------------------------------- | ---------------------------------------- |
 | `apps/web`        | Next.js + React web app                                           | Clickable demo with sample data (hosted) |
 | `apps/api`        | NestJS API — modular monolith, tenant context, OpenAPI at `/docs` | Phase 0 skeleton, tested                 |
-| `apps/worker`     | BullMQ worker — reminders, WhatsApp, Genie Assistant, publishing  | Phase 0 skeleton, tested                 |
 | `packages/shared` | Domain enums and Zod schemas shared by every app                  | Phase 0                                  |
 | `packages/db`     | Prisma 7 schema v0, migrations with row-level security            | Phase 0, cross-tenant suite passing      |
 | `packages/config` | Shared TypeScript settings                                        | Phase 0                                  |
-| `infra`           | Local PostgreSQL, Redis, MinIO and Mailpit (Docker Compose)       | Phase 0                                  |
+| `infra`           | Local PostgreSQL, MinIO and Mailpit (Docker Compose)              | Phase 0                                  |
 | `apps/mobile`     | React Native + Expo field app                                     | Phase 7                                  |
 
 ## Run the demo

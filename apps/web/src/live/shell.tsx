@@ -33,6 +33,7 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Sun,
+  Timer,
   Users,
   X,
 } from "lucide-react";
@@ -98,6 +99,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Production", href: "/app/settings/production", icon: SlidersHorizontal, area: "production" },
       { title: "Team", href: "/app/settings/team", icon: Users, area: "team" },
       { title: "Roles and permissions", href: "/app/settings/roles", icon: ShieldCheck, area: "team" },
+      { title: "Background jobs", href: "/app/settings/jobs", icon: Timer, area: "settings" },
       { title: "Audit log", href: "/app/audit", icon: History, area: "audit" },
     ],
   },

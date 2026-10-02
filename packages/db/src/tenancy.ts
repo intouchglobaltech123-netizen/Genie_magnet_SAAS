@@ -55,11 +55,17 @@ export async function findQuestionnaireLink(prisma: PrismaClient, tokenHash: str
 }
 
 /** Several operations in one transaction, all inside the agency (e.g. create a client with its contacts). */
-export async function withAgency<T>(prisma: PrismaClient, agencyId: string, fn: (tx: TenantTx) => Promise<T>, userId?: string): Promise<T> {
+export async function withAgency<T>(
+  prisma: PrismaClient,
+  agencyId: string,
+  fn: (tx: TenantTx) => Promise<T>,
+  userId?: string,
+  options?: { timeout?: number },
+): Promise<T> {
   assertAgencyId(agencyId);
   return prisma.$transaction(async (tx) => {
     await tx.$executeRaw`SELECT set_config('app.agency_id', ${agencyId}, TRUE)`;
     await tx.$executeRaw`SELECT set_config('app.user_id', ${userId ?? ""}, TRUE)`;
     return fn(tx);
-  });
+  }, options);
 }

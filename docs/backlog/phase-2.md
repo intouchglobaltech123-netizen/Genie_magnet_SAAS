@@ -53,7 +53,7 @@ Stories are refined into full acceptance criteria near the end of Phase 1. Check
 
 **P2-13 · Time and calendar** — **Partly done:** time logged against videos, with planned editing time per format. Time against shoots and a calendar view are still to do.
 
-**P2-14 · Notifications** — **Partly done:** video assigned, ready for the quality check, check failed, revision asked, script to approve and decided. "Due soon" comes with background jobs.
+**P2-14 · Notifications** — **Done:** video assigned, ready for the quality check, check failed, revision asked, script to approve and decided; each morning, videos due tomorrow and videos that became late, and on the 1st, last month to close.
 
 **P2-15 · Screens** — **Done.** Content (board, topic lists, idea bank) and the item page; Production (board, sheet, quality check, revisions) and the video page; Shoots and the shoot sheet; Publishing (to publish, quotas, published); Monthly delivery; Settings → Production; videos and platforms on the client page; shortcuts on Home.
 

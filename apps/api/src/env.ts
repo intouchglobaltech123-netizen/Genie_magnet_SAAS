@@ -40,6 +40,18 @@ export const envSchema = z
     FILE_MAX_MB: z.coerce.number().int().min(1).max(10_000).default(1024),
     /** Signs upload and download links; falls back to BETTER_AUTH_SECRET. */
     FILES_SECRET: z.string().min(32, "FILES_SECRET must be at least 32 characters").optional(),
+    /**
+     * Run background jobs in this process (ADR 0010). On for a single server; off on the API when a separate worker
+     * process (`node dist/worker.js`, always on) runs them. Off in tests, which run the jobs themselves.
+     */
+    RUN_JOBS: z.stringbool().default(false),
+    /** When the daily jobs run, in UTC (02:30 UTC is 08:00 in India). */
+    JOBS_DAILY_AT: z
+      .string()
+      .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use 24-hour time, e.g. 02:30")
+      .default("02:30"),
+    /** How often the job runner looks for work. */
+    JOBS_POLL_SECONDS: z.coerce.number().int().min(1).max(300).default(10),
   })
   .refine((e) => !(e.NODE_ENV === "production" && e.AUTH_MODE === "dev-header"), {
     message: "AUTH_MODE=dev-header is not allowed in production",
