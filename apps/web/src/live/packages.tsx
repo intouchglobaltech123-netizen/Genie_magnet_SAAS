@@ -31,7 +31,82 @@ export const PLATFORM_LABEL: Record<string, string> = {
 };
 const KIND_LABEL: Record<DeliverableKind, string> = { video: "Video", post: "Post", story: "Story", other: "Other" };
 
-type Line = { name: string; perMonth: string; kind: DeliverableKind };
+export type Line = { name: string; perMonth: string; kind: DeliverableKind };
+
+/** Deliverables a month (packages and agreements). Errors are keyed like the schema: `deliverables.0.name`. */
+export function DeliverablesEditor({ lines, onChange, errors }: { lines: Line[]; onChange: (lines: Line[]) => void; errors: Record<string, string> }) {
+  const setLine = (i: number, patch: Partial<Line>) => onChange(lines.map((l, j) => (j === i ? { ...l, ...patch } : l)));
+  return (
+    <div className="space-y-2">
+      <div className="text-body font-medium text-text-secondary">
+        Deliverables each month <span className="text-danger">*</span>
+      </div>
+      {lines.map((l, i) => (
+        <div key={i} className="grid grid-cols-[1fr_90px_120px_32px] items-start gap-2">
+          <Input aria-label="Deliverable" placeholder="e.g. Reels" value={l.name} onChange={(e) => setLine(i, { name: e.target.value })} />
+          <Input aria-label="How many a month" type="number" min={1} value={l.perMonth} onChange={(e) => setLine(i, { perMonth: e.target.value })} />
+          <Select
+            aria-label="Kind"
+            value={l.kind}
+            onValueChange={(v) => setLine(i, { kind: v as DeliverableKind })}
+            options={DELIVERABLE_KINDS.map((k) => ({ value: k, label: KIND_LABEL[k] }))}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Remove this deliverable"
+            disabled={lines.length === 1}
+            onClick={() => onChange(lines.filter((_, j) => j !== i))}
+          >
+            <X />
+          </Button>
+          {(errors[`deliverables.${i}.name`] || errors[`deliverables.${i}.perMonth`]) && (
+            <p className="col-span-4 text-body text-danger">{errors[`deliverables.${i}.name`] ?? errors[`deliverables.${i}.perMonth`]}</p>
+          )}
+        </div>
+      ))}
+      {errors.deliverables && <p className="text-body text-danger">{errors.deliverables}</p>}
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        disabled={lines.length >= 20}
+        onClick={() => onChange([...lines, { name: "", perMonth: "1", kind: "video" }])}
+      >
+        <Plus />
+        Add a deliverable
+      </Button>
+    </div>
+  );
+}
+
+export function PlatformPicker({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+  return (
+    <div className="space-y-1.5">
+      <div className="text-body font-medium text-text-secondary">Platforms</div>
+      <div className="flex flex-wrap gap-2">
+        {PLATFORMS.map((p) => {
+          const on = value.includes(p);
+          return (
+            <button
+              key={p}
+              type="button"
+              aria-pressed={on}
+              onClick={() => onChange(on ? value.filter((x) => x !== p) : [...value, p])}
+              className={cn(
+                "cursor-pointer rounded-full border px-3 py-1 text-body transition-colors",
+                on ? "border-primary bg-primary-soft text-primary" : "border-border text-text-secondary hover:border-secondary/40",
+              )}
+            >
+              {PLATFORM_LABEL[p]}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 type Form = {
   name: string;
   description: string;
@@ -70,7 +145,6 @@ function PackageDialog({ editing, open, onOpenChange }: { editing: Package | nul
   const [f, setF] = useState<Form>(() => (editing ? toForm(editing) : blank));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const set = (k: keyof Form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
-  const setLine = (i: number, patch: Partial<Line>) => setF({ ...f, deliverables: f.deliverables.map((l, j) => (j === i ? { ...l, ...patch } : l)) });
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,47 +205,7 @@ function PackageDialog({ editing, open, onOpenChange }: { editing: Package | nul
               <Textarea rows={2} value={f.description} onChange={set("description")} />
             </Field>
 
-            <div className="space-y-2">
-              <div className="text-body font-medium text-text-secondary">
-                Deliverables each month <span className="text-danger">*</span>
-              </div>
-              {f.deliverables.map((l, i) => (
-                <div key={i} className="grid grid-cols-[1fr_90px_120px_32px] items-start gap-2">
-                  <Input aria-label="Deliverable" placeholder="e.g. Reels" value={l.name} onChange={(e) => setLine(i, { name: e.target.value })} />
-                  <Input aria-label="How many a month" type="number" min={1} value={l.perMonth} onChange={(e) => setLine(i, { perMonth: e.target.value })} />
-                  <Select
-                    aria-label="Kind"
-                    value={l.kind}
-                    onValueChange={(v) => setLine(i, { kind: v as DeliverableKind })}
-                    options={DELIVERABLE_KINDS.map((k) => ({ value: k, label: KIND_LABEL[k] }))}
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label="Remove this deliverable"
-                    disabled={f.deliverables.length === 1}
-                    onClick={() => setF({ ...f, deliverables: f.deliverables.filter((_, j) => j !== i) })}
-                  >
-                    <X />
-                  </Button>
-                  {(errors[`deliverables.${i}.name`] || errors[`deliverables.${i}.perMonth`]) && (
-                    <p className="col-span-4 text-body text-danger">{errors[`deliverables.${i}.name`] ?? errors[`deliverables.${i}.perMonth`]}</p>
-                  )}
-                </div>
-              ))}
-              {errors.deliverables && <p className="text-body text-danger">{errors.deliverables}</p>}
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={f.deliverables.length >= 20}
-                onClick={() => setF({ ...f, deliverables: [...f.deliverables, { name: "", perMonth: "1", kind: "video" }] })}
-              >
-                <Plus />
-                Add a deliverable
-              </Button>
-            </div>
+            <DeliverablesEditor lines={f.deliverables} onChange={(deliverables) => setF({ ...f, deliverables })} errors={errors} />
 
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Shoot days a month" error={errors.shootDays}>
@@ -190,28 +224,7 @@ function PackageDialog({ editing, open, onOpenChange }: { editing: Package | nul
               </datalist>
             </div>
 
-            <div className="space-y-1.5">
-              <div className="text-body font-medium text-text-secondary">Platforms</div>
-              <div className="flex flex-wrap gap-2">
-                {PLATFORMS.map((p) => {
-                  const on = f.platforms.includes(p);
-                  return (
-                    <button
-                      key={p}
-                      type="button"
-                      aria-pressed={on}
-                      onClick={() => setF({ ...f, platforms: on ? f.platforms.filter((x) => x !== p) : [...f.platforms, p] })}
-                      className={cn(
-                        "cursor-pointer rounded-full border px-3 py-1 text-body transition-colors",
-                        on ? "border-primary bg-primary-soft text-primary" : "border-border text-text-secondary hover:border-secondary/40",
-                      )}
-                    >
-                      {PLATFORM_LABEL[p]}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <PlatformPicker value={f.platforms} onChange={(platforms) => setF({ ...f, platforms })} />
             {save.error && !(save.error instanceof ApiError && save.error.body.issues) && <Alert tone="danger">{errorMessage(save.error)}</Alert>}
           </DialogBody>
           <DialogFooter>

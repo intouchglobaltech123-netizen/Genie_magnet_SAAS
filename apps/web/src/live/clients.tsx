@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Building2, FileSpreadsheet, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Building2, CalendarClock, FileSpreadsheet, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { clientInput, scopeOf } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
@@ -13,16 +14,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, EmptyState, SkeletonRows } from "@/components/ui/feedback";
 import { Field, Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { ApiError, errorMessage } from "./api";
+import { inr } from "./packages";
 import { useCan, useClients, useCreateClient, useMe } from "./queries";
 
-const FITMENT: Record<string, string> = { amazing: "Amazing", bread_winning: "Bread-winning", convenience: "Convenience", dangerous: "Dangerous" };
-const FITMENT_TONE = { amazing: "success", bread_winning: "info", convenience: "neutral", dangerous: "danger" } as const;
+export const FITMENT: Record<string, string> = { amazing: "Amazing", bread_winning: "Bread-winning", convenience: "Convenience", dangerous: "Dangerous" };
+export const FITMENT_TONE = { amazing: "success", bread_winning: "info", convenience: "neutral", dangerous: "danger" } as const;
 
 const empty = { name: "", code: "", industry: "", city: "", contactName: "", contactPhone: "", contactEmail: "", approver: true };
 
 function AddClientDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
+  const router = useRouter();
   const create = useCreateClient();
   const [f, setF] = useState(empty);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -46,9 +50,10 @@ function AddClientDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
     setErrors({});
     create.mutate(parsed.data, {
       onSuccess: (c) => {
-        toast.success(`${c.name} added`);
+        toast.success(`${c.name} added`, { description: "Add its agreement, more contacts and billing details here." });
         setF(empty);
         onOpenChange(false);
+        router.push(`/app/clients/${c.id}`);
       },
       onError: (err) => {
         if (err instanceof ApiError && err.body.issues) setErrors(Object.fromEntries(err.body.issues.map((i) => [i.path, i.message])));
@@ -116,10 +121,14 @@ function AddClientDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
 }
 
 export function LiveClients() {
+  const router = useRouter();
   const me = useMe().data!;
   const can = useCan();
   const clients = useClients();
   const [adding, setAdding] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const archived = (clients.data ?? []).filter((c) => c.archivedAt).length;
+  const shown = (clients.data ?? []).filter((c) => showArchived || !c.archivedAt);
   const ownOnly = !!me.permissions && scopeOf(me.permissions, "clients") === "own";
   const canAdd = can("clients", "edit");
 
@@ -159,7 +168,7 @@ export function LiveClients() {
           <div className="p-4">
             <Alert tone="danger">{errorMessage(clients.error)}</Alert>
           </div>
-        ) : !clients.data.length ? (
+        ) : !shown.length ? (
           <EmptyState
             icon={Building2}
             title="No clients yet"
@@ -191,21 +200,28 @@ export function LiveClients() {
                   <TH>City</TH>
                   <TH>Approver</TH>
                   <TH>Fitment</TH>
-                  <TH numeric>Health</TH>
+                  <TH numeric>A month</TH>
                 </TR>
               </THead>
               <TBody>
-                {clients.data.map((c) => {
+                {shown.map((c) => {
                   const approver = c.contacts.find((p) => p.approver) ?? c.contacts[0];
                   return (
-                    <TR key={c.id}>
+                    <TR key={c.id} className="cursor-pointer" onClick={() => router.push(`/app/clients/${c.id}`)}>
                       <TD>
                         <Badge tone="outline" className="font-mono">
                           {c.code}
                         </Badge>
                       </TD>
                       <TD>
-                        <div className="font-medium">{c.name}</div>
+                        <Link href={`/app/clients/${c.id}`} className="font-medium hover:underline" onClick={(e) => e.stopPropagation()}>
+                          {c.name}
+                        </Link>
+                        {c.archivedAt && (
+                          <Badge tone="neutral" className="ml-2">
+                            Archived
+                          </Badge>
+                        )}
                         {c.industry && <div className="text-muted-foreground">{c.industry}</div>}
                       </TD>
                       <TD>{c.city ?? "—"}</TD>
@@ -220,7 +236,17 @@ export function LiveClients() {
                         )}
                       </TD>
                       <TD>{c.fitment ? <Badge tone={FITMENT_TONE[c.fitment]}>{FITMENT[c.fitment]}</Badge> : "—"}</TD>
-                      <TD numeric>{c.health ?? "—"}</TD>
+                      <TD numeric>
+                        {c.monthlyFee ? inr(c.monthlyFee) : "—"}
+                        {c.renewalDue && (
+                          <div>
+                            <Badge tone="warning">
+                              <CalendarClock />
+                              Renewal due
+                            </Badge>
+                          </div>
+                        )}
+                      </TD>
                     </TR>
                   );
                 })}
@@ -229,6 +255,12 @@ export function LiveClients() {
           </div>
         )}
       </Card>
+      {archived > 0 && (
+        <label className="mt-3 flex items-center justify-end gap-2 text-body text-muted-foreground">
+          <Switch checked={showArchived} onCheckedChange={setShowArchived} />
+          Show archived clients ({archived})
+        </label>
+      )}
       <AddClientDialog open={adding} onOpenChange={setAdding} />
     </>
   );

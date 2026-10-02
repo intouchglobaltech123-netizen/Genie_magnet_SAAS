@@ -113,9 +113,11 @@ As the account manager, when a deal is won I want the client, agreement, onboard
 
 ## Clients, agreements and invoices
 
-**P1-18 · Clients and contacts (M)** — extends the Phase 0 endpoint: edit, archive, approvers, WhatsApp group link, account owner; list and profile screens.
+**P1-18 · Clients and contacts (M)** — **Done.** The client page: details, who looks after it, business stage and fitment, WhatsApp group, notes; contacts (add, edit, remove, approvers; at least one kept); billing details for invoices (name on invoices, GSTIN checked and its state filled in, state, address). Archive (only without a running agreement) and restore; delete only a client added by mistake (nothing attached). Each change in the audit log. `/clients/:id`; screens Clients and the client page.
+- Extends the Phase 0 endpoint: edit, archive, approvers, WhatsApp group link, account owner; list and profile screens.
 
-**P1-19 · Agreements (M)** — package, terms, quotas per month, revision allowance, billing schedule, start/end, status; renewal-due flag 45 days before the end.
+**P1-19 · Agreements (M)** — **Done.** Made from a package (terms and monthly deliverables copied, so package edits never change it) or written out, as a draft; signed off by someone who may approve agreements; then running, paused or ended (ending early needs a reason). A draft's terms can change; a signed agreement changes by renewing it, which drafts the next one to follow it. Due for renewal is worked out from the end date and the agency's notice (Settings → Agency profile, default 45 days); signed renewals that have not started show as upcoming. Waiting for sign-off and renewals due on Home. Mark as won makes the agreement with the proposal's deliverables. `/agreements`; screens Agreements and the client page.
+- Package, terms, quotas per month, revision allowance, billing schedule, start/end, status; renewal-due flag 45 days before the end.
 
 **P1-20 · Invoice settings and basic invoices (M)**
 As finance, I want to set up our own invoice details once and then raise GST invoices with a PDF, so billing can start in the new system.
@@ -168,7 +170,7 @@ As the account manager, I want the client profile and a draft Business Canvas bu
 
 **P1-26 · Data layer (M)** — **Done 1 Oct 2026.** Response types in `@gm/shared`, TanStack Query hooks in `apps/web/src/live`, session handling, menus that follow the person's permissions (generated client deferred; see [ADR 0005](../adr/0005-api-contract-openapi.md)).
 
-**P1-27 · Screens on real data (L)** — under `/app`; the demo stays at `/` until each module is live. **Done 1 Oct 2026:** sign in (with the test sign-in picker), create an account and agency, accept an invitation, switch agency, Home, Clients (list, add), Team (invite with a shareable link, change role, remove), Roles and permissions (the matrix editor), Audit log. **Still to come:** CRM, Agreements, Invoices, Onboarding (internal, assisted, public link), agency settings and packages, client detail and editing.
+**P1-27 · Screens on real data (L)** — under `/app`; the demo stays at `/` until each module is live. **Done 1 Oct 2026:** sign in (with the test sign-in picker), create an account and agency, accept an invitation, switch agency, Home, Clients (list, add), Team (invite with a shareable link, change role, remove), Roles and permissions (the matrix editor), Audit log. **Since then:** agency settings and packages, import, the sales pipeline, the client page and agreements. **Still to come:** Invoices, Onboarding (internal, assisted, public link).
 
 ## Operations
 

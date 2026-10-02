@@ -76,12 +76,17 @@ export async function seedSampleData(prisma: PrismaClient, agencies: SeedAgency[
             fitment: c.fitment,
             health: c.health,
             accountOwnerId: userId(c.owner),
+            legalName: c.billing?.legalName,
+            gstin: c.billing?.gstin,
+            state: c.billing?.state,
+            billingAddress: c.billing?.address,
             contacts: { create: c.contacts.map((contact) => ({ agencyId: a.id, ...contact })) },
           },
           select: { id: true },
         });
         if (c.agreement) {
           const { packageName, startDate, endDate, ...terms } = c.agreement;
+          const pkg = a.packages.find((p) => p.name === packageName);
           await tx.agreement.create({
             data: {
               agencyId: a.id,
@@ -90,6 +95,11 @@ export async function seedSampleData(prisma: PrismaClient, agencies: SeedAgency[
               startDate: new Date(startDate),
               endDate: new Date(endDate),
               ...terms,
+              // The package's deliverables are the agreement's monthly quotas.
+              deliverables: pkg?.deliverables ?? [],
+              shootDays: pkg?.shootDays ?? 0,
+              platforms: pkg?.platforms ?? [],
+              signedAt: new Date(startDate),
             },
           });
         }

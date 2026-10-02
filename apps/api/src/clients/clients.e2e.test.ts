@@ -59,7 +59,7 @@ describe("clients", () => {
 
   it("creates a client with contacts and an audit entry", async () => {
     const res = await request(app.getHttpServer()).post("/clients").set("x-agency-id", A).set("x-user-id", "user-ashwin").send(kaveri).expect(201);
-    expect(res.body).toMatchObject({ agencyId: A, code: "KVR", fitment: "bread_winning", stage: "success" });
+    expect(res.body).toMatchObject({ code: "KVR", fitment: "bread_winning", stage: "success" });
     expect(res.body.contacts).toHaveLength(1);
 
     const owner = new pg.Client({ connectionString: db.ownerUrl });

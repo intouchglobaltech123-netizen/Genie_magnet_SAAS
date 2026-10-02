@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BadgePercent, Building2, CalendarClock, CheckCircle2, Circle, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, BadgePercent, Building2, CalendarClock, CheckCircle2, Circle, FileSignature, RefreshCcw, ShieldCheck, Users } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, SectionCard } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useAgency, useAudit, useCan, useClients, useLeads, useMe, usePackages, useProposals, useStages, useTeam } from "./queries";
+import { useAgency, useAgreements, useAudit, useCan, useClients, useLeads, useMe, usePackages, useProposals, useStages, useTeam } from "./queries";
 
 interface Step {
   title: string;
@@ -151,6 +151,8 @@ export function LiveHome() {
   const clients = useClients(can("clients", "view"));
   const leads = useLeads(can("crm", "view"));
   const approvals = useProposals("pending_approval", can("crm", "approve"));
+  const toSign = useAgreements("status=draft", can("agreements", "approve"));
+  const renewals = useAgreements("renewal=1", can("agreements", "view"));
   const stages = useStages();
   const open = new Set((stages.data ?? []).filter((s) => s.kind === "open").map((s) => s.key));
   const today = new Date().toISOString().slice(0, 10);
@@ -176,8 +178,16 @@ export function LiveHome() {
           {can("crm", "approve") && !!approvals.data?.length && (
             <Shortcut href="/app/sales" icon={BadgePercent} title="Discounts waiting for your approval" value={approvals.data.length} />
           )}
+          {can("agreements", "approve") && !!toSign.data?.length && (
+            <Shortcut href="/app/agreements?view=drafts" icon={FileSignature} title="Agreements waiting for your sign-off" value={toSign.data.length} />
+          )}
+          {can("agreements", "view") && !!renewals.data?.length && (
+            <Shortcut href="/app/agreements?view=renewal" icon={RefreshCcw} title="Agreements due for renewal" value={renewals.data.length} />
+          )}
           {can("crm", "view") && <Shortcut href="/app/sales" icon={CalendarClock} title="Follow-ups due today" value={leads.data ? due : "…"} />}
-          {can("clients", "view") && <Shortcut href="/app/clients" icon={Building2} title="Clients" value={clients.data?.length ?? "…"} />}
+          {can("clients", "view") && (
+            <Shortcut href="/app/clients" icon={Building2} title="Clients" value={clients.data ? clients.data.filter((c) => !c.archivedAt).length : "…"} />
+          )}
           {can("team", "view") && <Shortcut href="/app/settings/team" icon={Users} title="People in the team" value={team.data?.members.length ?? "…"} />}
           {can("team", "view") && <Shortcut href="/app/settings/roles" icon={ShieldCheck} title="Roles and permissions" value="Open" />}
         </div>

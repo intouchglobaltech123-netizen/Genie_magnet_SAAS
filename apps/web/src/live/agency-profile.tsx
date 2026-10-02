@@ -58,6 +58,7 @@ type Form = {
   reminderDays: number[];
   languages: string[];
   discountLimit: string;
+  renewalNoticeDays: string;
 };
 
 const toForm = (a: AgencyProfile): Form => ({
@@ -73,6 +74,7 @@ const toForm = (a: AgencyProfile): Form => ({
   reminderDays: a.reminderDays,
   languages: a.languages,
   discountLimit: String(a.discountLimit),
+  renewalNoticeDays: String(a.renewalNoticeDays),
 });
 
 function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: boolean }) {
@@ -99,6 +101,7 @@ function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: bool
       reminderDays: f.reminderDays,
       languages: f.languages,
       discountLimit: Number(f.discountLimit),
+      renewalNoticeDays: Number(f.renewalNoticeDays),
     };
     const parsed = agencyProfileInput.safeParse(input);
     if (!parsed.success) {
@@ -295,13 +298,24 @@ function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: bool
             )}
           </div>
         </SectionCard>
-        <SectionCard title="Sales" description="How much discount a salesperson can give on their own.">
+        <SectionCard
+          title="Sales and agreements"
+          description="How much discount a salesperson can give on their own, and when renewals come up."
+          contentClassName="space-y-4"
+        >
           <Field
             label="Discount without approval (%)"
             hint="Growth OS default: 10%. Above this, a proposal waits for someone who may approve sales (the owner and managers by default)."
             error={errors.discountLimit}
           >
             <Input type="number" min={0} max={50} value={f.discountLimit} onChange={set("discountLimit")} className="w-28" />
+          </Field>
+          <Field
+            label="Renewal notice (days)"
+            hint="Growth OS default: 45. An agreement shows as due for renewal this many days before it ends."
+            error={errors.renewalNoticeDays}
+          >
+            <Input type="number" min={7} max={120} value={f.renewalNoticeDays} onChange={set("renewalNoticeDays")} className="w-28" />
           </Field>
         </SectionCard>
       </fieldset>

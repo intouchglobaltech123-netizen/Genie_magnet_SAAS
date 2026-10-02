@@ -26,7 +26,7 @@ export const PROPOSAL_STATUS: Record<Proposal["status"], { label: string; tone: 
 };
 
 /** Asks for a short note (rejecting a discount needs a reason). */
-function NoteDialog({
+export function NoteDialog({
   open,
   title,
   description,
@@ -264,7 +264,7 @@ export function WinDialog({ lead, open, onOpenChange }: { lead: LeadDetail | nul
     startDate: nextMonth,
   }));
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [done, setDone] = useState(false);
+  const [done, setDone] = useState<string | null>(null);
   if (!lead) return null;
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement>) => setF({ ...f, [k]: e.target.value });
   const chosen = usable.find((p) => p.id === f.proposalId);
@@ -288,7 +288,7 @@ export function WinDialog({ lead, open, onOpenChange }: { lead: LeadDetail | nul
     win.mutate(
       { leadId: lead.id, input },
       {
-        onSuccess: () => setDone(true),
+        onSuccess: (r) => setDone(r.clientId),
         onError: (err) => err instanceof ApiError && err.body.issues && setErrors(Object.fromEntries(err.body.issues.map((i) => [path(i.path), i.message]))),
       },
     );
@@ -304,7 +304,7 @@ export function WinDialog({ lead, open, onOpenChange }: { lead: LeadDetail | nul
               <DialogDescription>
                 {chosen
                   ? `The ${chosen.packageName} agreement starts on ${new Date(`${f.startDate}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}.`
-                  : "No agreement was made — add one from the client when it is signed."}{" "}
+                  : "No agreement was made — add one from the client's page when it is signed."}{" "}
                 Onboarding starts from the client once the onboarding screens arrive.
               </DialogDescription>
             </DialogHeader>
@@ -319,7 +319,7 @@ export function WinDialog({ lead, open, onOpenChange }: { lead: LeadDetail | nul
                 Back to the pipeline
               </Button>
               <Button asChild>
-                <Link href="/app/clients">Open clients</Link>
+                <Link href={`/app/clients/${done}`}>Open the client</Link>
               </Button>
             </DialogFooter>
           </>

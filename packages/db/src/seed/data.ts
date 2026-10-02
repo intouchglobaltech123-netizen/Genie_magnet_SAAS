@@ -20,10 +20,12 @@ export interface SeedClient {
   /** Email of the account owner (a seeded person). */
   owner: string;
   contacts: { name: string; title?: string; email?: string; phone: string; approver: boolean }[];
+  /** Billing details for invoices (invented GSTINs with valid check digits). */
+  billing?: { legalName?: string; gstin?: string; state: string; address?: string };
   agreement?: {
     title: string;
     packageName: string;
-    status: "active" | "renewal_due";
+    status: "active";
     startDate: string;
     endDate: string;
     monthlyFee: number;
@@ -183,6 +185,7 @@ export const genieMagnet: SeedAgency = {
         { name: "Ramesh Gounder", title: "Managing Partner", email: "ramesh@kaveriorganics.test", phone: "+91 94430 55101", approver: true },
         { name: "Nithya R", title: "Marketing Executive", email: "nithya@kaveriorganics.test", phone: "+91 94430 55102", approver: false },
       ],
+      billing: { legalName: "Kaveri Organics LLP", gstin: "33AAKFK4821M1Z5", state: "33", address: "14 Perundurai Road, Erode 638011" },
       agreement: {
         title: "Kaveri Organics · Growth Video Retainer",
         packageName: "Growth Video Pack",
@@ -203,10 +206,11 @@ export const genieMagnet: SeedAgency = {
       health: 92,
       owner: gm("priya"),
       contacts: [{ name: "Meenakshi Sundaram", title: "Owner", email: "meenakshi@srilakshmisilks.test", phone: "+91 94430 55201", approver: true }],
+      billing: { gstin: "33ABZPS7310K1Z1", state: "33", address: "22 Gandhi Road, Kanchipuram 631501" },
       agreement: {
         title: "Sri Lakshmi Silks · Festive Content Retainer",
         packageName: "Social Starter Pack",
-        status: "renewal_due",
+        status: "active",
         startDate: "2025-10-01",
         endDate: "2026-10-31",
         monthlyFee: 65000,
@@ -226,6 +230,7 @@ export const genieMagnet: SeedAgency = {
         { name: "Dr. Arvind Balaji", title: "Chief Dentist", email: "arvind@novadental.test", phone: "+91 94430 55301", approver: true },
         { name: "Kavya M", title: "Clinic Coordinator", email: "kavya@novadental.test", phone: "+91 94430 55302", approver: false },
       ],
+      billing: { legalName: "Nova Dental Care Pvt Ltd", gstin: "33AAJCN5126P1Z3", state: "33", address: "8 Race Course Road, Coimbatore 641018" },
       agreement: {
         title: "Nova Dental · Patient Education Series",
         packageName: "Authority Builder",
@@ -246,6 +251,8 @@ export const genieMagnet: SeedAgency = {
       health: 74,
       owner: gm("priya"),
       contacts: [{ name: "Suresh Kannan", title: "Director", email: "suresh@brightpath.test", phone: "+91 94430 55401", approver: true }],
+      // Billed to the head office in another state, so its invoices carry IGST.
+      billing: { legalName: "BrightPath Learning Pvt Ltd", gstin: "29AAGCB3307R1Z8", state: "29", address: "41 Residency Road, Bengaluru 560025" },
       agreement: {
         title: "BrightPath · Admissions Campaign (Partner)",
         packageName: "Campaign Sprint",
@@ -266,6 +273,7 @@ export const genieMagnet: SeedAgency = {
       health: 38,
       owner: gm("ashwin"),
       contacts: [{ name: "Vikram Shetty", title: "Sales Head", email: "vikram@urbannest.test", phone: "+91 94430 55501", approver: true }],
+      billing: { state: "33" },
       agreement: {
         title: "Urban Nest · Project Walkthroughs (Partner)",
         packageName: "Property Showcase",

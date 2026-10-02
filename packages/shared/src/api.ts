@@ -50,6 +50,15 @@ export interface Role {
   members: number;
 }
 
+export interface Contact {
+  id: string;
+  name: string;
+  title: string | null;
+  email: string | null;
+  phone: string;
+  approver: boolean;
+}
+
 /** GET /clients (one item) */
 export interface Client {
   id: string;
@@ -62,8 +71,64 @@ export interface Client {
   health: number | null;
   whatsappGroupUrl: string | null;
   accountOwnerId: string | null;
+  accountOwner: { id: string; name: string | null } | null;
+  legalName: string | null;
+  gstin: string | null;
+  /** GST state code (INDIAN_STATES). */
+  state: string | null;
+  billingAddress: string | null;
+  notes: string | null;
+  archivedAt: string | null;
   createdAt: string;
-  contacts: { id: string; name: string; title: string | null; email: string | null; phone: string; approver: boolean }[];
+  contacts: Contact[];
+  /** Fees a month of its active agreements. */
+  monthlyFee: number;
+  activeAgreements: number;
+  renewalDue: boolean;
+}
+
+/** An agreement (P1-19): GET /agreements, and on the client page. */
+export interface Agreement {
+  id: string;
+  clientId: string;
+  client: { id: string; name: string; code: string };
+  packageId: string | null;
+  packageName: string | null;
+  title: string;
+  status: "draft" | "active" | "paused" | "ended";
+  startDate: string;
+  endDate: string;
+  months: number;
+  monthlyFee: number;
+  billing: string;
+  revisionsPerDeliverable: number;
+  shootDays: number;
+  platforms: string[];
+  deliverables: DeliverableInput[];
+  videosPerMonth: number;
+  postsPerMonth: number;
+  notes: string | null;
+  /** Why it was paused or ended. */
+  statusNote: string | null;
+  renewsId: string | null;
+  renewedById: string | null;
+  signedBy: { id: string; name: string | null } | null;
+  signedAt: string | null;
+  createdAt: string;
+  /** Days until its end date (negative once past). */
+  daysLeft: number;
+  /** Signed off, but its start date is still to come. */
+  upcoming: boolean;
+  renewalDue: boolean;
+}
+
+/** GET /clients/:id */
+export interface ClientDetail extends Client {
+  /** Null when the person's role may not see agreements. */
+  agreements: Agreement[] | null;
+  /** The lead it was won from. */
+  lead: { id: string; name: string; company: string | null } | null;
+  canDelete: boolean;
 }
 
 /** GET /audit */
@@ -104,6 +169,7 @@ export interface AgencyProfile {
   reminderDays: number[];
   languages: string[];
   discountLimit: number;
+  renewalNoticeDays: number;
   plan: string;
 }
 

@@ -4,6 +4,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   type AgencyProfile,
   type AgencyProfileInput,
+  type Agreement,
+  type AgreementEnding,
+  type AgreementInput,
+  type AgreementRenewal,
+  type AgreementUpdate,
+  type ClientDetail,
+  type ClientUpdate,
+  type ContactInput,
+  type ContactUpdate,
   allows,
   type AreaKey,
   type AuditPage,
@@ -46,6 +55,7 @@ export const keys = {
   imports: ["imports"] as const,
   stages: ["pipeline-stages"] as const,
   leads: ["leads"] as const,
+  agreements: ["agreements"] as const,
 };
 
 // ─── Session ──────────────────────────────────────────────────────────
@@ -228,6 +238,95 @@ export function useCreateClient() {
   return useMutation({ mutationFn: (v: ClientInput) => api<Client>("/clients", { body: v }), onSuccess: refresh });
 }
 
+export const useClient = (id: string) => useQuery({ queryKey: [...keys.clients, id], queryFn: () => api<ClientDetail>(`/clients/${id}`) });
+
+/** Client and agreement changes show on the client page, the lists and Home. */
+function useRefreshClients() {
+  const qc = useQueryClient();
+  return () => Promise.all([keys.clients, keys.agreements].map((queryKey) => qc.invalidateQueries({ queryKey })));
+}
+
+export function useUpdateClient(id: string) {
+  const refresh = useRefreshClients();
+  return useMutation({ mutationFn: (v: ClientUpdate) => api<ClientDetail>(`/clients/${id}`, { method: "PATCH", body: v }), onSuccess: refresh });
+}
+
+export function useArchiveClient(id: string) {
+  const refresh = useRefreshClients();
+  return useMutation({
+    mutationFn: (archived: boolean) => api<ClientDetail>(`/clients/${id}/${archived ? "archive" : "restore"}`, { body: {} }),
+    onSuccess: refresh,
+  });
+}
+
+export function useDeleteClient() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api(`/clients/${id}`, { method: "DELETE" }),
+    onSuccess: (_r, id) => {
+      qc.removeQueries({ queryKey: [...keys.clients, id] });
+      return qc.invalidateQueries({ queryKey: keys.clients, exact: true });
+    },
+  });
+}
+
+export function useSaveContact(clientId: string) {
+  const refresh = useRefreshClients();
+  return useMutation({
+    mutationFn: (v: { id?: string; input: ContactInput | ContactUpdate }) =>
+      v.id
+        ? api<ClientDetail>(`/clients/${clientId}/contacts/${v.id}`, { method: "PATCH", body: v.input })
+        : api<ClientDetail>(`/clients/${clientId}/contacts`, { body: v.input }),
+    onSuccess: refresh,
+  });
+}
+
+export function useRemoveContact(clientId: string) {
+  const refresh = useRefreshClients();
+  return useMutation({ mutationFn: (id: string) => api<ClientDetail>(`/clients/${clientId}/contacts/${id}`, { method: "DELETE" }), onSuccess: refresh });
+}
+
+// ─── Agreements ───────────────────────────────────────────────────────
+
+/** `""` for all, `status=draft`, `renewal=1`… */
+export const useAgreements = (query = "", enabled = true) =>
+  useQuery({ queryKey: [...keys.agreements, query], queryFn: () => api<Agreement[]>(`/agreements${query ? `?${query}` : ""}`), enabled });
+
+export function useSaveAgreement() {
+  const refresh = useRefreshClients();
+  return useMutation({
+    mutationFn: (v: { id?: string; clientId: string; input: AgreementInput | AgreementUpdate }) =>
+      v.id ? api<Agreement>(`/agreements/${v.id}`, { method: "PATCH", body: v.input }) : api<Agreement>(`/clients/${v.clientId}/agreements`, { body: v.input }),
+    onSuccess: refresh,
+  });
+}
+
+export type AgreementStep =
+  | { step: "sign-off" | "resume" | "delete" }
+  | { step: "pause"; note?: string }
+  | { step: "end"; input: AgreementEnding }
+  | { step: "renew"; input: AgreementRenewal };
+
+export function useAgreementStep() {
+  const refresh = useRefreshClients();
+  return useMutation({
+    mutationFn: ({ id, ...v }: { id: string } & AgreementStep) => {
+      switch (v.step) {
+        case "delete":
+          return api<Agreement | undefined>(`/agreements/${id}`, { method: "DELETE" });
+        case "pause":
+          return api<Agreement>(`/agreements/${id}/pause`, { body: { note: v.note } });
+        case "end":
+        case "renew":
+          return api<Agreement>(`/agreements/${id}/${v.step}`, { body: v.input });
+        default:
+          return api<Agreement>(`/agreements/${id}/${v.step}`, { body: {} });
+      }
+    },
+    onSuccess: refresh,
+  });
+}
+
 export function useAudit(query: string, enabled = true) {
   return useQuery({ queryKey: keys.audit(query), queryFn: () => api<AuditPage>(`/audit${query ? `?${query}` : ""}`), enabled });
 }
@@ -342,7 +441,7 @@ export const useProposals = (status: string, enabled = true) =>
 
 function useRefreshDeals() {
   const qc = useQueryClient();
-  return () => Promise.all([keys.leads, ["proposals"], keys.clients, keys.me].map((queryKey) => qc.invalidateQueries({ queryKey })));
+  return () => Promise.all([keys.leads, ["proposals"], keys.clients, keys.agreements, keys.me].map((queryKey) => qc.invalidateQueries({ queryKey })));
 }
 
 export function useCreateProposal() {

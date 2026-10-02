@@ -7,7 +7,8 @@ import { AuditService } from "./audit/audit.service.js";
 import { AUTH, AUTH_PRISMA, createAuth } from "./auth/auth.js";
 import { MeController } from "./auth/me.controller.js";
 import { Outbox } from "./auth/outbox.js";
-import { ClientsController } from "./clients/clients.controller.js";
+import { AgreementsService } from "./clients/agreements.service.js";
+import { AgreementsController, ClientsController } from "./clients/clients.controller.js";
 import { ClientsService } from "./clients/clients.service.js";
 import { ErrorFilter } from "./common/error.filter.js";
 import { LeadsController, PipelineController, ProposalsController } from "./crm/crm.controller.js";
@@ -41,6 +42,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     RolesController,
     AuditController,
     ClientsController,
+    AgreementsController,
     PipelineController,
     LeadsController,
     ProposalsController,
@@ -72,6 +74,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     AgencyService,
     PackagesService,
     ClientsService,
+    AgreementsService,
     PipelineService,
     LeadsService,
     ProposalsService,

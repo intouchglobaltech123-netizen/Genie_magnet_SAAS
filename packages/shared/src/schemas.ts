@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { BUSINESS_STAGES, FITMENT_QUADRANTS, PLATFORMS, QUESTION_TYPES, SECTION_WHEN } from "./enums.js";
+import { gstin, STATE_CODES } from "./gst.js";
 
 /** Money is stored as whole rupees (INR). Paise are not used anywhere in the product. */
 export const rupees = z.number().int().nonnegative();
@@ -38,6 +39,11 @@ export const clientInput = z.object({
   fitment: z.enum(FITMENT_QUADRANTS).optional(),
   whatsappGroupUrl: z.url().optional(),
   contacts: z.array(contactInput).min(1, "Add at least one contact person"),
+  /** Billing details for invoices (all optional; the state is taken from the GSTIN when left out). */
+  legalName: z.string().trim().max(200).optional(),
+  gstin: gstin.optional(),
+  state: z.enum(STATE_CODES).optional(),
+  billingAddress: z.string().trim().max(500).optional(),
 });
 export type ClientInput = z.infer<typeof clientInput>;
 
@@ -171,6 +177,8 @@ export const agencyProfileInput = z
     languages: z.array(z.enum(LANGUAGE_CODES)).min(1, "Choose at least one language"),
     /** Largest discount (%) a proposal can carry without approval. */
     discountLimit: z.number().int("Whole percent only").min(0).max(50, "At most 50%"),
+    /** Days before an agreement ends that it shows as due for renewal. */
+    renewalNoticeDays: z.number().int("Whole days only").min(7, "At least 7 days").max(120, "At most 120 days"),
   })
   .partial()
   .superRefine((v, ctx) => {

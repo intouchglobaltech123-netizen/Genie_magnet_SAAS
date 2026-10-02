@@ -1,6 +1,16 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { Prisma } from "@gm/db";
-import { allows, discountedFee, FITMENT_QUADRANTS, type ProposalAnswer, type ProposalInput, type ProposalStatus, type WinInput } from "@gm/shared";
+import {
+  agreementEndDate,
+  allows,
+  discountedFee,
+  FITMENT_QUADRANTS,
+  gstinState,
+  type ProposalAnswer,
+  type ProposalInput,
+  type ProposalStatus,
+  type WinInput,
+} from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { PipelineService } from "./pipeline.service.js";
@@ -32,14 +42,6 @@ export const presentProposal = (p: Row, leadName?: string) => ({
   createdBy: p.createdBy,
   createdAt: p.createdAt,
 });
-
-/** Adds `months` to a date (the agreement ends the day before the same date that many months later). */
-function endOf(start: string, months: number) {
-  const d = new Date(`${start}T00:00:00Z`);
-  d.setUTCMonth(d.getUTCMonth() + months);
-  d.setUTCDate(d.getUTCDate() - 1);
-  return d;
-}
 
 /**
  * Proposals (P1-16) and winning the deal (P1-17). A discount within the agency's limit is approved at once; above it,
@@ -196,6 +198,10 @@ export class ProposalsService {
             stage: c.stage ? (c.stage.toLowerCase() as Lowercase<NonNullable<typeof c.stage>>) : undefined,
             fitment: c.fitment ? FITMENT[c.fitment] : undefined,
             whatsappGroupUrl: c.whatsappGroupUrl,
+            legalName: c.legalName,
+            gstin: c.gstin,
+            state: c.state ?? (c.gstin ? gstinState(c.gstin) : undefined),
+            billingAddress: c.billingAddress,
             accountOwnerId: lead.ownerId,
             contacts: { create: c.contacts!.map((contact) => ({ ...contact, agencyId })) },
           },
@@ -218,10 +224,17 @@ export class ProposalsService {
               title: `${client.name} · ${proposal.packageName}`,
               status: "active",
               startDate: new Date(`${input.startDate}T00:00:00Z`),
-              endDate: endOf(input.startDate, proposal.months),
+              endDate: new Date(`${agreementEndDate(input.startDate, proposal.months)}T00:00:00Z`),
               monthlyFee: proposal.monthlyFee,
               billing: pkg?.billing ?? "Monthly advance",
               revisionsPerDeliverable: pkg?.revisionsPerDeliverable ?? 2,
+              // The proposal's deliverables are the monthly quotas; the accepted proposal is the sign-off.
+              deliverables: proposal.deliverables as Prisma.InputJsonValue,
+              shootDays: pkg?.shootDays ?? 0,
+              platforms: pkg?.platforms ?? [],
+              signedBy: this.tenant.userId,
+              signedAt: new Date(),
+              createdBy: this.tenant.userId,
             },
             select: { id: true, title: true, monthlyFee: true, endDate: true },
           });

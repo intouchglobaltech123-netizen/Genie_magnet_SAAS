@@ -54,6 +54,8 @@ model Agency {
   languages     String[]       @default(["en"])
   /// Largest discount (%) a proposal can carry without approval (Growth OS sales authority, default 10).
   discountLimit Int            @default(10) @map("discount_limit")
+  /// Days before an agreement ends that it shows as due for renewal (P1-19).
+  renewalNoticeDays Int        @default(45) @map("renewal_notice_days")
   createdAt     DateTime       @default(now()) @map("created_at")
 
   memberships Membership[]
@@ -375,6 +377,14 @@ model Client {
   health           Int?
   whatsappGroupUrl String?        @map("whatsapp_group_url")
   accountOwnerId   String?        @map("account_owner_id")
+  /// Billing details for invoices (P1-20): name on the invoice, GSTIN, GST state code (decides CGST + SGST or IGST), address.
+  legalName        String?        @map("legal_name")
+  gstin            String?
+  state            String?
+  billingAddress   String?        @map("billing_address")
+  notes            String?
+  /// Archived clients leave the lists but keep their history.
+  archivedAt       DateTime?      @map("archived_at")
   createdAt        DateTime       @default(now()) @map("created_at")
 
   agency      Agency                  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
@@ -454,6 +464,19 @@ model Agreement {
   monthlyFee              Int             @map("monthly_fee")
   billing                 String
   revisionsPerDeliverable Int             @map("revisions_per_deliverable")
+  /// What it delivers each month (quotas), copied from the package or proposal when made: never changed by package edits.
+  deliverables            Json            @default("[]")
+  shootDays               Int             @default(0) @map("shoot_days")
+  platforms               String[]        @default([])
+  notes                   String?
+  /// Why it was paused or ended.
+  statusNote              String?         @map("status_note")
+  /// The agreement this one renews.
+  renewsId                String?         @map("renews_id") @db.Uuid
+  signedBy                String?         @map("signed_by")
+  signedAt                DateTime?       @map("signed_at")
+  createdBy               String?         @map("created_by")
+  createdAt               DateTime        @default(now()) @map("created_at")
 
   client  Client   @relation(fields: [clientId], references: [id], onDelete: Restrict)
   package Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
@@ -461,6 +484,7 @@ model Agreement {
 
   @@index([agencyId, clientId])
   @@index([agencyId, status])
+  @@index([agencyId, renewsId])
   @@map("agreements")
 }
 

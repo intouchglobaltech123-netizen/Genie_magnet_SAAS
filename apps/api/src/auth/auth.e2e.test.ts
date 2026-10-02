@@ -72,14 +72,15 @@ describe("sign-in and agencies (Better Auth spike)", () => {
     await owner.connect();
     const rows = await owner.query(`SELECT a.name, m.role FROM agencies a JOIN memberships m ON m.agency_id = a.id WHERE a.id = $1`, [genieMagnet.id]);
     const roles = await owner.query(`SELECT count(*)::int AS n FROM roles WHERE agency_id = $1`, [genieMagnet.id]);
-    await owner.end();
     expect(rows.rows).toEqual([{ name: "Genie Magnet", role: "owner" }]);
     // A new agency starts with the default roles, which it can then change (P1-11).
     expect(roles.rows[0].n).toBe(12);
 
     const created = await post(ashwin, "/clients", kaveri).expect(201);
-    expect(created.body.agencyId).toBe(genieMagnet.id);
+    const [saved] = (await owner.query(`SELECT agency_id FROM clients WHERE id = $1`, [created.body.id])).rows;
+    expect(saved.agency_id).toBe(genieMagnet.id);
     expect((await ashwin.get("/clients").expect(200)).body.map((c: { code: string }) => c.code)).toEqual(["KVR"]);
+    await owner.end();
   });
 
   it("switching agency switches the data, for the same person", async () => {

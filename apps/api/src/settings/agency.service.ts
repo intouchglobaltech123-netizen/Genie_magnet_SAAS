@@ -18,6 +18,7 @@ const PROFILE = {
   reminderDays: true,
   languages: true,
   discountLimit: true,
+  renewalNoticeDays: true,
   plan: true,
 } as const;
 
