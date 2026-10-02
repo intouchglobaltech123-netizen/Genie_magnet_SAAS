@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BUSINESS_STAGES, FITMENT_QUADRANTS, PLATFORMS, QUESTION_TYPES, SECTION_WHEN } from "./enums.js";
+import { BUSINESS_STAGES, FITMENT_QUADRANTS, PLATFORMS } from "./enums.js";
 import { gstin, STATE_CODES } from "./gst.js";
 
 /** Money is stored as whole rupees (INR). Paise are not used anywhere in the product. */
@@ -188,35 +188,6 @@ export const agencyProfileInput = z
   })
   .transform((v) => (v.reminderDays ? { ...v, reminderDays: [...new Set(v.reminderDays)].sort((a, b) => a - b) } : v));
 export type AgencyProfileInput = z.infer<typeof agencyProfileInput>;
-
-export const questionSchema = z.object({
-  key: z.string().regex(/^[a-z0-9_]+$/),
-  label: z.string().min(3),
-  type: z.enum(QUESTION_TYPES),
-  options: z.array(z.string()).optional(),
-  /** Field the answer is written to, e.g. "client.stage" — mapping is validated by the engine. */
-  mapsTo: z.string().optional(),
-  showIf: z.object({ key: z.string(), includes: z.string() }).optional(),
-});
-
-export const sectionSchema = z.object({
-  key: z.string().regex(/^[a-z0-9_]+$/),
-  title: z.string().min(2),
-  when: z.enum(SECTION_WHEN),
-  questions: z.array(questionSchema).min(1),
-});
-
-export const questionnaireTemplateSchema = z.object({
-  kind: z.enum(["client", "agency"]),
-  version: z.string().regex(/^\d+\.\d+$/),
-  windowDays: z.number().int().min(1).max(30).default(7),
-  sections: z.array(sectionSchema).min(1),
-});
-export type QuestionnaireTemplate = z.infer<typeof questionnaireTemplateSchema>;
-
-/** One answer as submitted: text, list or table rows. Validated against its question type server-side. */
-export const answerValue = z.union([z.string().max(10_000), z.array(z.string().max(500)).max(50), z.array(z.record(z.string(), z.string().max(500))).max(100)]);
-export type AnswerValue = z.infer<typeof answerValue>;
 
 /** Audit log filters (P1-03): per record (entity + entityId), per person, per date range; newest first. */
 export const auditQuery = z.object({

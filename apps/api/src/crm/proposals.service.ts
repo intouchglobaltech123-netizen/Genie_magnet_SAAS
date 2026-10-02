@@ -12,6 +12,7 @@ import {
   type WinInput,
 } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
+import { OnboardingService } from "../onboarding/onboarding.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { PipelineService } from "./pipeline.service.js";
 
@@ -54,6 +55,7 @@ export class ProposalsService {
     private readonly tenant: TenantDb,
     private readonly audit: AuditService,
     private readonly pipeline: PipelineService,
+    private readonly onboarding: OnboardingService,
   ) {}
 
   /** The lead, if the person may see it (roles limited to their own leads see only theirs). */
@@ -184,6 +186,7 @@ export class ProposalsService {
     }
     const pkg = proposal?.packageId ? await this.tenant.db.package.findFirst({ where: { id: proposal.packageId } }) : null;
     const won = (await this.pipeline.stages()).find((s) => s.kind === "won")!;
+    const onboarding = await this.onboarding.startingPoint("client");
     const c = input.client;
 
     try {
@@ -262,6 +265,9 @@ export class ProposalsService {
           }
         }
 
+        // Onboarding starts the same day: the questionnaire is ready to share or fill in with the client.
+        const onboardingId = await this.onboarding.startInWin(tx, client.id, onboarding);
+
         await tx.lead.update({ where: { id: leadId }, data: { stage: won.key, clientId: client.id, nextFollowUp: null } });
         await this.audit.record(tx, {
           action: "update",
@@ -270,7 +276,7 @@ export class ProposalsService {
           before: { name: lead.name, stage: lead.stage },
           after: { name: lead.name, stage: won.key, clientId: client.id },
         });
-        return { clientId: client.id, agreementId };
+        return { clientId: client.id, agreementId, onboardingId };
       });
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {

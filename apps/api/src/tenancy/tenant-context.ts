@@ -25,6 +25,14 @@ export function currentTenant(): TenantContext | undefined {
 }
 
 /**
+ * Runs `fn` inside one agency for someone who is not signed in: a client answering by private link (P1-22). The link
+ * has already been checked; no permissions are given, so only code written for the link runs.
+ */
+export function asLinkHolder<T>(agencyId: string, fn: () => Promise<T>): Promise<T> {
+  return storage.run({ agencyId, role: "link", permissions: {} }, fn);
+}
+
+/**
  * Resolves the agency for the request and keeps it for everything that runs in it.
  * better-auth: the session's active agency, checked against a live membership on every request, so a person
  * removed from an agency loses access at once even if their session still points at it.

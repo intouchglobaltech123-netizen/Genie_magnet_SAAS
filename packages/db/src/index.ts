@@ -2,8 +2,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "./generated/prisma/client.js";
 
 export * from "./generated/prisma/client.js";
-export { forAgency, withAgency, TenancyError, type TenantClient, type TenantTx } from "./tenancy.js";
-export { ensureDefaultRoles, ensureDefaultStages, setUpAgencyDefaults } from "./defaults.js";
+export { findQuestionnaireLink, forAgency, withAgency, TenancyError, type TenantClient, type TenantTx } from "./tenancy.js";
+export { ensureDefaultQuestionnaires, ensureDefaultRoles, ensureDefaultStages, setUpAgencyDefaults } from "./defaults.js";
 
 /**
  * Database client for the API and worker. `connectionString` must be the genie_app role

@@ -30,6 +30,7 @@ import { AgreementCard, AgreementDialog } from "./agreements";
 import { ApiError, errorMessage } from "./api";
 import { FITMENT, FITMENT_TONE } from "./clients";
 import { InvoiceTable, NewInvoiceDialog } from "./invoices";
+import { onboardingStatus } from "./onboarding";
 import { inr } from "./packages";
 import {
   useArchiveClient,
@@ -38,11 +39,62 @@ import {
   useDeleteClient,
   useInvoices,
   useMe,
+  useOnboardingList,
   useRemoveContact,
   useSaveContact,
+  useStartOnboarding,
   useTeam,
   useUpdateClient,
 } from "./queries";
+
+function ClientOnboarding({ clientId, archived }: { clientId: string; archived: boolean }) {
+  const can = useCan();
+  const router = useRouter();
+  const list = useOnboardingList();
+  const start = useStartOnboarding();
+  const o = list.data?.find((x) => x.client?.id === clientId);
+  if (list.isPending) return null;
+  const s = o && onboardingStatus(o);
+  return (
+    <SectionCard
+      title="Onboarding"
+      actions={
+        o ? (
+          <Button size="sm" variant="secondary" asChild>
+            <Link href={`/app/onboarding/${o.id}`}>Open</Link>
+          </Button>
+        ) : (
+          can("onboarding", "edit") &&
+          !archived && (
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={start.isPending}
+              onClick={() =>
+                start.mutate({ clientId }, { onSuccess: (r) => router.push(`/app/onboarding/${r.id}`), onError: (e) => toast.error(errorMessage(e)) })
+              }
+            >
+              Start onboarding
+            </Button>
+          )
+        )
+      }
+    >
+      {o && s ? (
+        <div className="space-y-1 text-body">
+          <Badge tone={s.tone} dot>
+            {s.label}
+          </Badge>
+          <p className="text-muted-foreground">
+            Required {o.progress.required.answered}/{o.progress.required.total} · within the window {o.progress.window.answered}/{o.progress.window.total}
+          </p>
+        </div>
+      ) : (
+        <p className="text-body text-muted-foreground">Not started. It starts by itself when a deal is won.</p>
+      )}
+    </SectionCard>
+  );
+}
 
 function ClientInvoices({ clientId }: { clientId: string }) {
   const can = useCan();
@@ -552,9 +604,10 @@ export function LiveClient({ id }: { id: string }) {
           ) : (
             <Alert tone="info">Your role does not show agreements.</Alert>
           )}
+          {can("onboarding", "view") && <ClientOnboarding clientId={c.id} archived={!!c.archivedAt} />}
           {can("invoices", "view") && <ClientInvoices clientId={c.id} />}
           <Alert tone="info" icon={Building2}>
-            Onboarding, content and videos for this client will show here as those parts of the app arrive.
+            Content and videos for this client will show here as those parts of the app arrive.
           </Alert>
         </div>
 

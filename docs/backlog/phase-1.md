@@ -105,7 +105,7 @@ As a salesperson, I want to send a proposal with a discount, and have discounts 
 
 - Discounts up to the sales authority (10 % by default, configurable) are auto-approved; above it, the owner approves or rejects with a note.
 
-**P1-17 · Deal won → client set up (M)** — **Done** (onboarding questionnaire and checklist added when the onboarding engine lands, P1-21+). Mark as won creates the client and contact from the lead and the agreement from the accepted proposal in one transaction, closes the lead and links it; each record in the audit log. Dragging a lead to Won opens this; it cannot be skipped.
+**P1-17 · Deal won → client set up (M)** — **Done**, including the onboarding questionnaire and checklist (started, not shared yet). Mark as won creates the client and contact from the lead and the agreement from the accepted proposal in one transaction, closes the lead and links it; each record in the audit log. Dragging a lead to Won opens this; it cannot be skipped.
 As the account manager, when a deal is won I want the client, agreement, onboarding questionnaire and checklist created automatically, so onboarding starts the same day.
 
 - Creates client and contacts, agreement from the package, questionnaire response (not yet sent), checklist; notifies the account manager.
@@ -137,14 +137,14 @@ As the owner, I want to bring in our existing clients, contacts, leads and team 
 
 ## Onboarding engine
 
-**P1-21 · Question builder and versions (L)**
+**P1-21 · Question builder and versions (L)** — **Done.** Settings → Onboarding questions: client and agency questionnaires start from the Growth OS sets; sections (required or within the window), questions (text, long, number, amount, one or several choices, yes/no, rating, table with fixed rows, files as links until file storage), help, examples, "can be left empty", what it is used for, the field it fills (business stage, industry, city, billing details; agency stage, city, website), Business Canvas block, "show only when" an earlier choice includes an option, translations per agency language, and the client checklist (ticks by hand, from an answer, a section, a signed agreement or an approver). Edits go into one draft; publishing makes the next version; onboarding already started keeps its version. `/questionnaires/:kind`.
 As the owner, I want to add, edit, reorder and remove onboarding questions myself, so the questionnaires fit how my agency works.
 
 - Client and agency templates start from the Growth OS question sets (Appendix C).
 - For each question: text, help, type (text, long text, number, currency, single/multiple choice, table, file), required or within the window, the field its answer fills, and translations (e.g. Tamil).
 - Edits go into a draft; publishing creates a new version; answers already given keep the version they were answered on.
 
-**P1-22 · Responses, public link and assisted mode (L)**
+**P1-22 · Responses, public link and assisted mode (L)** — **Done.** A private link per client (random token, only its hash kept, shown once; a new link replaces the old one; found through a row-level-security rule that reveals only that one questionnaire; tighter rate limits). The client page has the agency's name, logo and colour and the client's language; answers save as they type and are checked the same way on both sides; it opens at the next question. Assisted mode records who entered each answer; the agency picks the default mode. Answers fill mapped fields on the client or agency. `/onboarding`, `/public/onboarding/:token`; screens Onboarding, the client's onboarding, Fill in with the client, and the public page `/app/q/…`.
 As a client, I want to open a private link and answer at my own pace, and as an account manager I want to fill it with the client on a call, so onboarding works either way.
 
 - Answers save as the person types; the link opens at the next unanswered question; tokens are single-purpose and stored hashed.
@@ -152,25 +152,25 @@ As a client, I want to open a private link and answer at my own pace, and as an 
 - The client sees the questionnaire in the language chosen for them, where translations exist.
 - Branching (`showIf`) and answer-to-field mapping (e.g. business stage → client profile).
 
-**P1-23 · Progress and the onboarding gate (M)**
+**P1-23 · Progress and the onboarding gate (M)** — **Done.** Required and within-window progress (hidden and optional questions never count), the checklist ticking itself from answers, sections, a signed agreement or an approver, and the gate: open when the required part and mandatory items are done, or by an exception approved with a reason by someone who may approve onboarding.
 As the account manager, I want to see required and within-7-days progress and have checklist items tick themselves from answers, so I know when production can start.
 
 - Gate opens when required sections and mandatory checklist items are done, or an exception is approved by the owner.
 - Deeper sections never block work.
 
-**P1-24 · Reminders and flag (M)**
+**P1-24 · Reminders and flag (M)** — **Done for now:** the window starts when the link is first made (or the first answer is entered); reminders fall due on the agency's reminder days and stop once complete; the page gives a ready WhatsApp message to the client's approver and records each reminder once; overdue is flagged on the list and Home. Sending them automatically comes with email (the last step) and WhatsApp (Phase 3).
 As the account manager, I want reminders sent on day 2 and day 5 and a flag after the window, so answers come in without chasing.
 
 - Email and in-app for now (WhatsApp in Phase 3); idempotent jobs; stop when complete.
 
-**P1-25 · Outputs (M)**
+**P1-25 · Outputs (M)** — **Done.** Client: fields filled in from answers, and a draft Business Canvas from answers tagged with its blocks. Agency: business stage set on the profile, the packages table turned into packages with one click, and the main goal, team and Client Fitment Map shown from the answers.
 As the account manager, I want the client profile and a draft Business Canvas built from answers, and as the owner I want packages, main goal and team roles set up from the agency questionnaire.
 
 ## Web app
 
 **P1-26 · Data layer (M)** — **Done 1 Oct 2026.** Response types in `@gm/shared`, TanStack Query hooks in `apps/web/src/live`, session handling, menus that follow the person's permissions (generated client deferred; see [ADR 0005](../adr/0005-api-contract-openapi.md)).
 
-**P1-27 · Screens on real data (L)** — under `/app`; the demo stays at `/` until each module is live. **Done 1 Oct 2026:** sign in (with the test sign-in picker), create an account and agency, accept an invitation, switch agency, Home, Clients (list, add), Team (invite with a shareable link, change role, remove), Roles and permissions (the matrix editor), Audit log. **Since then:** agency settings and packages, import, the sales pipeline, the client page and agreements, invoices. **Still to come:** Onboarding (internal, assisted, public link).
+**P1-27 · Screens on real data (L)** — under `/app`; the demo stays at `/` until each module is live. **Done 1 Oct 2026:** sign in (with the test sign-in picker), create an account and agency, accept an invitation, switch agency, Home, Clients (list, add), Team (invite with a shareable link, change role, remove), Roles and permissions (the matrix editor), Audit log. **Since then:** agency settings and packages, import, the sales pipeline, the client page and agreements, invoices, onboarding (internal, assisted, public link) and the question builder.
 
 ## Operations
 

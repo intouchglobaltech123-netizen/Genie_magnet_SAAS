@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { agencyProfileInput, clientInput, EXAMPLE_PACKAGES, packageInput, packageTotals, questionnaireTemplateSchema } from "./schemas.js";
+import { agencyProfileInput, clientInput, EXAMPLE_PACKAGES, packageInput, packageTotals } from "./schemas.js";
 
 describe("clientInput", () => {
   it("accepts a client with an approver", () => {
@@ -56,16 +56,5 @@ describe("agencyProfileInput", () => {
     });
     expect(agencyProfileInput.safeParse({ windowDays: 5, reminderDays: [2, 6] }).success).toBe(false);
     expect(agencyProfileInput.safeParse({ logo: "data:image/svg+xml;base64,AAAA" }).success).toBe(false);
-  });
-});
-
-describe("questionnaireTemplateSchema", () => {
-  it("defaults the completion window to 7 days", () => {
-    const t = questionnaireTemplateSchema.parse({
-      kind: "client",
-      version: "1.0",
-      sections: [{ key: "basics", title: "Business basics", when: "required", questions: [{ key: "legal_name", label: "Business name", type: "text" }] }],
-    });
-    expect(t.windowDays).toBe(7);
   });
 });

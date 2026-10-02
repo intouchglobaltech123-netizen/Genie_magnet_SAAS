@@ -42,6 +42,18 @@ export type TenantClient = ReturnType<typeof forAgency>;
 /** The transaction client inside withAgency(). */
 export type TenantTx = Parameters<Parameters<PrismaClient["$transaction"]>[0]>[0];
 
+/**
+ * A private questionnaire link (P1-22): finds the one response whose token hash matches, without knowing the agency.
+ * Row-level security lets a transaction see a response only when `app.link_token` holds its token hash (policy
+ * link_access), so the link reveals nothing else; everything after this runs inside the response's agency as usual.
+ */
+export async function findQuestionnaireLink(prisma: PrismaClient, tokenHash: string) {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT set_config('app.link_token', ${tokenHash}, TRUE)`;
+    return tx.questionnaireResponse.findUnique({ where: { token: tokenHash }, select: { id: true, agencyId: true } });
+  });
+}
+
 /** Several operations in one transaction, all inside the agency (e.g. create a client with its contacts). */
 export async function withAgency<T>(prisma: PrismaClient, agencyId: string, fn: (tx: TenantTx) => Promise<T>, userId?: string): Promise<T> {
   assertAgencyId(agencyId);

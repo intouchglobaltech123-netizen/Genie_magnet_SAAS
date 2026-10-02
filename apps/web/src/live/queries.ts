@@ -10,6 +10,12 @@ import {
   type AgreementRenewal,
   type AgreementUpdate,
   type ClientDetail,
+  type AnswerValue,
+  type OnboardingDetail,
+  type OnboardingSummary,
+  type QuestionnaireDefinition,
+  type QuestionnaireKind,
+  type QuestionnaireVersions,
   type Invoice,
   type InvoiceInput,
   type InvoicePayment,
@@ -64,6 +70,8 @@ export const keys = {
   agreements: ["agreements"] as const,
   invoices: ["invoices"] as const,
   invoiceSettings: ["invoice-settings"] as const,
+  onboarding: ["onboarding"] as const,
+  questionnaires: ["questionnaires"] as const,
 };
 
 // ─── Session ──────────────────────────────────────────────────────────
@@ -534,4 +542,99 @@ export function useInvoiceStep() {
     },
     onSuccess: refresh,
   });
+}
+
+// ─── Onboarding ───────────────────────────────────────────────────────
+
+export const useQuestionnaire = (kind: QuestionnaireKind) =>
+  useQuery({ queryKey: [...keys.questionnaires, kind], queryFn: () => api<QuestionnaireVersions>(`/questionnaires/${kind}`) });
+
+export function useQuestionnaireStep(kind: QuestionnaireKind) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { step: "save"; definition: QuestionnaireDefinition } | { step: "publish" | "discard" }) =>
+      v.step === "save"
+        ? api<QuestionnaireVersions>(`/questionnaires/${kind}/draft`, { method: "PUT", body: v.definition })
+        : v.step === "publish"
+          ? api<QuestionnaireVersions>(`/questionnaires/${kind}/publish`, { body: {} })
+          : api<QuestionnaireVersions>(`/questionnaires/${kind}/draft`, { method: "DELETE" }),
+    onSuccess: (data) => qc.setQueryData([...keys.questionnaires, kind], data),
+  });
+}
+
+export const useOnboardingList = (enabled = true) => useQuery({ queryKey: keys.onboarding, queryFn: () => api<OnboardingSummary[]>("/onboarding"), enabled });
+
+export const useOnboarding = (id: string) => useQuery({ queryKey: [...keys.onboarding, id], queryFn: () => api<OnboardingDetail>(`/onboarding/${id}`) });
+
+/** Null before the agency starts its own questionnaire. */
+export const useAgencyOnboarding = (enabled = true) =>
+  useQuery({ queryKey: [...keys.onboarding, "agency"], queryFn: async () => (await api<OnboardingDetail | null>("/onboarding/agency")) ?? null, enabled });
+
+export function useStartAgencyOnboarding() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<OnboardingDetail>("/onboarding/agency", { body: {} }),
+    onSuccess: (data) => qc.setQueryData([...keys.onboarding, "agency"], data),
+  });
+}
+
+/** Anything changed on one onboarding: refresh it, the list, and the client page. */
+function useOnboardingResult() {
+  const qc = useQueryClient();
+  return (data: OnboardingDetail) => {
+    qc.setQueryData([...keys.onboarding, data.id], data);
+    return Promise.all([keys.onboarding, keys.clients].map((queryKey) => qc.invalidateQueries({ queryKey, exact: queryKey === keys.onboarding })));
+  };
+}
+
+export function useStartOnboarding() {
+  const done = useOnboardingResult();
+  return useMutation({
+    mutationFn: (v: { clientId: string; mode?: "link" | "assisted" }) => api<OnboardingDetail>(`/clients/${v.clientId}/onboarding`, { body: { mode: v.mode } }),
+    onSuccess: done,
+  });
+}
+
+export function useOnboardingLink() {
+  const done = useOnboardingResult();
+  return useMutation({
+    mutationFn: (id: string) => api<{ link: string; onboarding: OnboardingDetail }>(`/onboarding/${id}/link`, { body: {} }),
+    onSuccess: (r) => done(r.onboarding),
+  });
+}
+
+export type OnboardingStep =
+  | { step: "update"; mode?: "link" | "assisted"; language?: string }
+  | { step: "tick"; key: string; done: boolean }
+  | { step: "exception"; reason: string }
+  | { step: "reminder"; day: number; channel?: "whatsapp" | "email" | "in_app" };
+
+export function useOnboardingStep(id: string) {
+  const done = useOnboardingResult();
+  return useMutation({
+    mutationFn: (v: OnboardingStep) => {
+      switch (v.step) {
+        case "update":
+          return api<OnboardingDetail>(`/onboarding/${id}`, { method: "PATCH", body: { mode: v.mode, language: v.language } });
+        case "tick":
+          return api<OnboardingDetail>(`/onboarding/${id}/checklist/${v.key}`, { method: "PUT", body: { done: v.done } });
+        case "exception":
+          return api<OnboardingDetail>(`/onboarding/${id}/exception`, { body: { reason: v.reason } });
+        case "reminder":
+          return api<OnboardingDetail>(`/onboarding/${id}/reminders`, { body: { day: v.day, channel: v.channel ?? "whatsapp" } });
+      }
+    },
+    onSuccess: done,
+  });
+}
+
+/** Saving one answer given in the agency (assisted, or the agency's own questionnaire). */
+export function useSaveAnswer(id: string) {
+  const done = useOnboardingResult();
+  return (key: string, value: AnswerValue) => api<OnboardingDetail>(`/onboarding/${id}/answers/${key}`, { method: "PUT", body: { value } }).then(done);
+}
+
+export function usePackagesFromAnswers(id: string) {
+  const refresh = useRefresh(keys.packages);
+  return useMutation({ mutationFn: () => api<{ added: string[] }>(`/onboarding/${id}/packages`, { body: {} }), onSuccess: refresh });
 }

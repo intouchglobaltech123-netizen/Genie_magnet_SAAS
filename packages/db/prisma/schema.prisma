@@ -56,6 +56,9 @@ model Agency {
   discountLimit     Int            @default(10) @map("discount_limit")
   /// Days before an agreement ends that it shows as due for renewal (P1-19).
   renewalNoticeDays Int            @default(45) @map("renewal_notice_days")
+  /// How client onboarding is filled in by default: "link" (the client answers by private link) or "assisted"
+  /// (the account manager fills it in with the client on a call). Both are always available (P1-22).
+  onboardingMode    String         @default("link") @map("onboarding_mode")
   createdAt         DateTime       @default(now()) @map("created_at")
 
   memberships Membership[]
@@ -596,16 +599,23 @@ enum QuestionnaireKind {
   agency
 }
 
+/// The agency's onboarding questions (P1-21). Edits go into one draft per kind; publishing makes it the next version.
+/// Responses keep the version they were started on.
 model QuestionnaireTemplate {
   id          String            @id @default(uuid(7)) @db.Uuid
   agencyId    String            @map("agency_id") @db.Uuid
   kind        QuestionnaireKind
+  /// 1, 2, 3… (a draft carries the number it will be published as).
   version     String
   windowDays  Int               @default(7) @map("window_days")
-  /// Sections and questions, validated by @gm/shared questionnaireTemplateSchema.
+  /// Sections, questions and checklist, validated by @gm/shared questionnaireDefinition.
   definition  Json
   isDefault   Boolean           @default(false) @map("is_default")
+  /// Null while it is the draft.
   publishedAt DateTime?         @map("published_at")
+  createdBy   String?           @map("created_by")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @default(now()) @updatedAt @map("updated_at")
 
   responses QuestionnaireResponse[]
 
@@ -614,17 +624,29 @@ model QuestionnaireTemplate {
 }
 
 model QuestionnaireResponse {
-  id             String    @id @default(uuid(7)) @db.Uuid
-  agencyId       String    @map("agency_id") @db.Uuid
-  templateId     String    @map("template_id") @db.Uuid
+  id              String    @id @default(uuid(7)) @db.Uuid
+  agencyId        String    @map("agency_id") @db.Uuid
+  templateId      String    @map("template_id") @db.Uuid
   /// Null for the agency's own questionnaire.
-  clientId       String?   @map("client_id") @db.Uuid
-  /// Private link token (hashed at rest in Phase 1).
-  token          String    @unique
-  mode           String    @default("link")
-  sentAt         DateTime? @map("sent_at")
-  requiredDoneAt DateTime? @map("required_done_at")
-  completedAt    DateTime? @map("completed_at")
+  clientId        String?   @map("client_id") @db.Uuid
+  /// SHA-256 of the private link's token: the link itself is shown only when it is made.
+  token           String    @unique
+  /// link · assisted
+  mode            String    @default("link")
+  /// The language the client sees it in (one of the agency's languages).
+  language        String    @default("en")
+  /// When the window starts: the link was shared, or the assisted call began.
+  sentAt          DateTime? @map("sent_at")
+  requiredDoneAt  DateTime? @map("required_done_at")
+  completedAt     DateTime? @map("completed_at")
+  /// Checklist items ticked by hand: { key: { at, by } }.
+  checklist       Json      @default("{}")
+  /// Production allowed to start before onboarding is complete (onboarding: approve), with the reason.
+  exceptionReason String?   @map("exception_reason")
+  exceptionBy     String?   @map("exception_by")
+  exceptionAt     DateTime? @map("exception_at")
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
   template  QuestionnaireTemplate   @relation(fields: [templateId], references: [id], onDelete: Restrict)
   client    Client?                 @relation(fields: [clientId], references: [id], onDelete: Cascade)
@@ -654,12 +676,16 @@ model QuestionnaireReminder {
   id         String   @id @default(uuid(7)) @db.Uuid
   agencyId   String   @map("agency_id") @db.Uuid
   responseId String   @map("response_id") @db.Uuid
+  /// The day of the window it was due on (from the agency's reminder days).
   day        Int
+  /// whatsapp · email · in_app
   channel    String
   sentAt     DateTime @default(now()) @map("sent_at")
+  sentBy     String?  @map("sent_by")
 
   response QuestionnaireResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
 
+  @@unique([responseId, day])
   @@index([agencyId, responseId])
   @@map("questionnaire_reminders")
 }

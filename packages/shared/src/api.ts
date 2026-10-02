@@ -2,6 +2,7 @@
 import type { PermissionMatrix } from "./permissions.js";
 import type { BusinessStage } from "./enums.js";
 import type { DeliverableInput } from "./schemas.js";
+import type { AnswerValue, ChecklistState, Progress, Question, QuestionnaireDefinition, WindowState } from "./onboarding.js";
 
 /** Every error from the API (sign-in routes return `{ message, code }`). */
 export interface ApiErrorBody {
@@ -332,4 +333,62 @@ export interface Proposal {
 export interface LeadDetail extends Lead {
   proposals: Proposal[];
   history: { id: string; kind: string; summary: string; outcome: string | null; at: string; by: { id: string; name: string | null } | null }[];
+}
+
+// ─── Onboarding (P1-21 to P1-25) ──────────────────────────────────────
+
+/** GET /questionnaires/:kind */
+export interface QuestionnaireVersions {
+  kind: "client" | "agency";
+  published: { id: string; version: number; definition: QuestionnaireDefinition; publishedAt: string | null; updatedAt: string } | null;
+  draft: { id: string; version: number; definition: QuestionnaireDefinition; publishedAt: null; updatedAt: string } | null;
+  versions: { version: number; publishedAt: string; responses: number }[];
+}
+
+type Person = { id: string; name: string | null } | null;
+
+/** GET /onboarding (one item) */
+export interface OnboardingSummary {
+  id: string;
+  kind: "client" | "agency";
+  client: { id: string; name: string; code: string } | null;
+  version: number;
+  mode: "link" | "assisted";
+  language: string;
+  sentAt: string | null;
+  requiredDoneAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  progress: Pick<Progress, "required" | "window" | "complete">;
+  gate: { open: boolean; byException: boolean; missing: string[] };
+  window: { state: WindowState; day: number | null; dueOn: string | null };
+  /** Reminder days that have come and are not recorded as sent. */
+  remindersDue: number[];
+}
+
+/** GET /onboarding/:id */
+export interface OnboardingDetail extends OnboardingSummary {
+  windowDays: number;
+  reminderDays: number[];
+  languages: string[];
+  definition: QuestionnaireDefinition;
+  answers: Record<string, { value: AnswerValue; by: Person; at: string }>;
+  progress: Progress;
+  checklist: (Omit<ChecklistState, "by"> & { by: Person })[];
+  reminders: { day: number; channel: string; sentAt: string; by: Person }[];
+  exception: { reason: string | null; at: string; by: Person } | null;
+  canvas: { block: string; label: string; items: { question: string; answer: AnswerValue }[] }[];
+  filled: { question: string; field: string; value: AnswerValue | null }[];
+}
+
+/** GET /public/onboarding/:token — what the client sees. */
+export interface PublicQuestionnaire {
+  agency: { name: string; logo: string | null; brandColor: string | null };
+  client: { name: string };
+  language: string;
+  languages: { code: string; label: string }[];
+  sections: { key: string; title: string; intro: string | null; when: "required" | "within-window"; questions: (Question & { optionLabels?: string[] })[] }[];
+  answers: Record<string, AnswerValue>;
+  progress: Progress;
+  window: { state: WindowState; dueOn: string | null; days: number };
 }

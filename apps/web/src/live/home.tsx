@@ -9,6 +9,7 @@ import {
   CalendarClock,
   CheckCircle2,
   Circle,
+  ClipboardList,
   FileSignature,
   FileText,
   ReceiptIndianRupee,
@@ -24,6 +25,7 @@ import { Progress } from "@/components/ui/progress";
 import { inr } from "./packages";
 import {
   useAgency,
+  useAgencyOnboarding,
   useAgreements,
   useAudit,
   useCan,
@@ -32,6 +34,7 @@ import {
   useInvoiceSettings,
   useLeads,
   useMe,
+  useOnboardingList,
   usePackages,
   useProposals,
   useStages,
@@ -57,6 +60,7 @@ function SetupChecklist({ agencyId }: { agencyId: string }) {
   const agency = useAgency();
   const packages = usePackages();
   const invoiceSettings = useInvoiceSettings(can("invoices", "view"));
+  const agencyOnboarding = useAgencyOnboarding(can("onboarding", "view"));
   const storageKey = `gm-live-setup-hidden:${agencyId}`;
   // Rendered only in the browser (the shell waits for the session), so reading storage here is safe.
   const [hidden, setHidden] = useState(() => {
@@ -68,6 +72,12 @@ function SetupChecklist({ agencyId }: { agencyId: string }) {
   });
 
   const steps: Step[] = [
+    {
+      title: "Your agency questionnaire",
+      why: "About your own agency — stage, services and packages, main goal, team. It sets up your profile and packages, and drafts your goals.",
+      href: "/app/onboarding/agency",
+      done: !!agencyOnboarding.data?.progress.required.complete,
+    },
     {
       title: "Agency profile and branding",
       why: "Your name, logo and colour for the client portal and documents, your contact details, and how long clients have to finish onboarding.",
@@ -105,7 +115,7 @@ function SetupChecklist({ agencyId }: { agencyId: string }) {
       done: !!invoiceSettings.data,
     },
   ];
-  const coming: Step[] = [{ title: "Onboarding questions", why: "The questions new clients answer, starting from the Growth OS question sets." }];
+  const coming: Step[] = [];
   const done = steps.filter((s) => s.done).length;
 
   if (hidden) return null;
@@ -189,6 +199,8 @@ export function LiveHome() {
   const toSign = useAgreements("status=draft", can("agreements", "approve"));
   const toIssue = useInvoices("status=draft", can("invoices", "approve"));
   const overdue = useInvoices("overdue=1", can("invoices", "view"));
+  const onboarding = useOnboardingList(can("onboarding", "view"));
+  const attention = (onboarding.data ?? []).filter((o) => o.remindersDue.length > 0 || o.window.state === "overdue").length;
   const renewals = useAgreements("renewal=1", can("agreements", "view"));
   const stages = useStages();
   const open = new Set((stages.data ?? []).filter((s) => s.kind === "open").map((s) => s.key));
@@ -214,6 +226,9 @@ export function LiveHome() {
         <div className="space-y-3">
           {can("crm", "approve") && !!approvals.data?.length && (
             <Shortcut href="/app/sales" icon={BadgePercent} title="Discounts waiting for your approval" value={approvals.data.length} />
+          )}
+          {can("onboarding", "view") && attention > 0 && (
+            <Shortcut href="/app/onboarding" icon={ClipboardList} title="Onboarding: reminders due or overdue" value={attention} />
           )}
           {can("invoices", "view") && !!overdue.data?.length && (
             <Shortcut
