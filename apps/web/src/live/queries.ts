@@ -88,6 +88,7 @@ import {
   type AskConversationRow,
   type DraftRequest,
   type DraftRow,
+  type GenieEvaluation,
   type GenieRulesInput,
   type GenieSettings,
   type ImportDetail,
@@ -1064,6 +1065,8 @@ export function useSaveAiSettings() {
     onSuccess: (data) => qc.setQueryData(["genie", "settings"], data),
   });
 }
+
+export const useEvaluate = () => useMutation({ mutationFn: (size: number) => api<GenieEvaluation>("/genie/evaluate", { body: { size } }) });
 
 export const useAiUsage = (enabled = true) => useQuery({ queryKey: ["genie", "usage"], queryFn: () => api<AiUsageSummary>("/genie/usage"), enabled });
 

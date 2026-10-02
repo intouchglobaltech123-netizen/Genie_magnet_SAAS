@@ -3,6 +3,7 @@ import type { Prisma, TenantTx } from "@gm/db";
 import {
   allows,
   type AreaKey,
+  type CaptionDraft,
   captionDraft,
   DRAFT_FINAL,
   type DraftKind,
@@ -10,6 +11,7 @@ import {
   type DraftRequest,
   type DraftRow,
   draftRequest,
+  type GenieEvaluation,
   type IdeasDraft,
   ideasDraft,
   type MonthlyReportData,
@@ -187,7 +189,10 @@ export class DraftsService {
     return this.get(id);
   }
 
-  private async build(req: Request): Promise<{ entity: string; entityId: string; clientId: string | null; request?: object; call: DraftCall<unknown> }> {
+  private async build(
+    req: Request,
+    opts: { excludePostId?: string } = {},
+  ): Promise<{ entity: string; entityId: string; clientId: string | null; request?: object; call: DraftCall<unknown> }> {
     const agency = await this.tenant.db.agency.findUniqueOrThrow({ where: { id: this.tenant.agencyId }, select: { name: true } });
     switch (req.kind) {
       case "nudge": {
@@ -274,7 +279,12 @@ export class DraftsService {
               })
             : null,
           this.tenant.db.scheduledPost.findMany({
-            where: { video: { clientId: v.client.id }, caption: { not: null }, status: "published" },
+            where: {
+              video: { clientId: v.client.id },
+              caption: { not: null },
+              status: "published",
+              ...(opts.excludePostId && { id: { not: opts.excludePostId } }),
+            },
             orderBy: { publishedAt: "desc" },
             take: 5,
             select: { caption: true },
@@ -388,6 +398,45 @@ export class DraftsService {
         };
       }
     }
+  }
+
+  // ─── Evaluation (P4-11) ─────────────────────────────────────────────
+
+  /**
+   * Drafts captions for the agency's latest published posts — each without its own caption among the examples — and
+   * measures how much of the caption the team actually approved each draft had. Nothing is saved; the calls are metered.
+   */
+  async evaluate(size: number): Promise<GenieEvaluation> {
+    await this.gate();
+    const posts = await this.tenant.db.scheduledPost.findMany({
+      where: { status: "published", caption: { not: null }, video: { stage: { in: ["approved", "published"] } } },
+      orderBy: { publishedAt: "desc" },
+      take: size * 3,
+      select: { id: true, caption: true, video: { select: { id: true, code: true, title: true, client: { select: { name: true } } } } },
+    });
+    const seen = new Set<string>();
+    const sample = posts.filter((p) => !seen.has(p.video.id) && seen.add(p.video.id)).slice(0, size);
+    const items: GenieEvaluation["items"] = [];
+    for (const p of sample) {
+      const built = await this.build({ kind: "caption", videoId: p.video.id }, { excludePostId: p.id });
+      const { output, usage } = await this.model.draft(built.call as DraftCall<CaptionDraft>);
+      await this.tenant.tx((tx) => this.meter(tx, "evaluation", usage));
+      const draft = textOf("caption", output);
+      items.push({
+        code: p.video.code,
+        title: p.video.title,
+        client: p.video.client.name,
+        approved: p.caption!,
+        draft,
+        match: 100 - editedPct(draft, p.caption!),
+      });
+    }
+    return {
+      kind: "caption",
+      items,
+      averageMatch: items.length ? Math.round(items.reduce((n, i) => n + i.match, 0) / items.length) : null,
+      source: this.model.kind,
+    };
   }
 
   // ─── Deciding ───────────────────────────────────────────────────────

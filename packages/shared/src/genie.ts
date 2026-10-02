@@ -270,6 +270,10 @@ export interface AiUsageSummary {
   byPerson: { name: string | null; calls: number; spent: number }[];
   /** Drafts decided this month: approved as written, approved with edits, rejected. */
   drafts: { approved: number; edited: number; rejected: number };
+  /** Per kind of draft: how many were approved (as written or edited) out of those decided, against the target. */
+  byKind: { kind: DraftKind; decided: number; approved: number; rate: number }[];
+  /** The approval rate drafts should reach (P4-11). */
+  target: number;
 }
 
 // ─── Ask Genie (P4-08) ───────────────────────────────────────────────
@@ -301,4 +305,20 @@ export interface AskConversationRow {
   title: string;
   updatedAt: string;
   messages: AskMessageRow[];
+}
+
+// ─── Evaluation (P4-11) ──────────────────────────────────────────────
+
+/** The approval rate Genie Assistant's drafts should reach. */
+export const DRAFT_APPROVAL_TARGET = 70;
+
+export const evaluationInput = z.object({ size: z.number().int().min(1).max(10).default(5) });
+
+/** POST /genie/evaluate: captions drafted for posts the agency already published, against the captions it approved. */
+export interface GenieEvaluation {
+  kind: "caption";
+  items: { code: string; title: string; client: string; approved: string; draft: string; match: number }[];
+  /** 0 to 100: how much of the approved wording the drafts had, on average. */
+  averageMatch: number | null;
+  source: "claude" | "stand-in" | "off";
 }

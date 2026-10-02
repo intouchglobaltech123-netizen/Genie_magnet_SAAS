@@ -28,7 +28,17 @@ import { cn } from "@/lib/utils";
 import { ApiError, errorMessage } from "./api";
 import { AskGenie } from "./ask-genie";
 import { DraftDialog } from "./genie-drafts";
-import { useAiUsage, useCan, useGenieSettings, useInsightDecision, useInsights, useRunGenie, useSaveAiSettings, useSaveGenieSettings } from "./queries";
+import {
+  useAiUsage,
+  useCan,
+  useEvaluate,
+  useGenieSettings,
+  useInsightDecision,
+  useInsights,
+  useRunGenie,
+  useSaveAiSettings,
+  useSaveGenieSettings,
+} from "./queries";
 
 const SEVERITY: Record<InsightRow["severity"], { label: string; tone: "danger" | "warning" | "info"; bar: string }> = {
   critical: { label: "Urgent", tone: "danger", bar: "border-l-danger" },
@@ -413,12 +423,74 @@ function UsageCard() {
             {rate !== null && (
               <li className="flex justify-between border-t border-border-subtle pt-1 font-medium">
                 <span>Approval rate</span>
-                <span className="tabular-nums">{rate}%</span>
+                <span className={cn("tabular-nums", rate < u.data.target && "text-warning")}>{rate}%</span>
               </li>
             )}
+            {u.data.byKind.map((k) => (
+              <li key={k.kind} className="flex justify-between text-muted-foreground">
+                <span>{DRAFT_KIND_LABEL[k.kind]}</span>
+                <span className={cn("tabular-nums", k.rate < u.data!.target && "text-warning")}>
+                  {k.approved} of {k.decided} · {k.rate}%
+                </span>
+              </li>
+            ))}
           </ul>
+          <p className="mt-2 text-body text-muted-foreground">The aim is {u.data.target}% or more approved.</p>
         </div>
       </div>
+    </SectionCard>
+  );
+}
+
+/** How close drafts come to what the team approved: captions for posts already published (P4-11). */
+function EvaluationCard() {
+  const run = useEvaluate();
+  const e = run.data;
+  return (
+    <SectionCard
+      title="How well drafts match your voice"
+      description="Genie Assistant drafts captions for your latest published posts — without seeing their own captions — and compares them with the captions your team approved. It uses a little of the AI budget."
+      actions={
+        <Button size="sm" variant="secondary" disabled={run.isPending} onClick={() => run.mutate(5, { onError: (err) => toast.error(errorMessage(err)) })}>
+          <Sparkles />
+          {run.isPending ? "Checking…" : "Check 5 captions"}
+        </Button>
+      }
+    >
+      {!e ? (
+        <p className="text-body text-muted-foreground">Run it after changing your brand voice in onboarding, or now and then to see drafts improving.</p>
+      ) : !e.items.length ? (
+        <p className="text-body text-muted-foreground">There are no published posts with captions to compare with yet.</p>
+      ) : (
+        <div className="space-y-3">
+          <p className="font-medium">
+            On average the drafts had {e.averageMatch}% of the approved wording.
+            {e.source === "stand-in" && <span className="font-normal text-muted-foreground"> (Drafts here come from the stand-in, not the model.)</span>}
+          </p>
+          <ul className="space-y-2">
+            {e.items.map((i) => (
+              <li key={i.code} className="rounded-lg border border-border p-3 text-body">
+                <div className="flex justify-between gap-2 font-medium">
+                  <span>
+                    {i.code} · {i.title} <span className="font-normal text-muted-foreground">({i.client})</span>
+                  </span>
+                  <span className="tabular-nums">{i.match}%</span>
+                </div>
+                <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <div className="text-muted-foreground">Approved</div>
+                    <p className="whitespace-pre-line">{i.approved}</p>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">Drafted</div>
+                    <p className="whitespace-pre-line">{i.draft}</p>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </SectionCard>
   );
 }
@@ -446,6 +518,7 @@ export function LiveGenieSettings() {
         <div className="space-y-4">
           <AiCard key={`${settings.data.ai.monthlyBudget}:${settings.data.ai.retentionDays}`} s={settings.data} canEdit={canEdit} />
           {canEdit && <UsageCard />}
+          {canEdit && settings.data.ai.enabled && <EvaluationCard />}
           <Card className="p-5">
             <h2 className="mb-1 font-semibold">Rules</h2>
             <ul className="divide-y divide-border-subtle">

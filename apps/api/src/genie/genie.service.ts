@@ -4,6 +4,8 @@ import {
   type AiSettingsInput,
   type AiUsageSummary,
   allows,
+  DRAFT_APPROVAL_TARGET,
+  DRAFT_KINDS,
   GENIE_RULE_KEYS,
   GENIE_RULES,
   type GenieRuleKey,
@@ -93,7 +95,7 @@ export class GenieService {
     const [settings, rows, drafts] = await Promise.all([
       this.settings(),
       this.tenant.db.aiUsage.findMany({ where: { createdAt: { gte: since } }, select: { feature: true, userId: true, costPaise: true } }),
-      this.tenant.db.draft.findMany({ where: { decidedAt: { gte: since } }, select: { status: true, editedPct: true } }),
+      this.tenant.db.draft.findMany({ where: { decidedAt: { gte: since } }, select: { kind: true, status: true, editedPct: true } }),
     ]);
     const group = <K extends string | null>(key: (r: (typeof rows)[number]) => K) => {
       const m = new Map<K, { calls: number; paise: number }>();
@@ -122,6 +124,12 @@ export class GenieService {
         edited: drafts.filter((d) => d.status === "approved" && !!d.editedPct).length,
         rejected: drafts.filter((d) => d.status === "rejected").length,
       },
+      byKind: DRAFT_KINDS.flatMap((kind) => {
+        const decided = drafts.filter((d) => d.kind === kind);
+        const approved = decided.filter((d) => d.status === "approved").length;
+        return decided.length ? [{ kind, decided: decided.length, approved, rate: Math.round((approved / decided.length) * 100) }] : [];
+      }),
+      target: DRAFT_APPROVAL_TARGET,
     };
   }
 

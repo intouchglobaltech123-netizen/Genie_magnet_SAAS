@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from "@nestjs/common";
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
-import { aiSettingsInput, askInput, type DraftRequest, draftDecision, draftRequest, genieRulesInput, insightDecisionInput } from "@gm/shared";
+import { aiSettingsInput, askInput, type DraftRequest, draftDecision, draftRequest, evaluationInput, genieRulesInput, insightDecisionInput } from "@gm/shared";
 import { Can, Staff } from "../access/access.js";
 import { RateLimit } from "../common/rate-limit.js";
 import { ZodPipe } from "../common/zod.pipe.js";
@@ -65,6 +65,16 @@ export class GenieController {
   @Can("settings", "edit")
   usage() {
     return this.genie.usage();
+  }
+
+  /** Drafts captions for posts already published and measures them against the captions the team approved. */
+  @Post("evaluate")
+  @Can("settings", "edit")
+  @HttpCode(200)
+  @RateLimit({ max: 3, windowSeconds: 60 })
+  @ApiBody({ schema: schema(evaluationInput) })
+  evaluate(@Body(new ZodPipe(evaluationInput)) b: z.output<typeof evaluationInput>) {
+    return this.drafts.evaluate(b.size);
   }
 
   /** A draft for a person to approve, edit or reject: `kind` nudge, caption, ideas or report_summary. */

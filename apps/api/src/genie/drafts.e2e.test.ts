@@ -1,13 +1,17 @@
-// Genie Assistant's drafts (P4-05 to P4-07, P4-09): switched on by the agency, written in the client's voice from their
-// own approved work, approved as written or edited, metered against the agency's monthly budget.
+// Genie Assistant's drafts (P4-05 to P4-07, P4-09, P4-11): switched on by the agency, written in the client's voice
+// from their own approved work, approved as written or edited, measured against what the team approved, metered against
+// the agency's monthly budget.
+import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   type AiUsageSummary,
   type CaptionDraft,
   DEFAULT_PRODUCTION_SETTINGS,
   type DraftRow,
+  type GenieEvaluation,
   type GenieSettings,
   type IdeasDraft,
+  type UploadStart,
   type InsightRow,
 } from "@gm/shared";
 import { seedUserId } from "@gm/db/seed";
@@ -198,13 +202,46 @@ describe("drafting", () => {
   });
 });
 
+describe("evaluation", () => {
+  it("drafts captions for posts already published and measures them against what the team approved", async () => {
+    // The post goes out by hand, with the caption the team approved.
+    const proof = (await meena.post("/files").send({ name: "proof.png", mime: "image/png", size: 5, entity: "publishing", entityId: videoId }).expect(201))
+      .body as UploadStart;
+    await request(t.app.getHttpServer()).put(new URL(proof.uploadUrl).pathname).set("Content-Type", "image/png").send(Buffer.from("proof")).expect(200);
+    await meena
+      .post(`/publishing/posts/${postId}/published`)
+      .send({ url: "https://instagram.com/p/mdu1", publishedAt: new Date().toISOString(), proofFileId: proof.id, confirmed: true })
+      .expect(200);
+
+    await meena.post("/genie/evaluate").send({ size: 3 }).expect(403);
+    const e = (await jana.post("/genie/evaluate").send({ size: 3 }).expect(200)).body as GenieEvaluation;
+    expect(e).toMatchObject({ kind: "caption", source: "stand-in" });
+    expect(e.items).toHaveLength(1);
+    expect(e.items[0]).toMatchObject({
+      title: "Jasmine at dawn, Madurai market",
+      client: "Madurai Malli",
+      approved: expect.stringContaining("Fresh every morning."),
+    });
+    expect(e.items[0]!.match).toBeGreaterThan(50);
+    expect(e.averageMatch).toBe(e.items[0]!.match);
+    // Its own caption was not among the examples it was given.
+    expect(model.calls.at(-1)!.context).not.toContain("Fresh every morning.");
+  });
+});
+
 describe("usage", () => {
   it("is metered per feature and person, for the owner, and stops at the budget", async () => {
     await meena.get("/genie/usage").expect(403);
     const u = (await jana.get("/genie/usage").expect(200)).body as AiUsageSummary;
-    expect(u).toMatchObject({ month: M, budget: 500, calls: 6, drafts: { approved: 2, edited: 3, rejected: 0 } });
+    expect(u).toMatchObject({ month: M, budget: 500, calls: 7, drafts: { approved: 2, edited: 3, rejected: 0 }, target: 70 });
+    expect(u.byKind).toEqual(
+      expect.arrayContaining([
+        { kind: "caption", decided: 1, approved: 1, rate: 100 },
+        { kind: "nudge", decided: 2, approved: 2, rate: 100 },
+      ]),
+    );
     expect(u.spent).toBeGreaterThan(0);
-    expect(u.byFeature.map((f) => f.feature).sort()).toEqual(["caption", "ideas", "nudge", "report_summary"]);
+    expect(u.byFeature.map((f) => f.feature).sort()).toEqual(["caption", "evaluation", "ideas", "nudge", "report_summary"]);
     expect(u.byPerson.find((p) => p.name === "Ashwin")?.calls).toBe(3);
 
     await jana.put("/genie/ai").send({ monthlyBudget: 0 }).expect(200);
