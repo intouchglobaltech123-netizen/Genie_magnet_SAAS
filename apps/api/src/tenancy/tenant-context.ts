@@ -16,6 +16,14 @@ export interface TenantContext {
   role: string;
   /** The role's row of the agency's permission matrix, read fresh for every request by the permission guard. */
   permissions?: PermissionMatrix;
+  /** A client contact in their portal (P3-01): everything is limited to this client. */
+  portal?: PortalPerson;
+}
+
+export interface PortalPerson {
+  clientId: string;
+  contactId: string;
+  name: string;
 }
 
 const storage = new AsyncLocalStorage<TenantContext>();
@@ -30,6 +38,15 @@ export function currentTenant(): TenantContext | undefined {
  */
 export function asLinkHolder<T>(agencyId: string, fn: () => Promise<T>): Promise<T> {
   return storage.run({ agencyId, role: "link", permissions: {} }, fn);
+}
+
+/**
+ * Runs `fn` inside one agency for a client contact in their portal (P3-01). The link has already been checked. The
+ * portal may read content and production (the portal service limits every read and change to the contact's client)
+ * and nothing else; changes are recorded as made by the contact.
+ */
+export function asPortal<T>(agencyId: string, portal: PortalPerson, fn: () => Promise<T>): Promise<T> {
+  return storage.run({ agencyId, role: "portal", permissions: { content: { level: "view" }, production: { level: "view" } }, portal }, fn);
 }
 
 /**
@@ -102,6 +119,11 @@ export class TenantDb {
   /** The caller's permissions (set by the permission guard before the handler runs). */
   get permissions(): PermissionMatrix {
     return this.ctx().permissions ?? {};
+  }
+
+  /** The client contact, when the request comes from their portal. */
+  get portal(): PortalPerson | undefined {
+    return this.ctx().portal;
   }
 
   /**

@@ -54,6 +54,17 @@ export async function findQuestionnaireLink(prisma: PrismaClient, tokenHash: str
   });
 }
 
+/**
+ * A client contact's private portal link (P3-01): finds the link whose token hash matches, without knowing the agency.
+ * Row-level security shows a link only when `app.portal_token` holds its hash (policy portal_access).
+ */
+export async function findPortalLink(prisma: PrismaClient, tokenHash: string) {
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT set_config('app.portal_token', ${tokenHash}, TRUE)`;
+    return tx.portalLink.findUnique({ where: { token: tokenHash }, select: { id: true, agencyId: true, clientId: true, contactId: true } });
+  });
+}
+
 /** Several operations in one transaction, all inside the agency (e.g. create a client with its contacts). */
 export async function withAgency<T>(
   prisma: PrismaClient,

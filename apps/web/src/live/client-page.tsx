@@ -32,6 +32,7 @@ import { FITMENT, FITMENT_TONE } from "./clients";
 import { FilesCard } from "./files";
 import { ClientVideos } from "./production";
 import { ClientPlatforms } from "./publishing";
+import { ClientPortalLinks } from "./portal-links";
 import { InvoiceTable, NewInvoiceDialog } from "./invoices";
 import { onboardingStatus } from "./onboarding";
 import { inr } from "./packages";
@@ -481,6 +482,8 @@ export function LiveClient({ id }: { id: string }) {
   const [editing, setEditing] = useState(false);
   const [adding, setAdding] = useState(false);
   const canEdit = can("clients", "edit");
+  const me = useMe().data;
+  const agencyName = me?.agencies.find((a) => a.id === me.activeAgencyId)?.name ?? "";
 
   if (client.isPending) return <SkeletonRows rows={8} />;
   if (client.error)
@@ -645,6 +648,7 @@ export function LiveClient({ id }: { id: string }) {
             {c.notes && <p className="mt-2 whitespace-pre-line border-t border-border-subtle pt-2 text-body text-text-secondary">{c.notes}</p>}
           </SectionCard>
           <Contacts client={c} canEdit={canEdit} />
+          <ClientPortalLinks clientId={c.id} clientName={c.name} agencyName={agencyName} canEdit={canEdit && !c.archivedAt} />
           <FilesCard entity="client" entityId={c.id} title="Brand files" description="Logos, brand guide, fonts, photos." canEdit={canEdit && !c.archivedAt} />
           {can("publishing", "view") && <ClientPlatforms clientId={c.id} canEdit={can("publishing", "edit")} />}
           <SectionCard title="Billing" description="Used on invoices.">

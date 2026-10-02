@@ -54,6 +54,8 @@ import { DailyChecks } from "./jobs/daily-checks.service.js";
 import { JobRunner } from "./jobs/job-runner.js";
 import { JobsController } from "./jobs/jobs.controller.js";
 import { JobsService } from "./jobs/jobs.service.js";
+import { ClientRequestsController, PortalController, PortalLinksController } from "./portal/portal.controller.js";
+import { PortalService } from "./portal/portal.service.js";
 import { PrismaService } from "./prisma/prisma.service.js";
 import { AgencyService } from "./settings/agency.service.js";
 import { PackagesService } from "./settings/packages.service.js";
@@ -104,6 +106,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     ProposalsController,
     ImportsController,
     JobsController,
+    PortalController,
+    PortalLinksController,
+    ClientRequestsController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -151,6 +156,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     ProposalsService,
     ImportsService,
     JobsService,
+    PortalService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

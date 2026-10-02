@@ -1,0 +1,31 @@
+# Phase 3 backlog — Client portal, WhatsApp and going live
+
+**Goal:** an agency runs its live clients on the app: clients pick topics, approve scripts and review videos in their own portal, messages reach them on WhatsApp, posts and reports reach them, and invoices can be paid online.
+**Exit gate (P3-14):** a client opens their portal, picks topics and approves a script; gets a WhatsApp approval request for a video and asks for changes, which appear on the video; the month's report is released and the client is told on WhatsApp; an invoice is paid through a payment link and marked paid by itself; a person in another agency sees none of it.
+
+**Self-service, like everything else.** Each agency connects its own WhatsApp number, its clients' social accounts and its own Razorpay account from the app, with step-by-step help. Platform accounts that are ours (our Meta and Google apps for one-click connections, hosting) are set up in the last step; until then the manual way keeps working (manual posting with proof, entering WhatsApp details by hand).
+
+Decisions (2026-10-02): clients sign in to the portal with a **private link per contact** (like the onboarding link, replaceable and switched off by the agency); each agency **enters its own WhatsApp Cloud API details** (phone number ID and access token); one-click Meta sign-up may come later.
+
+| ID    | Story                                                                                                                       | Size |
+| ----- | --------------------------------------------------------------------------------------------------------------------------- | ---- |
+| P3-01 | Portal access: a private link per client contact; made, replaced and switched off by the team; the portal in the agency's branding | M    |
+| P3-02 | Portal: the month's topic list — the client picks topics themselves                                                          | S    |
+| P3-03 | Portal: scripts sent to the client — approve, or ask for changes with a note                                                | S    |
+| P3-04 | Portal: videos sent to the client — watch the version, time-coded comments, approve or ask for changes (the team classifies) | M    |
+| P3-05 | Portal: invoices (view, print, pay), reports, and requests the client raises to the team                                    | M    |
+| P3-06 | Secrets kept encrypted (WhatsApp, Razorpay and social tokens)                                                               | S    |
+| P3-07 | WhatsApp: the agency connects its number; templates; opt-in per contact; a message log; sending as jobs with retries         | L    |
+| P3-08 | WhatsApp: approval requests with buttons (scripts, videos), onboarding reminders sent by themselves, published confirmations, invoice and report notices; replies linked to the approval | L    |
+| P3-09 | Monthly report per client: what was delivered and posted, with links and numbers; printable; released to the portal         | M    |
+| P3-10 | Payments: the agency's own Razorpay; a payment link on each issued invoice; paid by itself when Razorpay says so (no double counting) | M    |
+| P3-11 | Social connectors: Instagram, Facebook Pages, YouTube — connect per client, post at the scheduled time where allowed, numbers each day; manual fallback | L    |
+| P3-12 | Importing agreements, with a check report for each import                                                                   | M    |
+| P3-13 | Calendar: follow-ups too                                                                                                    | S    |
+| P3-14 | Exit-gate scenario test                                                                                                     | M    |
+
+Hosting for real use (servers, backups and a tested restore, monitoring) is part of the last step, with email, two-factor and Google sign-in.
+
+## Progress
+
+**P3-01 to P3-05 · The client portal** — **Done.** On the client's page, Client portal makes a private link for each contact (only its hash is kept; a new link stops the old one; switched off at once), shown once with Copy and a ready WhatsApp message. The portal (`/app/c/<link>`, phone-first, in the agency's name, logo and colour) shows what waits for the client, and lets them pick the month's topics and say they are done (the team is told), approve a script or ask for changes with a note, watch a video version and comment at a moment in it ("0:18"), approve it or ask for changes (the team classifies them as before), see and print their issued invoices, and ask the team something — answered from Client requests. Everything is limited to the contact's client, goes through the same rules as the team's screens, and is recorded in the audit log as done by that contact. `/portal/:link/…`, `/clients/:id/portal-links`, `/client-requests`.

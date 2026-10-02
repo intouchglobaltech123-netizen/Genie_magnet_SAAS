@@ -19,7 +19,9 @@ import {
   type ContentUpdate,
   type CycleRow,
   type CalendarEvent,
+  type ClientRequestRow,
   type JobOverview,
+  type PortalLinkRow,
   type SetupStatus,
   type JobRow,
   type PlatformConnectionRow,
@@ -989,5 +991,33 @@ export function useHideSetup() {
   return useMutation({
     mutationFn: (hidden: boolean) => api<SetupStatus>("/agency/setup", { method: "PUT", body: { hidden } }),
     onSuccess: (data) => qc.setQueryData(["setup"], data),
+  });
+}
+
+// ─── Client portal: links and requests ────────────────────────────────
+
+export const usePortalLinks = (clientId: string) =>
+  useQuery({ queryKey: ["portal-links", clientId], queryFn: () => api<PortalLinkRow[]>(`/clients/${clientId}/portal-links`) });
+
+export function usePortalLinkAction(clientId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (v: { step: "make" | "remove"; contactId: string }) => {
+      const path = `/clients/${clientId}/contacts/${v.contactId}/portal-link`;
+      if (v.step === "remove") return { link: "", links: await api<PortalLinkRow[]>(path, { method: "DELETE" }) };
+      return api<{ link: string; links: PortalLinkRow[] }>(path, { body: {} });
+    },
+    onSuccess: (r) => qc.setQueryData(["portal-links", clientId], r.links),
+  });
+}
+
+export const useClientRequests = (status: "" | "open" | "answered", enabled = true) =>
+  useQuery({ queryKey: ["client-requests", status], queryFn: () => api<ClientRequestRow[]>(`/client-requests${status ? `?status=${status}` : ""}`), enabled });
+
+export function useAnswerRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; answer: string }) => api<ClientRequestRow>(`/client-requests/${v.id}/answer`, { body: { answer: v.answer } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["client-requests"] }),
   });
 }

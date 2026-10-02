@@ -726,3 +726,86 @@ export interface SetupStatus {
   /** Each step, done once the real data exists. */
   steps: Record<SetupStep, boolean>;
 }
+
+// ─── Client portal (P3-01 to P3-05) ──────────────────────────────────
+
+export interface PortalHome {
+  agency: { name: string; logo: string | null; brandColor: string | null };
+  client: { name: string };
+  contact: { name: string };
+  todo: { topics: number; scripts: number; videos: number; invoices: number };
+}
+
+export interface PortalTopicList {
+  id: string;
+  month: string;
+  needed: number;
+  status: "sent" | "confirmed";
+  items: { id: string; title: string; pillar: string; format: string; notes: string; pick: "picked" | "skipped" | null }[];
+}
+
+export interface PortalScript {
+  contentId: string;
+  title: string;
+  format: string;
+  month: string;
+  script: { label: string; hook: string; body: string; cta: string; onScreen: string; sentAt: string | null };
+  /** Earlier versions and what was asked. */
+  earlier: { label: string; status: string; clientNote: string | null }[];
+}
+
+export interface PortalVideo {
+  id: string;
+  code: string;
+  title: string;
+  stage: string;
+  version: {
+    id: string;
+    label: string;
+    link: string | null;
+    fileUrl: string | null;
+    duration: string | null;
+    notes: string | null;
+    sentAt: string | null;
+    comments: { id: string; author: string; at: number | null; text: string; createdAt: string }[];
+  } | null;
+  posts: { platform: string; url: string | null; at: string }[];
+}
+
+export interface PortalVideos {
+  waiting: PortalVideo[];
+  done: PortalVideo[];
+}
+
+export interface PortalInvoiceRow {
+  id: string;
+  number: string | null;
+  issueDate: string | null;
+  dueDate: string | null;
+  total: number;
+  status: "sent" | "paid";
+  paidOn: string | null;
+}
+
+export interface ClientRequestRow {
+  id: string;
+  client: { id: string; name: string; code: string };
+  contactName: string;
+  kind: string;
+  text: string;
+  status: "open" | "answered";
+  answer: string | null;
+  answeredBy: { id: string; name: string | null } | null;
+  createdAt: string;
+  answeredAt: string | null;
+}
+
+export interface PortalLinkRow {
+  contactId: string;
+  contactName: string;
+  phone: string;
+  approver: boolean;
+  active: boolean;
+  createdAt: string | null;
+  lastUsedAt: string | null;
+}

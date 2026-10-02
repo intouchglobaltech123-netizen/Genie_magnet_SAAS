@@ -52,7 +52,10 @@ export class AuditService {
 
   /** Inside the change's own transaction (`TenantDb.tx`): the change and its entry are saved together or not at all. */
   async record(tx: TenantTx, entry: AuditEntry) {
-    await tx.auditLog.create({ data: row(this.tenant.agencyId, this.tenant.userId, entry) });
+    // A change a client made in their portal says who it was.
+    const portal = this.tenant.portal;
+    const e = portal ? { ...entry, after: { ...(entry.after ?? {}), byClient: portal.name } } : entry;
+    await tx.auditLog.create({ data: row(this.tenant.agencyId, this.tenant.userId, e) });
   }
 
   /** For changes made by the sign-in service (invitations, roles, removals): written straight after the change. */

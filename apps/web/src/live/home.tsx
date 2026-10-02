@@ -15,6 +15,7 @@ import {
   RefreshCcw,
   ShieldCheck,
   TriangleAlert,
+  Inbox,
   Users,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
@@ -38,6 +39,7 @@ import {
   useVideos,
   useContentList,
   useJobOverview,
+  useClientRequests,
   useSetup,
   useHideSetup,
 } from "./queries";
@@ -253,6 +255,7 @@ export function LiveHome() {
   const attention = (onboarding.data ?? []).filter((o) => o.remindersDue.length > 0 || o.window.state === "overdue").length;
   const renewals = useAgreements("renewal=1", can("agreements", "view"));
   const jobs = useJobOverview(can("settings", "edit"));
+  const requests = useClientRequests("open", can("clients", "view"));
   const stages = useStages();
   const open = new Set((stages.data ?? []).filter((s) => s.kind === "open").map((s) => s.key));
   const today = new Date().toISOString().slice(0, 10);
@@ -275,6 +278,9 @@ export function LiveHome() {
           )}
         </div>
         <div className="space-y-3">
+          {can("clients", "view") && !!requests.data?.length && (
+            <Shortcut href="/app/requests" icon={Inbox} title="Client requests waiting for an answer" value={requests.data.length} />
+          )}
           {can("settings", "edit") && !!jobs.data?.failed && (
             <Shortcut href="/app/settings/jobs" icon={TriangleAlert} title="Background jobs that failed" value={jobs.data.failed} />
           )}
