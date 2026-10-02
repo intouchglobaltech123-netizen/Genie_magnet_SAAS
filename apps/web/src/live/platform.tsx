@@ -83,6 +83,7 @@ function Agencies() {
             <TH numeric>People</TH>
             <TH numeric>Clients</TH>
             <TH numeric>AI this month</TH>
+            <TH numeric>WhatsApp</TH>
             <TH numeric>Storage</TH>
             <TH>Last activity</TH>
             <TH numeric>Failed jobs</TH>
@@ -114,6 +115,7 @@ function Agencies() {
               <TD numeric>{a.people}</TD>
               <TD numeric>{a.clients}</TD>
               <TD numeric>{a.aiDraftsThisMonth}</TD>
+              <TD numeric>{a.whatsappThisMonth}</TD>
               <TD numeric>{size(a.storageBytes)}</TD>
               <TD className="text-muted-foreground">{a.lastActivityAt ? fmtDate(istDay(a.lastActivityAt), { day: "numeric", month: "short" }) : "—"}</TD>
               <TD numeric className={a.failedJobs ? "font-medium text-danger" : undefined}>

@@ -51,6 +51,7 @@ export class PlatformService {
           people: usage.users,
           clients: usage.clients,
           aiDraftsThisMonth: usage.aiDrafts,
+          whatsappThisMonth: usage.whatsappMessages,
           storageBytes: usage.storageBytes,
           lastActivityAt: last?.at.toISOString() ?? null,
           failedJobs,

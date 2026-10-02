@@ -174,6 +174,8 @@ export interface UsageNow {
   clients: number;
   aiDrafts: number;
   storageBytes: number;
+  /** WhatsApp messages sent this month (through the agency's own number; counted, not limited). */
+  whatsappMessages: number;
 }
 
 /** A plan as agencies see it. */
@@ -239,6 +241,7 @@ export interface PlatformAgencyRow {
   people: number;
   clients: number;
   aiDraftsThisMonth: number;
+  whatsappThisMonth: number;
   storageBytes: number;
   /** The latest change anyone made in it. */
   lastActivityAt: string | null;

@@ -20,6 +20,7 @@ import {
   reportSummaryDraft,
 } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
+import { PlanService } from "../billing/plan.service.js";
 import { ENV, type Env } from "../env.js";
 import { ContentService } from "../production/content.service.js";
 import { ReportsService } from "../reports/reports.service.js";
@@ -100,6 +101,7 @@ export class DraftsService {
     private readonly genie: GenieService,
     private readonly content: ContentService,
     private readonly reports: ReportsService,
+    private readonly plans: PlanService,
   ) {}
 
   private need(kind: DraftKind) {
@@ -121,6 +123,7 @@ export class DraftsService {
     const s = await this.genie.settings();
     if (this.model.kind === "off") throw new ConflictException("Genie Assistant's drafting is not switched on for this server yet — write this one yourself.");
     if (!s.ai.enabled) throw new ConflictException("Switch drafting and Ask Genie on in Settings → Genie Assistant first.");
+    await this.plans.assertDraft();
     if (s.ai.spentThisMonth >= s.ai.monthlyBudget)
       throw new ConflictException(
         `This month's AI budget (₹${s.ai.monthlyBudget.toLocaleString("en-IN")}) is used up — raise it in Settings → Genie Assistant, or write this one yourself.`,

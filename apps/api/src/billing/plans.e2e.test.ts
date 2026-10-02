@@ -293,3 +293,56 @@ describe("our invoices (pretend payments)", () => {
     );
   });
 });
+
+describe("usage", () => {
+  it("is counted for each agency, and the plan's Genie Assistant drafts and storage are limits", async () => {
+    settings = (
+      await anitha
+        .put("/platform/settings")
+        .send({
+          ...settings,
+          plans: [
+            ...settings.plans,
+            {
+              key: "ai_one",
+              name: "One draft",
+              description: "",
+              suites: ["genie"],
+              limits: { users: null, clients: null, aiDrafts: 1, storageGb: 1 },
+              priceInr: 1,
+              priceUsd: null,
+              offered: false,
+            },
+          ],
+        })
+        .expect(200)
+    ).body as PlatformSettings;
+    await anitha.put(`/platform/agencies/${zen}/subscription`).send({ plan: "ai_one", status: "active" }).expect(200);
+
+    // One Genie Assistant answer this month, then the plan's limit.
+    await zara.put("/genie/ai").send({ aiEnabled: true }).expect(200);
+    await zara.post("/genie/ask").send({ question: "How many clients do we have?" }).expect(200);
+    expect((await zara.post("/genie/ask").send({ question: "And how many videos?" }).expect(403)).body.message).toBe(
+      "Your plan (One draft) allows 1 Genie Assistant draft a month, and 1 is used. The owner can choose a larger plan in Settings → Plan — or write this one yourself.",
+    );
+
+    // Storage: a gigabyte already kept, so another file does not fit in the plan's one.
+    await t.sql(
+      `INSERT INTO files (id, agency_id, storage_key, name, mime, size, status) VALUES (gen_random_uuid(), '${zen}', '${zen}/client/big.mov', 'big.mov', 'video/quicktime', 1073741824, 'ready')`,
+    );
+    const client = ((await zara.get("/clients").expect(200)).body as { id: string }[])[0]!;
+    expect(
+      (
+        await zara
+          .post("/files")
+          .send({ name: "shoot.mp4", mime: "video/mp4", size: 10 * 1024 ** 2, entity: "client", entityId: client.id })
+          .expect(403)
+      ).body.message,
+    ).toMatch(/^Your plan \(One draft\) has 1 GB of storage, and 1\.0 GB is used — this file needs 10 MB\./);
+
+    const usage = ((await zara.get("/plan").expect(200)).body as PlanPage).usage;
+    expect(usage).toMatchObject({ aiDrafts: 1, storageBytes: 1073741824, whatsappMessages: 0 });
+    const row = ((await anitha.get("/platform/agencies").expect(200)).body as PlatformAgencyRow[]).find((a) => a.id === zen)!;
+    expect(row).toMatchObject({ aiDraftsThisMonth: 1, storageBytes: 1073741824, whatsappThisMonth: 0 });
+  });
+});

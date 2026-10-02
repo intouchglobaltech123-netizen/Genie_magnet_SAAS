@@ -99,6 +99,10 @@ export function LivePlan() {
                 </div>
               );
             })}
+            <div className="flex items-center justify-between text-body">
+              <span>WhatsApp messages this month</span>
+              <span className="tabular text-muted-foreground">{usage.whatsappMessages.toLocaleString("en-IN")} · through your own number</span>
+            </div>
           </div>
         </SectionCard>
       </div>

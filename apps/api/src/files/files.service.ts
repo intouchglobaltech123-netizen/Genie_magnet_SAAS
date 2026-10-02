@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException, PayloadTooLargeException } from "@nestjs/common";
 import { allows, extOf, FILE_ENTITIES, type FileEntity, type FileStart } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
+import { PlanService } from "../billing/plan.service.js";
 import { ENV, type Env } from "../env.js";
 import { asLinkHolder, TenantDb } from "../tenancy/tenant-context.js";
 import { FileStore, TooLargeError } from "./file-store.js";
@@ -34,6 +35,7 @@ export class FilesService {
     private readonly audit: AuditService,
     private readonly store: FileStore,
     @Inject(ENV) private readonly env: Env,
+    private readonly plans: PlanService,
   ) {}
 
   private can(entity: FileEntity, level: "view" | "edit") {
@@ -90,6 +92,7 @@ export class FilesService {
   private async begin(input: FileStart & { mime: string }, uploadedBy: string | null) {
     const max = this.env.FILE_MAX_MB * 1024 * 1024;
     if (input.size > max) throw new PayloadTooLargeException(`Files can be up to ${this.env.FILE_MAX_MB} MB.`);
+    await this.plans.assertStorage(input.size);
     const agencyId = this.tenant.agencyId;
     const id = await this.tenant.tx(async (tx) => {
       const f = await tx.fileObject.create({

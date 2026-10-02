@@ -15,13 +15,18 @@ const addMonth = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMont
 /** What an agency uses now (ADR 0011): counted inside the agency, only the numbers leave it. */
 export async function usageOf(db: TenantTx, agencyId: string, now = new Date()): Promise<UsageNow & { invited: number }> {
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-  const [members, clientRoles, clients, ai, files, invited] = await Promise.all([
+  const [members, clientRoles, clients, ai, files, invited, whatsapp] = await Promise.all([
     db.membership.findMany({ where: { agencyId }, select: { role: true } }),
     db.role.findMany({ where: { isClient: true }, select: { key: true } }),
     db.client.count(),
     db.aiUsage.count({ where: { createdAt: { gte: monthStart } } }),
-    db.fileObject.aggregate({ where: { status: "ready" }, _sum: { size: true } }),
+    // Files on their way up count too, so several large uploads at once cannot pass the limit together.
+    db.fileObject.aggregate({
+      where: { OR: [{ status: "ready" }, { status: "pending", createdAt: { gte: new Date(now.getTime() - 86_400_000) } }] },
+      _sum: { size: true },
+    }),
     db.invitation.findMany({ where: { agencyId, status: "pending", expiresAt: { gt: now } }, select: { role: true } }),
+    db.whatsAppMessage.count({ where: { direction: "out", createdAt: { gte: monthStart }, status: { notIn: ["failed", "skipped"] } } }),
   ]);
   const client = new Set(clientRoles.map((r) => r.key));
   return {
@@ -29,6 +34,7 @@ export async function usageOf(db: TenantTx, agencyId: string, now = new Date()):
     clients,
     aiDrafts: ai,
     storageBytes: Number(files._sum.size ?? 0),
+    whatsappMessages: whatsapp,
     invited: invited.filter((i) => !client.has(i.role ?? "")).length,
   };
 }
@@ -130,6 +136,33 @@ export class PlanService {
     }
     ctx.entitlements = undefined;
     return { ...(await this.page()), payUrl: started.payUrl };
+  }
+
+  /** Room for one more Genie Assistant draft or answer this month; refused, naming the plan, when it is used up. */
+  async assertDraft() {
+    const ctx = this.ctx();
+    const ent = await this.entitlements.load(ctx);
+    const limit = ent.limits.aiDrafts;
+    if (limit === null) return;
+    const used = (await this.tenant.tx((tx) => usageOf(tx, ctx.agencyId))).aiDrafts;
+    if (used >= limit)
+      throw new ForbiddenException(
+        `Your plan (${ent.plan?.name ?? "—"}) allows ${limit} Genie Assistant ${limit === 1 ? "draft" : "drafts"} a month, and ${used} ${used === 1 ? "is" : "are"} used. The owner can choose a larger plan in Settings → Plan — or write this one yourself.`,
+      );
+  }
+
+  /** Room for a file of `bytes` in the plan's storage; refused, naming the plan, when it would not fit. */
+  async assertStorage(bytes: number) {
+    const ctx = this.ctx();
+    const ent = await this.entitlements.load(ctx);
+    const limit = ent.limits.storageGb;
+    if (limit === null) return;
+    const used = (await this.tenant.tx((tx) => usageOf(tx, ctx.agencyId))).storageBytes;
+    const size = (n: number) => (n >= 1024 ** 3 ? `${(n / 1024 ** 3).toFixed(n < 10 * 1024 ** 3 ? 1 : 0)} GB` : `${Math.max(1, Math.ceil(n / 1024 ** 2))} MB`);
+    if (used + bytes > limit * 1024 ** 3)
+      throw new ForbiddenException(
+        `Your plan (${ent.plan?.name ?? "—"}) has ${limit} GB of storage, and ${size(used)} is used — this file needs ${size(bytes)}. Delete files you no longer need, or the owner can choose a larger plan in Settings → Plan.`,
+      );
   }
 
   /** Room for `adding` more people or clients on the plan; refused, naming the plan, when it is full. */
