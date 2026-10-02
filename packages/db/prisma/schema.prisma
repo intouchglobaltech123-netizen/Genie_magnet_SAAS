@@ -477,6 +477,7 @@ model Client {
   content        ContentItem[]
   videos         Video[]
   connections    PlatformConnection[]
+  projects       Project[]
 
   @@unique([agencyId, code])
   @@index([agencyId, fitment])
@@ -1516,6 +1517,7 @@ model Commitment {
   createdAt DateTime  @default(now()) @map("created_at")
 
   meeting Meeting? @relation(fields: [meetingId], references: [id], onDelete: SetNull)
+  tasks   Task[]
 
   @@index([agencyId, status])
   @@map("commitments")
@@ -2682,4 +2684,78 @@ model AssetMaintenance {
 
   @@index([agencyId, assetId])
   @@map("asset_maintenance")
+}
+
+// ───────────────────────────── Projects and tasks (P5-21) ─────────────────────────────
+
+/// Work that is not a video: a website, an event, a new person's joining.
+model Project {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  agencyId    String    @map("agency_id") @db.Uuid
+  name        String
+  clientId    String?   @map("client_id") @db.Uuid
+  ownerId     String    @map("owner_id")
+  /// The person a joining project is about.
+  joinerId    String?   @map("joiner_id")
+  description String    @default("")
+  startOn     DateTime? @map("start_on") @db.Date
+  dueOn       DateTime? @map("due_on") @db.Date
+  /// active · on_hold · done · cancelled
+  status      String    @default("active")
+  /// The task list it was started from.
+  templateKey String?   @map("template_key")
+  createdBy   String?   @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  tasks  Task[]
+
+  @@index([agencyId, status])
+  @@map("projects")
+}
+
+/// A piece of work with one person accountable: in a project, or on its own (a commitment carried forward).
+model Task {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  agencyId     String    @map("agency_id") @db.Uuid
+  projectId    String?   @map("project_id") @db.Uuid
+  title        String
+  notes        String    @default("")
+  ownerId      String    @map("owner_id")
+  dueOn        DateTime? @map("due_on") @db.Date
+  /// high · medium · low
+  priority     String    @default("medium")
+  /// todo · in_progress · done
+  status       String    @default("todo")
+  /// A task of the same project that has to be done first.
+  dependsOnId  String?   @map("depends_on_id") @db.Uuid
+  /// manual · template · joining · commitment
+  source       String    @default("manual")
+  commitmentId String?   @map("commitment_id") @db.Uuid
+  position     Int       @default(0)
+  completedAt  DateTime? @map("completed_at")
+  completedBy  String?   @map("completed_by")
+  createdBy    String?   @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  project    Project?    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  dependsOn  Task?       @relation("TaskDependency", fields: [dependsOnId], references: [id], onDelete: SetNull)
+  waitedOnBy Task[]      @relation("TaskDependency")
+  commitment Commitment? @relation(fields: [commitmentId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId, ownerId, status])
+  @@index([agencyId, projectId])
+  @@index([agencyId, commitmentId])
+  @@map("tasks")
+}
+
+/// The agency's task lists to start projects from, the joining list among them.
+model ProjectSettings {
+  agencyId  String   @id @map("agency_id") @db.Uuid
+  templates Json
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("project_settings")
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, CalendarPlus, Check, Gavel, Lock, Plus, Trash2, TrendingDown, TrendingUp, Trophy } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, CalendarPlus, Check, Gavel, ListTodo, Lock, Plus, Trash2, TrendingDown, TrendingUp, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { ATTENDANCE_MARKS, type AttendanceMark, type CadenceRow, type CommitmentRow, REVIEW_BLOCK_LABEL, REVIEW_BLOCKS, type ReviewBlock } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
@@ -18,7 +19,7 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "./api";
-import { useCadences, useCan, useCommitments, useDecisions, useMe, useMeeting, useMeetings, usePeople, useReviewAction } from "./queries";
+import { useCadences, useCan, useCommitments, useDecisions, useMe, useMeeting, useMeetings, usePeople, useProjectAction, useReviewAction } from "./queries";
 
 const onError = (e: unknown) => toast.error(errorMessage(e));
 const when = (iso: string) =>
@@ -590,6 +591,7 @@ function Commitments() {
   const can = useCan();
   const me = useMe().data!;
   const act = useReviewAction();
+  const tasks = useProjectAction();
   const [mine, setMine] = useState(!can("reports", "view"));
   const [status, setStatus] = useState("open");
   const list = useCommitments({ status, mine });
@@ -626,14 +628,34 @@ function Commitments() {
               action={
                 c.status === "open" &&
                 (c.owner.id === me.user.id || can("reports", "edit")) && (
-                  <Button
-                    size="xs"
-                    variant="secondary"
-                    onClick={() => act.mutate({ step: "done", id: c.id }, { onSuccess: () => toast.success("Done"), onError })}
-                  >
-                    <Check />
-                    Done
-                  </Button>
+                  <span className="flex gap-1.5">
+                    {c.taskId ? (
+                      <Button size="xs" variant="ghost" asChild>
+                        <Link href={`/app/projects?task=${c.taskId}`}>
+                          <ListTodo />
+                          Its task
+                        </Link>
+                      </Button>
+                    ) : (
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        disabled={tasks.isPending}
+                        onClick={() => tasks.mutate({ step: "fromCommitment", commitmentId: c.id }, { onSuccess: () => toast.success("Carried forward as a task"), onError })}
+                      >
+                        <ListTodo />
+                        Make it a task
+                      </Button>
+                    )}
+                    <Button
+                      size="xs"
+                      variant="secondary"
+                      onClick={() => act.mutate({ step: "done", id: c.id }, { onSuccess: () => toast.success("Done"), onError })}
+                    >
+                      <Check />
+                      Done
+                    </Button>
+                  </span>
                 )
               }
             />

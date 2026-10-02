@@ -39,7 +39,8 @@ const utc = (d: string) => new Date(`${d}T00:00:00Z`);
 const when = (d: Date) =>
   d.toLocaleString("en-IN", { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" });
 type Mark = { mark: CommitmentMark; note: string; at: string; meetingId: string | null; meeting: string | null };
-type CommitmentWith = Prisma.CommitmentGetPayload<{ include: { meeting: { select: { id: true; title: true } } } }>;
+const COMMITMENT_WITH = { meeting: { select: { id: true, title: true } }, tasks: { select: { id: true }, take: 1 } } satisfies Prisma.CommitmentInclude;
+type CommitmentWith = Prisma.CommitmentGetPayload<{ include: typeof COMMITMENT_WITH }>;
 type MeetingFull = Prisma.MeetingGetPayload<object>;
 
 /**
@@ -201,16 +202,16 @@ export class ReviewsService {
       m.status === "locked"
         ? this.tenant.db.commitment.findMany({
             where: { history: { array_contains: [{ meetingId: id }] } },
-            include: { meeting: { select: { id: true, title: true } } },
+            include: COMMITMENT_WITH,
           })
         : this.tenant.db.commitment.findMany({
             where: { status: "open", due: { lt: endOfDay }, OR: [{ meetingId: null }, { meetingId: { not: id } }] },
-            include: { meeting: { select: { id: true, title: true } } },
+            include: COMMITMENT_WITH,
             orderBy: { due: "asc" },
           }),
       this.tenant.db.commitment.findMany({
         where: { meetingId: id },
-        include: { meeting: { select: { id: true, title: true } } },
+        include: COMMITMENT_WITH,
         orderBy: { createdAt: "asc" },
       }),
       this.tenant.db.decision.findMany({
@@ -299,7 +300,7 @@ export class ReviewsService {
     const me = this.tenant.userId ?? "";
     const rows = await this.tenant.db.commitment.findMany({
       where: { ...(filter.status && { status: filter.status }), ...(filter.mine || !this.may("view") ? { ownerId: me } : {}) },
-      include: { meeting: { select: { id: true, title: true } } },
+      include: COMMITMENT_WITH,
       orderBy: [{ status: "desc" }, { due: "asc" }],
       take: 500,
     });
@@ -336,7 +337,7 @@ export class ReviewsService {
   }
 
   private async one(id: string) {
-    const c = await this.tenant.db.commitment.findFirst({ where: { id }, include: { meeting: { select: { id: true, title: true } } } });
+    const c = await this.tenant.db.commitment.findFirst({ where: { id }, include: COMMITMENT_WITH });
     if (!c) throw new NotFoundException("No commitment with that id.");
     return this.presentCommitment(c, await this.names([c.ownerId]));
   }
@@ -362,6 +363,13 @@ export class ReviewsService {
             ? { status: "done", mark: "BT", markNote: k.note || null, doneAt: new Date(), history }
             : { mark: "BD", markNote: k.note, carried: { increment: 1 }, history, ...(k.due && { due: utc(k.due) }) },
       });
+      // The task it was carried forward to follows it: done with it, or due on its new day.
+      if (k.mark === "BT")
+        await tx.task.updateMany({
+          where: { commitmentId: id, status: { not: "done" } },
+          data: { status: "done", completedAt: new Date(), completedBy: this.tenant.userId ?? null },
+        });
+      else if (k.due) await tx.task.updateMany({ where: { commitmentId: id, status: { not: "done" } }, data: { dueOn: utc(k.due) } });
       await this.audit.record(tx, { action: "update", entity: "commitment", entityId: id, after: { mark: k.mark, note: k.note } });
     });
     return this.one(id);
@@ -375,6 +383,10 @@ export class ReviewsService {
     const history = [...(c.history as Mark[]), { mark: "BT" as const, note: "Done", at: new Date().toISOString(), meetingId: null, meeting: null }];
     await this.tenant.tx(async (tx) => {
       await tx.commitment.update({ where: { id }, data: { status: "done", mark: "BT", doneAt: new Date(), history } });
+      await tx.task.updateMany({
+        where: { commitmentId: id, status: { not: "done" } },
+        data: { status: "done", completedAt: new Date(), completedBy: this.tenant.userId ?? null },
+      });
       await this.audit.record(tx, { action: "update", entity: "commitment", entityId: id, after: { done: true } });
     });
     return this.one(id);
@@ -423,6 +435,7 @@ export class ReviewsService {
       madeIn: c.meeting,
       doneAt: c.doneAt?.toISOString() ?? null,
       createdAt: c.createdAt.toISOString(),
+      taskId: c.tasks[0]?.id ?? null,
       history: history.map((h) => ({ mark: h.mark, note: h.note, at: h.at, meeting: h.meeting ?? null })),
     };
   }

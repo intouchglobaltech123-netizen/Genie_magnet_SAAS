@@ -312,7 +312,7 @@ function RunView({ month }: { month: string }) {
           <Badge tone={draft ? "warning" : "success"}>{draft ? "Draft" : "Locked"}</Badge>
           {!draft && r.lockedAt && (
             <span className="text-body text-muted-foreground">
-              by {r.lockedBy} on {fmt(r.lockedAt.slice(0, 10))}
+              by {r.lockedBy} on {fmt(new Date(new Date(r.lockedAt).getTime() + 330 * 60_000).toISOString().slice(0, 10))}
             </span>
           )}
         </div>

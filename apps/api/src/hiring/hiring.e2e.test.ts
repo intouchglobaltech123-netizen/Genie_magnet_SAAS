@@ -158,6 +158,13 @@ describe("candidates", () => {
     await arunAgent.post("/api/auth/organization/accept-invitation").set("Origin", ORIGIN).send({ invitationId }).expect(200);
     const people = (await harini.get("/people").expect(200)).body as EmployeeRow[];
     expect(people.find((p) => p.user.email === "arun.prakash@mail.test")).toMatchObject({ designation: "Video Editor", joiningDate: "2026-11-02" });
+    // And his joining project, from the agency's joining list, counted from his joining day (P5-21).
+    const [joining] = (await t.sql(
+      `SELECT p.name, (SELECT count(*)::int FROM tasks WHERE project_id = p.id) AS tasks, (SELECT min(due_on)::text FROM tasks WHERE project_id = p.id) AS first,
+              (SELECT count(*)::int FROM tasks k JOIN users u ON u.id = k.owner_id WHERE k.project_id = p.id AND u.email = 'arun.prakash@mail.test') AS his
+       FROM projects p WHERE p.template_key = 'joining'`,
+    )) as { name: string; tasks: number; first: string; his: number }[];
+    expect(joining).toEqual({ name: "Joining: Arun Prakash", tasks: 7, first: "2026-11-02", his: 1 });
   });
 
   it("belong to their agency only", async () => {

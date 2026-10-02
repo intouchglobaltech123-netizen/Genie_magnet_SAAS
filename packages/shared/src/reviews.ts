@@ -190,6 +190,8 @@ export interface CommitmentRow {
   madeIn: { id: string; title: string } | null;
   doneAt: string | null;
   createdAt: string;
+  /** The task it was carried forward to, if any. */
+  taskId: string | null;
   /** Each time it was marked, newest first. */
   history: { mark: CommitmentMark; note: string; at: string; meeting: string | null }[];
 }

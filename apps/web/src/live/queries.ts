@@ -110,6 +110,14 @@ import {
   type DiagnosticView,
   type PlannerData,
   type AssetDetail,
+  type ProjectDetail,
+  type ProjectInput,
+  type ProjectRow,
+  type ProjectSettingsInput,
+  type ProjectTemplate,
+  type TaskInput,
+  type TaskRow,
+  type TaskStatus,
   type AssetInput,
   type AssetPerson,
   type AssetReservationRow,
@@ -2107,5 +2115,50 @@ export function useAssetAction() {
       qc.setQueryData(["assets", "one", d.id], d);
       return qc.invalidateQueries({ queryKey: ["assets"] });
     },
+  });
+}
+
+// ─── Projects and tasks ────────────────────────────────────────────────
+
+export const useProjects = () => useQuery({ queryKey: ["projects"], queryFn: () => api<ProjectRow[]>("/projects") });
+export const useProject = (id: string | null) =>
+  useQuery({ queryKey: ["projects", "one", id], queryFn: () => api<ProjectDetail>(`/projects/${id}`), enabled: !!id, retry: false });
+export const useProjectSettings = () => useQuery({ queryKey: ["projects", "settings"], queryFn: () => api<{ templates: ProjectTemplate[] }>("/projects/settings") });
+export const useTaskPeople = () => useQuery({ queryKey: ["projects", "people"], queryFn: () => api<{ id: string; name: string | null }[]>("/tasks/people") });
+export const useTasks = (scope: "mine" | "all", enabled = true) =>
+  useQuery({ queryKey: ["projects", "tasks", scope], queryFn: () => api<TaskRow[]>(`/tasks?scope=${scope}`), enabled });
+
+export function useProjectAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "project"; id?: string; body: ProjectInput }
+        | { step: "settings"; body: ProjectSettingsInput }
+        | { step: "task"; id?: string; body: TaskInput }
+        | { step: "status"; id: string; status: TaskStatus }
+        | { step: "removeTask"; id: string }
+        | { step: "fromCommitment"; commitmentId: string },
+    ): Promise<unknown> => {
+      switch (v.step) {
+        case "project":
+          return v.id ? api<ProjectDetail>(`/projects/${v.id}`, { method: "PUT", body: v.body }) : api<ProjectDetail>("/projects", { body: v.body });
+        case "settings":
+          return api("/projects/settings", { method: "PUT", body: v.body });
+        case "task":
+          return v.id ? api<TaskRow>(`/tasks/${v.id}`, { method: "PUT", body: v.body }) : api<TaskRow>("/tasks", { body: v.body });
+        case "status":
+          return api<TaskRow>(`/tasks/${v.id}/status`, { body: { status: v.status } });
+        case "removeTask":
+          return api(`/tasks/${v.id}`, { method: "DELETE" });
+        case "fromCommitment":
+          return api<TaskRow>(`/tasks/from-commitment/${v.commitmentId}`, { method: "POST" });
+      }
+    },
+    onSuccess: (_d, v) =>
+      Promise.all([
+        qc.invalidateQueries({ queryKey: ["projects"] }),
+        ...(v.step === "fromCommitment" || v.step === "status" ? [qc.invalidateQueries({ queryKey: ["reviews", "commitments"] })] : []),
+      ]),
   });
 }

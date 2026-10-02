@@ -15,6 +15,7 @@ export * from "./people.js";
 export * from "./pipeline.js";
 export * from "./planner.js";
 export * from "./assets.js";
+export * from "./projects.js";
 export * from "./gst.js";
 export * from "./clients.js";
 export * from "./diagnostic.js";

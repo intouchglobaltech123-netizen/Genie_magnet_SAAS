@@ -27,6 +27,7 @@ import {
 } from "@gm/shared";
 import type { z } from "zod";
 import { AuditService } from "../audit/audit.service.js";
+import { ProjectsService } from "../projects/projects.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { TeamService } from "../team/team.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
@@ -391,7 +392,7 @@ export class HiringService {
    * starts from the offer — designation, the opening's department and the joining day.
    */
   static async linkHire(tx: TenantTx, agencyId: string, invitationId: string, userId: string) {
-    const c = await tx.candidate.findFirst({ where: { invitationId }, include: { opening: { select: { departmentId: true } } } });
+    const c = await tx.candidate.findFirst({ where: { invitationId }, include: { opening: { select: { departmentId: true, hiringManagerId: true } } } });
     if (!c) return;
     const offer = c.offer as Offer | null;
     await tx.candidate.update({ where: { id: c.id }, data: { userId } });
@@ -402,6 +403,13 @@ export class HiringService {
       phone: c.phone,
     };
     await tx.employeeProfile.upsert({ where: { agencyId_userId: { agencyId, userId } }, create: { agencyId, userId, ...data }, update: data });
+    // Their joining project, from the agency's joining list (P5-21), run by the hiring manager.
+    await ProjectsService.joining(tx, agencyId, {
+      joinerId: userId,
+      ownerId: c.opening.hiringManagerId ?? c.createdBy,
+      startOn: offer?.joiningDate ?? null,
+      createdBy: c.createdBy,
+    });
   }
 
   // ─── Reading ────────────────────────────────────────────────────────
