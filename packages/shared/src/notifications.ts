@@ -40,6 +40,8 @@ export const NOTIFICATION_KINDS = [
   { key: "review_scheduled", group: "Management", label: "A review I take part in is scheduled" },
   { key: "commitment_assigned", group: "Management", label: "A commitment is given to me" },
   { key: "round_table_released", group: "Management", label: "What my team said at a Round Table is ready" },
+  { key: "sop_to_approve", group: "Management", label: "An SOP version waits for my approval" },
+  { key: "checklist_to_check", group: "Management", label: "An SOP checklist waits for me to check it" },
   { key: "genie_insight", group: "Genie Assistant", label: "Genie Assistant finds something I should act on" },
   { key: "job_failed", group: "Settings", label: "Background work failed after all its tries" },
 ] as const;

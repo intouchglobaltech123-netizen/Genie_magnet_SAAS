@@ -139,6 +139,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Goals", href: "/app/goals", icon: Target },
       { title: "Reviews", href: "/app/reviews", icon: CalendarCheck },
       { title: "Round Table", href: "/app/round-table", icon: Users },
+      { title: "SOPs and checklists", href: "/app/sops", icon: ListChecks },
     ],
   },
   {

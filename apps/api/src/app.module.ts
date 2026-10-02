@@ -88,6 +88,8 @@ import { ReviewsController } from "./reviews/reviews.controller.js";
 import { ReviewsService } from "./reviews/reviews.service.js";
 import { RoundTableController } from "./round-table/round-table.controller.js";
 import { RoundTableService } from "./round-table/round-table.service.js";
+import { SopsController } from "./sops/sops.controller.js";
+import { SopsService } from "./sops/sops.service.js";
 import { DailySheetService } from "./daily-sheet/daily-sheet.service.js";
 import { LearningService } from "./performance/learning.service.js";
 import { PerformanceMetrics } from "./performance/metrics.js";
@@ -186,6 +188,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     GoalsController,
     ReviewsController,
     RoundTableController,
+    SopsController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -309,6 +312,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     ReviewFigures,
     ReviewsService,
     RoundTableService,
+    SopsService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

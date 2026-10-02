@@ -2437,3 +2437,76 @@ model RtAnswer {
   @@unique([sessionId, subjectId, authorId])
   @@map("rt_answers")
 }
+
+// ───────────────────────────── SOPs and checklists ─────────────────────────────
+
+/// An SOP (P5-17): how the agency does one thing, who does it, checks it and approves it, its PSS line and KRA.
+model Sop {
+  id            String       @id @default(uuid(7)) @db.Uuid
+  agencyId      String       @map("agency_id") @db.Uuid
+  title         String
+  departmentId  String?      @map("department_id") @db.Uuid
+  ownerId       String?      @map("owner_id")
+  pssRef        String       @default("") @map("pss_ref")
+  kraTemplateId String?      @map("kra_template_id") @db.Uuid
+  kraKey        String?      @map("kra_key")
+  doerIds       String[]     @map("doer_ids")
+  checkerId     String?      @map("checker_id")
+  approverId    String?      @map("approver_id")
+  active        Boolean      @default(true)
+  createdAt     DateTime     @default(now()) @map("created_at")
+  versions      SopVersion[]
+  runs          SopRun[]
+
+  @@index([agencyId, active])
+  @@map("sops")
+}
+
+/// A version of an SOP (P5-17): drafted, approved before use, replaced by the next.
+model SopVersion {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  agencyId   String    @map("agency_id") @db.Uuid
+  sopId      String    @map("sop_id") @db.Uuid
+  number     Int
+  /// draft · in_review · approved · superseded
+  status     String    @default("draft")
+  purpose    String    @default("")
+  scope      String    @default("")
+  /// [{ text }]
+  steps      Json      @default("[]")
+  /// [{ key, text }]
+  checklist  Json      @default("[]")
+  changeNote String    @default("") @map("change_note")
+  approvedBy String?   @map("approved_by")
+  approvedAt DateTime? @map("approved_at")
+  createdBy  String?   @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  sop        Sop       @relation(fields: [sopId], references: [id], onDelete: Cascade)
+
+  @@unique([sopId, number])
+  @@map("sop_versions")
+}
+
+/// A run of an SOP's checklist (P5-17), checked by its checker.
+model SopRun {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  agencyId  String    @map("agency_id") @db.Uuid
+  sopId     String    @map("sop_id") @db.Uuid
+  versionId String    @map("version_id") @db.Uuid
+  by        String
+  about     String    @default("")
+  /// [{ key, text, result, note }]
+  items     Json
+  note      String    @default("")
+  /// submitted · passed · failed
+  status    String    @default("submitted")
+  checkedBy String?   @map("checked_by")
+  checkedAt DateTime? @map("checked_at")
+  checkNote String?   @map("check_note")
+  createdAt DateTime  @default(now()) @map("created_at")
+  sop       Sop       @relation(fields: [sopId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, status])
+  @@index([agencyId, by, createdAt])
+  @@map("sop_runs")
+}

@@ -4,6 +4,7 @@ export * from "./permissions.js";
 export type * from "./api.js";
 export * from "./imports.js";
 export * from "./social.js";
+export * from "./sops.js";
 export * from "./genie.js";
 export * from "./finance.js";
 export * from "./daily-sheet.js";

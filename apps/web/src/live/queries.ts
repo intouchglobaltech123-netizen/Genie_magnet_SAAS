@@ -105,6 +105,11 @@ import {
   type LeaveRequestInput,
   type LeaveRequestRow,
   type LeaveTypeRow,
+  type SopInput,
+  type SopRow,
+  type SopRunInput,
+  type SopRunRow,
+  type SopVersionInput,
   type RtFeedback,
   type RtSessionInput,
   type RtSessionRow,
@@ -1373,6 +1378,55 @@ export function useLeaveAction() {
       void qc.invalidateQueries({ queryKey: ["leave"] });
       void qc.invalidateQueries({ queryKey: ["attendance"] });
     },
+  });
+}
+
+// ─── SOPs and checklists ──────────────────────────────────────────────
+
+export const useSops = () => useQuery({ queryKey: ["sops"], queryFn: () => api<SopRow[]>("/sops") });
+export const useSop = (id: string | null) => useQuery({ queryKey: ["sops", id], queryFn: () => api<SopRow>(`/sops/${id}`), enabled: !!id });
+export const useSopRuns = (filter: { status?: string; mine?: boolean; sopId?: string }) =>
+  useQuery({
+    queryKey: ["sops", "runs", filter.status ?? "", !!filter.mine, filter.sopId ?? ""],
+    queryFn: () =>
+      api<SopRunRow[]>(
+        filter.sopId
+          ? `/sops/${filter.sopId}/runs`
+          : `/sops/runs?${new URLSearchParams({ ...(filter.status && { status: filter.status }), ...(filter.mine && { mine: "true" }) })}`,
+      ),
+  });
+
+export function useSopAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "save"; id?: string; body: SopInput }
+        | { step: "newDraft"; id: string }
+        | { step: "version"; versionId: string; body: SopVersionInput }
+        | { step: "submit"; versionId: string }
+        | { step: "decide"; versionId: string; approved: boolean; note: string }
+        | { step: "run"; id: string; body: SopRunInput }
+        | { step: "check"; runId: string; passed: boolean; note: string },
+    ) => {
+      switch (v.step) {
+        case "save":
+          return api<SopRow>(v.id ? `/sops/${v.id}` : "/sops", { method: v.id ? "PUT" : "POST", body: v.body });
+        case "newDraft":
+          return api(`/sops/${v.id}/versions`, { body: {} });
+        case "version":
+          return api(`/sops/versions/${v.versionId}`, { method: "PUT", body: v.body });
+        case "submit":
+          return api(`/sops/versions/${v.versionId}/submit`, { body: {} });
+        case "decide":
+          return api(`/sops/versions/${v.versionId}/decision`, { body: { approved: v.approved, note: v.note } });
+        case "run":
+          return api(`/sops/${v.id}/runs`, { body: v.body });
+        case "check":
+          return api(`/sops/runs/${v.runId}/check`, { body: { passed: v.passed, note: v.note } });
+      }
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["sops"] }),
   });
 }
 

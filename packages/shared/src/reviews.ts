@@ -8,7 +8,18 @@ import { REVIEW_CADENCES, type ReviewCadence } from "./enums.js";
 const text = (max: number) => z.string().trim().max(max);
 
 /** Figures a review can look at, worked out as it happens and kept as they were when it is locked. */
-export const REVIEW_BLOCKS = ["videos_due", "shoots_soon", "on_leave", "waiting_on_clients", "money", "sales", "delivery", "goals", "commitments"] as const;
+export const REVIEW_BLOCKS = [
+  "videos_due",
+  "shoots_soon",
+  "on_leave",
+  "waiting_on_clients",
+  "money",
+  "sales",
+  "delivery",
+  "goals",
+  "commitments",
+  "sop_failures",
+] as const;
 export type ReviewBlock = (typeof REVIEW_BLOCKS)[number];
 export const REVIEW_BLOCK_LABEL: Record<ReviewBlock, string> = {
   videos_due: "Videos due in the next two days",
@@ -20,6 +31,7 @@ export const REVIEW_BLOCK_LABEL: Record<ReviewBlock, string> = {
   delivery: "This month's delivery: on time and the quality check first time",
   goals: "Goals on track, at risk and off track",
   commitments: "Open commitments, and those past due",
+  sop_failures: "SOP checklists failed this month",
 };
 
 const agendaItem = z.object({ title: text(160).min(1, "Name the item"), minutes: z.number().int().min(0).max(600), note: text(300).default("") });
@@ -86,7 +98,7 @@ export const DEFAULT_CADENCES: Record<ReviewCadence, Omit<CadenceSettings, "faci
       { title: "Numbers against the goals", minutes: 15, note: "" },
       { title: "New action steps, each with an owner and a due day", minutes: 15, note: "" },
     ],
-    blocks: ["commitments", "goals", "delivery"],
+    blocks: ["commitments", "goals", "delivery", "sop_failures"],
   },
   strategic: {
     name: "Strategic review",
@@ -103,7 +115,7 @@ export const DEFAULT_CADENCES: Record<ReviewCadence, Omit<CadenceSettings, "faci
       { title: "Creation — goals and strategies for the next 45 days", minutes: 120, note: "" },
       { title: "Decisions and commitments", minutes: 60, note: "" },
     ],
-    blocks: ["money", "sales", "delivery", "goals", "commitments"],
+    blocks: ["money", "sales", "delivery", "goals", "commitments", "sop_failures"],
   },
 };
 

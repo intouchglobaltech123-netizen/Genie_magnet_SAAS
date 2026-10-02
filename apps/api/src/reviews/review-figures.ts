@@ -134,6 +134,19 @@ export class ReviewFigures {
             lines.push({ label: GOAL_STATUS_LABEL[s], value: String(count(s)), ...(s === "off_track" && count(s) ? { tone: "bad" as const } : {}) });
           break;
         }
+        case "sop_failures": {
+          const since = new Date(utc(monthStart).getTime() - IST);
+          const [failed, waiting] = await Promise.all([
+            db.sopRun.findMany({ where: { status: "failed", createdAt: { gte: since } }, select: { sop: { select: { title: true } } } }),
+            db.sopRun.count({ where: { status: "submitted" } }),
+          ]);
+          lines.push({ label: "Failed this month", value: String(failed.length), ...(failed.length ? { tone: "bad" as const } : {}) });
+          const bySop = new Map<string, number>();
+          for (const f of failed) bySop.set(f.sop.title, (bySop.get(f.sop.title) ?? 0) + 1);
+          for (const [title, n] of [...bySop.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3)) lines.push({ label: title, value: String(n) });
+          lines.push({ label: "Waiting to be checked", value: String(waiting) });
+          break;
+        }
         case "commitments": {
           const [open, late, done] = await Promise.all([
             db.commitment.count({ where: { status: "open" } }),

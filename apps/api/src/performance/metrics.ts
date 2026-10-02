@@ -78,6 +78,17 @@ export class PerformanceMetrics {
       out.hours_logged = round1(((v._sum.minutes ?? 0) + (s._sum.minutes ?? 0)) / 60);
     }
 
+    if (has("checklists_passed")) {
+      const checked = await this.tenant.db.sopRun.groupBy({
+        by: ["status"],
+        where: { by: userId, createdAt: { gte: start, lt: end }, status: { in: ["passed", "failed"] } },
+        _count: { _all: true },
+      });
+      const passed = checked.find((c) => c.status === "passed")?._count._all ?? 0;
+      const total = checked.reduce((s, c) => s + c._count._all, 0);
+      out.checklists_passed = total ? round1((passed / total) * 100) : null;
+    }
+
     if (has("attendance")) {
       const a = await this.attendance.month(month, true);
       const days = Object.values(a.people.find((p) => p.user.id === userId)?.days ?? {});

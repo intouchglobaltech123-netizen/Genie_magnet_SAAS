@@ -6,7 +6,16 @@ const text = (max: number) => z.string().trim().max(max);
 export const performanceMonth = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Use a month like 2026-10");
 
 /** Figures the app works out for a person's month, so nobody types them in. */
-export const KRA_METRICS = ["videos_approved", "on_time", "qc_first_pass", "revisions", "shoots_closed", "hours_logged", "attendance"] as const;
+export const KRA_METRICS = [
+  "videos_approved",
+  "on_time",
+  "qc_first_pass",
+  "revisions",
+  "shoots_closed",
+  "hours_logged",
+  "attendance",
+  "checklists_passed",
+] as const;
 export type KraMetric = (typeof KRA_METRICS)[number];
 export const KRA_METRIC_LABEL: Record<KraMetric, { label: string; unit: string; lowerIsBetter?: boolean }> = {
   videos_approved: { label: "Videos the client approved (as editor)", unit: "" },
@@ -16,6 +25,7 @@ export const KRA_METRIC_LABEL: Record<KraMetric, { label: string; unit: string; 
   shoots_closed: { label: "Shoots done (camera or director)", unit: "" },
   hours_logged: { label: "Hours logged on videos and shoots", unit: " h" },
   attendance: { label: "Working days present", unit: "%" },
+  checklists_passed: { label: "SOP checklists passed when checked", unit: "%" },
 };
 
 export const kraInput = z.object({
