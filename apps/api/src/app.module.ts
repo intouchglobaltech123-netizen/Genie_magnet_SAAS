@@ -71,6 +71,7 @@ import { ClientSocialController, SocialController, SocialWebhookController } fro
 import { SocialService } from "./social/social.service.js";
 import { GenieController } from "./genie/genie.controller.js";
 import { GenieService } from "./genie/genie.service.js";
+import { AskService } from "./genie/ask.service.js";
 import { DraftsService } from "./genie/drafts.service.js";
 import { ClaudeModel, GENIE_MODEL, NoModel, StandInModel } from "./genie/model.js";
 import { ContactWhatsAppController, WhatsAppController, WhatsAppWebhookController } from "./whatsapp/whatsapp.controller.js";
@@ -240,6 +241,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     },
     GenieService,
     DraftsService,
+    AskService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

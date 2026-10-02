@@ -1576,3 +1576,35 @@ model AiUsage {
   @@index([agencyId, createdAt])
   @@map("ai_usage")
 }
+
+/// An Ask Genie conversation (P4-08): one person's questions and the answers, kept for the agency's retention period.
+model AskConversation {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  userId    String   @map("user_id")
+  title     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  messages AskMessage[]
+
+  @@index([agencyId, userId, updatedAt])
+  @@map("ask_conversations")
+}
+
+model AskMessage {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  agencyId       String   @map("agency_id") @db.Uuid
+  conversationId String   @map("conversation_id") @db.Uuid
+  /// user · assistant
+  role           String
+  content        String
+  /// The records the answer drew on: [{ label, href }].
+  sources        Json     @default("[]")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation AskConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, conversationId])
+  @@map("ask_messages")
+}

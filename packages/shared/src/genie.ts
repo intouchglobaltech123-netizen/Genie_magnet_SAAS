@@ -271,3 +271,34 @@ export interface AiUsageSummary {
   /** Drafts decided this month: approved as written, approved with edits, rejected. */
   drafts: { approved: number; edited: number; rejected: number };
 }
+
+// ─── Ask Genie (P4-08) ───────────────────────────────────────────────
+
+export const askInput = z.object({
+  question: z.string().trim().min(2, "Ask a question").max(1000, "Keep it under 1,000 characters"),
+  /** Carries on an earlier conversation. */
+  conversationId: z.uuid().optional(),
+});
+export type AskInput = z.infer<typeof askInput>;
+
+export interface AskSource {
+  label: string;
+  /** A page in the app, e.g. /app/production/… */
+  href: string;
+}
+
+export interface AskMessageRow {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  sources: AskSource[];
+  createdAt: string;
+}
+
+/** POST /genie/ask and GET /genie/conversations/:id */
+export interface AskConversationRow {
+  id: string;
+  title: string;
+  updatedAt: string;
+  messages: AskMessageRow[];
+}

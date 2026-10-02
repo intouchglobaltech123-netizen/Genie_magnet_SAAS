@@ -94,7 +94,7 @@ describe("drafting", () => {
     const s = (await meena.get("/genie/settings").expect(200)).body as GenieSettings;
     expect(s.ai).toEqual({ enabled: false, monthlyBudget: 2000, retentionDays: 90, source: "stand-in", spentThisMonth: 0 });
     const off = await meena.post("/genie/drafts").send({ kind: "caption", videoId }).expect(409);
-    expect(off.body.message).toBe("Switch drafting on in Settings → Genie Assistant first.");
+    expect(off.body.message).toBe("Switch drafting and Ask Genie on in Settings → Genie Assistant first.");
     await karthik.put("/genie/ai").send({ aiEnabled: true }).expect(403);
     await jana.put("/genie/ai").send({ retentionDays: 3 }).expect(400);
     const on = (await jana.put("/genie/ai").send({ aiEnabled: true, monthlyBudget: 500 }).expect(200)).body as GenieSettings;

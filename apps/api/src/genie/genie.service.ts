@@ -228,7 +228,9 @@ export class GenieService {
     // What was sent to the model is kept only for the agency's retention period (P4-10); the drafts themselves stay.
     const keepFrom = new Date(now.getTime() - (row?.retentionDays ?? 90) * 86_400_000);
     const cleared = await tx.draft.updateMany({ where: { createdAt: { lt: keepFrom }, context: { not: null } }, data: { context: null } });
-    return { ...counts, cleared: cleared.count };
+    // Ask Genie conversations go once nobody has added to them for that long.
+    const forgotten = await tx.askConversation.deleteMany({ where: { updatedAt: { lt: keepFrom } } });
+    return { ...counts, cleared: cleared.count, forgotten: forgotten.count };
   }
 
   /** Runs the rules now, for whoever asked. */

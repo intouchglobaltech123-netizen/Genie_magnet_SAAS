@@ -114,11 +114,11 @@ export class DraftsService {
     return Math.round(usd * this.env.AI_USD_TO_INR * 100);
   }
 
-  /** The agency switched drafting on, the server has a model, and this month's budget is not used up. */
-  private async gate() {
+  /** The agency switched drafting on, the server has a model, and this month's budget is not used up (drafts and Ask Genie). */
+  async gate() {
     const s = await this.genie.settings();
     if (this.model.kind === "off") throw new ConflictException("Genie Assistant's drafting is not switched on for this server yet — write this one yourself.");
-    if (!s.ai.enabled) throw new ConflictException("Switch drafting on in Settings → Genie Assistant first.");
+    if (!s.ai.enabled) throw new ConflictException("Switch drafting and Ask Genie on in Settings → Genie Assistant first.");
     if (s.ai.spentThisMonth >= s.ai.monthlyBudget)
       throw new ConflictException(
         `This month's AI budget (₹${s.ai.monthlyBudget.toLocaleString("en-IN")}) is used up — raise it in Settings → Genie Assistant, or write this one yourself.`,
@@ -140,6 +140,23 @@ export class DraftsService {
     ].filter(Boolean) as string[];
   }
 
+  /** Records one call to the model against the agency's budget. */
+  async meter(tx: TenantTx, feature: string, usage: ModelUsage) {
+    await tx.aiUsage.create({
+      data: {
+        agencyId: this.tenant.agencyId,
+        feature,
+        userId: this.tenant.userId,
+        model: this.model.model,
+        inputTokens: usage.inputTokens,
+        outputTokens: usage.outputTokens,
+        cacheReadTokens: usage.cacheReadTokens,
+        cacheWriteTokens: usage.cacheWriteTokens,
+        costPaise: this.cost(usage),
+      },
+    });
+  }
+
   // ─── Drafting ───────────────────────────────────────────────────────
 
   async create(input: DraftRequest) {
@@ -149,19 +166,7 @@ export class DraftsService {
     const built = await this.build(req);
     const { output, usage } = await this.model.draft(built.call as DraftCall<DraftOutput>);
     const id = await this.tenant.tx(async (tx) => {
-      await tx.aiUsage.create({
-        data: {
-          agencyId: this.tenant.agencyId,
-          feature: req.kind,
-          userId: this.tenant.userId,
-          model: this.model.model,
-          inputTokens: usage.inputTokens,
-          outputTokens: usage.outputTokens,
-          cacheReadTokens: usage.cacheReadTokens,
-          cacheWriteTokens: usage.cacheWriteTokens,
-          costPaise: this.cost(usage),
-        },
-      });
+      await this.meter(tx, req.kind, usage);
       const d = await tx.draft.create({
         data: {
           agencyId: this.tenant.agencyId,

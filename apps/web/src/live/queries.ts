@@ -85,6 +85,7 @@ import {
   type WinInput,
   type AiSettingsInput,
   type AiUsageSummary,
+  type AskConversationRow,
   type DraftRequest,
   type DraftRow,
   type GenieRulesInput,
@@ -1075,6 +1076,31 @@ export function useDecideDraft() {
       api<{ draft: DraftRow; whatsappLink?: string; postsUpdated?: number }>(`/genie/drafts/${v.id}/decision`, { body: { status: v.status, final: v.final } }),
     // Approving changes other screens (posts' captions, the idea bank, a report's note).
     onSuccess: () => qc.invalidateQueries(),
+  });
+}
+
+export const useConversations = () =>
+  useQuery({ queryKey: ["genie", "conversations"], queryFn: () => api<{ id: string; title: string; updatedAt: string }[]>("/genie/conversations") });
+
+export const useConversation = (id: string | null) =>
+  useQuery({ queryKey: ["genie", "conversations", id], queryFn: () => api<AskConversationRow>(`/genie/conversations/${id}`), enabled: !!id });
+
+export function useAsk() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { question: string; conversationId?: string }) => api<AskConversationRow>("/genie/ask", { body: v }),
+    onSuccess: (c) => {
+      qc.setQueryData(["genie", "conversations", c.id], c);
+      void qc.invalidateQueries({ queryKey: ["genie", "conversations"], exact: true });
+    },
+  });
+}
+
+export function useForgetConversation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api(`/genie/conversations/${id}`, { method: "DELETE" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["genie", "conversations"] }),
   });
 }
 

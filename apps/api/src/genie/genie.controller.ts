@@ -1,10 +1,11 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from "@nestjs/common";
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
-import { aiSettingsInput, type DraftRequest, draftDecision, draftRequest, genieRulesInput, insightDecisionInput } from "@gm/shared";
+import { aiSettingsInput, askInput, type DraftRequest, draftDecision, draftRequest, genieRulesInput, insightDecisionInput } from "@gm/shared";
 import { Can, Staff } from "../access/access.js";
 import { RateLimit } from "../common/rate-limit.js";
 import { ZodPipe } from "../common/zod.pipe.js";
+import { AskService } from "./ask.service.js";
 import { DraftsService } from "./drafts.service.js";
 import { GenieService } from "./genie.service.js";
 
@@ -17,6 +18,7 @@ export class GenieController {
   constructor(
     private readonly genie: GenieService,
     private readonly drafts: DraftsService,
+    private readonly asking: AskService,
   ) {}
 
   @Get("settings")
@@ -96,6 +98,36 @@ export class GenieController {
   @ApiBody({ schema: schema(draftDecision) })
   decideDraft(@Param("id", ParseUUIDPipe) id: string, @Body(new ZodPipe(draftDecision)) b: z.output<typeof draftDecision>) {
     return this.drafts.decide(id, b);
+  }
+
+  /** Ask Genie: a question about the agency, answered from what this person may see, with links to the records. */
+  @Post("ask")
+  @Staff()
+  @HttpCode(200)
+  @RateLimit({ max: 20, windowSeconds: 60 })
+  @ApiBody({ schema: schema(askInput) })
+  ask(@Body(new ZodPipe(askInput)) b: z.output<typeof askInput>) {
+    return this.asking.ask(b);
+  }
+
+  /** This person's own Ask Genie conversations. */
+  @Get("conversations")
+  @Staff()
+  conversations() {
+    return this.asking.list();
+  }
+
+  @Get("conversations/:id")
+  @Staff()
+  conversation(@Param("id", ParseUUIDPipe) id: string) {
+    return this.asking.get(id);
+  }
+
+  @Delete("conversations/:id")
+  @Staff()
+  @HttpCode(204)
+  async forget(@Param("id", ParseUUIDPipe) id: string) {
+    await this.asking.remove(id);
   }
 
   /** Looks again now, rather than waiting for the morning. */

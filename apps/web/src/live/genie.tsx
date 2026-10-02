@@ -26,6 +26,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { ApiError, errorMessage } from "./api";
+import { AskGenie } from "./ask-genie";
 import { DraftDialog } from "./genie-drafts";
 import { useAiUsage, useCan, useGenieSettings, useInsightDecision, useInsights, useRunGenie, useSaveAiSettings, useSaveGenieSettings } from "./queries";
 
@@ -118,35 +119,54 @@ const TABS: { key: InsightStatus; label: string }[] = [
   { key: "resolved", label: "Cleared by itself" },
 ];
 
-/** /app/genie: what Genie Assistant's rules found that this person may see (P4-04). */
+/** /app/genie: what has slipped (P4-04), and Ask Genie (P4-08). */
 export function LiveGenie() {
-  const [status, setStatus] = useState<InsightStatus>("open");
-  const [rule, setRule] = useState<GenieRuleKey | "">("");
-  const [mine, setMine] = useState(false);
-  const list = useInsights({ status, rule, mine });
-  const run = useRunGenie();
-  const settings = useGenieSettings();
+  const [view, setView] = useState<"insights" | "ask">("insights");
   return (
     <>
       <PageHeader
         title="Genie Assistant"
-        description="What has slipped — videos stuck in a step, clients waiting, quotas behind, invoices overdue — found each morning from your own data, for whoever should act."
-        actions={
-          <Button
-            variant="secondary"
-            disabled={run.isPending}
-            onClick={() =>
-              run.mutate(undefined, {
-                onSuccess: (r) => toast.success(r.raised ? `${r.raised} new` : "Nothing new"),
-                onError: (e) => toast.error(errorMessage(e)),
-              })
-            }
-          >
-            <RefreshCw className={cn(run.isPending && "animate-spin")} />
-            Look again now
-          </Button>
-        }
+        description="What has slipped — videos stuck in a step, clients waiting, quotas behind, invoices overdue — found each morning from your own data, for whoever should act. And questions about your agency, answered from what you may see."
+        actions={view === "insights" ? <LookAgain /> : undefined}
       />
+      <Tabs value={view} onValueChange={(v) => setView(v as typeof view)} className="mb-4">
+        <TabsList>
+          <TabsTrigger value="insights">What has slipped</TabsTrigger>
+          <TabsTrigger value="ask">Ask Genie</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      {view === "insights" ? <Insights /> : <AskGenie />}
+    </>
+  );
+}
+
+function LookAgain() {
+  const run = useRunGenie();
+  return (
+    <Button
+      variant="secondary"
+      disabled={run.isPending}
+      onClick={() =>
+        run.mutate(undefined, {
+          onSuccess: (r) => toast.success(r.raised ? `${r.raised} new` : "Nothing new"),
+          onError: (e) => toast.error(errorMessage(e)),
+        })
+      }
+    >
+      <RefreshCw className={cn(run.isPending && "animate-spin")} />
+      Look again now
+    </Button>
+  );
+}
+
+function Insights() {
+  const [status, setStatus] = useState<InsightStatus>("open");
+  const [rule, setRule] = useState<GenieRuleKey | "">("");
+  const [mine, setMine] = useState(false);
+  const list = useInsights({ status, rule, mine });
+  const settings = useGenieSettings();
+  return (
+    <>
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <Tabs value={status} onValueChange={(v) => setStatus(v as InsightStatus)}>
           <TabsList>
