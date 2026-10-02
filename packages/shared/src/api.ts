@@ -1,6 +1,7 @@
 // What the API returns, as the web app receives it (dates are ISO strings). The API's e2e tests check these shapes.
 import type { PermissionMatrix } from "./permissions.js";
 import type { BusinessStage } from "./enums.js";
+import type { ImportKind, ImportReport } from "./imports.js";
 import type { DeliverableInput } from "./schemas.js";
 import type { AnswerValue, ChecklistState, Progress, Question, QuestionnaireDefinition, WindowState } from "./onboarding.js";
 
@@ -269,7 +270,7 @@ export interface Package {
 /** GET /imports (one item) */
 export interface ImportRecord {
   id: string;
-  kind: "clients" | "team" | "leads";
+  kind: ImportKind;
   fileName: string;
   rowCount: number;
   createdAt: string;
@@ -277,12 +278,20 @@ export interface ImportRecord {
   undoneAt: string | null;
   /** Within 24 hours, not undone yet, and the person may change this kind of record. */
   canUndo: boolean;
+  /** Imports made before check reports (P3-12) have none. */
+  hasReport: boolean;
 }
 
-/** POST /imports/clients and /imports/team */
+/** GET /imports/:id */
+export interface ImportDetail extends ImportRecord {
+  report: ImportReport | null;
+}
+
+/** POST /imports/{kind} */
 export interface ImportResult {
   id: string;
   created: number;
+  report: ImportReport;
 }
 
 /** GET /pipeline/stages (one item) */

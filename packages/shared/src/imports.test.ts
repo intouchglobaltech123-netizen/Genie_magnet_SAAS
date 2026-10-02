@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  AGREEMENT_IMPORT_COLUMNS,
+  agreementImportRow,
   CLIENT_IMPORT_COLUMNS,
   clientImport,
   matchColumns,
+  parseAgreementStatus,
+  parseDeliverables,
+  parsePlatforms,
   parseDateText,
   parseRupees,
   parseVideoStage,
@@ -88,5 +93,55 @@ describe("videos from a tracking sheet", () => {
     });
     const bad = videoImportRow.safeParse({ clientCode: "Kaveri", title: "", format: "Reel", dueDate: "25/10" });
     expect(bad.error?.issues.map((i) => i.path[0]).sort()).toEqual(["clientCode", "dueDate", "title"]);
+  });
+});
+
+describe("agreements from a sheet", () => {
+  it("matches the headings people use", () => {
+    const m = matchColumns(["Client Name", "Plan", "From", "Valid till", "Retainer", "Scope", "Channels", "Status"], AGREEMENT_IMPORT_COLUMNS);
+    expect(m).toMatchObject({ client: 0, package: 1, startDate: 2, endDate: 3, monthlyFee: 4, deliverables: 5, platforms: 6, status: 7, months: null });
+  });
+
+  it("reads deliverables the way they are written, and tells videos from posts", () => {
+    expect(parseDeliverables("8 Reels, 4 Posts + 10 stories")).toEqual([
+      { name: "Reels", perMonth: 8, kind: "video" },
+      { name: "Posts", perMonth: 4, kind: "post" },
+      { name: "Stories", perMonth: 10, kind: "story" },
+    ]);
+    expect(parseDeliverables("Reels x 8; Carousels: 2 and 1 YouTube video")).toEqual([
+      { name: "Reels", perMonth: 8, kind: "video" },
+      { name: "Carousels", perMonth: 2, kind: "post" },
+      { name: "YouTube video", perMonth: 1, kind: "video" },
+    ]);
+    expect(parseDeliverables("2 Blogs")).toEqual([{ name: "Blogs", perMonth: 2, kind: "other" }]);
+    expect(parseDeliverables("Reels")).toBeUndefined();
+    expect(parseDeliverables("")).toBeUndefined();
+  });
+
+  it("reads platforms and statuses the way they are written", () => {
+    expect(parsePlatforms("Instagram, YT & FB")).toEqual(["instagram", "youtube", "facebook"]);
+    expect(parsePlatforms("Google My Business / Twitter")).toEqual(["gbp", "x"]);
+    expect(parsePlatforms("Instagram, Orkut")).toBeUndefined();
+    expect(parseAgreementStatus("On hold")).toBe("paused");
+    expect(parseAgreementStatus("Expired")).toBe("ended");
+    expect(parseAgreementStatus("running")).toBe("active");
+    expect(parseAgreementStatus("maybe")).toBeUndefined();
+  });
+
+  it("needs a client, dates in order, a fee and a deliverable", () => {
+    const row = {
+      clientCode: "KVR",
+      title: "Kaveri · Growth",
+      startDate: "2026-07-01",
+      endDate: "2027-06-30",
+      monthlyFee: 60000,
+      billing: "Monthly advance",
+      revisionsPerDeliverable: 2,
+      shootDays: 1,
+      deliverables: [{ name: "Reels", perMonth: 8, kind: "video" }],
+    };
+    expect(agreementImportRow.safeParse(row).data).toMatchObject({ status: "active", platforms: [] });
+    const bad = agreementImportRow.safeParse({ ...row, endDate: "2026-06-30", deliverables: [] });
+    expect(bad.error?.issues.map((i) => i.path[0]).sort()).toEqual(["deliverables", "endDate"]);
   });
 });

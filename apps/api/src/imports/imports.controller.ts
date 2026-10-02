@@ -1,7 +1,18 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post } from "@nestjs/common";
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
-import { clientImport, type ClientImport, leadImport, type LeadImport, teamImport, type TeamImport, videoImport, type VideoImport } from "@gm/shared";
+import {
+  agreementImport,
+  type AgreementImport,
+  clientImport,
+  type ClientImport,
+  leadImport,
+  type LeadImport,
+  teamImport,
+  type TeamImport,
+  videoImport,
+  type VideoImport,
+} from "@gm/shared";
 import { Can, Staff } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { ImportsService } from "./imports.service.js";
@@ -53,6 +64,21 @@ export class ImportsController {
   @ApiBody({ schema: schema(videoImport) })
   videos(@Body(new ZodPipe(videoImport)) body: VideoImport) {
     return this.imports.importVideos(body);
+  }
+
+  /** Agreements the agency already has; clients by code and packages by id (the importer matches names). */
+  @Post("agreements")
+  @Can("agreements", "edit")
+  @ApiBody({ schema: schema(agreementImport) })
+  agreements(@Body(new ZodPipe(agreementImport)) body: AgreementImport) {
+    return this.imports.importAgreements(body);
+  }
+
+  /** One import with its check report. */
+  @Get(":id")
+  @Staff()
+  get(@Param("id", ParseUUIDPipe) id: string) {
+    return this.imports.get(id);
   }
 
   /** Within 24 hours: removes the clients it created (if untouched since) or cancels its waiting invitations. */

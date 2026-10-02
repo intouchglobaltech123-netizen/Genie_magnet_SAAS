@@ -3,16 +3,24 @@
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { CheckCircle2, Download, FileSpreadsheet, RotateCcw, Upload } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, Download, FileSpreadsheet, RotateCcw, Upload } from "lucide-react";
 import { toast } from "sonner";
 import Papa from "papaparse";
 import {
+  AGREEMENT_IMPORT_COLUMNS,
+  AGREEMENT_IMPORT_STATUS_LABEL,
+  agreementEndDate,
+  agreementImportRow,
   CLIENT_IMPORT_COLUMNS,
   clientImportRow,
   LEAD_IMPORT_COLUMNS,
   leadImportRow,
+  parseAgreementStatus,
   parseDateText,
+  parseDeliverables,
+  parsePlatforms,
   parseRupees,
+  PLATFORM_LABELS,
   type ImportColumn,
   type ImportKind,
   type ImportResult,
@@ -38,29 +46,34 @@ import { Alert, EmptyState } from "@/components/ui/feedback";
 import { Select } from "@/components/ui/select";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { cn, inr } from "@/lib/utils";
 import { ApiError, errorMessage } from "./api";
-import { useCan, useClients, useImport, useImports, useMe, useProductionSettings, useRoles, useStages, useTeam, useUndoImport } from "./queries";
+import { CheckReportView } from "./import-report";
+import { useCan, useClients, useImport, useImports, useMe, usePackages, useProductionSettings, useRoles, useStages, useTeam, useUndoImport } from "./queries";
 
 const COLUMNS: Record<ImportKind, ImportColumn[]> = {
   clients: CLIENT_IMPORT_COLUMNS,
   team: TEAM_IMPORT_COLUMNS,
   leads: LEAD_IMPORT_COLUMNS,
   videos: VIDEO_IMPORT_COLUMNS,
+  agreements: AGREEMENT_IMPORT_COLUMNS,
 };
-const MAX_ROWS: Record<ImportKind, number> = { clients: 1000, team: 500, leads: 2000, videos: 2000 };
-const WHAT: Record<ImportKind, string> = { clients: "clients", team: "people", leads: "leads", videos: "videos" };
-const ONE: Record<ImportKind, string> = { clients: "client", team: "person", leads: "lead", videos: "video" };
+const MAX_ROWS: Record<ImportKind, number> = { clients: 1000, team: 500, leads: 2000, videos: 2000, agreements: 1000 };
+const WHAT: Record<ImportKind, string> = { clients: "clients", team: "people", leads: "leads", videos: "videos", agreements: "agreements" };
+const ONE: Record<ImportKind, string> = { clients: "client", team: "person", leads: "lead", videos: "video", agreements: "agreement" };
 const count = (n: number, kind: ImportKind) => `${n} ${n === 1 ? ONE[kind] : WHAT[kind]}`;
-const AREA = { clients: "clients", team: "team", leads: "crm", videos: "production" } as const;
+const AREA = { clients: "clients", team: "team", leads: "crm", videos: "production", agreements: "agreements" } as const;
 const DONE_LINK: Record<ImportKind, { href: string; label: string }> = {
   clients: { href: "/app/clients", label: "See the clients" },
   team: { href: "/app/settings/team", label: "See the team" },
   leads: { href: "/app/sales", label: "See the pipeline" },
   videos: { href: "/app/production?tab=sheet", label: "See the videos" },
+  agreements: { href: "/app/agreements", label: "See the agreements" },
 };
 /** The API's field names for videos, as the importer's columns. */
 const VIDEO_PATHS: Record<string, string> = { clientCode: "client", editorEmail: "editor" };
+/** The API's field names for agreements, as the importer's columns. */
+const AGREEMENT_PATHS: Record<string, string> = { clientCode: "client", packageId: "package", revisionsPerDeliverable: "revisions" };
 const URGENCY_WORDS: Record<string, "rush" | "priority" | "standard"> = {
   rush: "rush",
   urgent: "rush",
@@ -319,6 +332,92 @@ function useVideoRows(sheet: Sheet | null, mapping: Record<string, number | null
   }, [sheet, mapping, clients.data, team.data, settings.data, can]);
 }
 
+function useAgreementRows(sheet: Sheet | null, mapping: Record<string, number | null>) {
+  const can = useCan();
+  const clients = useClients();
+  const packages = usePackages(true);
+  return useMemo(() => {
+    if (!sheet || !clients.data || !packages.data) return null;
+    const byCode = new Map(clients.data.map((c) => [c.code, c]));
+    const byName = new Map(clients.data.map((c) => [c.name.toLowerCase(), c]));
+    const canSign = can("agreements", "approve");
+    const whole = (v: string) => (/^\d+$/.test(v.trim()) ? Number(v.trim()) : undefined);
+    return sheet.rows.map((r, i): PreviewRow => {
+      const get = (k: string) => (mapping[k] == null ? "" : (r[mapping[k]!] ?? "").trim());
+      const values: Record<string, string> = Object.fromEntries(AGREEMENT_IMPORT_COLUMNS.map((c) => [c.key, get(c.key)]));
+      const issues: Record<string, string> = {};
+      const client = byCode.get(values.client!.toUpperCase()) ?? byName.get(values.client!.toLowerCase());
+      if (values.client && !client) issues.client = `No client called "${values.client}"`;
+      const pkg = values.package ? packages.data.find((p) => p.name.toLowerCase() === values.package!.toLowerCase()) : undefined;
+      if (values.package && !pkg) issues.package = `No package called "${values.package}"`;
+
+      const startDate = values.startDate ? parseDateText(values.startDate) : undefined;
+      if (values.startDate && !startDate) issues.startDate = "Use a date like 2026-07-01 or 01/07/2026";
+      const months = values.months ? whole(values.months.replace(/months?/i, "")) : undefined;
+      if (values.months && (!months || months > 60)) issues.months = "Whole months, 1 to 60";
+      let endDate = values.endDate ? parseDateText(values.endDate) : undefined;
+      if (values.endDate && !endDate) issues.endDate = "Use a date like 2027-06-30 or 30/06/2027";
+      else if (!values.endDate && !values.months) issues.endDate = "Give the end date or the months";
+      if (!endDate && startDate && months && !issues.months) endDate = agreementEndDate(startDate, months);
+
+      const fee = values.monthlyFee ? parseRupees(values.monthlyFee) : pkg?.monthlyFee;
+      if (values.monthlyFee && fee === undefined) issues.monthlyFee = "Use a number, e.g. 60000";
+      else if (fee === undefined) issues.monthlyFee = "Give the fee, or a package";
+      const deliverables = values.deliverables ? parseDeliverables(values.deliverables) : pkg?.deliverables;
+      if (values.deliverables && !deliverables) issues.deliverables = "Write them like 8 Reels, 4 Posts";
+      else if (!deliverables) issues.deliverables = "Give the deliverables, or a package";
+      const platforms = values.platforms ? parsePlatforms(values.platforms) : (pkg?.platforms ?? []);
+      if (values.platforms && !platforms) issues.platforms = "Use platform names, e.g. Instagram, YouTube";
+      const status = values.status ? parseAgreementStatus(values.status) : "active";
+      if (!status) issues.status = "Running, Paused, Ended or Draft";
+      else if (status !== "draft" && !canSign) issues.status = "Your role cannot sign off agreements — mark it Draft";
+      const shootDays = values.shootDays ? whole(values.shootDays) : (pkg?.shootDays ?? 0);
+      if (shootDays === undefined) issues.shootDays = "A whole number";
+      const revisions = values.revisions ? whole(values.revisions) : (pkg?.revisionsPerDeliverable ?? 2);
+      if (revisions === undefined) issues.revisions = "A whole number";
+
+      const title = values.title || [client?.name ?? values.client, pkg?.name ?? "Retainer"].join(" · ");
+      const billing = values.billing || pkg?.billing || "Monthly advance";
+      const payload = {
+        clientCode: client?.code ?? values.client,
+        title,
+        packageId: pkg?.id,
+        startDate: startDate ?? values.startDate,
+        endDate: endDate ?? values.endDate,
+        monthlyFee: fee ?? 0,
+        billing,
+        revisionsPerDeliverable: revisions ?? 0,
+        shootDays: shootDays ?? 0,
+        deliverables: deliverables ?? [],
+        platforms: platforms ?? [],
+        status: status ?? "active",
+        notes: values.notes || undefined,
+      };
+      const parsed = agreementImportRow.safeParse(payload);
+      if (!parsed.success)
+        for (const issue of parsed.error.issues) {
+          const key = String(issue.path[0]);
+          issues[AGREEMENT_PATHS[key] ?? key] ??= issue.message;
+        }
+      const shown = {
+        ...values,
+        client: client ? `${client.code} · ${client.name}` : values.client!,
+        title,
+        package: pkg?.name ?? values.package!,
+        endDate: endDate ?? values.endDate!,
+        monthlyFee: fee !== undefined ? inr(fee) : values.monthlyFee!,
+        deliverables: deliverables ? deliverables.map((x) => `${x.perMonth} ${x.name}`).join(", ") : values.deliverables!,
+        billing,
+        shootDays: shootDays !== undefined ? String(shootDays) : values.shootDays!,
+        revisions: revisions !== undefined ? String(revisions) : values.revisions!,
+        platforms: platforms ? platforms.map((p) => (PLATFORM_LABELS as Record<string, string>)[p] ?? p).join(", ") : values.platforms!,
+        status: status ? AGREEMENT_IMPORT_STATUS_LABEL[status] : values.status!,
+      };
+      return { line: i + 2, values: shown, issues, payload: parsed.success ? parsed.data : null };
+    });
+  }, [sheet, mapping, clients.data, packages.data, can]);
+}
+
 // ─── Screens ──────────────────────────────────────────────────────────
 
 function Importer({ kind }: { kind: ImportKind }) {
@@ -337,10 +436,11 @@ function Importer({ kind }: { kind: ImportKind }) {
   const teamRows = useTeamRows(kind === "team" ? sheet : null, mapping);
   const leadRows = useLeadRows(kind === "leads" ? sheet : null, mapping);
   const videoRows = useVideoRows(kind === "videos" ? sheet : null, mapping);
+  const agreementRows = useAgreementRows(kind === "agreements" ? sheet : null, mapping);
   const rows = useMemo(() => {
-    const base = kind === "clients" ? clientRows : kind === "leads" ? leadRows : kind === "videos" ? videoRows : teamRows;
+    const base = { clients: clientRows, leads: leadRows, videos: videoRows, team: teamRows, agreements: agreementRows }[kind];
     return base?.map((r, i) => (serverIssues[i] ? { ...r, issues: { ...serverIssues[i], ...r.issues } } : r)) ?? null;
-  }, [kind, clientRows, teamRows, leadRows, videoRows, serverIssues]);
+  }, [kind, clientRows, teamRows, leadRows, videoRows, agreementRows, serverIssues]);
   const good = rows?.filter((r) => !Object.keys(r.issues).length && r.payload) ?? [];
   const bad = (rows?.length ?? 0) - good.length;
   const missingRequired = columns.filter((c) => c.required && mapping[c.key] == null && !(kind === "clients" && c.key === "code"));
@@ -363,10 +463,15 @@ function Importer({ kind }: { kind: ImportKind }) {
   };
 
   const submit = () => {
-    if (!sheet) return;
+    if (!sheet || !rows) return;
     const sent = good;
+    const label = (key: string) => columns.find((c) => c.key === key)?.label ?? key;
+    // For the check report: where each row is in the file, and the rows left out with what needs fixing.
+    const leftOut = rows
+      .filter((r) => !sent.includes(r))
+      .map((r) => ({ line: r.line, problems: Object.entries(r.issues).map(([k, m]) => `${label(k)}: ${m}`) }));
     run.mutate(
-      { fileName: sheet.fileName, rows: sent.map((r) => r.payload) },
+      { fileName: sheet.fileName, rows: sent.map((r) => r.payload), lines: sent.map((r) => r.line), leftOut },
       {
         onSuccess: (r) => {
           setDone({ ...r, fileName: sheet.fileName });
@@ -385,7 +490,9 @@ function Importer({ kind }: { kind: ImportKind }) {
                   ? (CLIENT_PATHS[field.join(".")] ?? "name")
                   : kind === "videos"
                     ? (VIDEO_PATHS[field[0] ?? ""] ?? field[0] ?? "title")
-                    : (field[0] ?? (kind === "team" ? "email" : "name"));
+                    : kind === "agreements"
+                      ? (AGREEMENT_PATHS[field[0] ?? ""] ?? field[0] ?? "client")
+                      : (field[0] ?? (kind === "team" ? "email" : "name"));
               (next[rowIndex] ??= {})[key] = issue.message;
             }
             setServerIssues(next);
@@ -397,38 +504,47 @@ function Importer({ kind }: { kind: ImportKind }) {
 
   if (done) {
     return (
-      <SectionCard title="Imported" description={`From ${done.fileName}`}>
-        <div className="flex flex-wrap items-center gap-3">
-          <CheckCircle2 className="size-6 text-success" />
-          <p className="text-body">
-            {count(done.created, kind)} {kind === "team" ? "invited — share their links from the Team page while emails are off." : "added."}
-          </p>
-        </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button asChild>
-            <Link href={DONE_LINK[kind].href}>{DONE_LINK[kind].label}</Link>
-          </Button>
-          <Button variant="secondary" onClick={() => setDone(null)}>
-            Import another file
-          </Button>
-          <Button
-            variant="ghost"
-            disabled={undo.isPending}
-            onClick={() =>
-              undo.mutate(done.id, {
-                onSuccess: () => {
-                  toast.success("Import undone");
-                  setDone(null);
-                },
-                onError: (e) => toast.error(errorMessage(e)),
-              })
-            }
-          >
-            <RotateCcw />
-            Undo this import
-          </Button>
-        </div>
-      </SectionCard>
+      <div className="space-y-4">
+        <SectionCard title="Imported" description={`From ${done.fileName}`}>
+          <div className="flex flex-wrap items-center gap-3">
+            <CheckCircle2 className="size-6 text-success" />
+            <p className="text-body">
+              {count(done.created, kind)} {kind === "team" ? "invited — share their links from the Team page while emails are off." : "added."}
+            </p>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button asChild>
+              <Link href={DONE_LINK[kind].href}>{DONE_LINK[kind].label}</Link>
+            </Button>
+            <Button variant="secondary" asChild>
+              <Link href={`/app/import/${done.id}`}>
+                <ClipboardCheck />
+                Check report to print
+              </Link>
+            </Button>
+            <Button variant="secondary" onClick={() => setDone(null)}>
+              Import another file
+            </Button>
+            <Button
+              variant="ghost"
+              disabled={undo.isPending}
+              onClick={() =>
+                undo.mutate(done.id, {
+                  onSuccess: () => {
+                    toast.success("Import undone");
+                    setDone(null);
+                  },
+                  onError: (e) => toast.error(errorMessage(e)),
+                })
+              }
+            >
+              <RotateCcw />
+              Undo this import
+            </Button>
+          </div>
+        </SectionCard>
+        <CheckReportView report={done.report} />
+      </div>
     );
   }
 
@@ -565,7 +681,7 @@ function RecentImports() {
   return (
     <SectionCard
       title="Recent imports"
-      description="An import can be undone for 24 hours, if nothing it added has been worked on since."
+      description="Each import keeps a check report to compare with your sheet. An import can be undone for 24 hours, if nothing it added has been worked on since."
       contentClassName="p-0"
     >
       <Table>
@@ -575,7 +691,7 @@ function RecentImports() {
             <TH>What</TH>
             <TH>By</TH>
             <TH>When</TH>
-            <TH className="w-32" />
+            <TH className="w-56" />
           </TR>
         </THead>
         <TBody>
@@ -587,7 +703,15 @@ function RecentImports() {
               <TD className="whitespace-nowrap text-muted-foreground">
                 {new Date(i.createdAt).toLocaleString("en-IN", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
               </TD>
-              <TD className="text-right">
+              <TD className="whitespace-nowrap text-right">
+                {i.hasReport && (
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href={`/app/import/${i.id}`}>
+                      <ClipboardCheck />
+                      Check report
+                    </Link>
+                  </Button>
+                )}
                 {i.undoneAt ? (
                   <Badge tone="neutral">Undone</Badge>
                 ) : i.canUndo ? (
@@ -615,7 +739,7 @@ export function LiveImport() {
   const router = useRouter();
   const params = useSearchParams();
   const me = useMe().data;
-  const kinds = (["clients", "leads", "team", "videos"] as const).filter(
+  const kinds = (["clients", "leads", "team", "agreements", "videos"] as const).filter(
     (k) => can(AREA[k], "edit") && (k !== "videos" || (!!me?.permissions && scopeOf(me.permissions, "production") === "all")),
   );
   const wanted = params.get("kind");
@@ -625,7 +749,7 @@ export function LiveImport() {
     <>
       <PageHeader
         title="Import from Excel"
-        description="Bring in your existing lists yourself. Every row is checked before anything is saved, and an import can be undone for 24 hours."
+        description="Bring in your existing lists yourself. Every row is checked before anything is saved, each import keeps a check report, and an import can be undone for 24 hours."
       />
       {!kind ? (
         <EmptyState icon={FileSpreadsheet} title="Nothing you can import" description="Importing needs a role that can add clients or invite people." />
@@ -637,6 +761,7 @@ export function LiveImport() {
                 {kinds.includes("clients") && <TabsTrigger value="clients">Clients</TabsTrigger>}
                 {kinds.includes("leads") && <TabsTrigger value="leads">Leads</TabsTrigger>}
                 {kinds.includes("team") && <TabsTrigger value="team">Team</TabsTrigger>}
+                {kinds.includes("agreements") && <TabsTrigger value="agreements">Agreements</TabsTrigger>}
                 {kinds.includes("videos") && <TabsTrigger value="videos">Videos in progress</TabsTrigger>}
               </TabsList>
             </Tabs>

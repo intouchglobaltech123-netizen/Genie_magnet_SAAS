@@ -220,12 +220,14 @@ model AuditLog {
 model Import {
   id         String    @id @default(uuid(7)) @db.Uuid
   agencyId   String    @map("agency_id") @db.Uuid
-  /// clients · team (leads arrive with the sales pipeline)
+  /// clients · team · leads · videos · agreements
   kind       String
   fileName   String    @map("file_name")
   rowCount   Int       @map("row_count")
-  /// Ids of the records it created (clients or invitations).
+  /// Ids of the records it created (clients, invitations, leads, videos or agreements).
   createdIds String[]  @map("created_ids")
+  /// The check report (P3-12): totals to compare with the sheet, rows left out and why, things worth a look.
+  report     Json?
   createdBy  String?   @map("created_by")
   createdAt  DateTime  @default(now()) @map("created_at")
   undoneAt   DateTime? @map("undone_at")

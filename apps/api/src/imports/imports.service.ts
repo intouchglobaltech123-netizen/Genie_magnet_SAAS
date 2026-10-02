@@ -1,30 +1,46 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
+import type { Prisma } from "@gm/db";
 import {
+  AGREEMENT_IMPORT_STATUS_LABEL,
+  AGREEMENT_IMPORT_STATUSES,
+  type AgreementImport,
   allows,
   type ClientImport,
+  daysUntil,
+  DONE_STAGES,
   exceeds,
   FITMENT_QUADRANTS,
   type ImportKind,
+  type ImportReport,
   type LeadImport,
   OWNER_ROLE,
+  packageTotals,
   permissionArea,
   scopeOf,
   type TeamImport,
   VIDEO_STAGE_KEYS,
+  VIDEO_STAGE_LABEL,
   type VideoImport,
 } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
 import { Outbox } from "../auth/outbox.js";
+import { AgreementsService } from "../clients/agreements.service.js";
 import { PipelineService } from "../crm/pipeline.service.js";
+import { NotificationsService } from "../notifications/notifications.service.js";
 import { ProductionSettingsService } from "../production/production-settings.service.js";
 import { VideosService } from "../production/videos.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { matrixOf } from "../team/roles.service.js";
 import { TeamService } from "../team/team.service.js";
+import { CheckReport, dateText, money } from "./check-report.js";
 
 const UNDO_HOURS = 24;
 const INVITATION_DAYS = 7;
 type Issue = { path: string; message: string };
+const day = (d: Date) => d.toISOString().slice(0, 10);
+const utc = (d: string) => new Date(`${d}T00:00:00Z`);
+const today = () => day(new Date());
+const json = (r: ImportReport) => r as unknown as Prisma.InputJsonValue;
 
 const FITMENT: Record<(typeof FITMENT_QUADRANTS)[number], "amazing" | "bread_winning" | "convenience" | "dangerous"> = {
   Amazing: "amazing",
@@ -40,8 +56,8 @@ function refuse(issues: Issue[]) {
 
 /**
  * Self-service imports (P1-31): an agency brings in its own clients and team from a spreadsheet. All rows are
- * checked again here and saved in one transaction, or none are. Each import is in the history and can be undone
- * within 24 hours if nothing it created has changed since.
+ * checked again here and saved in one transaction, or none are. Each import is in the history with its check report
+ * (P3-12) and can be undone within 24 hours if nothing it created has changed since.
  */
 @Injectable()
 export class ImportsService {
@@ -53,16 +69,16 @@ export class ImportsService {
     private readonly pipeline: PipelineService,
     private readonly videos: VideosService,
     private readonly productionSettings: ProductionSettingsService,
+    private readonly agreements: AgreementsService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   private canEdit(kind: ImportKind) {
-    const area = ({ clients: "clients", leads: "crm", team: "team", videos: "production" } as const)[kind];
+    const area = ({ clients: "clients", leads: "crm", team: "team", videos: "production", agreements: "agreements" } as const)[kind];
     return allows(this.tenant.permissions, area, "edit") && (kind !== "videos" || scopeOf(this.tenant.permissions, "production") === "all");
   }
 
-  async list() {
-    const kinds = (["clients", "team", "leads", "videos"] as const).filter((k) => this.canEdit(k));
-    const rows = await this.tenant.db.import.findMany({ where: { kind: { in: kinds } }, orderBy: { createdAt: "desc" }, take: 50 });
+  private async present(rows: Prisma.ImportGetPayload<object>[]) {
     const ids = [...new Set(rows.map((r) => r.createdBy).filter((id): id is string => !!id))];
     const people = ids.length ? await this.tenant.db.user.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } }) : [];
     const names = new Map(people.map((p) => [p.id, p.name]));
@@ -76,12 +92,27 @@ export class ImportsService {
       createdBy: r.createdBy ? (names.get(r.createdBy) ?? null) : null,
       undoneAt: r.undoneAt,
       canUndo: !r.undoneAt && now - r.createdAt.getTime() < UNDO_HOURS * 3_600_000,
+      hasReport: r.report !== null,
     }));
+  }
+
+  async list() {
+    const kinds = (["clients", "team", "leads", "videos", "agreements"] as const).filter((k) => this.canEdit(k));
+    return this.present(await this.tenant.db.import.findMany({ where: { kind: { in: kinds } }, orderBy: { createdAt: "desc" }, take: 50 }));
+  }
+
+  /** One import with its check report (P3-12). */
+  async get(id: string) {
+    const r = await this.tenant.db.import.findFirst({ where: { id } });
+    if (!r || !this.canEdit(r.kind as ImportKind)) throw new NotFoundException("No import with that id.");
+    const [row] = await this.present([r]);
+    return { ...row!, report: (r.report as unknown as ImportReport | null) ?? null };
   }
 
   // ─── Clients ────────────────────────────────────────────────────────
 
-  async importClients({ fileName, rows }: ClientImport) {
+  async importClients(input: ClientImport) {
+    const { fileName, rows } = input;
     const agencyId = this.tenant.agencyId;
     const userId = this.tenant.userId;
     if (!userId) throw new UnauthorizedException("Sign in to import.");
@@ -117,6 +148,17 @@ export class ImportsService {
     });
     refuse(issues);
 
+    const report = new CheckReport(input)
+      .total("Clients", rows.length)
+      .total(
+        "Contacts",
+        rows.reduce((n, r) => n + r.contacts.length, 0),
+      )
+      .total("With an account owner", owners.filter(Boolean).length);
+    rows.forEach((r, i) => {
+      if (!r.contacts.some((c) => c.approver)) report.note(i, `${r.name}: nobody approves work yet — mark a contact as an approver`);
+    });
+
     return this.tenant.tx(async (tx) => {
       const ids: string[] = [];
       for (const [i, r] of rows.entries()) {
@@ -143,22 +185,26 @@ export class ImportsService {
           after: { code: client.code, name: client.name, via: fileName },
         });
       }
-      const record = await tx.import.create({ data: { agencyId, kind: "clients", fileName, rowCount: rows.length, createdIds: ids, createdBy: userId } });
+      const done = report.done(ids.length);
+      const record = await tx.import.create({
+        data: { agencyId, kind: "clients", fileName, rowCount: rows.length, createdIds: ids, createdBy: userId, report: json(done) },
+      });
       await this.audit.record(tx, { action: "import", entity: "import", entityId: record.id, after: { kind: "clients", fileName, rows: rows.length } });
-      return { id: record.id, created: ids.length };
+      return { id: record.id, created: ids.length, report: done };
     });
   }
 
   // ─── Team ───────────────────────────────────────────────────────────
 
-  async importTeam({ fileName, rows }: TeamImport) {
+  async importTeam(input: TeamImport) {
+    const { fileName, rows } = input;
     const agencyId = this.tenant.agencyId;
     const userId = this.tenant.userId;
     if (!userId) throw new UnauthorizedException("Sign in to import.");
     const isOwner = this.tenant.role === OWNER_ROLE;
 
     const [roles, members] = await Promise.all([
-      this.tenant.db.role.findMany({ select: { key: true, permissions: true } }),
+      this.tenant.db.role.findMany({ select: { key: true, name: true, permissions: true } }),
       this.tenant.db.user.findMany({ where: { memberships: { some: { agencyId } } }, select: { email: true } }),
     ]);
     const roleByKey = new Map(roles.map((r) => [r.key, r]));
@@ -181,6 +227,12 @@ export class ImportsService {
       else seen.set(r.email, i);
     });
     refuse(issues);
+    const report = new CheckReport(input).total("Invitations", rows.length).groups(
+      rows,
+      (r) => r.role,
+      (k) => `As ${roleByKey.get(k)?.name ?? k}`,
+      roles.map((r) => r.key),
+    );
 
     const result = await this.tenant.tx(async (tx) => {
       const ids: string[] = [];
@@ -206,9 +258,12 @@ export class ImportsService {
           after: { email: r.email, role: r.role, via: fileName },
         });
       }
-      const record = await tx.import.create({ data: { agencyId, kind: "team", fileName, rowCount: rows.length, createdIds: ids, createdBy: userId } });
+      const done = report.done(ids.length);
+      const record = await tx.import.create({
+        data: { agencyId, kind: "team", fileName, rowCount: rows.length, createdIds: ids, createdBy: userId, report: json(done) },
+      });
       await this.audit.record(tx, { action: "import", entity: "import", entityId: record.id, after: { kind: "team", fileName, rows: rows.length } });
-      return { id: record.id, created: ids.length, ids };
+      return { id: record.id, created: ids.length, ids, report: done };
     });
 
     const [agency, inviter] = await Promise.all([
@@ -224,12 +279,13 @@ export class ImportsService {
         link,
       });
     }
-    return { id: result.id, created: result.created };
+    return { id: result.id, created: result.created, report: result.report };
   }
 
   // ─── Leads ──────────────────────────────────────────────────────────
 
-  async importLeads({ fileName, rows }: LeadImport) {
+  async importLeads(input: LeadImport) {
+    const { fileName, rows } = input;
     const agencyId = this.tenant.agencyId;
     const userId = this.tenant.userId;
     if (!userId) throw new UnauthorizedException("Sign in to import.");
@@ -256,6 +312,24 @@ export class ImportsService {
       owners.push(owner);
     });
     refuse(issues);
+    const stageName = new Map(stages.map((s) => [s.key, s.name]));
+    const report = new CheckReport(input)
+      .total("Leads", rows.length)
+      .money(
+        "Value a month",
+        rows.reduce((n, r) => n + (r.value ?? 0), 0),
+      )
+      .groups(
+        rows,
+        (r) => r.stage ?? firstOpen,
+        (k) => `In ${stageName.get(k) ?? k}`,
+        stages.map((s) => s.key),
+      )
+      .total("With a follow-up date", rows.filter((r) => r.nextFollowUp).length);
+    const on = today();
+    rows.forEach((r, i) => {
+      if (r.nextFollowUp && r.nextFollowUp < on) report.note(i, `${r.name}: the follow-up date ${dateText(r.nextFollowUp)} has passed, so it shows as due`);
+    });
 
     return this.tenant.tx(async (tx) => {
       const ids: string[] = [];
@@ -279,9 +353,12 @@ export class ImportsService {
           after: { name: created.name, stage: created.stage, via: fileName },
         });
       }
-      const record = await tx.import.create({ data: { agencyId, kind: "leads", fileName, rowCount: rows.length, createdIds: ids, createdBy: userId } });
+      const done = report.done(ids.length);
+      const record = await tx.import.create({
+        data: { agencyId, kind: "leads", fileName, rowCount: rows.length, createdIds: ids, createdBy: userId, report: json(done) },
+      });
       await this.audit.record(tx, { action: "import", entity: "import", entityId: record.id, after: { kind: "leads", fileName, rows: rows.length } });
-      return { id: record.id, created: ids.length };
+      return { id: record.id, created: ids.length, report: done };
     });
   }
 
@@ -293,7 +370,8 @@ export class ImportsService {
    * ticked, one past the quality check has it passed — so it is not held back by checks that happened elsewhere.
    * Nobody is notified about imported videos.
    */
-  async importVideos({ fileName, rows }: VideoImport) {
+  async importVideos(input: VideoImport) {
+    const { fileName, rows } = input;
     const agencyId = this.tenant.agencyId;
     const userId = this.tenant.userId;
     if (!userId) throw new UnauthorizedException("Sign in to import.");
@@ -328,6 +406,20 @@ export class ImportsService {
       }
     });
     refuse(issues);
+    const report = new CheckReport(input)
+      .total("Videos", rows.length)
+      .groups(
+        rows,
+        (r) => r.stage,
+        (k) => VIDEO_STAGE_LABEL[k as keyof typeof VIDEO_STAGE_LABEL],
+        [...VIDEO_STAGE_KEYS],
+      )
+      .total("Clients", new Set(rows.map((r) => r.clientCode)).size)
+      .total("With an editor", rows.filter((r) => r.editorEmail).length);
+    const on = today();
+    rows.forEach((r, i) => {
+      if (r.dueDate < on && !DONE_STAGES.includes(r.stage as never)) report.note(i, `${r.title}: due on ${dateText(r.dueDate)}, which has passed`);
+    });
 
     const past = (stage: string, gate: string) => VIDEO_STAGE_KEYS.indexOf(stage as never) > VIDEO_STAGE_KEYS.indexOf(gate as never);
     return this.tenant.tx(
@@ -359,11 +451,169 @@ export class ImportsService {
           if (Object.keys(done).length) await tx.video.update({ where: { id }, data: done });
           ids.push(id);
         }
-        const record = await tx.import.create({ data: { agencyId, kind: "videos", fileName, rowCount: rows.length, createdIds: ids, createdBy: userId } });
+        const done = report.done(ids.length);
+        const record = await tx.import.create({
+          data: { agencyId, kind: "videos", fileName, rowCount: rows.length, createdIds: ids, createdBy: userId, report: json(done) },
+        });
         await this.audit.record(tx, { action: "import", entity: "import", entityId: record.id, after: { kind: "videos", fileName, rows: rows.length } });
-        return { id: record.id, created: ids.length };
+        return { id: record.id, created: ids.length, report: done };
       },
       { timeout: 300_000 },
+    );
+  }
+
+  // ─── Agreements ─────────────────────────────────────────────────────
+
+  /**
+   * Agreements the agency already has (P3-12), from its own sheet: running, paused or ended ones count as signed off
+   * by the person importing (so it needs a role that signs off agreements); drafts wait for sign-off as usual. The
+   * check report gives the totals to compare with the sheet and points out agreements past their end, due for renewal,
+   * starting later, overlapping another for the same client, or priced unlike their package.
+   */
+  async importAgreements(input: AgreementImport) {
+    const { fileName, rows } = input;
+    const agencyId = this.tenant.agencyId;
+    const userId = this.tenant.userId;
+    if (!userId) throw new UnauthorizedException("Sign in to import.");
+    const canSign = allows(this.tenant.permissions, "agreements", "approve");
+
+    const [clients, packages, existing, notice] = await Promise.all([
+      this.tenant.db.client.findMany({ select: { id: true, code: true, name: true, archivedAt: true } }),
+      this.tenant.db.package.findMany({ select: { id: true, name: true, monthlyFee: true } }),
+      this.tenant.db.agreement.findMany({ select: { clientId: true, title: true, startDate: true, endDate: true, status: true } }),
+      this.agreements.notice(),
+    ]);
+    const clientByCode = new Map(clients.map((c) => [c.code, c]));
+    const packageById = new Map(packages.map((p) => [p.id, p]));
+    const taken = new Set(existing.map((a) => `${a.clientId}:${day(a.startDate)}`));
+    const seen = new Map<string, number>();
+    const report = new CheckReport(input);
+    const issues: Issue[] = [];
+
+    rows.forEach((r, i) => {
+      const client = clientByCode.get(r.clientCode);
+      if (!client) issues.push({ path: `rows.${i}.clientCode`, message: `No client with the code ${r.clientCode}` });
+      else if (client.archivedAt) issues.push({ path: `rows.${i}.clientCode`, message: `${client.name} is archived` });
+      if (r.packageId && !packageById.has(r.packageId)) issues.push({ path: `rows.${i}.packageId`, message: "Not one of your packages" });
+      if (r.status !== "draft" && !canSign) issues.push({ path: `rows.${i}.status`, message: "Your role cannot sign off agreements — import it as a draft" });
+      if (client) {
+        const key = `${client.id}:${r.startDate}`;
+        if (taken.has(key)) issues.push({ path: `rows.${i}.startDate`, message: `${client.name} already has an agreement starting on this day` });
+        const first = seen.get(key);
+        if (first !== undefined) issues.push({ path: `rows.${i}.startDate`, message: `Same client and start date as row ${report.line(first)}` });
+        else seen.set(key, i);
+      }
+    });
+    refuse(issues);
+
+    const on = today();
+    const live = (status: string) => ["active", "renewal_due", "paused"].includes(status);
+    const running = rows.filter((r) => r.status === "active");
+    const quota = running.reduce(
+      (t, r) => {
+        const p = packageTotals(r.deliverables);
+        return { videos: t.videos + p.videosPerMonth, posts: t.posts + p.postsPerMonth };
+      },
+      { videos: 0, posts: 0 },
+    );
+    report
+      .total("Agreements", rows.length)
+      .groups(
+        rows,
+        (r) => r.status,
+        (k) => AGREEMENT_IMPORT_STATUS_LABEL[k as keyof typeof AGREEMENT_IMPORT_STATUS_LABEL],
+        [...AGREEMENT_IMPORT_STATUSES],
+      )
+      .total("Clients", new Set(rows.map((r) => r.clientCode)).size)
+      .money(
+        "Monthly fees, all rows",
+        rows.reduce((n, r) => n + r.monthlyFee, 0),
+      )
+      .money(
+        "Monthly fees, running",
+        running.reduce((n, r) => n + r.monthlyFee, 0),
+      )
+      .total("Videos a month, running", quota.videos)
+      .total("Posts and stories a month, running", quota.posts);
+
+    // Ended early: an agreement marked ended stops today rather than on a later end date.
+    const endOf = (r: (typeof rows)[number]) => (r.status === "ended" && r.endDate > on ? (r.startDate > on ? r.startDate : on) : r.endDate);
+    rows.forEach((r, i) => {
+      const client = clientByCode.get(r.clientCode)!;
+      const pkg = r.packageId ? packageById.get(r.packageId) : undefined;
+      if (live(r.status)) {
+        const label = AGREEMENT_IMPORT_STATUS_LABEL[r.status].toLowerCase();
+        if (r.endDate < on) report.note(i, `${r.title}: its end date (${dateText(r.endDate)}) has passed but it is marked ${label} — end it or renew it`);
+        else if (daysUntil(r.endDate, on) <= notice) report.note(i, `${r.title}: ends on ${dateText(r.endDate)}, so it is due for renewal`);
+        if (r.startDate > on) report.note(i, `${r.title}: starts on ${dateText(r.startDate)}, so it shows as upcoming`);
+        const others = [
+          ...existing.filter((a) => a.clientId === client.id && live(a.status)).map((a) => ({ title: a.title, start: day(a.startDate), end: day(a.endDate) })),
+          ...rows
+            .slice(0, i)
+            .filter((o) => o.clientCode === r.clientCode && live(o.status))
+            .map((o) => ({ title: o.title, start: o.startDate, end: o.endDate })),
+        ];
+        for (const o of others.filter((o) => o.start <= r.endDate && r.startDate <= o.end))
+          report.note(i, `${r.title}: runs at the same time as ${o.title} for ${client.name}`);
+      }
+      if (endOf(r) !== r.endDate) report.note(i, `${r.title}: marked ended, so it ends on ${dateText(endOf(r))} instead of ${dateText(r.endDate)}`);
+      if (pkg && pkg.monthlyFee !== r.monthlyFee)
+        report.note(i, `${r.title}: the fee ${money(r.monthlyFee)} is not the ${pkg.name} package's ${money(pkg.monthlyFee)}`);
+    });
+
+    return this.tenant.tx(
+      async (tx) => {
+        const ids: string[] = [];
+        const signedAt = new Date();
+        for (const r of rows) {
+          const a = await tx.agreement.create({
+            data: {
+              agencyId,
+              clientId: clientByCode.get(r.clientCode)!.id,
+              packageId: r.packageId ?? null,
+              title: r.title,
+              status: r.status,
+              startDate: utc(r.startDate),
+              endDate: utc(endOf(r)),
+              monthlyFee: r.monthlyFee,
+              billing: r.billing,
+              revisionsPerDeliverable: r.revisionsPerDeliverable,
+              shootDays: r.shootDays,
+              platforms: r.platforms,
+              deliverables: r.deliverables as Prisma.InputJsonValue,
+              notes: r.notes ?? null,
+              createdBy: userId,
+              ...(r.status !== "draft" && { signedBy: userId, signedAt }),
+            },
+            select: { id: true },
+          });
+          ids.push(a.id);
+          await this.audit.record(tx, {
+            action: "create",
+            entity: "agreement",
+            entityId: a.id,
+            after: { title: r.title, status: r.status, startDate: r.startDate, endDate: endOf(r), monthlyFee: r.monthlyFee, via: fileName },
+          });
+        }
+        const drafts = rows.filter((r) => r.status === "draft").length;
+        if (drafts)
+          await this.notifications.notify(
+            tx,
+            { can: { area: "agreements", level: "approve" } },
+            {
+              kind: "agreement_signoff",
+              title: drafts === 1 ? "1 imported agreement to sign off" : `${drafts} imported agreements to sign off`,
+              link: "/app/agreements?view=drafts",
+            },
+          );
+        const done = report.done(ids.length);
+        const record = await tx.import.create({
+          data: { agencyId, kind: "agreements", fileName, rowCount: rows.length, createdIds: ids, createdBy: userId, report: json(done) },
+        });
+        await this.audit.record(tx, { action: "import", entity: "import", entityId: record.id, after: { kind: "agreements", fileName, rows: rows.length } });
+        return { id: record.id, created: ids.length, report: done };
+      },
+      { timeout: 120_000 },
     );
   }
 
@@ -397,6 +647,18 @@ export class ImportsService {
       if (changed || versions || logs || posts || requests || inShoots)
         throw new ConflictException("Some of these videos have been worked on since the import, so undoing it would lose that work.");
     }
+    if (kind === "agreements") {
+      const [changed, invoices, videos, renewals] = await Promise.all([
+        this.tenant.db.auditLog.count({ where: { entity: "agreement", entityId: { in: ids }, NOT: { action: "create" } } }),
+        this.tenant.db.invoice.count({ where: { agreementId: { in: ids } } }),
+        this.tenant.db.video.count({ where: { agreementId: { in: ids } } }),
+        this.tenant.db.agreement.count({ where: { renewsId: { in: ids } } }),
+      ]);
+      if (changed || invoices || videos || renewals)
+        throw new ConflictException(
+          "Some of these agreements have been worked on since the import (signed off, invoiced, renewed or used for videos), so undoing it would lose that work.",
+        );
+    }
     if (kind === "clients") {
       // Undo only what nobody has touched since: no later change to these clients, nothing made from them.
       const [changed, agreements] = await Promise.all([
@@ -424,6 +686,18 @@ export class ImportsService {
           await this.audit.record(tx, { action: "delete", entity: "video", entityId: v.id, before: { code: v.code, title: v.title, via: "undo import" } });
         }
         removed = videos.length;
+      } else if (kind === "agreements") {
+        const agreements = await tx.agreement.findMany({ where: { id: { in: ids } }, select: { id: true, title: true, status: true } });
+        for (const a of agreements) {
+          await tx.agreement.delete({ where: { id: a.id } });
+          await this.audit.record(tx, {
+            action: "delete",
+            entity: "agreement",
+            entityId: a.id,
+            before: { title: a.title, status: a.status, via: "undo import" },
+          });
+        }
+        removed = agreements.length;
       } else if (kind === "leads") {
         const leads = await tx.lead.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } });
         for (const l of leads) {

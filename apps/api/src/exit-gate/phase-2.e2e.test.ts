@@ -245,6 +245,9 @@ describe("Phase 2: three videos from idea to published", () => {
     expect(all.some((v) => v.code.startsWith("AMK-"))).toBe(false);
     await zara.get(`/videos/${videos[0]!.id}`).expect(404);
     await zara.get(`/shoots/${shootId}`).expect(404);
-    expect(((await zara.get(`/calendar?from=${M}-01&to=${lastDay}`).expect(200)).body as unknown[]).length).toBe(0);
+    // Only Zen Studio's own sales follow-ups are on its calendar.
+    const events = (await zara.get(`/calendar?from=${M}-01&to=${lastDay}`).expect(200)).body as { link: string }[];
+    const zenLeads = new Set(((await zara.get("/leads").expect(200)).body as { id: string }[]).map((l) => `/app/sales?lead=${l.id}`));
+    expect(events.every((e) => zenLeads.has(e.link))).toBe(true);
   });
 });

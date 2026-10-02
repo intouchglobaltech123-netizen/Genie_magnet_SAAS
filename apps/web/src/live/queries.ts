@@ -81,6 +81,7 @@ import {
   type Proposal,
   type ProposalInput,
   type WinInput,
+  type ImportDetail,
   type ImportRecord,
   type ImportResult,
   type Me,
@@ -437,16 +438,20 @@ export function useDeletePackage() {
 
 export const useImports = () => useQuery({ queryKey: keys.imports, queryFn: () => api<ImportRecord[]>("/imports") });
 
+/** One import with its check report. */
+export const useImportDetail = (id: string) => useQuery({ queryKey: [...keys.imports, id], queryFn: () => api<ImportDetail>(`/imports/${id}`) });
+
 export function useImport(kind: ImportKind) {
-  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads, keys.videos, keys.cycles);
+  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads, keys.videos, keys.cycles, keys.agreements);
   return useMutation({
-    mutationFn: (v: { fileName: string; rows: unknown[] }) => api<ImportResult>(`/imports/${kind}`, { body: v }),
+    mutationFn: (v: { fileName: string; rows: unknown[]; lines: number[]; leftOut: { line: number; problems: string[] }[] }) =>
+      api<ImportResult>(`/imports/${kind}`, { body: v }),
     onSuccess: refresh,
   });
 }
 
 export function useUndoImport() {
-  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads, keys.videos, keys.cycles);
+  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads, keys.videos, keys.cycles, keys.agreements);
   return useMutation({ mutationFn: (id: string) => api<{ removed: number; kept: number }>(`/imports/${id}`, { method: "DELETE" }), onSuccess: refresh });
 }
 

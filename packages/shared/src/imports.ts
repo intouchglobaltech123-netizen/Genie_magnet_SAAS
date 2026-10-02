@@ -1,14 +1,41 @@
 // Importing from Excel or CSV (P1-31). The file is read in the browser; only checked rows reach the API,
 // which checks them again with these same rules before saving anything.
 import { z } from "zod";
+import { agreementInput } from "./clients.js";
+import { PLATFORMS, type Platform } from "./enums.js";
 import { leadInput } from "./pipeline.js";
 import { URGENCIES, VIDEO_STAGE_KEYS, VIDEO_STAGE_LABEL, type VideoStageKey } from "./production.js";
-import { clientInput } from "./schemas.js";
+import { clientInput, type DeliverableInput, type DeliverableKind } from "./schemas.js";
 
-export const IMPORT_KINDS = ["clients", "team", "leads", "videos"] as const;
+export const IMPORT_KINDS = ["clients", "team", "leads", "videos", "agreements"] as const;
 export type ImportKind = (typeof IMPORT_KINDS)[number];
 
 const fileName = z.string().trim().min(1).max(200);
+
+/** Sent with every import for its check report (P3-12): each row's line in the file, and the rows left out and why. */
+const meta = {
+  fileName,
+  /** The line in the file of each row sent (the heading is line 1). */
+  lines: z.array(z.number().int().min(1)).max(5000).optional(),
+  /** Rows the importer left out because they need fixing. */
+  leftOut: z
+    .array(z.object({ line: z.number().int().min(1), problems: z.array(z.string().max(300)).max(30) }))
+    .max(5000)
+    .default([]),
+};
+
+/**
+ * What an import brought in, to compare with the sheet (P3-12): the rows, the figures to check against the sheet's
+ * own totals, the rows left out and why, and things worth a look that did not stop the import.
+ */
+export interface ImportReport {
+  /** Rows in the file: those imported plus those left out. */
+  rows: number;
+  imported: number;
+  leftOut: { line: number; problems: string[] }[];
+  totals: { label: string; value: string }[];
+  notes: { line: number | null; text: string }[];
+}
 
 /** One client from a sheet: the client with one contact, and optionally who looks after it. */
 export const clientImportRow = clientInput.extend({
@@ -20,7 +47,7 @@ export const clientImportRow = clientInput.extend({
 export type ClientImportRow = z.infer<typeof clientImportRow>;
 
 export const clientImport = z.object({
-  fileName,
+  ...meta,
   rows: z.array(clientImportRow).min(1, "There are no rows to import").max(1000, "Import at most 1,000 rows at a time"),
 });
 export type ClientImport = z.infer<typeof clientImport>;
@@ -31,7 +58,7 @@ export const teamImportRow = z.object({
   role: z.string().min(1, "Choose a role").max(60),
 });
 export const teamImport = z.object({
-  fileName,
+  ...meta,
   rows: z.array(teamImportRow).min(1, "There are no rows to import").max(500, "Import at most 500 people at a time"),
 });
 export type TeamImport = z.infer<typeof teamImport>;
@@ -45,7 +72,7 @@ export const leadImportRow = leadInput.omit({ ownerId: true }).extend({
 });
 export type LeadImportRow = z.input<typeof leadImportRow>;
 export const leadImport = z.object({
-  fileName,
+  ...meta,
   rows: z.array(leadImportRow).min(1, "There are no rows to import").max(2000, "Import at most 2,000 rows at a time"),
 });
 export type LeadImport = z.output<typeof leadImport>;
@@ -75,10 +102,39 @@ export const videoImportRow = z.object({
 });
 export type VideoImportRow = z.input<typeof videoImportRow>;
 export const videoImport = z.object({
-  fileName,
+  ...meta,
   rows: z.array(videoImportRow).min(1, "There are no rows to import").max(2000, "Import at most 2,000 rows at a time"),
 });
 export type VideoImport = z.output<typeof videoImport>;
+
+/** How an imported agreement stands: running (signed off), paused, ended, or a draft to sign off. */
+export const AGREEMENT_IMPORT_STATUSES = ["active", "paused", "ended", "draft"] as const;
+export type AgreementImportStatus = (typeof AGREEMENT_IMPORT_STATUSES)[number];
+export const AGREEMENT_IMPORT_STATUS_LABEL: Record<AgreementImportStatus, string> = {
+  active: "Running",
+  paused: "Paused",
+  ended: "Ended",
+  draft: "Draft",
+};
+
+/**
+ * One agreement the agency already has (P3-12). The client is its code and the package an id (the importer matches
+ * names); the end date is exact (the importer works it out from the months when the sheet has no end date).
+ */
+export const agreementImportRow = agreementInput
+  .omit({ months: true })
+  .extend({
+    clientCode: z.string().regex(/^[A-Z]{2,4}$/, "Use one of your clients' codes or names"),
+    endDate: z.iso.date("Give the end date or the months"),
+    status: z.enum(AGREEMENT_IMPORT_STATUSES).default("active"),
+  })
+  .refine((r) => r.endDate >= r.startDate, { path: ["endDate"], message: "Ends before it starts" });
+export type AgreementImportRow = z.input<typeof agreementImportRow>;
+export const agreementImport = z.object({
+  ...meta,
+  rows: z.array(agreementImportRow).min(1, "There are no rows to import").max(1000, "Import at most 1,000 rows at a time"),
+});
+export type AgreementImport = z.output<typeof agreementImport>;
 
 /** A template column: the field it fills, its heading, and other headings people use for the same thing. */
 export interface ImportColumn {
@@ -247,6 +303,96 @@ export const VIDEO_IMPORT_COLUMNS: ImportColumn[] = [
   { key: "notes", label: "Notes", aliases: ["notes", "remarks", "comments", "brief", "details"], example: "Client wants the logo bigger" },
 ];
 
+export const AGREEMENT_IMPORT_COLUMNS: ImportColumn[] = [
+  {
+    key: "client",
+    label: "Client",
+    required: true,
+    aliases: ["client", "client code", "client name", "brand", "customer", "account", "company"],
+    hint: "The client's code or name, as in your clients",
+    example: "KVR",
+  },
+  {
+    key: "title",
+    label: "Agreement",
+    aliases: ["agreement", "title", "agreement title", "contract", "contract name", "name"],
+    hint: "Made from the client and package when empty",
+    example: "Kaveri · Growth retainer",
+  },
+  {
+    key: "package",
+    label: "Package",
+    aliases: ["package", "plan", "package name", "plan name", "tier"],
+    hint: "One of your packages; fills the fee and deliverables when those are empty",
+    example: "Growth",
+  },
+  {
+    key: "startDate",
+    label: "Start date",
+    required: true,
+    aliases: ["start", "start date", "from", "starts", "starts on", "start on", "effective date", "commencement date"],
+    example: "2026-07-01",
+  },
+  {
+    key: "months",
+    label: "Months",
+    aliases: ["months", "duration", "term", "tenure", "period", "length", "no of months", "number of months"],
+    hint: "Or give the end date",
+    example: "12",
+  },
+  {
+    key: "endDate",
+    label: "End date",
+    aliases: ["end", "end date", "to", "ends", "ends on", "until", "till", "valid till", "expiry", "expiry date", "expires on"],
+    hint: "Or give the months",
+    example: "2027-06-30",
+  },
+  {
+    key: "monthlyFee",
+    label: "Monthly fee (₹)",
+    aliases: ["monthly fee", "fee", "retainer", "amount", "monthly amount", "price", "monthly value", "value", "fees"],
+    hint: "Before GST; the package's fee when empty",
+    example: "60000",
+  },
+  {
+    key: "deliverables",
+    label: "Deliverables",
+    aliases: ["deliverables", "scope", "monthly deliverables", "what we deliver", "includes", "deliverables a month", "scope of work"],
+    hint: "e.g. 8 Reels, 4 Posts, 10 Stories; the package's when empty",
+    example: "8 Reels, 4 Posts, 10 Stories",
+  },
+  {
+    key: "billing",
+    label: "Billing",
+    aliases: ["billing", "billing terms", "payment terms", "terms", "billed"],
+    hint: "Monthly advance when empty",
+    example: "Monthly advance",
+  },
+  { key: "shootDays", label: "Shoot days", aliases: ["shoot days", "shoots", "shoot days a month", "shoot", "shooting days"], example: "2" },
+  {
+    key: "revisions",
+    label: "Revisions",
+    aliases: ["revisions", "revisions per deliverable", "changes allowed", "corrections", "revision rounds"],
+    hint: "Per deliverable; 2 when empty",
+    example: "2",
+  },
+  {
+    key: "platforms",
+    label: "Platforms",
+    aliases: ["platforms", "channels", "social media", "accounts", "platform"],
+    hint: "e.g. Instagram, YouTube, Facebook",
+    example: "Instagram, YouTube",
+  },
+  {
+    key: "status",
+    label: "Status",
+    aliases: ["status", "state", "agreement status", "contract status"],
+    hint: "Running, Paused, Ended or Draft; Running when empty",
+    example: "Running",
+  },
+  { key: "notes", label: "Notes", aliases: ["notes", "remarks", "comments", "details"], example: "Festive month: 2 extra reels in October" },
+];
+
 export const TEAM_IMPORT_COLUMNS: ImportColumn[] = [
   { key: "email", label: "Email", required: true, aliases: ["email", "email id", "mail", "e mail", "email address"], example: "priya@youragency.example" },
   { key: "role", label: "Role", required: true, aliases: ["role", "position", "designation", "access", "job"], example: "Editor" },
@@ -382,4 +528,94 @@ export function parseVideoStage(v: string): VideoStageKey | undefined {
   if (!s) return undefined;
   const byLabel = VIDEO_STAGE_KEYS.find((k) => norm(VIDEO_STAGE_LABEL[k]) === s || norm(k) === s);
   return byLabel ?? STAGE_WORDS[s];
+}
+
+/** What kind of deliverable a name sounds like, so quotas count videos and posts apart. */
+export function deliverableKind(name: string): DeliverableKind {
+  const s = norm(name);
+  if (/\bstor(y|ies)\b/.test(s)) return "story";
+  if (/\b(reels?|videos?|shorts?|youtube|films?|vlogs?|podcasts?|testimonials?|interviews?)\b/.test(s)) return "video";
+  if (/\b(posts?|carousels?|statics?|creatives?|posters?|banners?|graphics?|designs?)\b/.test(s)) return "post";
+  return "other";
+}
+
+/**
+ * Deliverables as people write them in a sheet — "8 Reels, 4 Posts + 10 stories", "Reels x 8; Posts: 4" — or
+ * undefined when a part has no number.
+ */
+export function parseDeliverables(v: string): DeliverableInput[] | undefined {
+  const parts = v
+    .split(/[,;+\n/&]|\band\b/i)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  if (!parts.length) return undefined;
+  const out: DeliverableInput[] = [];
+  for (const p of parts) {
+    const before = /^(\d+)\s*(?:x\b|×)?\s*(.+)$/i.exec(p);
+    const after = before ? null : /^(.+?)\s*(?:[:×=-]|\bx\b|\bnos?\b\.?)?\s*(\d+)$/i.exec(p);
+    const [count, label] = before ? [Number(before[1]), before[2]!] : after ? [Number(after[2]), after[1]!] : [0, ""];
+    const name = label.trim().replace(/^\w/, (c) => c.toUpperCase());
+    if (!name || !Number.isInteger(count) || count < 1) return undefined;
+    out.push({ name: name.slice(0, 60), perMonth: count, kind: deliverableKind(name) });
+  }
+  return out;
+}
+
+const PLATFORM_WORDS: Record<string, Platform> = {
+  insta: "instagram",
+  ig: "instagram",
+  fb: "facebook",
+  meta: "facebook",
+  yt: "youtube",
+  "you tube": "youtube",
+  "linked in": "linkedin",
+  twitter: "x",
+  "x twitter": "x",
+  "google business": "gbp",
+  "google business profile": "gbp",
+  "google my business": "gbp",
+  gmb: "gbp",
+};
+
+/** Platforms as people write them — "Instagram, YT, FB" — as keys; undefined when one is not known. */
+export function parsePlatforms(v: string): Platform[] | undefined {
+  const out = new Set<Platform>();
+  for (const part of v.split(/[,;+/&\n]|\band\b/i)) {
+    const s = norm(part);
+    if (!s) continue;
+    const p = (PLATFORMS as readonly string[]).includes(s) ? (s as Platform) : PLATFORM_WORDS[s];
+    if (!p) return undefined;
+    out.add(p);
+  }
+  return [...out];
+}
+
+const AGREEMENT_STATUS_WORDS: Record<string, AgreementImportStatus> = {
+  running: "active",
+  active: "active",
+  live: "active",
+  ongoing: "active",
+  signed: "active",
+  current: "active",
+  paused: "paused",
+  "on hold": "paused",
+  hold: "paused",
+  ended: "ended",
+  closed: "ended",
+  expired: "ended",
+  completed: "ended",
+  finished: "ended",
+  stopped: "ended",
+  terminated: "ended",
+  cancelled: "ended",
+  draft: "draft",
+  pending: "draft",
+  "to sign": "draft",
+  "not signed": "draft",
+  unsigned: "draft",
+};
+
+/** An agreement's status as people write it — "Running", "On hold", "Expired" — or undefined when unclear. */
+export function parseAgreementStatus(v: string): AgreementImportStatus | undefined {
+  return AGREEMENT_STATUS_WORDS[norm(v)];
 }
