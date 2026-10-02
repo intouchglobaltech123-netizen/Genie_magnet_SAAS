@@ -15,6 +15,23 @@ import { FilesController, FileTransferController } from "./files/files.controlle
 import { FilesService } from "./files/files.service.js";
 import { NotificationsController } from "./notifications/notifications.controller.js";
 import { NotificationsService } from "./notifications/notifications.service.js";
+import { ContentService } from "./production/content.service.js";
+import { CyclesService } from "./production/cycles.service.js";
+import {
+  ChangeRequestsController,
+  ClientContentController,
+  ContentController,
+  CyclesController,
+  ProductionSettingsController,
+  PublishingController,
+  ShootsController,
+  TopicListsController,
+  VideosController,
+} from "./production/production.controller.js";
+import { ProductionSettingsService } from "./production/production-settings.service.js";
+import { PublishingService } from "./production/publishing.service.js";
+import { ShootsService } from "./production/shoots.service.js";
+import { VideosService } from "./production/videos.service.js";
 import { ClientOnboardingController, OnboardingController, PublicOnboardingController, QuestionnairesController } from "./onboarding/onboarding.controller.js";
 import { OnboardingService } from "./onboarding/onboarding.service.js";
 import { QuestionnairesService } from "./onboarding/questionnaires.service.js";
@@ -63,6 +80,15 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     NotificationsController,
     FilesController,
     FileTransferController,
+    ProductionSettingsController,
+    CyclesController,
+    ContentController,
+    TopicListsController,
+    ClientContentController,
+    VideosController,
+    ChangeRequestsController,
+    ShootsController,
+    PublishingController,
     PipelineController,
     LeadsController,
     ProposalsController,
@@ -101,6 +127,12 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     NotificationsService,
     FileStore,
     FilesService,
+    ProductionSettingsService,
+    CyclesService,
+    VideosService,
+    ContentService,
+    ShootsService,
+    PublishingService,
     PipelineService,
     LeadsService,
     ProposalsService,

@@ -432,16 +432,20 @@ model Client {
   notes            String?
   /// Archived clients leave the lists but keep their history.
   archivedAt       DateTime?      @map("archived_at")
+  /// Content pillars: the themes the client's content is planned around (P2-02).
+  pillars          String[]       @default([])
   createdAt        DateTime       @default(now()) @map("created_at")
 
-  agency      Agency                  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
-  contacts    Contact[]
-  agreements  Agreement[]
-  invoices    Invoice[]
-  responses   QuestionnaireResponse[]
-  content     ContentItem[]
-  videos      Video[]
-  connections PlatformConnection[]
+  agency         Agency                  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  contacts       Contact[]
+  agreements     Agreement[]
+  invoices       Invoice[]
+  shoots         Shoot[]
+  changeRequests ChangeRequest[]
+  responses      QuestionnaireResponse[]
+  content        ContentItem[]
+  videos         Video[]
+  connections    PlatformConnection[]
 
   @@unique([agencyId, code])
   @@index([agencyId, fitment])
@@ -530,6 +534,7 @@ model Agreement {
   package  Package?  @relation(fields: [packageId], references: [id], onDelete: SetNull)
   cycles   Cycle[]
   invoices Invoice[]
+  videos   Video[]
 
   @@index([agencyId, clientId])
   @@index([agencyId, status])
@@ -620,13 +625,25 @@ enum CycleStatus {
 
 /// One month of an agreement: what was promised, what was delivered.
 model Cycle {
-  id          String      @id @default(uuid(7)) @db.Uuid
-  agencyId    String      @map("agency_id") @db.Uuid
-  agreementId String      @map("agreement_id") @db.Uuid
-  month       DateTime    @db.Date
-  status      CycleStatus @default(upcoming)
-  promised    Int
-  delivered   Int         @default(0)
+  id           String      @id @default(uuid(7)) @db.Uuid
+  agencyId     String      @map("agency_id") @db.Uuid
+  agreementId  String      @map("agreement_id") @db.Uuid
+  month        DateTime    @db.Date
+  status       CycleStatus @default(upcoming)
+  /// Videos promised this month (the agreement's video deliverables, plus any carried in).
+  promised     Int
+  /// Videos delivered (approved or published), kept when the month is closed.
+  delivered    Int         @default(0)
+  /// Videos carried in from the previous month's shortfall.
+  carriedIn    Int         @default(0) @map("carried_in")
+  /// carry · credit · forfeit: what happens to a shortfall when the month is closed (P2-01).
+  decision     String?
+  decisionNote String?     @map("decision_note")
+  /// Credit note (₹) when the shortfall is credited.
+  credit       Int?
+  closedBy     String?     @map("closed_by")
+  closedAt     DateTime?   @map("closed_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
 
   agreement Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
   videos    Video[]
@@ -746,13 +763,17 @@ enum ContentStage {
 }
 
 model TopicList {
-  id       String    @id @default(uuid(7)) @db.Uuid
-  agencyId String    @map("agency_id") @db.Uuid
-  clientId String    @map("client_id") @db.Uuid
-  month    DateTime  @db.Date
-  needed   Int
-  status   String    @default("draft")
-  sentAt   DateTime? @map("sent_at")
+  id          String    @id @default(uuid(7)) @db.Uuid
+  agencyId    String    @map("agency_id") @db.Uuid
+  clientId    String    @map("client_id") @db.Uuid
+  month       DateTime  @db.Date
+  needed      Int
+  /// draft · sent · confirmed
+  status      String    @default("draft")
+  sentAt      DateTime? @map("sent_at")
+  confirmedAt DateTime? @map("confirmed_at")
+  createdBy   String?   @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
 
   @@unique([clientId, month])
   @@index([agencyId, status])
@@ -760,21 +781,26 @@ model TopicList {
 }
 
 model ContentItem {
-  id       String       @id @default(uuid(7)) @db.Uuid
-  agencyId String       @map("agency_id") @db.Uuid
-  clientId String       @map("client_id") @db.Uuid
-  title    String
-  pillar   String
-  format   String
-  source   String
-  stage    ContentStage @default(idea)
-  ownerId  String?      @map("owner_id")
-  month    DateTime     @db.Date
-  due      DateTime?    @db.Date
+  id        String       @id @default(uuid(7)) @db.Uuid
+  agencyId  String       @map("agency_id") @db.Uuid
+  clientId  String       @map("client_id") @db.Uuid
+  title     String
+  pillar    String
+  format    String
+  source    String
+  stage     ContentStage @default(idea)
+  ownerId   String?      @map("owner_id")
+  month     DateTime     @db.Date
+  due       DateTime?    @db.Date
   /// Client's choice on the monthly topic list: picked | skipped.
-  pick     String?
-  notes    String       @default("")
-  links    Json         @default("[]")
+  pick      String?
+  notes     String       @default("")
+  /// Research notes: facts, references and hooks (P2-04).
+  research  String       @default("")
+  links     Json         @default("[]")
+  createdBy String?      @map("created_by")
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @default(now()) @updatedAt @map("updated_at")
 
   client   Client          @relation(fields: [clientId], references: [id], onDelete: Cascade)
   versions ScriptVersion[]
@@ -786,18 +812,22 @@ model ContentItem {
 }
 
 model ScriptVersion {
-  id            String   @id @default(uuid(7)) @db.Uuid
-  agencyId      String   @map("agency_id") @db.Uuid
-  contentItemId String   @map("content_item_id") @db.Uuid
+  id            String    @id @default(uuid(7)) @db.Uuid
+  agencyId      String    @map("agency_id") @db.Uuid
+  contentItemId String    @map("content_item_id") @db.Uuid
   number        Int
   hook          String
   body          String
   cta           String
-  onScreen      String   @default("") @map("on_screen")
-  status        String   @default("draft")
-  clientNote    String?  @map("client_note")
-  createdById   String?  @map("created_by_id")
-  createdAt     DateTime @default(now()) @map("created_at")
+  onScreen      String    @default("") @map("on_screen")
+  /// draft · review · sent · changes · approved
+  status        String    @default("draft")
+  clientNote    String?   @map("client_note")
+  createdById   String?   @map("created_by_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  sentAt        DateTime? @map("sent_at")
+  decidedBy     String?   @map("decided_by")
+  decidedAt     DateTime? @map("decided_at")
 
   contentItem ContentItem @relation(fields: [contentItemId], references: [id], onDelete: Cascade)
 
@@ -821,31 +851,54 @@ enum VideoStage {
 }
 
 model Video {
-  id            String     @id @default(uuid(7)) @db.Uuid
-  agencyId      String     @map("agency_id") @db.Uuid
-  clientId      String     @map("client_id") @db.Uuid
-  cycleId       String?    @map("cycle_id") @db.Uuid
-  contentItemId String?    @unique @map("content_item_id") @db.Uuid
+  id             String     @id @default(uuid(7)) @db.Uuid
+  agencyId       String     @map("agency_id") @db.Uuid
+  clientId       String     @map("client_id") @db.Uuid
+  cycleId        String?    @map("cycle_id") @db.Uuid
+  contentItemId  String?    @unique @map("content_item_id") @db.Uuid
   /// KVR-0926-05: client code, month-year, running number.
-  code          String
-  title         String
-  format        String
-  aspect        String
-  urgency       String     @default("standard")
-  stage         VideoStage @default(planned)
-  editorId      String?    @map("editor_id")
-  dueDate       DateTime?  @map("due_date") @db.Date
-  publishDate   DateTime?  @map("publish_date") @db.Date
-  revisionsUsed Int        @default(0) @map("revisions_used")
-  editSteps     Json       @default("{}") @map("edit_steps")
-  qc            Json       @default("{}")
+  code           String
+  title          String
+  format         String
+  aspect         String
+  urgency        String     @default("standard")
+  stage          VideoStage @default(planned)
+  editorId       String?    @map("editor_id")
+  dueDate        DateTime?  @map("due_date") @db.Date
+  publishDate    DateTime?  @map("publish_date") @db.Date
+  revisionsUsed  Int        @default(0) @map("revisions_used")
+  /// { step: { by, at } } for the edit steps done (P2-09).
+  editSteps      Json       @default("{}") @map("edit_steps")
+  /// { check: { result: pass|fail, note, by, at } } (P2-10).
+  qc             Json       @default("{}")
+  agreementId    String?    @map("agreement_id") @db.Uuid
+  /// Camera clip numbers, e.g. C0012–C0019.
+  clipNo         String?    @map("clip_no")
+  /// Footage backed up and verified (VP).
+  protectedAt    DateTime?  @map("protected_at")
+  protectedBy    String?    @map("protected_by")
+  directorId     String?    @map("director_id")
+  cameraId       String?    @map("camera_id")
+  shootId        String?    @map("shoot_id") @db.Uuid
+  /// Editing time planned (from the format); time logged beyond it needs a reason.
+  plannedMinutes Int        @default(0) @map("planned_minutes")
+  delayReason    String?    @map("delay_reason")
+  platforms      String[]   @default([])
+  notes          String?
+  createdBy      String?    @map("created_by")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @default(now()) @updatedAt @map("updated_at")
 
-  client         Client          @relation(fields: [clientId], references: [id], onDelete: Restrict)
-  cycle          Cycle?          @relation(fields: [cycleId], references: [id], onDelete: SetNull)
-  contentItem    ContentItem?    @relation(fields: [contentItemId], references: [id], onDelete: SetNull)
+  client         Client             @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  cycle          Cycle?             @relation(fields: [cycleId], references: [id], onDelete: SetNull)
+  agreement      Agreement?         @relation(fields: [agreementId], references: [id], onDelete: SetNull)
+  shoot          Shoot?             @relation(fields: [shootId], references: [id], onDelete: SetNull)
+  contentItem    ContentItem?       @relation(fields: [contentItemId], references: [id], onDelete: SetNull)
   versions       VideoVersion[]
   changeRequests ChangeRequest[]
   posts          ScheduledPost[]
+  stageChanges   VideoStageChange[]
+  timeLogs       VideoTimeLog[]
 
   @@unique([agencyId, code])
   @@index([agencyId, stage])
@@ -854,15 +907,22 @@ model Video {
 }
 
 model VideoVersion {
-  id        String   @id @default(uuid(7)) @db.Uuid
-  agencyId  String   @map("agency_id") @db.Uuid
-  videoId   String   @map("video_id") @db.Uuid
+  id        String    @id @default(uuid(7)) @db.Uuid
+  agencyId  String    @map("agency_id") @db.Uuid
+  videoId   String    @map("video_id") @db.Uuid
   label     String
+  number    Int       @default(1)
+  /// internal · sent · changes_requested · approved
   status    String
   duration  String?
   notes     String?
-  fileId    String?  @map("file_id") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at")
+  fileId    String?   @map("file_id") @db.Uuid
+  /// Or a link to the file (Drive, Frame.io…).
+  link      String?
+  sentAt    DateTime? @map("sent_at")
+  decidedAt DateTime? @map("decided_at")
+  createdBy String?   @map("created_by")
+  createdAt DateTime  @default(now()) @map("created_at")
 
   video    Video           @relation(fields: [videoId], references: [id], onDelete: Cascade)
   comments ReviewComment[]
@@ -880,6 +940,7 @@ model ReviewComment {
   text         String
   kind         String   @default("text")
   resolved     Boolean  @default(false)
+  createdBy    String?  @map("created_by")
   createdAt    DateTime @default(now()) @map("created_at")
 
   version VideoVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
@@ -894,20 +955,140 @@ enum RevisionKind {
   change_request
 }
 
+/// Feedback on a delivered video, classified (P2-11): our correction, an included revision (uses the allowance), or a
+/// change request (new work, estimated and approved by the client before it is done).
 model ChangeRequest {
-  id        String       @id @default(uuid(7)) @db.Uuid
-  agencyId  String       @map("agency_id") @db.Uuid
-  videoId   String       @map("video_id") @db.Uuid
-  kind      RevisionKind
-  summary   String
-  estimate  Int?
-  status    String       @default("open")
-  createdAt DateTime     @default(now()) @map("created_at")
+  id             String       @id @default(uuid(7)) @db.Uuid
+  agencyId       String       @map("agency_id") @db.Uuid
+  clientId       String?      @map("client_id") @db.Uuid
+  videoId        String?      @map("video_id") @db.Uuid
+  /// The version the feedback was given on.
+  versionId      String?      @map("version_id") @db.Uuid
+  kind           RevisionKind
+  summary        String
+  /// Change requests: the estimate (₹, before GST) and the days it adds.
+  estimate       Int?
+  dateImpactDays Int?         @map("date_impact_days")
+  /// open · awaiting_client · approved · rejected · done
+  status         String       @default("open")
+  decidedAt      DateTime?    @map("decided_at")
+  createdBy      String?      @map("created_by")
+  createdAt      DateTime     @default(now()) @map("created_at")
 
-  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  client Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  video  Video?  @relation(fields: [videoId], references: [id], onDelete: Cascade)
 
   @@index([agencyId, status])
   @@map("change_requests")
+}
+
+/// Each agency's production settings (P2-06 to P2-10): the video code format and every checklist, starting from the
+/// Growth OS defaults in @gm/shared and edited in Settings → Production.
+model ProductionSettings {
+  agencyId        String   @id @map("agency_id") @db.Uuid
+  /// e.g. {CLIENT}-{MM}{YY}-{00} → KVR-0926-05
+  videoCodeFormat String   @map("video_code_format")
+  /// [{ name, minutes }]: video formats and the editing time planned for each.
+  formats         Json
+  /// The edit steps, in order.
+  editSteps       Json     @map("edit_steps")
+  /// [{ key, label, hint }]: the internal quality checks.
+  qcChecks        Json     @map("qc_checks")
+  /// [{ key, name, items }]: kit lists for shoots.
+  kits            Json
+  /// Things to check before a shoot starts.
+  preShoot        Json     @map("pre_shoot")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("production_settings")
+}
+
+/// Every stage move of a video, with who moved it (P2-08).
+model VideoStageChange {
+  id       String      @id @default(uuid(7)) @db.Uuid
+  agencyId String      @map("agency_id") @db.Uuid
+  videoId  String      @map("video_id") @db.Uuid
+  from     VideoStage?
+  to       VideoStage
+  note     String?
+  by       String?
+  at       DateTime    @default(now())
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, videoId])
+  @@map("video_stage_changes")
+}
+
+/// Time spent on a video (P2-13), mostly editing.
+model VideoTimeLog {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  videoId   String   @map("video_id") @db.Uuid
+  userId    String   @map("user_id")
+  date      DateTime @db.Date
+  minutes   Int
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, videoId])
+  @@index([agencyId, userId, date])
+  @@map("video_time_logs")
+}
+
+/// A shoot day (P2-06): the crew, the kit going out and coming back, signatures, and the videos shot.
+model Shoot {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  agencyId   String   @map("agency_id") @db.Uuid
+  clientId   String   @map("client_id") @db.Uuid
+  title      String
+  date       DateTime @db.Date
+  callTime   String?  @map("call_time")
+  location   String?
+  batchNo    String?  @map("batch_no")
+  /// Key of one of the agency's kit lists.
+  kit        String
+  cameraId   String?  @map("camera_id")
+  directorId String?  @map("director_id")
+  /// planned · packed · on_shoot · returned · closed
+  status     String   @default("planned")
+  notes      String?
+  /// { item: { packed, shot, received } }
+  kitTicks   Json     @default("{}") @map("kit_ticks")
+  /// { item: true }
+  preShoot   Json     @default("{}") @map("pre_shoot")
+  /// { giver: { by, at }, receiver: { by, at }, client: { name, at } }
+  signatures Json     @default("{}")
+  createdBy  String?  @map("created_by")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  client    Client          @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  videos    Video[]
+  incidents ShootIncident[]
+
+  @@index([agencyId, date])
+  @@map("shoots")
+}
+
+/// Kit that did not come back, or anything else that went wrong on a shoot.
+model ShootIncident {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  agencyId   String    @map("agency_id") @db.Uuid
+  shootId    String    @map("shoot_id") @db.Uuid
+  items      String[]  @default([])
+  note       String
+  resolvedAt DateTime? @map("resolved_at")
+  resolvedBy String?   @map("resolved_by")
+  createdBy  String?   @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  shoot Shoot @relation(fields: [shootId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, shootId])
+  @@map("shoot_incidents")
 }
 
 // ───────────────────────────── Publishing & messaging ─────────────────────────────
@@ -941,6 +1122,10 @@ model ScheduledPost {
   publishedUrl String?   @map("published_url")
   publishedAt  DateTime? @map("published_at")
   proofFileId  String?   @map("proof_file_id") @db.Uuid
+  caption      String?
+  publishedBy  String?   @map("published_by")
+  createdBy    String?   @map("created_by")
+  createdAt    DateTime  @default(now()) @map("created_at")
 
   video      Video              @relation(fields: [videoId], references: [id], onDelete: Cascade)
   connection PlatformConnection @relation(fields: [connectionId], references: [id], onDelete: Restrict)

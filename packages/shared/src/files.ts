@@ -39,7 +39,14 @@ export const fileAllowed = (name: string, mime: string) => allowedExt.has(extOf(
 export const ACCEPT = FILE_TYPES.flatMap((t) => t.ext.map((e) => `.${e}`)).join(",");
 
 /** What a file can belong to, and the area whose access decides who may see and change it. */
-export const FILE_ENTITIES = { client: "clients", onboarding: "onboarding", video: "production", content: "content", agency: "settings" } as const;
+export const FILE_ENTITIES = {
+  client: "clients",
+  onboarding: "onboarding",
+  video: "production",
+  publishing: "publishing",
+  content: "content",
+  agency: "settings",
+} as const;
 export type FileEntity = keyof typeof FILE_ENTITIES;
 
 export const fileStart = z

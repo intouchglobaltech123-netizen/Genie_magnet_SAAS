@@ -54,7 +54,7 @@ export class FilesService {
             ? !!(await db.client.findFirst({ where: { id: entityId }, select: { id: true } }))
             : entity === "onboarding"
               ? !!(await db.questionnaireResponse.findFirst({ where: { id: entityId }, select: { id: true } }))
-              : entity === "video"
+              : entity === "video" || entity === "publishing"
                 ? !!(await db.video.findFirst({ where: { id: entityId }, select: { id: true } }))
                 : !!(await db.contentItem.findFirst({ where: { id: entityId }, select: { id: true } }));
     if (!found) throw new NotFoundException("The record these files belong to was not found.");
