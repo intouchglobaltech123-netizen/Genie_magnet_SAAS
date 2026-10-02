@@ -1065,6 +1065,24 @@ model VideoTimeLog {
   @@map("video_time_logs")
 }
 
+/// Time spent on a shoot day (P2-13): travel, set-up, shooting, kit back.
+model ShootTimeLog {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  shootId   String   @map("shoot_id") @db.Uuid
+  userId    String   @map("user_id")
+  date      DateTime @db.Date
+  minutes   Int
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  shoot Shoot @relation(fields: [shootId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, shootId])
+  @@index([agencyId, userId, date])
+  @@map("shoot_time_logs")
+}
+
 /// A shoot day (P2-06): the crew, the kit going out and coming back, signatures, and the videos shot.
 model Shoot {
   id         String   @id @default(uuid(7)) @db.Uuid
@@ -1095,6 +1113,7 @@ model Shoot {
   client    Client          @relation(fields: [clientId], references: [id], onDelete: Restrict)
   videos    Video[]
   incidents ShootIncident[]
+  timeLogs  ShootTimeLog[]
 
   @@index([agencyId, date])
   @@map("shoots")

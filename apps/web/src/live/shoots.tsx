@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 import { ApiError, errorMessage } from "./api";
 import { NoteDialog } from "./deals";
 import { fmtDate } from "./format";
-import { StageBadge, UrgencyBadge, usePeople } from "./production-bits";
+import { minutes, StageBadge, TimeLog, UrgencyBadge, usePeople } from "./production-bits";
 import { useCan, useClients, useCreateShoot, useProductionSettings, useShoot, useShootAction, useShoots, useVideoAction, useVideos } from "./queries";
 
 const STATUS_TONE: Record<ShootStatus, BadgeTone> = { planned: "neutral", packed: "info", on_shoot: "warning", returned: "accent", closed: "success" };
@@ -456,6 +456,18 @@ export function LiveShoot({ id }: { id: string }) {
               </div>
             </dl>
             {s.notes && <p className="mt-2 whitespace-pre-line text-body text-muted-foreground">{s.notes}</p>}
+          </SectionCard>
+          <SectionCard
+            title="Time"
+            description={s.minutes ? `${minutes(s.minutes)} logged on this shoot.` : "Travel, set-up, shooting and bringing the kit back."}
+          >
+            <TimeLog
+              logs={s.timeLogs}
+              canEdit={editable}
+              defaultDate={s.date}
+              onLog={(entry, done) => act.mutate({ path: "/time", body: entry }, { onSuccess: done, onError: (e) => toast.error(errorMessage(e)) })}
+              onRemove={(logId) => act.mutate({ path: `/time/${logId}`, method: "DELETE" }, { onError: (e) => toast.error(errorMessage(e)) })}
+            />
           </SectionCard>
           <SectionCard title="Before the shoot">
             <ul className="space-y-1.5">

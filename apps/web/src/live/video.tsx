@@ -2,21 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Check,
-  ChevronDown,
-  Clock,
-  ExternalLink,
-  MessageSquare,
-  Plus,
-  Send,
-  ShieldCheck,
-  ThumbsDown,
-  ThumbsUp,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, ChevronDown, ExternalLink, MessageSquare, Plus, Send, ShieldCheck, ThumbsDown, ThumbsUp } from "lucide-react";
 import { toast } from "sonner";
 import {
   ASPECTS,
@@ -57,7 +43,7 @@ import { NoteDialog } from "./deals";
 import { startFor, UploadButton } from "./files";
 import { fmtDate } from "./format";
 import { inr, PLATFORM_LABEL } from "./packages";
-import { minutes, StageBadge, UrgencyBadge, usePeople, VpBadge } from "./production-bits";
+import { minutes, StageBadge, TimeLog, UrgencyBadge, usePeople, VpBadge } from "./production-bits";
 import { useCan, useCreateChangeRequest, useMoveVideo, useProductionSettings, useVideo, useVideoAction } from "./queries";
 
 const VERSION_STATUS: Record<VideoDetail["versions"][number]["status"], { label: string; tone: BadgeTone }> = {
@@ -118,7 +104,6 @@ function MoveMenu({ v }: { v: VideoDetail }) {
 
 function Editing({ v, canEdit }: { v: VideoDetail; canEdit: boolean }) {
   const act = useVideoAction(v.id);
-  const [log, setLog] = useState({ date: new Date().toISOString().slice(0, 10), hours: "", note: "" });
   const [reason, setReason] = useState(v.delayReason ?? "");
   const over = v.plannedMinutes > 0 && v.loggedMinutes > v.plannedMinutes;
   const done = v.editSteps.filter((s) => s.done).length;
@@ -168,44 +153,12 @@ function Editing({ v, canEdit }: { v: VideoDetail; canEdit: boolean }) {
             tone={over ? "danger" : "accent"}
             className="mb-3"
           />
-          {canEdit && (
-            <div className="mb-3 grid gap-2 sm:grid-cols-[140px_90px_1fr_auto]">
-              <Input type="date" aria-label="Date" value={log.date} onChange={(e) => setLog({ ...log, date: e.target.value })} />
-              <Input aria-label="Hours" placeholder="h:mm" value={log.hours} onChange={(e) => setLog({ ...log, hours: e.target.value })} />
-              <Input aria-label="What" placeholder="What was done" value={log.note} onChange={(e) => setLog({ ...log, note: e.target.value })} />
-              <Button
-                variant="secondary"
-                disabled={!log.hours}
-                onClick={() => {
-                  const [h, m] = log.hours.includes(":") ? log.hours.split(":").map(Number) : [Number(log.hours), 0];
-                  const mins = Math.round((h ?? 0) * 60 + (m ?? 0));
-                  if (!mins) return toast.error("Enter the time as hours or h:mm");
-                  act.mutate(
-                    { path: "/time", body: { date: log.date, minutes: mins, note: log.note || undefined } },
-                    toast$({ onSuccess: () => setLog({ ...log, hours: "", note: "" }) }),
-                  );
-                }}
-              >
-                <Clock />
-                Log
-              </Button>
-            </div>
-          )}
-          <ul className="divide-y divide-border-subtle text-body">
-            {v.timeLogs.map((l) => (
-              <li key={l.id} className="flex items-center justify-between gap-2 py-1.5">
-                <span>
-                  {fmtDate(l.date)} · {minutes(l.minutes)} · {l.by?.name ?? "—"}
-                  {l.note && <span className="text-muted-foreground"> — {l.note}</span>}
-                </span>
-                {canEdit && (
-                  <Button size="icon-sm" variant="ghost" aria-label="Remove" onClick={() => act.mutate({ path: `/time/${l.id}`, method: "DELETE" }, toast$())}>
-                    <Trash2 />
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
+          <TimeLog
+            logs={v.timeLogs}
+            canEdit={canEdit}
+            onLog={(entry, done) => act.mutate({ path: "/time", body: entry }, toast$({ onSuccess: done }))}
+            onRemove={(id) => act.mutate({ path: `/time/${id}`, method: "DELETE" }, toast$())}
+          />
           {over && (
             <div className="mt-3 space-y-2">
               <Alert tone="warning">Over the planned time — give the reason before the video moves on.</Alert>

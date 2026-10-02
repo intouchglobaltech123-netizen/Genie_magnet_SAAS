@@ -599,6 +599,9 @@ export interface ShootDetail extends Omit<ShootSummary, "kit" | "videos" | "pack
   signatures: Partial<Record<"giver" | "receiver" | "client", { by: string | null; byName: string | null; name: string | null; at: string }>>;
   videos: { id: string; code: string; title: string; urgency: string; clipNo: string | null; protected: boolean; editor: Who; stage: string }[];
   incidents: { id: string; items: string[]; note: string; resolved: boolean; by: Who; createdAt: string }[];
+  timeLogs: { id: string; date: string; minutes: number; note: string | null; by: Who }[];
+  /** Total time logged on the shoot. */
+  minutes: number;
 }
 
 /** GET /publishing (one item) */
@@ -676,4 +679,28 @@ export interface JobOverview {
   waiting: number;
   /** The latest run of each daily job. */
   daily: { name: string; label: string; date: string | null; status: JobRow["status"] | null; finishedAt: string | null }[];
+}
+
+/** One time entry, on a video or a shoot (Production → Time). */
+export interface TimeEntryRow {
+  id: string;
+  date: string;
+  minutes: number;
+  note: string | null;
+  by: Who;
+  on: { kind: "video" | "shoot"; id: string; label: string; client: string };
+}
+
+/** Something on the calendar: a shoot, a video due or to publish, a post, an agreement ending. */
+export interface CalendarEvent {
+  kind: "shoot" | "due" | "publish" | "post" | "renewal";
+  date: string;
+  /** 24-hour time in India, when it has one. */
+  time: string | null;
+  title: string;
+  detail: string | null;
+  client: { id: string; name: string; code: string } | null;
+  link: string;
+  /** Done (a published post, a closed shoot) or late (a video past due). */
+  state: "open" | "done" | "late";
 }

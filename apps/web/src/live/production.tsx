@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ClipboardCheck, Clapperboard, Film, Plus, Search, ShieldCheck } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, ClipboardCheck, Clapperboard, Clock, Film, Plus, Search, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import {
   ASPECTS,
@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import { ApiError, errorMessage } from "./api";
 import { fmtDate } from "./format";
 import { inr } from "./packages";
-import { StageBadge, UrgencyBadge, usePeople, VpBadge } from "./production-bits";
+import { minutes, StageBadge, UrgencyBadge, usePeople, VpBadge } from "./production-bits";
 import {
   useCan,
   useChangeRequests,
@@ -41,6 +41,7 @@ import {
   useCreateVideo,
   useMoveVideo,
   useProductionSettings,
+  useTimeEntries,
   useVideoAction,
   useVideos,
 } from "./queries";
@@ -521,7 +522,7 @@ export function LiveProduction({ tab: initial }: { tab?: string }) {
         />
       </div>
       {videos.error && <Alert tone="danger">{errorMessage(videos.error)}</Alert>}
-      <Tabs defaultValue={initial === "qc" || initial === "sheet" || initial === "revisions" ? initial : "board"}>
+      <Tabs defaultValue={initial === "qc" || initial === "sheet" || initial === "revisions" || initial === "time" ? initial : "board"}>
         <TabsList>
           <TabsTrigger value="board">Board</TabsTrigger>
           <TabsTrigger value="sheet">Sheet</TabsTrigger>
@@ -530,6 +531,7 @@ export function LiveProduction({ tab: initial }: { tab?: string }) {
             Quality check
           </TabsTrigger>
           <TabsTrigger value="revisions">Revisions</TabsTrigger>
+          <TabsTrigger value="time">Time</TabsTrigger>
         </TabsList>
         <TabsContent value="board">
           {videos.isPending ? (
@@ -547,9 +549,96 @@ export function LiveProduction({ tab: initial }: { tab?: string }) {
         <TabsContent value="revisions">
           <Revisions />
         </TabsContent>
+        <TabsContent value="time">
+          <TimeTab />
+        </TabsContent>
       </Tabs>
       {adding && <NewVideoDialog open onOpenChange={setAdding} clientId={clientId || undefined} />}
     </>
+  );
+}
+
+// ─── Time ─────────────────────────────────────────────────────────────
+
+const WEEK_MS = 7 * 86_400_000;
+const mondayOf = (d: Date) => new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - ((d.getUTCDay() + 6) % 7)));
+const isoDay = (d: Date) => d.toISOString().slice(0, 10);
+
+/** The week's time on videos and shoots, with each person's total (own roles see their own). */
+function TimeTab() {
+  const [start, setStart] = useState(() => mondayOf(new Date()));
+  const from = isoDay(start);
+  const to = isoDay(new Date(start.getTime() + 6 * 86_400_000));
+  const entries = useTimeEntries(from, to);
+  const rows = entries.data ?? [];
+  const totals = [...rows.reduce((m, e) => m.set(e.by?.name ?? "—", (m.get(e.by?.name ?? "—") ?? 0) + e.minutes), new Map<string, number>())].sort(
+    (a, b) => b[1] - a[1],
+  );
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface p-0.5">
+          <Button variant="ghost" size="icon-sm" aria-label="Previous week" onClick={() => setStart(new Date(start.getTime() - WEEK_MS))}>
+            <ChevronLeft />
+          </Button>
+          <span className="min-w-44 text-center text-body font-medium">
+            {fmtDate(from)} – {fmtDate(to)}
+          </span>
+          <Button variant="ghost" size="icon-sm" aria-label="Next week" onClick={() => setStart(new Date(start.getTime() + WEEK_MS))}>
+            <ChevronRight />
+          </Button>
+        </div>
+        <Button variant="ghost" size="sm" onClick={() => setStart(mondayOf(new Date()))}>
+          This week
+        </Button>
+      </div>
+      {entries.isPending ? (
+        <SkeletonRows rows={4} />
+      ) : entries.error ? (
+        <Alert tone="danger">{errorMessage(entries.error)}</Alert>
+      ) : !rows.length ? (
+        <EmptyState icon={Clock} title="No time logged this week" description="Time is logged on each video and shoot." />
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-2">
+            {totals.map(([name, n]) => (
+              <Badge key={name} tone="outline">
+                {name}: {minutes(n)}
+              </Badge>
+            ))}
+          </div>
+          <Card className="overflow-hidden">
+            <Table>
+              <THead>
+                <TR>
+                  <TH>Day</TH>
+                  <TH>Who</TH>
+                  <TH>On</TH>
+                  <TH numeric>Time</TH>
+                  <TH>What was done</TH>
+                </TR>
+              </THead>
+              <TBody>
+                {rows.map((e) => (
+                  <TR key={e.id}>
+                    <TD className="whitespace-nowrap">{fmtDate(e.date)}</TD>
+                    <TD>{e.by?.name ?? "—"}</TD>
+                    <TD>
+                      <Link href={e.on.kind === "video" ? `/app/production/${e.on.id}` : `/app/shoots/${e.on.id}`} className="hover:underline">
+                        {e.on.kind === "shoot" ? `Shoot: ${e.on.label}` : e.on.label}
+                      </Link>
+                      <div className="text-muted-foreground">{e.on.client}</div>
+                    </TD>
+                    <TD numeric>{minutes(e.minutes)}</TD>
+                    <TD className="text-muted-foreground">{e.note ?? "—"}</TD>
+                  </TR>
+                ))}
+              </TBody>
+            </Table>
+          </Card>
+        </>
+      )}
+    </div>
   );
 }
 

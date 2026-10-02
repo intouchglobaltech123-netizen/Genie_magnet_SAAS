@@ -36,6 +36,7 @@ import {
 } from "@gm/shared";
 import { Can, Staff } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
+import { CalendarService } from "./calendar.service.js";
 import { ContentService } from "./content.service.js";
 import { CyclesService } from "./cycles.service.js";
 import { ProductionSettingsService } from "./production-settings.service.js";
@@ -526,6 +527,51 @@ export class ShootsController {
   @HttpCode(200)
   resolve(@Param("id", ParseUUIDPipe) id: string, @Param("incidentId", ParseUUIDPipe) incidentId: string) {
     return this.shoots.resolveIncident(id, incidentId);
+  }
+
+  @Post(":id/time")
+  @Can("production", "edit")
+  @ApiBody({ schema: schema(timeLogInput) })
+  logTime(@Param("id", ParseUUIDPipe) id: string, @Body(body(timeLogInput)) b: z.output<typeof timeLogInput>) {
+    return this.shoots.logTime(id, b);
+  }
+
+  @Delete(":id/time/:logId")
+  @Can("production", "edit")
+  removeTime(@Param("id", ParseUUIDPipe) id: string, @Param("logId", ParseUUIDPipe) logId: string) {
+    return this.shoots.removeTime(id, logId);
+  }
+}
+
+const dayParam = z.iso.date("Use a date like 2026-10-01");
+
+/** Shoots, videos due and to publish, posts and agreements ending, by day — what the person may see. */
+@ApiTags("production")
+@Controller("calendar")
+export class CalendarController {
+  constructor(private readonly calendar: CalendarService) {}
+
+  @Get()
+  @Staff()
+  @ApiQuery({ name: "from" })
+  @ApiQuery({ name: "to" })
+  events(@Query("from", new ZodPipe(dayParam)) from: string, @Query("to", new ZodPipe(dayParam)) to: string) {
+    return this.calendar.events(from, to);
+  }
+}
+
+/** Time logged on videos and shoots (own roles see only their own). */
+@ApiTags("production")
+@Controller("time")
+export class TimeController {
+  constructor(private readonly calendar: CalendarService) {}
+
+  @Get()
+  @Can("production", "view")
+  @ApiQuery({ name: "from" })
+  @ApiQuery({ name: "to" })
+  list(@Query("from", new ZodPipe(dayParam)) from: string, @Query("to", new ZodPipe(dayParam)) to: string) {
+    return this.calendar.time(from, to);
   }
 }
 

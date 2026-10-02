@@ -18,6 +18,7 @@ import {
   type ContentItem,
   type ContentUpdate,
   type CycleRow,
+  type CalendarEvent,
   type JobOverview,
   type JobRow,
   type PlatformConnectionRow,
@@ -82,6 +83,7 @@ import {
   type Role,
   type Team,
   type TestPerson,
+  type TimeEntryRow,
 } from "@gm/shared";
 import { api, ApiError } from "./api";
 
@@ -725,9 +727,18 @@ function useRefreshProduction() {
   const qc = useQueryClient();
   return () =>
     Promise.all(
-      [keys.videos, keys.content, keys.topicLists, keys.shoots, keys.publishing, keys.cycles, keys.changeRequests, keys.notifications].map((queryKey) =>
-        qc.invalidateQueries({ queryKey }),
-      ),
+      [
+        keys.videos,
+        keys.content,
+        keys.topicLists,
+        keys.shoots,
+        keys.publishing,
+        keys.cycles,
+        keys.changeRequests,
+        keys.notifications,
+        ["calendar"],
+        ["time"],
+      ].map((queryKey) => qc.invalidateQueries({ queryKey })),
     );
 }
 
@@ -873,8 +884,8 @@ export function useShootAction(id: string) {
   const qc = useQueryClient();
   const refresh = useRefreshProduction();
   return useMutation({
-    mutationFn: (v: { path: string; method?: "POST" | "PUT" | "PATCH"; body?: unknown }) =>
-      api<ShootDetail>(`/shoots/${id}${v.path}`, { method: v.method ?? "POST", body: v.body ?? {} }),
+    mutationFn: (v: { path: string; method?: "POST" | "PUT" | "PATCH" | "DELETE"; body?: unknown }) =>
+      api<ShootDetail>(`/shoots/${id}${v.path}`, { method: v.method ?? "POST", body: v.method === "DELETE" ? undefined : (v.body ?? {}) }),
     onSuccess: (data) => {
       qc.setQueryData([...keys.shoots, "one", id], data);
       return refresh();
@@ -959,3 +970,11 @@ export function useRetryJob() {
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.jobs }),
   });
 }
+
+// ─── Calendar and time ────────────────────────────────────────────────
+
+export const useCalendar = (from: string, to: string) =>
+  useQuery({ queryKey: ["calendar", from, to], queryFn: () => api<CalendarEvent[]>(`/calendar?from=${from}&to=${to}`) });
+
+export const useTimeEntries = (from: string, to: string, enabled = true) =>
+  useQuery({ queryKey: ["time", from, to], queryFn: () => api<TimeEntryRow[]>(`/time?from=${from}&to=${to}`), enabled });

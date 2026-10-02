@@ -51,7 +51,7 @@ Stories are refined into full acceptance criteria near the end of Phase 1. Check
 
 **P2-12 · Publishing** — **Done** (by hand). Platforms per client on the client page; posts scheduled per platform with a caption; marked published with the post's link, the time and a screenshot, confirming the approved file was posted unchanged; the video is Published once all its posts are; the month's quota per client. Posting directly comes with the platform connections.
 
-**P2-13 · Time and calendar** — **Partly done:** time logged against videos, with planned editing time per format. Time against shoots and a calendar view are still to do.
+**P2-13 · Time and calendar** — **Done.** Time logged on videos (against the planned editing time per format) and on shoots, each person removing their own (whoever approves production, any); Production → Time shows the week's entries with each person's total. The Calendar shows shoots, videos due (late ones marked) and to publish, scheduled and published posts in India time, and agreements ending, by month, filtered by client; roles limited to their own work see only theirs. `/calendar`, `/time`, `/shoots/:id/time`.
 
 **P2-14 · Notifications** — **Done:** video assigned, ready for the quality check, check failed, revision asked, script to approve and decided; each morning, videos due tomorrow and videos that became late, and on the 1st, last month to close.
 

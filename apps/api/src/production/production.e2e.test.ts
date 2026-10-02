@@ -333,3 +333,49 @@ describe("monthly cycles", () => {
     expect(now).toMatchObject({ promised: 8, carriedIn: 4 });
   });
 });
+
+describe("time and the calendar", () => {
+  const end = (() => {
+    const d = new Date();
+    d.setUTCMonth(d.getUTCMonth() + 1, 0);
+    return iso(d);
+  })();
+  type Shoot = { id: string; minutes: number; timeLogs: { id: string; minutes: number; by: { name: string | null } }[] };
+  type Entry = { minutes: number; by: { name: string | null }; on: { kind: string; label: string } };
+  type Event = { kind: string; date: string; title: string; state: string; link: string };
+
+  it("keeps the time spent on a shoot; each person removes their own, whoever approves production any", async () => {
+    const [shoot] = (await ashwin.get(`/shoots?clientId=${clientId}`).expect(200)).body as { id: string }[];
+    await divya.post(`/shoots/${shoot!.id}/time`).send({ date: due, minutes: 240, note: "Set-up and shoot" }).expect(201);
+    let s = (await ashwin.post(`/shoots/${shoot!.id}/time`).send({ date: due, minutes: 60 }).expect(201)).body as Shoot;
+    expect(s.minutes).toBe(300);
+    const ashwins = s.timeLogs.find((l) => l.by.name === "Ashwin")!;
+    const divyas = s.timeLogs.find((l) => l.by.name === "Divya Lakshmi")!;
+    await divya.delete(`/shoots/${shoot!.id}/time/${ashwins.id}`).expect(403);
+    await meena.post(`/shoots/${shoot!.id}/time`).send({ date: due, minutes: 30 }).expect(403);
+    s = (await karthik.delete(`/shoots/${shoot!.id}/time/${ashwins.id}`).expect(200)).body as Shoot;
+    expect(s.timeLogs.map((l) => l.id)).toEqual([divyas.id]);
+  });
+
+  it("adds up time on videos and shoots, and roles limited to their own work see only theirs", async () => {
+    const all = (await ashwin.get(`/time?from=${M}-01&to=${end}`).expect(200)).body as Entry[];
+    expect(all.map((e) => `${e.by.name}:${e.on.kind}:${e.minutes}`).sort()).toEqual(["Divya Lakshmi:shoot:240", "Divya Lakshmi:video:360"]);
+    const mine = (await divya.get(`/time?from=${M}-01&to=${end}`).expect(200)).body as Entry[];
+    expect(mine).toHaveLength(2);
+    const other = await t.signInAs("surya@geniemagnet.test");
+    expect((await other.get(`/time?from=${M}-01&to=${end}`).expect(200)).body).toEqual([]);
+    await ashwin.get(`/time?from=${end}&to=${M}-01`).expect(400);
+  });
+
+  it("shows shoots, videos due and posts by day", async () => {
+    const events = (await ashwin.get(`/calendar?from=${M}-01&to=${end}`).expect(200)).body as Event[];
+    expect(events.find((e) => e.kind === "shoot")).toMatchObject({ date: due, title: "Thendral kitchen day" });
+    expect(events.filter((e) => e.kind === "due").some((e) => e.state === "done")).toBe(true);
+    expect(events.some((e) => e.kind === "post" && e.state === "done")).toBe(true);
+    // An editor sees only the videos she works on.
+    const hers = (await divya.get(`/calendar?from=${M}-01&to=${end}`).expect(200)).body as Event[];
+    const ids = new Set(((await divya.get("/videos").expect(200)).body as { id: string }[]).map((v) => `/app/production/${v.id}`));
+    expect(hers.filter((e) => e.kind === "due").every((e) => ids.has(e.link))).toBe(true);
+    await ashwin.get(`/calendar?from=${M}-01&to=2099-01-01`).expect(400);
+  });
+});

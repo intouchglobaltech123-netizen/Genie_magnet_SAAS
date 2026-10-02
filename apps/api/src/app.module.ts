@@ -16,8 +16,10 @@ import { FilesService } from "./files/files.service.js";
 import { NotificationsController } from "./notifications/notifications.controller.js";
 import { NotificationsService } from "./notifications/notifications.service.js";
 import { ContentService } from "./production/content.service.js";
+import { CalendarService } from "./production/calendar.service.js";
 import { CyclesService } from "./production/cycles.service.js";
 import {
+  CalendarController,
   ChangeRequestsController,
   ClientContentController,
   ContentController,
@@ -25,6 +27,7 @@ import {
   ProductionSettingsController,
   PublishingController,
   ShootsController,
+  TimeController,
   TopicListsController,
   VideosController,
 } from "./production/production.controller.js";
@@ -93,6 +96,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     ChangeRequestsController,
     ShootsController,
     PublishingController,
+    CalendarController,
+    TimeController,
     PipelineController,
     LeadsController,
     ProposalsController,
@@ -138,6 +143,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     ContentService,
     ShootsService,
     PublishingService,
+    CalendarService,
     PipelineService,
     LeadsService,
     ProposalsService,

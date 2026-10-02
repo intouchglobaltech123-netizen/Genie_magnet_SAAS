@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Building2,
+  CalendarDays,
   Camera,
   Check,
   Clapperboard,
@@ -81,6 +82,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Content", href: "/app/content", icon: Lightbulb, area: "content" },
       { title: "Production", href: "/app/production", icon: Clapperboard, area: "production" },
       { title: "Shoots", href: "/app/shoots", icon: Camera, area: "production" },
+      { title: "Calendar", href: "/app/calendar", icon: CalendarDays, area: "production" },
       { title: "Publishing", href: "/app/publishing", icon: Megaphone, area: "publishing" },
       { title: "Monthly delivery", href: "/app/cycles", icon: Repeat, area: "production" },
       { title: "Agreements", href: "/app/agreements", icon: FileSignature, area: "agreements" },

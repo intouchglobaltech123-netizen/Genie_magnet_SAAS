@@ -1,6 +1,6 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import type { Prisma } from "@gm/db";
-import type { ShootInput, ShootStatus } from "@gm/shared";
+import { allows, type ShootInput, type ShootStatus } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
 import { lockRow } from "../common/lock-row.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
@@ -80,7 +80,7 @@ export class ShootsService {
   /** The shoot sheet. */
   async get(id: string) {
     const s = await this.find(id);
-    const [settings, videos, incidents] = await Promise.all([
+    const [settings, videos, incidents, logs] = await Promise.all([
       this.settings.get(),
       this.tenant.db.video.findMany({
         where: { shootId: id },
@@ -88,6 +88,7 @@ export class ShootsService {
         select: { id: true, code: true, title: true, urgency: true, clipNo: true, protectedAt: true, editorId: true, stage: true },
       }),
       this.tenant.db.shootIncident.findMany({ where: { shootId: id }, orderBy: { createdAt: "desc" } }),
+      this.tenant.db.shootTimeLog.findMany({ where: { shootId: id }, orderBy: [{ date: "desc" }, { createdAt: "desc" }] }),
     ]);
     const sig = s.signatures as Signatures;
     const names = await this.names([
@@ -96,6 +97,7 @@ export class ShootsService {
       ...videos.map((v) => v.editorId),
       ...incidents.map((i) => i.createdBy),
       ...Object.values(sig).map((x) => x.by),
+      ...logs.map((l) => l.userId),
     ]);
     const who = (pid: string | null) => (pid ? { id: pid, name: names.get(pid) ?? null } : null);
     const kit = settings.kits.find((k) => k.key === s.kit);
@@ -127,7 +129,30 @@ export class ShootsService {
         stage: v.stage,
       })),
       incidents: incidents.map((i) => ({ id: i.id, items: i.items, note: i.note, resolved: !!i.resolvedAt, by: who(i.createdBy), createdAt: i.createdAt })),
+      timeLogs: logs.map((l) => ({ id: l.id, date: day(l.date), minutes: l.minutes, note: l.note, by: who(l.userId) })),
+      minutes: logs.reduce((n, l) => n + l.minutes, 0),
     };
+  }
+
+  /** Time spent on the shoot by the person logging it (P2-13). */
+  async logTime(id: string, input: { date: string; minutes: number; note?: string }) {
+    await this.find(id);
+    const userId = this.tenant.userId;
+    if (!userId) throw new ForbiddenException("Sign in to log time.");
+    await this.tenant.db.shootTimeLog.create({
+      data: { agencyId: this.tenant.agencyId, shootId: id, userId, date: utc(input.date), minutes: input.minutes, note: input.note },
+    });
+    return this.get(id);
+  }
+
+  async removeTime(id: string, logId: string) {
+    await this.find(id);
+    const log = await this.tenant.db.shootTimeLog.findFirst({ where: { id: logId, shootId: id } });
+    if (!log) throw new NotFoundException("No time entry with that id.");
+    if (log.userId !== this.tenant.userId && !allows(this.tenant.permissions, "production", "approve"))
+      throw new ForbiddenException("You can remove your own time entries.");
+    await this.tenant.db.shootTimeLog.delete({ where: { id: logId } });
+    return this.get(id);
   }
 
   private async attach(tx: Prisma.TransactionClient, shootId: string, clientId: string, videoIds: string[]) {
