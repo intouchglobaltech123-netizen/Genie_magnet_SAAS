@@ -6,6 +6,7 @@ import { Can, Staff } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { AgencyService } from "./agency.service.js";
 import { PackagesService } from "./packages.service.js";
+import { SampleService } from "./sample.service.js";
 import { SetupService } from "./setup.service.js";
 
 const schema = (s: z.ZodType) => z.toJSONSchema(s, { io: "input" }) as Record<string, unknown>;
@@ -19,6 +20,7 @@ export class AgencyController {
   constructor(
     private readonly agency: AgencyService,
     private readonly setup: SetupService,
+    private readonly sample: SampleService,
   ) {}
 
   @Get()
@@ -32,6 +34,26 @@ export class AgencyController {
   @Staff()
   setupStatus() {
     return this.setup.status();
+  }
+
+  /** The set-up wizard (P6-06): the agency questionnaire's essentials and what they set up. */
+  @Get("setup/wizard")
+  @Staff()
+  setupWizard() {
+    return this.setup.wizard();
+  }
+
+  /** Sample data to try things with (P6-06), and removing it with whatever was made for it since. */
+  @Post("setup/sample")
+  @Can("settings", "edit")
+  addSample() {
+    return this.sample.add();
+  }
+
+  @Delete("setup/sample")
+  @Can("settings", "edit")
+  removeSample() {
+    return this.sample.remove();
   }
 
   @Put("setup")

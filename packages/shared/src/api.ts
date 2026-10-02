@@ -761,7 +761,9 @@ export type SetupStep =
   | "onboarding_questions"
   | "production"
   | "platforms"
-  | "videos";
+  | "videos"
+  | "whatsapp"
+  | "portal";
 
 export interface SetupStatus {
   /** Hidden for the whole agency by someone who may change settings. */

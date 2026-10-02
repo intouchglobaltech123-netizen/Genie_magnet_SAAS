@@ -117,6 +117,9 @@ import {
   type PlatformInvoiceRow,
   type SupportGrantInput,
   type DataExportRow,
+  type SampleData,
+  type SampleRemoved,
+  type SetupWizard,
   type SupportGrantRow,
   type PlatformAgencyRow,
   type PlatformSettings,
@@ -1937,6 +1940,20 @@ export const useTimeEntries = (from: string, to: string, enabled = true) =>
 // ─── Set-up guide ─────────────────────────────────────────────────────
 
 export const useSetup = () => useQuery({ queryKey: ["setup"], queryFn: () => api<SetupStatus>("/agency/setup"), staleTime: 30_000 });
+
+/** The set-up wizard (P6-06). */
+export const useSetupWizard = () => useQuery({ queryKey: ["setup", "wizard"], queryFn: () => api<SetupWizard>("/agency/setup/wizard") });
+
+/** Sample data to try things with: added, or removed with whatever was made for it since. */
+export function useSampleAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { step: "add" } | { step: "remove" }): Promise<SampleData | SampleRemoved> =>
+      v.step === "add" ? api<SampleData>("/agency/setup/sample", { method: "POST" }) : api<SampleRemoved>("/agency/setup/sample", { method: "DELETE" }),
+    // Clients, leads, videos and the set-up guide all change.
+    onSuccess: () => qc.invalidateQueries(),
+  });
+}
 
 export function useHideSetup() {
   const qc = useQueryClient();

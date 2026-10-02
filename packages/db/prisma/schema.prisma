@@ -2873,3 +2873,17 @@ model WorkspaceDeletion {
 
   @@map("workspace_deletions")
 }
+
+/// Sample data an agency added to try things with (P6-06): the records made, so they can all be removed in one go.
+model SampleData {
+  agencyId  String    @id @map("agency_id") @db.Uuid
+  clientIds String[]  @map("client_ids")
+  leadIds   String[]  @map("lead_ids")
+  videoIds  String[]  @map("video_ids")
+  addedBy   String?   @map("added_by")
+  addedAt   DateTime  @default(now()) @map("added_at")
+  removedAt DateTime? @map("removed_at")
+  removedBy String?   @map("removed_by")
+
+  @@map("sample_data")
+}

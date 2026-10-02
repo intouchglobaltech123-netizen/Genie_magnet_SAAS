@@ -19,7 +19,6 @@ import {
   Users,
 } from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, SectionCard } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -146,6 +145,23 @@ const GROUPS: { title: string; steps: Step[] }[] = [
       },
     ],
   },
+  {
+    title: "Reaching clients",
+    steps: [
+      {
+        key: "whatsapp",
+        title: "WhatsApp Business",
+        why: "Connect your own WhatsApp number so approvals, reminders and confirmations reach clients there.",
+        href: "/app/settings/whatsapp",
+      },
+      {
+        key: "portal",
+        title: "Client portal",
+        why: "Give each client contact their private link: they see their videos, approve them and pick topics, with your branding.",
+        href: "/app/clients",
+      },
+    ],
+  },
 ];
 const ALL_STEPS = GROUPS.flatMap((g) => g.steps);
 
@@ -161,11 +177,17 @@ function SetupChecklist() {
       description={`${done} of ${ALL_STEPS.length} done. Each step opens the right screen and ticks itself once it is done.`}
       actions={
         can("settings", "edit") &&
-        done === ALL_STEPS.length && (
+        (done === ALL_STEPS.length ? (
           <Button variant="ghost" size="sm" disabled={hide.isPending} onClick={() => hide.mutate(true)}>
             Hide
           </Button>
-        )
+        ) : (
+          <Button variant="secondary" size="sm" asChild>
+            <Link href="/app/setup">
+              Set-up wizard <ArrowRight />
+            </Link>
+          </Button>
+        ))
       }
     >
       <Progress value={(done / ALL_STEPS.length) * 100} tone="success" className="mb-4" />
@@ -197,23 +219,6 @@ function SetupChecklist() {
             </ol>
           </div>
         ))}
-        <div>
-          <h3 className="mb-2 text-body font-semibold text-muted-foreground">Coming next</h3>
-          <ul className="space-y-2">
-            {[
-              ["WhatsApp Business", "Connect your WhatsApp number so approvals, reminders and confirmations reach clients there."],
-              ["Client portal", "Your clients see their videos, approve them and pick topics in a portal with your branding."],
-            ].map(([title, why]) => (
-              <li key={title} className="flex items-start gap-3 rounded-lg border border-dashed border-border p-3 opacity-70">
-                <Circle className="mt-0.5 size-5 shrink-0 text-text-muted" />
-                <span className="min-w-0 flex-1">
-                  <span className="text-body font-medium">{title}</span> <Badge tone="neutral">Coming next</Badge>
-                  <span className="mt-0.5 block text-body text-muted-foreground">{why}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
       </div>
     </SectionCard>
   );

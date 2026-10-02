@@ -236,7 +236,7 @@ export function NewAgencyPage() {
             className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
-              createAgency.mutate({ name, slug: slugFor(name) }, { onSuccess: () => router.replace("/app") });
+              createAgency.mutate({ name, slug: slugFor(name) }, { onSuccess: () => router.replace("/app/setup") });
             }}
           >
             <Field label="Agency name" required>

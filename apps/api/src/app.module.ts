@@ -129,6 +129,7 @@ import { ContactWhatsAppController, WhatsAppController, WhatsAppWebhookControlle
 import { WhatsAppService } from "./whatsapp/whatsapp.service.js";
 import { AgencyService } from "./settings/agency.service.js";
 import { PackagesService } from "./settings/packages.service.js";
+import { SampleService } from "./settings/sample.service.js";
 import { SetupService } from "./settings/setup.service.js";
 import { AgencyController, PackagesController } from "./settings/settings.controller.js";
 import { RolesService } from "./team/roles.service.js";
@@ -263,6 +264,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     AgencyService,
     PackagesService,
     SetupService,
+    SampleService,
     ClientsService,
     AgreementsService,
     InvoicesService,
