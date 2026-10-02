@@ -59,4 +59,25 @@ describe("loadEnv", () => {
       }),
     ).toThrow(/REQUIRE_EMAIL_VERIFICATION must be on in production/);
   });
+
+  it("listens on the host's PORT when API_PORT is not set", () => {
+    expect(loadEnv({ DATABASE_URL: "postgresql://x", PORT: "8080" }).API_PORT).toBe(8080);
+    expect(loadEnv({ DATABASE_URL: "postgresql://x", PORT: "8080", API_PORT: "4001" }).API_PORT).toBe(4001);
+  });
+
+  it("lets a staging server (sample data only) keep test sign-in on, and never a server marked as production", () => {
+    const server = {
+      NODE_ENV: "production",
+      DATABASE_URL: "postgresql://x",
+      AUTH_DATABASE_URL: "postgresql://y",
+      BETTER_AUTH_SECRET: "x".repeat(32),
+      AUTH_MODE: "better-auth",
+      TEST_SIGN_IN: "true",
+    };
+    expect(loadEnv({ ...server, APP_ENV: "staging" })).toMatchObject({ TEST_SIGN_IN: true, REQUIRE_EMAIL_VERIFICATION: false });
+    expect(() => loadEnv({ ...server, APP_ENV: "production" })).toThrow(/TEST_SIGN_IN is not allowed in production/);
+    expect(() => loadEnv({ DATABASE_URL: "postgresql://x", APP_ENV: "production", TEST_SIGN_IN: "true" })).toThrow(/TEST_SIGN_IN/);
+    // Staging still runs like production: no development agency header.
+    expect(() => loadEnv({ ...server, APP_ENV: "staging", AUTH_MODE: "dev-header" })).toThrow(/dev-header/);
+  });
 });

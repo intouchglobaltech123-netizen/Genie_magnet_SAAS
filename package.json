@@ -23,6 +23,7 @@
     "db:migrate": "npm run migrate:dev -w @gm/db",
     "db:diff": "npm run migrate:diff -w @gm/db",
     "db:seed": "npm run build:services && npm run seed -w @gm/db",
+    "db:setup": "node scripts/db-setup.mjs",
     "infra:up": "docker compose -f infra/docker-compose.yml up -d",
     "infra:down": "docker compose -f infra/docker-compose.yml down"
   },

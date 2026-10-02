@@ -47,6 +47,8 @@ The web app sends `/api/*` to the API (`apps/web/next.config.ts`), so the browse
 | `npm run db:migrate` | New migration from schema changes (development, needs a database)        |
 | `npm run db:diff`    | Print the SQL for schema changes using a temporary database (no Docker)  |
 | `npm run db:seed`    | Sample data (safe to run again; never in production)                     |
+| `npm run db:setup`   | A server's database before each deploy: roles, migrations, staging data  |
+| `npm run dev:worker` | Background jobs on their own (when the API runs with `RUN_JOBS` off)     |
 | `npm run build`      | Web production build (what the hosted demo runs)                         |
 
 The cross-tenant tests need PostgreSQL. With Docker they can use the compose database; **without Docker they start an embedded PostgreSQL automatically** (first run downloads nothing — the binary comes with `npm install`). In CI they use a Postgres service container, one fresh database per suite.

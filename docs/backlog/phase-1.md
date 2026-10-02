@@ -174,7 +174,7 @@ As the account manager, I want the client profile and a draft Business Canvas bu
 
 ## Operations
 
-**P1-28 · Staging (M)** — deploy from `main` automatically with migrations; error tracking; uptime check; nightly backups; staging uses sample or consented data only.
+**P1-28 · Staging (M)** — **Ready to switch on**, waiting for our Railway account: [STAGING.md](../STAGING.md) has the three services (PostgreSQL, the API with its jobs and a files volume, the web app), every setting, and the clicks. Each deploy from `main` runs `npm run db:setup` first (the app's database roles, migrations, sample agencies); `APP_ENV=staging` lets a sample-data server keep test sign-in while a production server refuses it; health check `/health`, daily database backups in Railway, JSON logs. Staging uses sample data only.
 
 **P1-29 · Genie Magnet sets up its own workspace (S)** — like any new agency, using the in-app guide (P1-32): agency questionnaire, packages, team, roles and permissions, question changes, invoice settings, and their clients and leads imported by themselves (P1-31). We watch where they get stuck and improve the guide and the settings.
 

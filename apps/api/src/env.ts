@@ -1,8 +1,17 @@
 import { z } from "zod";
 
+/** A server with real data: production, unless it is marked as a staging server (sample data only). */
+const realData = (e: { NODE_ENV: string; APP_ENV?: string }) => (e.APP_ENV ?? e.NODE_ENV) === "production";
+
 export const envSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    /**
+     * What the server holds. "staging": a shared test server with sample data only — it runs like production but may
+     * keep test sign-in on and email confirmation off. "production": real data — neither is allowed. Leave it out to
+     * follow NODE_ENV.
+     */
+    APP_ENV: z.enum(["staging", "production"]).optional(),
     API_PORT: z.coerce.number().int().min(1).max(65535).default(4000),
     /** Must be the genie_app role — row-level security has to apply to every API query. */
     DATABASE_URL: z.string().startsWith("postgres"),
@@ -57,11 +66,11 @@ export const envSchema = z
     message: "AUTH_MODE=dev-header is not allowed in production",
     path: ["AUTH_MODE"],
   })
-  .refine((e) => !(e.NODE_ENV === "production" && e.TEST_SIGN_IN), {
+  .refine((e) => !(realData(e) && e.TEST_SIGN_IN), {
     message: "TEST_SIGN_IN is not allowed in production",
     path: ["TEST_SIGN_IN"],
   })
-  .refine((e) => !(e.NODE_ENV === "production" && e.AUTH_MODE === "better-auth" && !e.REQUIRE_EMAIL_VERIFICATION), {
+  .refine((e) => !(realData(e) && e.AUTH_MODE === "better-auth" && !e.REQUIRE_EMAIL_VERIFICATION), {
     message: "REQUIRE_EMAIL_VERIFICATION must be on in production",
     path: ["REQUIRE_EMAIL_VERIFICATION"],
   })
@@ -79,7 +88,8 @@ export type Env = z.infer<typeof envSchema>;
 export const ENV = Symbol("ENV");
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  const r = envSchema.safeParse(source);
+  // Hosts such as Railway give the port in PORT.
+  const r = envSchema.safeParse({ ...source, API_PORT: source.API_PORT ?? source.PORT });
   if (!r.success) {
     const lines = r.error.issues.map((i) => `  • ${i.path.join(".") || "env"}: ${i.message}`);
     throw new Error(`Invalid environment:\n${lines.join("\n")}`);
