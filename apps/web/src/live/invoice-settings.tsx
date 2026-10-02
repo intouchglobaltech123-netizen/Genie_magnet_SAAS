@@ -20,6 +20,7 @@ import { SectionCard } from "@/components/ui/card";
 import { Alert, SkeletonRows } from "@/components/ui/feedback";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { ApiError, errorMessage } from "./api";
 import { useAgency, useCan, useInvoiceSettings, useSaveInvoiceSettings } from "./queries";
 
@@ -39,6 +40,7 @@ type Form = {
   ifsc: string;
   upiId: string;
   footer: string;
+  autoDraft: boolean;
 };
 
 /** "Genie Magnet" → "GM/{FY}/{0000}" */
@@ -68,6 +70,7 @@ const toForm = (s: InvoiceSettings | null, agency: AgencyProfile): Form => ({
   ifsc: s?.ifsc ?? "",
   upiId: s?.upiId ?? "",
   footer: s?.footer ?? "",
+  autoDraft: s?.autoDraft ?? true,
 });
 
 function SettingsForm({ settings, agency, canEdit }: { settings: InvoiceSettings | null; agency: AgencyProfile; canEdit: boolean }) {
@@ -98,6 +101,7 @@ function SettingsForm({ settings, agency, canEdit }: { settings: InvoiceSettings
       ifsc: f.ifsc,
       upiId: f.upiId,
       footer: f.footer,
+      autoDraft: f.autoDraft,
     });
     if (!parsed.success) return setErrors(Object.fromEntries(parsed.error.issues.map((i) => [i.path.join("."), i.message])));
     setErrors({});
@@ -206,6 +210,16 @@ function SettingsForm({ settings, agency, canEdit }: { settings: InvoiceSettings
               <Input type="number" min={0} max={120} value={f.paymentTermsDays} onChange={set("paymentTermsDays")} />
             </Field>
           </div>
+          <label className="mt-4 flex items-start gap-3 text-body">
+            <Switch checked={f.autoDraft} onCheckedChange={(autoDraft) => setF({ ...f, autoDraft })} aria-label="Draft invoices by themselves" />
+            <span>
+              <span className="font-medium">Draft each agreement&rsquo;s invoice by itself</span>
+              <span className="block text-muted-foreground">
+                On its billing day — monthly or quarterly in advance, monthly in arrears. Drafts wait for you to check and issue them; other terms are invoiced
+                by hand.
+              </span>
+            </span>
+          </label>
         </SectionCard>
 
         <SectionCard title="Bank details" description="Printed on invoices so clients know where to pay. All optional.">

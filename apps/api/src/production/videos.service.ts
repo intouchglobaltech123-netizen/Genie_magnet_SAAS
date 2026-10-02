@@ -20,6 +20,7 @@ import { AuditService, changes } from "../audit/audit.service.js";
 import { lockRow } from "../common/lock-row.js";
 import { FilesService } from "../files/files.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
+import { PeriodLock } from "../finance/period-lock.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { ClientMessages } from "../whatsapp/client-messages.service.js";
 import { CyclesService } from "./cycles.service.js";
@@ -63,6 +64,7 @@ export class VideosService {
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
     private readonly settings: ProductionSettingsService,
+    private readonly lock: PeriodLock,
     private readonly cycles: CyclesService,
     private readonly files: FilesService,
     private readonly messages: ClientMessages,
@@ -520,6 +522,7 @@ export class VideosService {
 
   async logTime(id: string, input: { date: string; minutes: number; note?: string }) {
     await this.find(id);
+    await this.lock.assertOpen(input.date);
     const userId = this.tenant.userId;
     if (!userId) throw new ForbiddenException("Sign in to log time.");
     await this.tenant.db.videoTimeLog.create({
@@ -532,6 +535,7 @@ export class VideosService {
     await this.find(id);
     const log = await this.tenant.db.videoTimeLog.findFirst({ where: { id: logId, videoId: id } });
     if (!log) throw new NotFoundException("No time entry with that id.");
+    await this.lock.assertOpen(log.date);
     if (log.userId !== this.tenant.userId && !allows(this.tenant.permissions, "production", "approve"))
       throw new ForbiddenException("You can remove your own time entries.");
     await this.tenant.db.videoTimeLog.delete({ where: { id: logId } });

@@ -92,6 +92,8 @@ import {
   type CostRateRow,
   type CostSettings,
   type CostSettingsInput,
+  type AgeingReport,
+  type FinanceMonthRow,
   type ExpenseInput,
   type ExpenseRow,
   type VideoCostRow,
@@ -1159,6 +1161,21 @@ export function useExpenseAction() {
     },
   });
 }
+
+export const useFinanceMonths = () => useQuery({ queryKey: ["finance", "months"], queryFn: () => api<FinanceMonthRow[]>("/finance/months") });
+
+export function useFinanceMonthAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { step: "close"; month: string } | { step: "reopen"; month: string; reason: string }) =>
+      v.step === "close"
+        ? api<FinanceMonthRow>(`/finance/months/${v.month}/close`, { body: {} })
+        : api<FinanceMonthRow>(`/finance/months/${v.month}/reopen`, { body: { reason: v.reason } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["finance"] }),
+  });
+}
+
+export const useAgeing = () => useQuery({ queryKey: ["finance", "ageing"], queryFn: () => api<AgeingReport>("/collections/ageing") });
 
 export const useVendors = () => useQuery({ queryKey: ["vendors"], queryFn: () => api<{ id: string; name: string; category: string | null }[]>("/vendors") });
 

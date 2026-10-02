@@ -4,6 +4,7 @@ import { allows, type ExpenseCategory, type ExpenseInput, type ExpenseRow, type 
 import { AuditService } from "../audit/audit.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
+import { PeriodLock } from "./period-lock.js";
 
 const day = (d: Date) => d.toISOString().slice(0, 10);
 const utc = (d: string) => new Date(`${d}T00:00:00Z`);
@@ -22,6 +23,7 @@ export class ExpensesService {
     private readonly tenant: TenantDb,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly lock: PeriodLock,
   ) {}
 
   private all() {
@@ -109,6 +111,7 @@ export class ExpensesService {
 
   async create(raw: ExpenseInput) {
     const input = expenseInput.parse(raw);
+    await this.lock.assertOpen(input.date);
     const links = await this.resolve(input);
     const id = await this.tenant.tx(async (tx) => {
       const e = await tx.expense.create({
@@ -151,6 +154,8 @@ export class ExpensesService {
     const e = await this.find(id);
     this.mayChange(e);
     const input = expenseInput.parse(raw);
+    await this.lock.assertOpen(e.date);
+    await this.lock.assertOpen(input.date);
     const links = await this.resolve(input);
     await this.tenant.tx(async (tx) => {
       await tx.expense.update({
@@ -179,6 +184,7 @@ export class ExpensesService {
   async remove(id: string) {
     const e = await this.find(id);
     this.mayChange(e);
+    await this.lock.assertOpen(e.date);
     await this.tenant.tx(async (tx) => {
       await tx.expense.delete({ where: { id } });
       await this.audit.record(tx, {
@@ -193,6 +199,7 @@ export class ExpensesService {
   async decide(id: string, d: { approved: boolean; note?: string }) {
     const e = await this.find(id);
     if (e.status !== "submitted") throw new ConflictException("Only an expense that waits is approved or rejected.");
+    await this.lock.assertOpen(e.date);
     await this.tenant.tx(async (tx) => {
       await tx.expense.update({
         where: { id },

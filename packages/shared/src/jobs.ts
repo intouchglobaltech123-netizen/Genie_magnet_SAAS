@@ -14,6 +14,7 @@ export const JOB_NAMES = {
   "social.publish": "A post on a connected platform",
   "social.metrics": "Numbers for posts on connected platforms",
   "genie.rules": "Genie Assistant's morning look at what has slipped",
+  "invoices.schedule": "Invoices drafted on each agreement's billing day",
 } as const;
 export type JobName = keyof typeof JOB_NAMES;
 
@@ -28,6 +29,7 @@ export const DAILY_JOBS: JobName[] = [
   "reports.draft",
   "social.metrics",
   "genie.rules",
+  "invoices.schedule",
 ];
 
 export const JOB_STATUSES = ["queued", "running", "done", "failed"] as const;

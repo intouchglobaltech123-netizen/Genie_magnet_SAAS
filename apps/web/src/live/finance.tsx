@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, Check, Plus, Receipt, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import {
+  type AgeingReport,
   type ClientCostRow,
   type CostRateRow,
   EXPENSE_CATEGORIES,
@@ -29,6 +30,7 @@ import { ApiError, errorMessage } from "./api";
 import { FilesCard } from "./files";
 import { MonthSwitcher, thisMonth } from "./production-bits";
 import {
+  useAgeing,
   useCan,
   useClientCosts,
   useClients,
@@ -37,6 +39,8 @@ import {
   useCostSettings,
   useExpenseAction,
   useExpenses,
+  useFinanceMonthAction,
+  useFinanceMonths,
   useMe,
   useSaveCostRate,
   useSaveCostSettings,
@@ -646,6 +650,204 @@ export function LiveCostingSettings() {
         {can("finance", "view") && <KitsAndOverheads canEdit={can("finance", "edit")} />}
         {can("salaries", "view") && <PeopleRates canEdit={can("salaries", "edit")} />}
       </div>
+    </>
+  );
+}
+
+// ─── Finance: the month's money and who owes what (P5-04, P5-05) ─────
+
+function ReopenDialog({ month, onClose }: { month: string; onClose: () => void }) {
+  const act = useFinanceMonthAction();
+  const [reason, setReason] = useState("");
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reopen {monthLabel(month)}</DialogTitle>
+          <DialogDescription>Time and expenses dated in it can change again, and its figures are worked out afresh until it is closed again.</DialogDescription>
+        </DialogHeader>
+        <DialogBody>
+          <Field label="Why">
+            <Input value={reason} onChange={(e) => setReason(e.target.value)} />
+          </Field>
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            disabled={act.isPending || reason.trim().length < 3}
+            onClick={() =>
+              act.mutate(
+                { step: "reopen", month, reason },
+                { onSuccess: () => (toast.success("Reopened"), onClose()), onError: (e) => toast.error(errorMessage(e)) },
+              )
+            }
+          >
+            Reopen
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const monthLabel = (m: string) => new Date(`${m}-01T00:00:00Z`).toLocaleDateString("en-IN", { month: "long", year: "numeric", timeZone: "UTC" });
+
+function Months() {
+  const can = useCan();
+  const months = useFinanceMonths();
+  const act = useFinanceMonthAction();
+  const [reopening, setReopening] = useState<string | null>(null);
+  const current = thisMonth();
+  if (months.isPending) return <SkeletonRows rows={6} />;
+  if (months.error) return <Alert tone="danger">{errorMessage(months.error)}</Alert>;
+  return (
+    <Card className="overflow-x-auto">
+      <Table>
+        <THead>
+          <TR>
+            <TH>Month</TH>
+            <TH numeric>Contracted</TH>
+            <TH numeric>Invoiced</TH>
+            <TH numeric>Earned</TH>
+            <TH numeric>Collected</TH>
+            <TH numeric>Costs</TH>
+            <TH numeric>Margin</TH>
+            <TH />
+          </TR>
+        </THead>
+        <TBody>
+          {months.data.map((m) => (
+            <TR key={m.month}>
+              <TD className="font-medium">
+                {monthLabel(m.month)}
+                {m.closed && <div className="text-muted-foreground">Closed{m.closedBy ? ` by ${m.closedBy}` : ""}</div>}
+              </TD>
+              <TD numeric>{inr(m.contracted)}</TD>
+              <TD numeric>{inr(m.invoiced)}</TD>
+              <TD numeric>{inr(m.earned)}</TD>
+              <TD numeric>{inr(m.collected)}</TD>
+              <TD numeric>{inr(m.costs)}</TD>
+              <TD numeric>
+                {margin(m.margin)}
+                {m.marginPct !== null && <div className="text-muted-foreground">{m.marginPct}%</div>}
+              </TD>
+              <TD className="text-right">
+                {can("finance", "approve") &&
+                  m.month < current &&
+                  (m.closed ? (
+                    <Button size="xs" variant="ghost" onClick={() => setReopening(m.month)}>
+                      Reopen
+                    </Button>
+                  ) : (
+                    <Button
+                      size="xs"
+                      variant="secondary"
+                      disabled={act.isPending}
+                      onClick={() =>
+                        act.mutate(
+                          { step: "close", month: m.month },
+                          { onSuccess: () => toast.success(`${monthLabel(m.month)} is closed`), onError: (e) => toast.error(errorMessage(e)) },
+                        )
+                      }
+                    >
+                      Close the month
+                    </Button>
+                  ))}
+              </TD>
+            </TR>
+          ))}
+        </TBody>
+      </Table>
+      <p className="border-t border-border-subtle px-4 py-2 text-body text-muted-foreground">
+        Earned is each agreement&rsquo;s fee in proportion to the videos delivered; invoiced is before GST, collected with it. A closed month keeps its figures, and
+        time and expenses dated in it cannot change until it is reopened.
+      </p>
+      {reopening && <ReopenDialog month={reopening} onClose={() => setReopening(null)} />}
+    </Card>
+  );
+}
+
+const BUCKETS = [
+  ["notDue", "Not due"],
+  ["d1to30", "1–30 days"],
+  ["d31to60", "31–60"],
+  ["d61to90", "61–90"],
+  ["over90", "Over 90"],
+] as const;
+
+function Ageing() {
+  const ageing = useAgeing();
+  const me = useMe().data!;
+  const agency = me.agencies.find((a) => a.id === me.activeAgencyId)?.name ?? "us";
+  if (ageing.isPending) return <SkeletonRows rows={5} />;
+  if (ageing.error) return <Alert tone="danger">{errorMessage(ageing.error)}</Alert>;
+  if (!ageing.data.clients.length) return <EmptyState icon={Receipt} title="Nothing is owed" description="Every issued invoice is paid." />;
+  const reminder = (c: AgeingReport["clients"][number], i: AgeingReport["clients"][number]["invoices"][number]) => {
+    const first = c.contact?.name.split(/\s+/)[0] ?? "there";
+    const text = `Hello ${first}, a gentle reminder from ${agency}: invoice ${i.number ?? ""} for ${inr(i.balance)}${i.dueDate ? ` was due on ${fmt(i.dueDate)}` : " is due"}.${i.payUrl ? ` You can pay here: ${i.payUrl}` : ""} Thank you!`;
+    const digits = c.contact?.phone.replace(/\D/g, "") ?? "";
+    return `https://wa.me/${digits.length === 10 ? `91${digits}` : digits}?text=${encodeURIComponent(text)}`;
+  };
+  return (
+    <div className="space-y-4">
+      <Card className="grid grid-cols-2 gap-4 p-4 sm:grid-cols-6">
+        {BUCKETS.map(([k, label]) => (
+          <div key={k}>
+            <div className="text-body text-muted-foreground">{label}</div>
+            <div className={cn("font-semibold tabular-nums", k !== "notDue" && ageing.data.totals[k] > 0 && "text-danger")}>{inr(ageing.data.totals[k])}</div>
+          </div>
+        ))}
+        <div>
+          <div className="text-body text-muted-foreground">Owed in all</div>
+          <div className="font-semibold tabular-nums">{inr(ageing.data.totals.total)}</div>
+        </div>
+      </Card>
+      {ageing.data.clients.map((c) => (
+        <SectionCard key={c.client.id} title={c.client.name} description={`${inr(c.buckets.total)} owed${c.contact ? ` · ${c.contact.name}` : ""}`}>
+          <ul className="divide-y divide-border-subtle">
+            {c.invoices.map((i) => (
+              <li key={i.id} className="flex flex-wrap items-center justify-between gap-2 py-2 text-body">
+                <span>
+                  <Link href={`/app/invoices/${i.id}`} className="font-medium hover:underline">
+                    {i.number ?? "Invoice"}
+                  </Link>{" "}
+                  · {inr(i.balance)} ·{" "}
+                  {i.daysOverdue ? <span className="text-danger">{i.daysOverdue} days late</span> : i.dueDate ? `due ${fmt(i.dueDate)}` : "no due date"}
+                </span>
+                {c.contact && i.daysOverdue > 0 && (
+                  <Button size="xs" variant="secondary" asChild>
+                    <a href={reminder(c, i)} target="_blank" rel="noreferrer">
+                      Remind on WhatsApp
+                    </a>
+                  </Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </SectionCard>
+      ))}
+    </div>
+  );
+}
+
+/** /app/finance: the month's money, closing months, and who owes what. */
+export function LiveFinance() {
+  const [view, setView] = useState<"months" | "owed">("months");
+  return (
+    <>
+      <PageHeader
+        title="Finance"
+        description="Each month's money — contracted, invoiced, earned by delivering, collected and spent — and what clients owe, by how late."
+      />
+      <Tabs value={view} onValueChange={(v) => setView(v as typeof view)} className="mb-4">
+        <TabsList>
+          <TabsTrigger value="months">Months</TabsTrigger>
+          <TabsTrigger value="owed">Who owes what</TabsTrigger>
+        </TabsList>
+      </Tabs>
+      {view === "months" ? <Months /> : <Ageing />}
     </>
   );
 }

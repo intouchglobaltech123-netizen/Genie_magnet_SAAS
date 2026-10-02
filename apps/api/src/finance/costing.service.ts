@@ -275,12 +275,20 @@ export class CostingService {
       .sort((a, b) => a.client.name.localeCompare(b.client.name));
 
     const people = missing.size ? await this.tenant.db.user.findMany({ where: { id: { in: [...missing.keys()] } }, select: { id: true, name: true } }) : [];
+    // Everything the month cost: all time logged in it, the kit of its shoots, its approved expenses and overheads.
+    const monthShoots = await this.tenant.db.shoot.findMany({ where: { date: { gte: start, lt: end } }, select: { kit: true, date: true } });
+    const totalCost =
+      [...monthVideoLogs, ...monthShootLogs].reduce((n, l) => n + cost(l), 0) +
+      monthShoots.reduce((n, s) => n + kitOf(s), 0) +
+      monthExpenses.reduce((n, e) => n + e.amount, 0) +
+      (settingsRow?.monthlyOverhead ?? 0);
     const summary: CostingSummary = {
       month,
       missingRates: people.map((p) => ({ id: p.id, name: p.name, hours: Math.round((missing.get(p.id) ?? 0) * 10) / 10 })),
       overheads: round(overheads),
       overheadPerHour: round(perHour),
       hours: Math.round(hours * 10) / 10,
+      totalCost: round(totalCost),
     };
     return { videos: videoRows.sort((a, b) => a.code.localeCompare(b.code)), clients: clientRows, summary };
   }

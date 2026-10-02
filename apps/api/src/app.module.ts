@@ -70,9 +70,12 @@ import { LiveSocialNetworks, OutboxSocialNetworks, SOCIAL_NETWORKS } from "./soc
 import { ClientSocialController, SocialController, SocialWebhookController } from "./social/social.controller.js";
 import { SocialService } from "./social/social.service.js";
 import { GenieController } from "./genie/genie.controller.js";
+import { CollectionsService } from "./finance/collections.service.js";
+import { FinanceReportService } from "./finance/finance-report.service.js";
+import { PeriodLock } from "./finance/period-lock.js";
 import { CostingService } from "./finance/costing.service.js";
 import { ExpensesService } from "./finance/expenses.service.js";
-import { CostingController, ExpensesController, VendorsController } from "./finance/finance.controller.js";
+import { CollectionsController, CostingController, ExpensesController, FinanceController, VendorsController } from "./finance/finance.controller.js";
 import { GenieService } from "./genie/genie.service.js";
 import { AskService } from "./genie/ask.service.js";
 import { DraftsService } from "./genie/drafts.service.js";
@@ -146,6 +149,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     ExpensesController,
     VendorsController,
     CostingController,
+    CollectionsController,
+    FinanceController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -250,6 +255,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     AskService,
     ExpensesService,
     CostingService,
+    CollectionsService,
+    FinanceReportService,
+    PeriodLock,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

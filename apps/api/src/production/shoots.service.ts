@@ -4,6 +4,7 @@ import { allows, type ShootInput, type ShootStatus } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
 import { lockRow } from "../common/lock-row.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
+import { PeriodLock } from "../finance/period-lock.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { ProductionSettingsService } from "./production-settings.service.js";
 
@@ -25,6 +26,7 @@ export class ShootsService {
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
     private readonly settings: ProductionSettingsService,
+    private readonly lock: PeriodLock,
   ) {}
 
   private async names(ids: (string | null | undefined)[]) {
@@ -137,6 +139,7 @@ export class ShootsService {
   /** Time spent on the shoot by the person logging it (P2-13). */
   async logTime(id: string, input: { date: string; minutes: number; note?: string }) {
     await this.find(id);
+    await this.lock.assertOpen(input.date);
     const userId = this.tenant.userId;
     if (!userId) throw new ForbiddenException("Sign in to log time.");
     await this.tenant.db.shootTimeLog.create({
@@ -149,6 +152,7 @@ export class ShootsService {
     await this.find(id);
     const log = await this.tenant.db.shootTimeLog.findFirst({ where: { id: logId, shootId: id } });
     if (!log) throw new NotFoundException("No time entry with that id.");
+    await this.lock.assertOpen(log.date);
     if (log.userId !== this.tenant.userId && !allows(this.tenant.permissions, "production", "approve"))
       throw new ForbiddenException("You can remove your own time entries.");
     await this.tenant.db.shootTimeLog.delete({ where: { id: logId } });

@@ -1,11 +1,13 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from "@nestjs/common";
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
-import { costRateInput, costSettingsInput, expenseDecision, type ExpenseInput, expenseInput } from "@gm/shared";
+import { costRateInput, costSettingsInput, expenseDecision, type ExpenseInput, expenseInput, reopenInput } from "@gm/shared";
 import { Can, Staff } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
+import { CollectionsService } from "./collections.service.js";
 import { CostingService } from "./costing.service.js";
 import { ExpensesService } from "./expenses.service.js";
+import { FinanceReportService } from "./finance-report.service.js";
 
 const schema = (s: z.ZodType) => z.toJSONSchema(s, { io: "input" }) as Record<string, unknown>;
 const thisMonth = () => new Date().toISOString().slice(0, 7);
@@ -71,6 +73,53 @@ export class VendorsController {
   @Staff()
   list() {
     return this.expenses.vendors();
+  }
+}
+
+/** The month's money (P5-05), and closing a month. */
+@ApiTags("finance")
+@Controller("finance")
+export class FinanceController {
+  constructor(private readonly report: FinanceReportService) {}
+
+  /** `?from=YYYY-MM&to=YYYY-MM` (the last six months when left out). */
+  @Get("months")
+  @Can("finance", "view")
+  @ApiQuery({ name: "from", required: false })
+  @ApiQuery({ name: "to", required: false })
+  months(@Query("from") from?: string, @Query("to") to?: string) {
+    const end = to ?? thisMonth();
+    const d = new Date(`${end}-01T00:00:00Z`);
+    d.setUTCMonth(d.getUTCMonth() - 5);
+    return this.report.report(from ?? d.toISOString().slice(0, 7), end);
+  }
+
+  @Post("months/:month/close")
+  @Can("finance", "approve")
+  @HttpCode(200)
+  close(@Param("month", new ZodPipe(z.string().regex(/^\d{4}-\d{2}$/))) month: string) {
+    return this.report.close(month);
+  }
+
+  @Post("months/:month/reopen")
+  @Can("finance", "approve")
+  @HttpCode(200)
+  @ApiBody({ schema: schema(reopenInput) })
+  reopen(@Param("month", new ZodPipe(z.string().regex(/^\d{4}-\d{2}$/))) month: string, @Body(new ZodPipe(reopenInput)) b: z.output<typeof reopenInput>) {
+    return this.report.reopen(month, b.reason);
+  }
+}
+
+/** Collections (P5-04): what clients owe, by how late. */
+@ApiTags("finance")
+@Controller("collections")
+export class CollectionsController {
+  constructor(private readonly collections: CollectionsService) {}
+
+  @Get("ageing")
+  @Can("invoices", "view")
+  ageing() {
+    return this.collections.ageing();
   }
 }
 

@@ -53,6 +53,7 @@ const settingsTerms = (s: Omit<Settings, "agencyId" | "updatedAt" | "numberSerie
   ifsc: s.ifsc,
   upiId: s.upiId,
   footer: s.footer,
+  autoDraft: s.autoDraft,
 });
 
 /**
@@ -97,6 +98,7 @@ export class InvoicesService {
       ifsc: s.ifsc,
       upiId: s.upiId,
       footer: s.footer,
+      autoDraft: s.autoDraft,
     };
   }
 
@@ -138,7 +140,7 @@ export class InvoicesService {
 
   private seller(s: Settings | null, look: { logo: string | null; brandColor: string | null } | null) {
     if (!s) return null;
-    const { services: _s, numberFormat: _f, nextNumber: _n, nextNumberPreview: _p, paymentTermsDays: _t, ...rest } = this.presentSettings(s);
+    const { services: _s, numberFormat: _f, nextNumber: _n, nextNumberPreview: _p, paymentTermsDays: _t, autoDraft: _a, ...rest } = this.presentSettings(s);
     return { ...rest, logo: look?.logo ?? null, brandColor: look?.brandColor ?? null };
   }
 
@@ -286,8 +288,8 @@ export class InvoicesService {
     return this.get(id);
   }
 
-  /** A draft for one month of an agreement: its fee as one line, with the agency's first service. */
-  async fromAgreement(agreementId: string, period: string) {
+  /** A draft for one month of an agreement (or a quarter from it): its fee as one line, with the agency's first service. */
+  async fromAgreement(agreementId: string, period: string, months = 1) {
     const a = await this.tenant.db.agreement.findFirst({ where: { id: agreementId }, include: { client: { select: { state: true } } } });
     if (!a) throw new NotFoundException("No agreement with that id.");
     if (a.status === "draft") throw new ConflictException("Sign off the agreement before invoicing it.");
@@ -307,10 +309,12 @@ export class InvoicesService {
       );
     const settings = await this.settingsRow();
     const service = (settings?.services as unknown as { sac: string; rate: InvoiceLine["taxRate"] }[] | undefined)?.[0];
+    const lastMonth = new Date(`${period}-01T00:00:00Z`);
+    lastMonth.setUTCMonth(lastMonth.getUTCMonth() + months - 1);
     const line: InvoiceLine = {
-      description: `${a.title} — ${periodLabel(period)}`,
+      description: `${a.title} — ${periodLabel(period)}${months > 1 ? ` to ${periodLabel(lastMonth.toISOString().slice(0, 7))}` : ""}`,
       sac: service?.sac ?? "998361",
-      quantity: 1,
+      quantity: months,
       rate: a.monthlyFee,
       taxRate: service?.rate ?? 18,
     };

@@ -145,6 +145,7 @@ export interface InvoiceSettings {
   ifsc: string | null;
   upiId: string | null;
   footer: string | null;
+  autoDraft: boolean;
 }
 
 export interface BilledTo {

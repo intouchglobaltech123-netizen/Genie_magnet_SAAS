@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { DEFAULT_PRODUCTION_SETTINGS, type WhatsAppMessageRow, type WhatsAppSettings } from "@gm/shared";
 import { seedUserId } from "@gm/db/seed";
 import { JobRunner } from "../jobs/job-runner.js";
+import { draftInvoice } from "../test/draft-invoice.js";
 import { type Agent, type SeededApp, startSeededApp } from "../test/seeded-app.js";
 import { type OutboxProvider, WHATSAPP_PROVIDER } from "./provider.js";
 import { afterQuietHours } from "./whatsapp.service.js";
@@ -181,7 +182,7 @@ describe("messages to clients", () => {
 
   it("tell the client an invoice is ready", async () => {
     const [agreement] = (await ashwin.get(`/agreements?clientId=${clientId}`).expect(200)).body as { id: string }[];
-    const inv = (await ashwin.post(`/agreements/${agreement!.id}/invoices`).send({ period: M }).expect(201)).body as { id: string };
+    const inv = await draftInvoice(ashwin, agreement!.id, M);
     await jana.post(`/invoices/${inv.id}/issue`).send({}).expect(200);
     await runJobs();
     expect(outbox.sent.at(-1)).toMatchObject({ to: PHONE, template: { name: "invoice_issued" } });

@@ -127,4 +127,56 @@ export interface CostingSummary {
   /** Rupees of overhead per hour logged. */
   overheadPerHour: number;
   hours: number;
+  /** Everything the month cost: time at cost rates, shoots and kit, approved expenses and overheads. */
+  totalCost: number;
 }
+
+// ─── Collections (P5-04) ─────────────────────────────────────────────
+
+/** Unpaid amounts by how late they are: not yet due, then days past the due date. */
+export interface AgeingBuckets {
+  notDue: number;
+  d1to30: number;
+  d31to60: number;
+  d61to90: number;
+  over90: number;
+  total: number;
+}
+
+/** GET /collections/ageing */
+export interface AgeingReport {
+  totals: AgeingBuckets;
+  clients: {
+    client: { id: string; name: string; code: string };
+    /** Who to remind: the client's approver. */
+    contact: { name: string; phone: string } | null;
+    buckets: AgeingBuckets;
+    invoices: { id: string; number: string | null; balance: number; dueDate: string | null; daysOverdue: number; payUrl: string | null }[];
+  }[];
+}
+
+// ─── The month's money (P5-05) ───────────────────────────────────────
+
+/** One month: what was agreed, invoiced, earned by delivering, collected and spent. Rupees. */
+export interface FinanceMonthRow {
+  month: string;
+  /** Monthly fees of the agreements running that month. */
+  contracted: number;
+  /** Invoices issued in the month, before GST. */
+  invoiced: number;
+  /** Each running agreement's fee in proportion to the videos delivered against those promised. */
+  earned: number;
+  /** Money received in the month (with GST). */
+  collected: number;
+  /** Time at cost rates, shoots and kit, approved expenses and the month's overheads. */
+  costs: number;
+  /** Earned less costs. */
+  margin: number;
+  marginPct: number | null;
+  /** Closed months keep the figures they had when closed. */
+  closed: boolean;
+  closedAt: string | null;
+  closedBy: string | null;
+}
+
+export const reopenInput = z.object({ reason: z.string().trim().min(3, "Say why it is reopened").max(500) });

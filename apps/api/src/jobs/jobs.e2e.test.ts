@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { JobOverview, JobRow, NotificationList } from "@gm/shared";
 import { genieMagnet, seedUserId, zenStudio } from "@gm/db/seed";
 import { asSystem, TenantDb } from "../tenancy/tenant-context.js";
+import { draftInvoice } from "../test/draft-invoice.js";
 import { type Agent, type SeededApp, startSeededApp } from "../test/seeded-app.js";
 import { JobRunner } from "./job-runner.js";
 import { JobsService } from "./jobs.service.js";
@@ -72,13 +73,13 @@ describe("daily jobs", () => {
     expect(await runner.tick(at("2030-06-10T01:00:00Z"))).toBe(0); // queued for 02:30, not due yet
     expect(await runner.tick(at("2030-06-10T01:30:00Z"))).toBe(0);
     const queued = await jobs(`SELECT name, status FROM jobs WHERE key LIKE '%:2030-06-10'`);
-    expect(queued).toHaveLength(18); // nine daily jobs × two agencies, never twice
+    expect(queued).toHaveLength(20); // ten daily jobs × two agencies, never twice
     expect(queued.every((j) => j.status === "queued")).toBe(true);
 
-    expect(await runner.tick(at("2030-06-10T03:00:00Z"))).toBe(18);
+    expect(await runner.tick(at("2030-06-10T03:00:00Z"))).toBe(20);
     expect((await jobs(`SELECT name, status FROM jobs WHERE key LIKE '%:2030-06-10'`)).every((j) => j.status === "done")).toBe(true);
     const overview = (await jana.get("/jobs/overview").expect(200)).body as JobOverview;
-    expect(overview.daily).toHaveLength(9);
+    expect(overview.daily).toHaveLength(10);
     expect(overview.daily.every((d) => d.status === "done" && d.date === "2030-06-10")).toBe(true);
   });
 
@@ -108,7 +109,7 @@ describe("daily jobs", () => {
   });
 
   it("tell whoever approves invoices when one becomes overdue", async () => {
-    const inv = (await ashwin.post(`/agreements/${agreementId}/invoices`).send({ period: "2030-06" }).expect(201)).body as { id: string };
+    const inv = await draftInvoice(ashwin, agreementId, "2030-06");
     const issued = (await jana.post(`/invoices/${inv.id}/issue`).send({ issueDate: "2030-06-01" }).expect(200)).body as { number: string };
     await t.sql(`UPDATE invoices SET due_date = '2030-06-28' WHERE id = $1`, [inv.id]);
     await runner.tick(at("2030-06-29T03:00:00Z"));

@@ -758,6 +758,8 @@ model InvoiceSettings {
   numberSeries     String?  @map("number_series")
   nextNumber       Int      @default(1) @map("next_number")
   paymentTermsDays Int      @default(7) @map("payment_terms_days")
+  /// Each agreement's invoice is drafted by itself on its billing day (P5-04).
+  autoDraft        Boolean  @default(true) @map("auto_draft")
   bankName         String?  @map("bank_name")
   accountName      String?  @map("account_name")
   accountNumber    String?  @map("account_number")
@@ -1684,4 +1686,24 @@ model Expense {
   @@index([agencyId, date])
   @@index([agencyId, status])
   @@map("expenses")
+}
+
+/// A month's books (P5-05): closed once checked, with its figures kept as they were; time and expenses dated in a
+/// closed month cannot change until it is reopened (with a reason).
+model FinancialPeriod {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  agencyId     String    @map("agency_id") @db.Uuid
+  month        DateTime  @db.Date
+  /// closed · open (reopened)
+  status       String    @default("closed")
+  /// The month's figures when it was closed (FinanceMonthRow in @gm/shared).
+  figures      Json      @default("{}")
+  closedBy     String?   @map("closed_by")
+  closedAt     DateTime  @default(now()) @map("closed_at")
+  reopenedBy   String?   @map("reopened_by")
+  reopenedAt   DateTime? @map("reopened_at")
+  reopenReason String?   @map("reopen_reason")
+
+  @@unique([agencyId, month])
+  @@map("financial_periods")
 }

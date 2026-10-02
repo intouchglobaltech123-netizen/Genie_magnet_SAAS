@@ -9,6 +9,7 @@ import { DEFAULT_PRODUCTION_SETTINGS, type Invoice, type MonthlyReport, type Pay
 import { seedUserId } from "@gm/db/seed";
 import { JobRunner } from "../jobs/job-runner.js";
 import { type OutboxPaymentsProvider, PAYMENTS_PROVIDER } from "../payments/provider.js";
+import { draftInvoice } from "../test/draft-invoice.js";
 import { type Agent, type SeededApp, startSeededApp } from "../test/seeded-app.js";
 import { type OutboxProvider, WHATSAPP_PROVIDER } from "../whatsapp/provider.js";
 
@@ -213,7 +214,7 @@ describe("Phase 3: a client's month through their portal, WhatsApp and online pa
   });
 
   it("7. an invoice is issued with a payment link, paid online, and marked paid by itself", async () => {
-    const draft = (await ashwin.post(`/agreements/${agreementId}/invoices`).send({ period: M }).expect(201)).body as Invoice;
+    const draft = await draftInvoice<Invoice>(ashwin, agreementId, M); // drafted by itself on the billing day
     invoice = (await anitha.post(`/invoices/${draft.id}/issue`).send({}).expect(200)).body;
     await runJobs();
     invoice = (await anitha.get(`/invoices/${invoice.id}`).expect(200)).body;

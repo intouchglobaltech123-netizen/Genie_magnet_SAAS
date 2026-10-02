@@ -83,6 +83,8 @@ export const invoiceSettingsInput = z
       .nullish(),
     /** Printed at the bottom of every invoice. */
     footer: clearable(500),
+    /** Each agreement's invoice is drafted by itself on its billing day (monthly or quarterly in advance, monthly in arrears). */
+    autoDraft: z.boolean().default(true),
   })
   .superRefine((v, ctx) => {
     if (v.gstin && v.gstin.slice(0, 2) !== v.state) ctx.addIssue({ code: "custom", path: ["state"], message: "The GSTIN is registered in another state" });

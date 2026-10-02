@@ -100,6 +100,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Invoices", href: "/app/invoices", icon: ReceiptIndianRupee, area: "invoices" },
       { title: "Expenses", href: "/app/expenses", icon: Wallet },
       { title: "Costing", href: "/app/costing", icon: Calculator, area: "finance" },
+      { title: "Finance", href: "/app/finance", icon: Landmark, area: "finance" },
       { title: "Import from Excel", href: "/app/import", icon: FileSpreadsheet, area: "clients", level: "edit" },
     ],
   },
