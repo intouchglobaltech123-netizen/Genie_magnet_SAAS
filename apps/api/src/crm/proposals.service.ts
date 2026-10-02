@@ -12,6 +12,7 @@ import {
   type WinInput,
 } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
+import { NotificationsService } from "../notifications/notifications.service.js";
 import { OnboardingService } from "../onboarding/onboarding.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { PipelineService } from "./pipeline.service.js";
@@ -56,6 +57,7 @@ export class ProposalsService {
     private readonly audit: AuditService,
     private readonly pipeline: PipelineService,
     private readonly onboarding: OnboardingService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /** The lead, if the person may see it (roles limited to their own leads see only theirs). */
@@ -123,6 +125,17 @@ export class ProposalsService {
         entityId: p.id,
         after: { lead: lead.name, package: p.packageName, discountPercent: p.discountPercent, monthlyFee: p.monthlyFee, months: p.months, status },
       });
+      if (status === "pending_approval")
+        await this.notifications.notify(
+          tx,
+          { can: { area: "crm", level: "approve" } },
+          {
+            kind: "discount_approval",
+            title: `Discount to approve: ${lead.company ?? lead.name}`,
+            body: `${p.packageName} at ${p.discountPercent}% off — above the ${limit}% limit.`,
+            link: "/app/sales",
+          },
+        );
       return presentProposal(p);
     });
   }
@@ -143,6 +156,16 @@ export class ProposalsService {
         before: { status: p.status },
         after: { status: updated.status, discountPercent: p.discountPercent, note: note ?? null },
       });
+      await this.notifications.notify(
+        tx,
+        { users: [p.createdBy] },
+        {
+          kind: "discount_decided",
+          title: `${p.discountPercent}% discount ${approve ? "approved" : "rejected"}: ${p.packageName}`,
+          body: note ?? undefined,
+          link: "/app/sales",
+        },
+      );
       return presentProposal(updated);
     });
   }
@@ -276,6 +299,11 @@ export class ProposalsService {
           before: { name: lead.name, stage: lead.stage },
           after: { name: lead.name, stage: won.key, clientId: client.id },
         });
+        await this.notifications.notify(
+          tx,
+          { users: [lead.ownerId] },
+          { kind: "deal_won", title: `Won: ${client.name} is now a client`, body: "Onboarding is ready to share.", link: `/app/clients/${client.id}` },
+        );
         return { clientId: client.id, agreementId, onboardingId };
       });
     } catch (e) {

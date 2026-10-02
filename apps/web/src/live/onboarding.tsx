@@ -22,7 +22,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { toast } from "sonner";
-import { type AnswerValue, isAnswered, LANGUAGES, type OnboardingDetail, type OnboardingSummary } from "@gm/shared";
+import { type AnswerValue, FILE_REF, isAnswered, LANGUAGES, type OnboardingDetail, type OnboardingSummary } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils";
 import { errorMessage } from "./api";
 import { NoteDialog } from "./deals";
 import { fmtDate } from "./format";
+import { startFor } from "./files";
 import { QuestionnaireForm } from "./questionnaire";
 import {
   useAgency,
@@ -66,10 +67,31 @@ export function onboardingStatus(o: Pick<OnboardingSummary, "progress" | "gate" 
 const pct = (p: { answered: number; total: number }) => (p.total ? Math.round((p.answered / p.total) * 100) : 100);
 
 /** An answer as text, for reading. */
-export function AnswerText({ value }: { value: AnswerValue }) {
+export function AnswerText({ value, files }: { value: AnswerValue; files?: Record<string, { name: string; url: string | null }> }) {
   if (typeof value === "string") return <span className="whitespace-pre-line">{value}</span>;
   if (!value.length) return <span className="text-muted-foreground">—</span>;
-  if (typeof value[0] === "string") return <span>{(value as string[]).join(", ")}</span>;
+  if (typeof value[0] === "string") {
+    const items = value as string[];
+    // A files answer: uploaded files by name, and links.
+    if (items.some((v) => FILE_REF.test(v) || /^https?:\/\//.test(v)))
+      return (
+        <span className="flex flex-col">
+          {items.map((v) => {
+            const f = FILE_REF.test(v) ? files?.[v.slice(5)] : null;
+            const href = f ? f.url : /^https?:\/\//.test(v) ? v : null;
+            const text = f ? f.name : FILE_REF.test(v) ? "Uploaded file" : v;
+            return href ? (
+              <a key={v} href={href} target="_blank" rel="noreferrer" className="truncate text-primary hover:underline">
+                {text}
+              </a>
+            ) : (
+              <span key={v}>{text}</span>
+            );
+          })}
+        </span>
+      );
+    return <span>{items.join(", ")}</span>;
+  }
   const rows = value as Record<string, string>[];
   const cols = [...new Set(rows.flatMap((r) => Object.keys(r)))];
   return (
@@ -467,7 +489,7 @@ export function LiveOnboardingDetail({ id }: { id: string }) {
                             <dd className="min-w-0 text-body">
                               {a && isAnswered(a.value) ? (
                                 <>
-                                  <AnswerText value={a.value} />
+                                  <AnswerText value={a.value} files={o.files} />
                                   <div className="mt-0.5 text-muted-foreground">
                                     {a.by ? `Entered by ${a.by.name ?? "a former team member"}` : "Answered by the client"} · {fmtDate(a.at)}
                                   </div>
@@ -496,7 +518,7 @@ export function LiveOnboardingDetail({ id }: { id: string }) {
                         {b.items.map((it) => (
                           <li key={it.question} className="text-body">
                             <div className="text-muted-foreground">{it.question}</div>
-                            <AnswerText value={it.answer} />
+                            <AnswerText value={it.answer} files={o.files} />
                           </li>
                         ))}
                       </ul>
@@ -665,6 +687,8 @@ export function LiveOnboardingFill({ id }: { id: string }) {
         dueOn={o.window.dueOn}
         mode="assisted"
         save={save}
+        upload={startFor("onboarding", o.id)}
+        files={o.files}
       />
     </>
   );

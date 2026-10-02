@@ -60,6 +60,11 @@ describe("answers", () => {
       error: "Choose at most 3",
     });
     expect(checkAnswer(q("c1"), "  ")).toEqual({ value: null });
+    expect(checkAnswer(q("c29"), ["file:019a0000-0000-7000-8000-00000000abcd", "https://drive.example/brand"])).toEqual({
+      value: ["file:019a0000-0000-7000-8000-00000000abcd", "https://drive.example/brand"],
+    });
+    expect(checkAnswer(q("c29"), "https://a.example https://b.example")).toEqual({ value: ["https://a.example", "https://b.example"] });
+    expect(checkAnswer(q("c29"), ["logo.png"])).toMatchObject({ error: expect.stringMatching(/Upload a file/) });
   });
 
   it("in tables keep only filled rows and check each cell", () => {

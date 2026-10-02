@@ -6,6 +6,7 @@ import {
   checklistTickInput,
   onboardingException,
   onboardingUpdate,
+  publicFileStart,
   publicLanguage,
   QUESTIONNAIRE_KINDS,
   type QuestionnaireKind,
@@ -180,6 +181,15 @@ export class PublicOnboardingController {
   @ApiBody({ schema: schema(answerInput) })
   answer(@Param("token") token: string, @Param("key", keyPipe) key: string, @Body(new ZodPipe(answerInput)) body: z.output<typeof answerInput>) {
     return this.onboarding.publicAnswer(token, key, body.value);
+  }
+
+  /** Starts a file upload for a files question; returns the signed link to send the file to. */
+  @Post(":token/files")
+  @Public()
+  @RateLimit({ max: 30, windowSeconds: 60 })
+  @ApiBody({ schema: schema(publicFileStart) })
+  file(@Param("token") token: string, @Body(new ZodPipe(publicFileStart)) body: z.output<typeof publicFileStart>) {
+    return this.onboarding.publicFileStart(token, body);
   }
 
   @Put(":token/language")

@@ -378,6 +378,7 @@ export interface OnboardingDetail extends OnboardingSummary {
   reminders: { day: number; channel: string; sentAt: string; by: Person }[];
   exception: { reason: string | null; at: string; by: Person } | null;
   canvas: { block: string; label: string; items: { question: string; answer: AnswerValue }[] }[];
+  files: Record<string, { name: string; size: number; url: string | null }>;
   filled: { question: string; field: string; value: AnswerValue | null }[];
 }
 
@@ -389,6 +390,34 @@ export interface PublicQuestionnaire {
   languages: { code: string; label: string }[];
   sections: { key: string; title: string; intro: string | null; when: "required" | "within-window"; questions: (Question & { optionLabels?: string[] })[] }[];
   answers: Record<string, AnswerValue>;
+  files: Record<string, { name: string; size: number; url: string | null }>;
   progress: Progress;
   window: { state: WindowState; dueOn: string | null; days: number };
+}
+
+// ─── Notifications and files (P1-04, P1-05) ───────────────────────────
+
+/** GET /notifications */
+export interface NotificationList {
+  unread: number;
+  items: { id: string; kind: string; title: string; body: string | null; link: string | null; read: boolean; createdAt: string }[];
+}
+
+/** A stored file, with a download link valid for an hour (null until uploaded). */
+export interface StoredFile {
+  id: string;
+  name: string;
+  mime: string;
+  size: number;
+  status: string;
+  uploadedBy: string | null;
+  createdAt: string;
+  url: string | null;
+}
+
+/** POST /files, POST /public/onboarding/:token/files */
+export interface UploadStart {
+  id: string;
+  uploadUrl: string;
+  expiresIn: number;
 }

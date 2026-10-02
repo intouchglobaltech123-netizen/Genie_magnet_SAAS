@@ -29,6 +29,7 @@ import { Select } from "@/components/ui/select";
 import { AgreementCard, AgreementDialog } from "./agreements";
 import { ApiError, errorMessage } from "./api";
 import { FITMENT, FITMENT_TONE } from "./clients";
+import { FilesCard } from "./files";
 import { InvoiceTable, NewInvoiceDialog } from "./invoices";
 import { onboardingStatus } from "./onboarding";
 import { inr } from "./packages";
@@ -644,6 +645,7 @@ export function LiveClient({ id }: { id: string }) {
             {c.notes && <p className="mt-2 whitespace-pre-line border-t border-border-subtle pt-2 text-body text-text-secondary">{c.notes}</p>}
           </SectionCard>
           <Contacts client={c} canEdit={canEdit} />
+          <FilesCard entity="client" entityId={c.id} title="Brand files" description="Logos, brand guide, fonts, photos." canEdit={canEdit && !c.archivedAt} />
           <SectionCard title="Billing" description="Used on invoices.">
             <dl>
               <Row label="Name on invoices">{c.legalName ?? c.name}</Row>

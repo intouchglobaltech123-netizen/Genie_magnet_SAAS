@@ -130,7 +130,9 @@ describe("client onboarding", () => {
               ? q.options![0]
               : q.type === "number" || q.type === "currency"
                 ? "10"
-                : "Answer";
+                : q.type === "file"
+                  ? ["https://drive.example/selvam-brand"]
+                  : "Answer";
       await publicApi().put(`/public/onboarding/${token}/answers/${q.key}`).send({ value }).expect(200);
     }
     let o = (await priya.get(`/onboarding/${id}`).expect(200)).body;

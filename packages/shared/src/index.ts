@@ -8,3 +8,5 @@ export * from "./gst.js";
 export * from "./clients.js";
 export * from "./invoices.js";
 export * from "./onboarding.js";
+export * from "./notifications.js";
+export * from "./files.js";

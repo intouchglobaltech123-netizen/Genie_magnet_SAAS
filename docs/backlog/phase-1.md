@@ -39,13 +39,13 @@ As the owner, I want every change to clients, agreements, packages, invoices, ro
 - Read-only list per record and per agency, filterable by user, entity and date.
 - The application role cannot update or delete entries (already enforced by the database).
 
-**P1-04 · Notifications in the app (M)**
+**P1-04 · Notifications in the app (M)** — **Done.** A bell with the unread count and the latest few, a Notifications page, and each person's choices (kinds switched off; quiet hours kept for when email and phone alerts arrive). Sent for discounts to approve and their decisions, deals won, agreements to sign off and signed, clients finishing onboarding, invoices to issue and paid; written in the same transaction as the change, never to the person who made it. `/notifications`.
 As a team member, I want notifications in the app, with preferences, so I do not miss approvals and reminders.
 
 - Notification centre (unread count, mark read); per-user preferences per notification type; quiet hours respected.
 - Built so email can be added as a second channel in the last step (P1-10) without changing the senders.
 
-**P1-05 · File storage (M)**
+**P1-05 · File storage (M)** — **Done** with files kept in a folder (a mounted volume on a server), one per agency; a cloud bucket can replace it behind the same interface. Signed upload links (straight to the API, so large videos never pass through the web app) and signed download links, each valid for an hour; type and size limits; files linked to their record, with access following that record's area. Brand files on the client page; clients upload in their onboarding link's files questions. `/files`.
 As a user, I want to upload brand files and documents with previews, so onboarding and production files live with the record.
 
 - S3-compatible storage (MinIO locally), per-agency key prefix, signed upload and download links that expire.

@@ -48,7 +48,11 @@ import { Skeleton } from "@/components/ui/feedback";
 import { BrandMark, BrandWordmark } from "@/components/shell/brand";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "./api";
+import { NotificationBell } from "./notifications";
 import { useCan, useMe, useSignOut, useSwitchAgency } from "./queries";
+
+/** On the team (not a client's person, whose role reaches only the client portal). */
+const isTeam = (p: Record<string, unknown>) => Object.keys(p).some((area) => area !== "portal");
 
 interface NavItem {
   title: string;
@@ -328,6 +332,7 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
           </Button>
           <AgencySwitcher />
           <div className="ml-auto flex shrink-0 items-center gap-1">
+            {me.permissions && isTeam(me.permissions) && <NotificationBell />}
             <Button variant="ghost" size="icon-sm" onClick={toggleTheme} aria-label="Toggle dark mode">
               <Sun className="hidden dark:block" />
               <Moon className="dark:hidden" />

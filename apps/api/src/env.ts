@@ -29,6 +29,17 @@ export const envSchema = z
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
     /** Proxies in front of the API (1 on Railway), so the caller's IP is read from X-Forwarded-For. 0 locally. */
     TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
+    /**
+     * The API's own public address. Uploads go straight to it rather than through the web app, which would hold
+     * the whole file in memory (cut off at 10 MB).
+     */
+    PUBLIC_API_URL: z.url().default("http://localhost:4000"),
+    /** Where uploaded files are kept (a mounted volume on a server), each agency in its own folder. */
+    FILES_DIR: z.string().default(".files"),
+    /** Largest upload, in megabytes. */
+    FILE_MAX_MB: z.coerce.number().int().min(1).max(10_000).default(1024),
+    /** Signs upload and download links; falls back to BETTER_AUTH_SECRET. */
+    FILES_SECRET: z.string().min(32, "FILES_SECRET must be at least 32 characters").optional(),
   })
   .refine((e) => !(e.NODE_ENV === "production" && e.AUTH_MODE === "dev-header"), {
     message: "AUTH_MODE=dev-header is not allowed in production",
@@ -41,6 +52,10 @@ export const envSchema = z
   .refine((e) => !(e.NODE_ENV === "production" && e.AUTH_MODE === "better-auth" && !e.REQUIRE_EMAIL_VERIFICATION), {
     message: "REQUIRE_EMAIL_VERIFICATION must be on in production",
     path: ["REQUIRE_EMAIL_VERIFICATION"],
+  })
+  .refine((e) => !(e.NODE_ENV === "production" && !e.FILES_SECRET && !e.BETTER_AUTH_SECRET), {
+    message: "File links need FILES_SECRET (or BETTER_AUTH_SECRET) in production",
+    path: ["FILES_SECRET"],
   })
   .refine((e) => e.AUTH_MODE !== "better-auth" || (e.AUTH_DATABASE_URL && e.BETTER_AUTH_SECRET), {
     message: "AUTH_MODE=better-auth needs AUTH_DATABASE_URL and BETTER_AUTH_SECRET",

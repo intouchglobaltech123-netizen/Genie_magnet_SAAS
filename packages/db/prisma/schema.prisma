@@ -233,18 +233,62 @@ model Import {
   @@map("imports")
 }
 
+/// An uploaded file (P1-05), kept under the agency's own folder in file storage and linked to the record it belongs to.
+/// Pending until the upload finishes; uploads and downloads go through short-lived signed links.
 model FileObject {
-  id         String   @id @default(uuid(7)) @db.Uuid
-  agencyId   String   @map("agency_id") @db.Uuid
-  storageKey String   @map("storage_key")
+  id         String    @id @default(uuid(7)) @db.Uuid
+  agencyId   String    @map("agency_id") @db.Uuid
+  storageKey String    @map("storage_key")
   name       String
   mime       String
-  size       Int
-  uploadedBy String?  @map("uploaded_by")
-  createdAt  DateTime @default(now()) @map("created_at")
+  /// Bytes (the size declared when the upload starts; checked as it arrives).
+  size       BigInt
+  /// What it belongs to: client · onboarding · video · script… and that record's id.
+  entity     String?
+  entityId   String?   @map("entity_id")
+  /// pending · ready
+  status     String    @default("pending")
+  uploadedBy String?   @map("uploaded_by")
+  uploadedAt DateTime? @map("uploaded_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
 
   @@unique([agencyId, storageKey])
+  @@index([agencyId, entity, entityId])
   @@map("files")
+}
+
+/// A notification in the app (P1-04), for one person in one agency.
+model Notification {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  agencyId  String    @map("agency_id") @db.Uuid
+  userId    String    @map("user_id")
+  /// One of NOTIFICATION_KINDS in @gm/shared.
+  kind      String
+  title     String
+  body      String?
+  /// Where it leads in the app.
+  link      String?
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([agencyId, userId, readAt])
+  @@index([agencyId, userId, createdAt])
+  @@map("notifications")
+}
+
+/// What each person wants to be told about, per agency.
+model NotificationPreference {
+  agencyId  String   @map("agency_id") @db.Uuid
+  userId    String   @map("user_id")
+  /// Kinds switched off.
+  muted     String[] @default([])
+  /// Quiet hours (HH:MM) for email and phone alerts, once they arrive.
+  quietFrom String?  @map("quiet_from")
+  quietTo   String?  @map("quiet_to")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@id([agencyId, userId])
+  @@map("notification_preferences")
 }
 
 // ───────────────────────────── Sales, clients & packages ─────────────────────────────

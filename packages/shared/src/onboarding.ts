@@ -267,6 +267,10 @@ export const answerInput = z.object({
   value: z.union([z.string().max(10_000), z.array(z.string().max(500)).max(50), z.array(z.record(z.string(), z.string().max(1000))).max(100)]),
 });
 
+/** An uploaded file in a files answer. */
+export const FILE_REF = /^file:[0-9a-f-]{36}$/;
+export const fileRef = (id: string) => `file:${id}`;
+
 /** Is there an answer worth keeping (a table counts once one of its cells is filled in)? */
 export function isAnswered(value: AnswerValue | undefined | null): boolean {
   if (value === undefined || value === null) return false;
@@ -285,12 +289,17 @@ export function checkAnswer(q: Question, value: AnswerValue): { value: AnswerVal
   const one = (v: AnswerValue) => (typeof v === "string" ? v.trim() : null);
   switch (q.type) {
     case "text":
-    case "long":
-    case "file": {
+    case "long": {
       const s = one(value);
       if (s === null) return { error: "Expected text" };
       if (q.type === "text" && s.length > 500) return { error: "Keep it under 500 characters" };
       return { value: s };
+    }
+    case "file": {
+      // Uploaded files ("file:<id>") and links; older answers were links as text.
+      const items = (typeof value === "string" ? value.split(/\s+/) : (value as string[])).map((v) => String(v).trim()).filter(Boolean);
+      if (items.some((v) => !FILE_REF.test(v) && !/^https?:\/\/\S+$/.test(v))) return { error: "Upload a file, or paste a link starting with https://" };
+      return { value: [...new Set(items)] };
     }
     case "number": {
       const s = one(value)?.replace(/,/g, "");
@@ -514,5 +523,6 @@ export const startOnboardingInput = z.object({ mode: z.enum(["link", "assisted"]
 export const onboardingUpdate = z.object({ mode: z.enum(["link", "assisted"]).optional(), language: z.enum(LANGUAGE_CODES).optional() });
 export const checklistTickInput = z.object({ done: z.boolean() });
 export const onboardingException = z.object({ reason: z.string().trim().min(5, "Say why production can start before onboarding is complete").max(500) });
+export const publicFileStart = z.object({ name: z.string().trim().min(1).max(200), mime: z.string().max(120).default(""), size: z.number().int().positive() });
 export const reminderSent = z.object({ day: z.number().int().min(1).max(60), channel: z.enum(["whatsapp", "email", "in_app"]).default("whatsapp") });
 export const publicLanguage = z.object({ language: z.enum(LANGUAGE_CODES) });

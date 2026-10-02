@@ -11,6 +11,9 @@ import {
   type AgreementUpdate,
   type ClientDetail,
   type AnswerValue,
+  type NotificationList,
+  type NotificationPreferences,
+  type StoredFile,
   type OnboardingDetail,
   type OnboardingSummary,
   type QuestionnaireDefinition,
@@ -72,6 +75,8 @@ export const keys = {
   invoiceSettings: ["invoice-settings"] as const,
   onboarding: ["onboarding"] as const,
   questionnaires: ["questionnaires"] as const,
+  notifications: ["notifications"] as const,
+  files: ["files"] as const,
 };
 
 // ─── Session ──────────────────────────────────────────────────────────
@@ -637,4 +642,42 @@ export function useSaveAnswer(id: string) {
 export function usePackagesFromAnswers(id: string) {
   const refresh = useRefresh(keys.packages);
   return useMutation({ mutationFn: () => api<{ added: string[] }>(`/onboarding/${id}/packages`, { body: {} }), onSuccess: refresh });
+}
+
+// ─── Notifications ────────────────────────────────────────────────────
+
+/** Checked every minute while the app is open. */
+export const useNotifications = () =>
+  useQuery({ queryKey: keys.notifications, queryFn: () => api<NotificationList>("/notifications"), refetchInterval: 60_000 });
+
+export function useMarkRead() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ids?: string[]) => api<NotificationList>("/notifications/read", { body: { ids } }),
+    onSuccess: (data) => qc.setQueryData(keys.notifications, data),
+  });
+}
+
+export const useNotificationPreferences = () =>
+  useQuery({ queryKey: [...keys.notifications, "preferences"], queryFn: () => api<NotificationPreferences>("/notifications/preferences") });
+
+export function useSaveNotificationPreferences() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: NotificationPreferences) => api<NotificationPreferences>("/notifications/preferences", { method: "PUT", body: v }),
+    onSuccess: (data) => qc.setQueryData([...keys.notifications, "preferences"], data),
+  });
+}
+
+// ─── Files ────────────────────────────────────────────────────────────
+
+export const useFiles = (entity: string, entityId: string, enabled = true) =>
+  useQuery({ queryKey: [...keys.files, entity, entityId], queryFn: () => api<StoredFile[]>(`/files?entity=${entity}&entityId=${entityId}`), enabled });
+
+export function useDeleteFile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api(`/files/${id}`, { method: "DELETE" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.files }),
+  });
 }

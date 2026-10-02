@@ -15,6 +15,7 @@ import {
   packageTotals,
 } from "@gm/shared";
 import { AuditService, changes } from "../audit/audit.service.js";
+import { NotificationsService } from "../notifications/notifications.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 
 const WITH = { client: { select: { id: true, name: true, code: true } }, package: { select: { name: true } } } as const satisfies Prisma.AgreementInclude;
@@ -63,6 +64,7 @@ export class AgreementsService {
   constructor(
     private readonly tenant: TenantDb,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   /** Days before the end that an agreement shows as due for renewal (Settings → Agency profile). */
@@ -187,6 +189,16 @@ export class AgreementsService {
       data: { ...data, ...extra, agencyId: this.tenant.agencyId, clientId, status: "draft", createdBy: this.tenant.userId },
     });
     await this.audit.record(tx, { action: "create", entity: "agreement", entityId: a.id, after: { status: "draft", ...terms(a), ...extra } });
+    await this.notifications.notify(
+      tx,
+      { can: { area: "agreements", level: "approve" } },
+      {
+        kind: "agreement_signoff",
+        title: `Agreement to sign off: ${a.title}`,
+        body: extra.renewsId ? "A renewal." : undefined,
+        link: `/app/clients/${clientId}`,
+      },
+    );
     return a.id;
   }
 
@@ -254,7 +266,15 @@ export class AgreementsService {
   async signOff(id: string) {
     const current = await this.find(id);
     if (current.status !== "draft") throw new ConflictException("Only a draft is signed off.");
-    return this.move(current, "active", "approve", { signedBy: this.tenant.userId, signedAt: new Date() });
+    const signed = await this.move(current, "active", "approve", { signedBy: this.tenant.userId, signedAt: new Date() });
+    await this.tenant.tx((tx) =>
+      this.notifications.notify(
+        tx,
+        { users: [current.createdBy] },
+        { kind: "agreement_signed", title: `Signed off: ${current.title}`, link: `/app/clients/${current.clientId}` },
+      ),
+    );
+    return signed;
   }
 
   async pause(id: string, note?: string) {

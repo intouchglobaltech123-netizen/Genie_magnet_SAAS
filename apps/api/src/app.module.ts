@@ -10,6 +10,11 @@ import { Outbox } from "./auth/outbox.js";
 import { AgreementsService } from "./clients/agreements.service.js";
 import { AgreementInvoicesController, InvoiceSettingsController, InvoicesController } from "./invoices/invoices.controller.js";
 import { InvoicesService } from "./invoices/invoices.service.js";
+import { FileStore } from "./files/file-store.js";
+import { FilesController, FileTransferController } from "./files/files.controller.js";
+import { FilesService } from "./files/files.service.js";
+import { NotificationsController } from "./notifications/notifications.controller.js";
+import { NotificationsService } from "./notifications/notifications.service.js";
 import { ClientOnboardingController, OnboardingController, PublicOnboardingController, QuestionnairesController } from "./onboarding/onboarding.controller.js";
 import { OnboardingService } from "./onboarding/onboarding.service.js";
 import { QuestionnairesService } from "./onboarding/questionnaires.service.js";
@@ -55,6 +60,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     OnboardingController,
     ClientOnboardingController,
     PublicOnboardingController,
+    NotificationsController,
+    FilesController,
+    FileTransferController,
     PipelineController,
     LeadsController,
     ProposalsController,
@@ -90,6 +98,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     InvoicesService,
     QuestionnairesService,
     OnboardingService,
+    NotificationsService,
+    FileStore,
+    FilesService,
     PipelineService,
     LeadsService,
     ProposalsService,

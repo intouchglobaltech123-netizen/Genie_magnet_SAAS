@@ -77,6 +77,11 @@ Email confirmation is off while testing (`REQUIRE_EMAIL_VERIFICATION=false`), so
 - **Rate limits**: sign-in and sign-up 3 tries per 10 seconds per IP, other sign-in routes 100 a minute (Better Auth); every API route 300 a minute per person, or per IP when not signed in (`RATE_LIMIT_PER_MINUTE`). Routes can set their own with `@RateLimit(...)`; health checks are exempt. Kept in memory — fine for one API process, moved to Redis when the API runs on several.
 - Behind a proxy (Railway) set `TRUST_PROXY=1` so the caller's IP is read correctly.
 
+## Files and notifications
+
+- **Files** (`/files`): an upload starts with a record and a signed upload link valid for an hour; the browser sends the file straight to the API (`PUBLIC_API_URL`), not through the web app, which would hold it in memory (cut off at 10 MB). Downloads use signed links valid for an hour. Files are kept under `FILES_DIR`, one folder per agency (on Railway: a volume mounted there), up to `FILE_MAX_MB` each, of the kinds listed in `packages/shared/src/files.ts`. Who may upload, see or remove a file follows the area of the record it belongs to. Clients upload through their onboarding link the same way.
+- **Notifications** (`/notifications`): written in the same transaction as the change they report, never to the person who made it, and not for kinds the person has switched off. Kinds are in `packages/shared/src/notifications.ts`; email joins as a second channel in the last step.
+
 ## Permissions
 
 Each agency edits its own permission matrix (Settings → Roles): areas × roles, each cell none / view / edit / approve, some areas limited to "own records". Defaults and the check functions are in `packages/shared/src/permissions.ts`; the API reads the person's row on every request.

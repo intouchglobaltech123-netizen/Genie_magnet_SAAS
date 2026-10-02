@@ -13,6 +13,7 @@ import {
   rupeesInWords,
 } from "@gm/shared";
 import { AuditService, changes } from "../audit/audit.service.js";
+import { NotificationsService } from "../notifications/notifications.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 
 type Settings = Prisma.InvoiceSettingsGetPayload<object>;
@@ -62,6 +63,7 @@ export class InvoicesService {
   constructor(
     private readonly tenant: TenantDb,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   // ─── Settings ─────────────────────────────────────────────────────
@@ -246,6 +248,16 @@ export class InvoicesService {
       entityId: inv.id,
       after: { status: "draft", clientId: data.clientId, period: data.period ?? null, total: t.total },
     });
+    await this.notifications.notify(
+      tx,
+      { can: { area: "invoices", level: "approve" } },
+      {
+        kind: "invoice_to_issue",
+        title: "Draft invoice to issue",
+        body: `₹${t.total.toLocaleString("en-IN")}${data.period ? ` for ${periodLabel(data.period)}` : ""}`,
+        link: `/app/invoices/${inv.id}`,
+      },
+    );
     return inv.id;
   }
 
@@ -391,6 +403,11 @@ export class InvoicesService {
         before: { status: "sent" },
         after: { status: "paid", number: current.number, paidOn: input.paidOn, note: input.note ?? null },
       });
+      await this.notifications.notify(
+        tx,
+        { users: [current.createdBy] },
+        { kind: "invoice_paid", title: `Paid: ${current.number} · ${current.client.name}`, link: `/app/invoices/${id}` },
+      );
     });
     return this.get(id);
   }

@@ -2,7 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Languages, LinkIcon } from "lucide-react";
-import type { AnswerValue, PublicQuestionnaire as View } from "@gm/shared";
+import type { AnswerValue, UploadStart, PublicQuestionnaire as View } from "@gm/shared";
 import { Alert, SkeletonRows } from "@/components/ui/feedback";
 import { Select } from "@/components/ui/select";
 import { api, ApiError, errorMessage } from "./api";
@@ -95,6 +95,8 @@ export function PublicQuestionnaire({ token }: { token: string }) {
           dueOn={v.window.dueOn}
           mode="public"
           save={save}
+          upload={(meta) => api<UploadStart>(`/public/onboarding/${token}/files`, { body: meta })}
+          files={v.files}
         />
       </main>
     </div>

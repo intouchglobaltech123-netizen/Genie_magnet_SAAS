@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { errorMessage } from "./api";
 import { AnswerText } from "./onboarding";
 import { inr } from "./packages";
+import { startFor } from "./files";
 import { QuestionnaireForm } from "./questionnaire";
 import { useAgencyOnboarding, useCan, usePackagesFromAnswers, useSaveAnswer, useStartAgencyOnboarding } from "./queries";
 
@@ -221,6 +222,8 @@ export function LiveAgencyOnboarding() {
               dueOn={o.window.dueOn}
               mode="agency"
               save={save}
+              upload={startFor("onboarding", o.id)}
+              files={o.files}
             />
           </TabsContent>
         )}

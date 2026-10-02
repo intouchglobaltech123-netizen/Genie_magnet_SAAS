@@ -6,6 +6,8 @@ import {
   type AnswerValue,
   type Answers,
   CANVAS_BLOCKS,
+  FILE_REF,
+  fileAllowed,
   checkAnswer,
   checklistOf,
   dueReminders,
@@ -23,7 +25,9 @@ import {
   windowOf,
 } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
+import { NotificationsService } from "../notifications/notifications.service.js";
 import { ENV, type Env } from "../env.js";
+import { FilesService } from "../files/files.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { asLinkHolder, TenantDb } from "../tenancy/tenant-context.js";
 import { QuestionnairesService } from "./questionnaires.service.js";
@@ -57,7 +61,9 @@ export class OnboardingService {
   constructor(
     private readonly tenant: TenantDb,
     private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
     private readonly questionnaires: QuestionnairesService,
+    private readonly files: FilesService,
     private readonly prisma: PrismaService,
     @Inject(ENV) private readonly env: Env,
   ) {}
@@ -145,6 +151,7 @@ export class OnboardingService {
       row.exceptionBy,
     ]);
     const who = (id: string | null) => (id ? { id, name: names.get(id) ?? null } : null);
+    const files = await this.files.listFor("onboarding", row.id);
     const questions = questionsOf(s.definition);
     const label = (key: string) => questions.find((q) => q.key === key)?.label ?? key;
     return {
@@ -158,6 +165,8 @@ export class OnboardingService {
       checklist: s.checklist.map((c) => ({ ...c, by: c.auto ? null : who(c.by ?? null) })),
       reminders: row.reminders.map((r) => ({ day: r.day, channel: r.channel, sentAt: r.sentAt, by: who(r.sentBy) })),
       exception: row.exceptionAt ? { reason: row.exceptionReason, at: row.exceptionAt, by: who(row.exceptionBy) } : null,
+      /** Files uploaded for this questionnaire, by id, with download links. */
+      files: Object.fromEntries(files.map((f) => [f.id, { name: f.name, size: f.size, url: f.url }])),
       /** The draft Business Canvas: answers tagged with each block. */
       canvas: CANVAS_BLOCKS.map((b) => ({
         block: b.key,
@@ -284,6 +293,15 @@ export class OnboardingService {
     if (!q) throw new NotFoundException("No question with that key in this questionnaire.");
     const checked = checkAnswer(q, value);
     if (checked.error !== undefined) throw new BadRequestException({ message: checked.error, issues: [{ path: "value", message: checked.error }] });
+    // A files answer may only point at files uploaded for this questionnaire.
+    const refs = Array.isArray(checked.value)
+      ? (checked.value as string[]).filter((v) => typeof v === "string" && FILE_REF.test(v)).map((v) => v.slice(5))
+      : [];
+    if (refs.length) {
+      const mine = await this.tenant.db.fileObject.count({ where: { id: { in: refs }, entity: "onboarding", entityId: row.id, status: "ready" } });
+      if (mine !== refs.length)
+        throw new BadRequestException({ message: "Upload the file again.", issues: [{ path: "value", message: "Upload the file again" }] });
+    }
     const old = row.answers.find((a) => a.questionKey === key);
     const answers: Answers = Object.fromEntries(row.answers.map((a) => [a.questionKey, a.value as AnswerValue]));
     if (checked.value === null) delete answers[key];
@@ -316,6 +334,15 @@ export class OnboardingService {
         before: { question: key, value: short((old?.value as AnswerValue) ?? null) },
         after: { question: key, value: short(checked.value), via: by ? "assisted" : "link" },
       });
+      // The account manager hears when the client finishes the required part, and when everything is answered.
+      const milestone = progress.complete && !row.completedAt ? "all of" : progress.required.complete && !row.requiredDoneAt ? "the required part of" : null;
+      if (milestone && row.client) {
+        await this.notifications.notify(
+          tx,
+          row.client.accountOwnerId ? { users: [row.client.accountOwnerId] } : { can: { area: "onboarding", level: "approve" } },
+          { kind: "onboarding_progress", title: `${row.client.name} answered ${milestone} onboarding`, link: `/app/onboarding/${row.id}` },
+        );
+      }
     });
     return progress;
   }
@@ -463,6 +490,7 @@ export class OnboardingService {
         })),
       })),
       answers: s.answers,
+      files: Object.fromEntries((await this.files.listFor("onboarding", row.id)).map((f) => [f.id, { name: f.name, size: f.size, url: f.url }])),
       progress: s.progress,
       window: { state: s.window.state, dueOn: s.window.dueOn, days: agency.windowDays },
     };
@@ -479,6 +507,14 @@ export class OnboardingService {
       const progress = await this.save(await this.find(link.id), key, value, null);
       return { progress };
     });
+  }
+
+  /** The client uploads a file (for a files question) through the link. */
+  async publicFileStart(token: string, input: { name: string; mime: string; size: number }) {
+    const link = await this.byToken(token);
+    if (!fileAllowed(input.name, input.mime))
+      throw new BadRequestException({ message: "This kind of file cannot be uploaded.", issues: [{ path: "name", message: "Not an accepted kind of file" }] });
+    return asLinkHolder(link.agencyId, () => this.files.startForLink(link.id, input));
   }
 
   async publicLanguage(token: string, language: string) {

@@ -1,8 +1,36 @@
 "use client";
 
-import { useId, useRef, useState } from "react";
-import { AlertCircle, ArrowLeft, ArrowRight, Check, CheckCircle2, Clock, CloudCheck, Link2, Loader2, Lock, PartyPopper, Plus, Trash2 } from "lucide-react";
-import { type AnswerValue, type Answers, isAnswered, progressOf, type Question, type Section, type TableColumn, visibleQuestions } from "@gm/shared";
+import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  Clock,
+  CloudCheck,
+  Link2,
+  Loader2,
+  Lock,
+  PartyPopper,
+  Paperclip,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
+import {
+  type AnswerValue,
+  type Answers,
+  FILE_REF,
+  fileRef,
+  isAnswered,
+  progressOf,
+  type Question,
+  type Section,
+  type TableColumn,
+  type UploadStart,
+  visibleQuestions,
+} from "@gm/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +38,7 @@ import { Input, Textarea } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "./api";
+import { UploadButton } from "./files";
 import { fmtDate } from "./format";
 
 const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35";
@@ -19,6 +48,13 @@ const cellCls =
 type Q = Question & { optionLabels?: string[] };
 type TableValue = Record<string, string>[];
 type SaveState = { saving?: boolean; error?: string; saved?: boolean };
+
+/** Uploading for files questions: how an upload starts here, and the files already uploaded (by id). */
+interface FileContext {
+  start?: (meta: { name: string; mime: string; size: number }) => Promise<UploadStart>;
+  files: Record<string, { name: string; url: string | null }>;
+}
+const Files = createContext<FileContext>({ files: {} });
 
 // ─── One question ─────────────────────────────────────────────────────
 
@@ -115,20 +151,7 @@ function Control({
       );
     case "file":
       return (
-        <div className="space-y-1.5">
-          <Textarea
-            id={inputId}
-            aria-labelledby={labelId}
-            value={str}
-            placeholder="Paste links to the files (Google Drive, Dropbox…), one per line"
-            onChange={(e) => onChange(e.target.value)}
-            className="min-h-20"
-          />
-          <p className="inline-flex items-center gap-1.5 text-body text-muted-foreground">
-            <Link2 className="size-3.5" />
-            Uploading files here comes soon — share links for now.
-          </p>
-        </div>
+        <FileControl value={typeof value === "string" ? value.split(/\s+/).filter(Boolean) : arr} onChange={onChange} labelId={labelId} inputId={inputId} />
       );
     case "number":
       return (
@@ -279,6 +302,81 @@ function Control({
   }
 }
 
+/** Uploaded files and links; each upload is added as it finishes. */
+function FileControl({ value, onChange, labelId, inputId }: { value: string[]; onChange: (v: AnswerValue) => void; labelId: string; inputId: string }) {
+  const ctx = useContext(Files);
+  const [names, setNames] = useState<Record<string, string>>({});
+  const [link, setLink] = useState("");
+  // The latest answer, so files uploaded one after another are all kept.
+  const current = useRef(value);
+  useEffect(() => {
+    current.current = value;
+  }, [value]);
+  const add = () => {
+    const url = link.trim();
+    if (!url) return;
+    onChange([...value, /^https?:\/\//.test(url) ? url : `https://${url}`]);
+    setLink("");
+  };
+  return (
+    <div className="space-y-2" role="group" aria-labelledby={labelId}>
+      {value.length > 0 && (
+        <ul className="space-y-1.5">
+          {value.map((v) => {
+            const id = FILE_REF.test(v) ? v.slice(5) : null;
+            const f = id ? ctx.files[id] : null;
+            return (
+              <li key={v} className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-body">
+                {id ? <Paperclip className="size-4 shrink-0 text-muted-foreground" /> : <Link2 className="size-4 shrink-0 text-muted-foreground" />}
+                {id ? (
+                  f?.url ? (
+                    <a href={f.url} target="_blank" rel="noreferrer" className="min-w-0 flex-1 truncate hover:underline">
+                      {f.name}
+                    </a>
+                  ) : (
+                    <span className="min-w-0 flex-1 truncate">{names[id] ?? f?.name ?? "Uploaded file"}</span>
+                  )
+                ) : (
+                  <a href={v} target="_blank" rel="noreferrer" className="min-w-0 flex-1 truncate hover:underline">
+                    {v}
+                  </a>
+                )}
+                <Button type="button" size="icon-sm" variant="ghost" aria-label="Remove" onClick={() => onChange(value.filter((x) => x !== v))}>
+                  <X />
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
+        {ctx.start && (
+          <UploadButton
+            start={ctx.start}
+            onUploaded={(id, file) => {
+              setNames((n) => ({ ...n, [id]: file.name }));
+              current.current = [...current.current, fileRef(id)];
+              onChange(current.current);
+            }}
+          />
+        )}
+        <div className="flex min-w-60 flex-1 gap-2">
+          <Input
+            id={inputId}
+            value={link}
+            placeholder="…or paste a link (Google Drive, Dropbox)"
+            onChange={(e) => setLink(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), add())}
+          />
+          <Button type="button" size="sm" variant="ghost" disabled={!link.trim()} onClick={add}>
+            Add link
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TableControl({ q, value, onChange, labelId }: { q: Q; value: TableValue; onChange: (v: AnswerValue) => void; labelId: string }) {
   const cols = q.columns ?? [];
   const fixed = q.fixedRows;
@@ -385,6 +483,8 @@ export function QuestionnaireForm({
   mode,
   save,
   onSaved,
+  upload,
+  files = {},
 }: {
   sections: (Section | (Omit<Section, "questions" | "intro"> & { intro?: string | null; questions: Q[] }))[];
   initial: Answers;
@@ -393,6 +493,9 @@ export function QuestionnaireForm({
   mode: "public" | "assisted" | "agency";
   save: (key: string, value: AnswerValue) => Promise<unknown>;
   onSaved?: () => void;
+  /** Starts an upload for files questions (none: links only). */
+  upload?: FileContext["start"];
+  files?: FileContext["files"];
 }) {
   const [answers, setAnswers] = useState<Answers>(initial);
   const [states, setStates] = useState<Record<string, SaveState>>({});
@@ -433,153 +536,155 @@ export function QuestionnaireForm({
   const failed = Object.values(states).some((s) => s.error);
 
   return (
-    <div ref={topRef} className="grid scroll-mt-24 grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-        <Card className="p-4">
-          <Meter label={mode === "agency" ? "Needed to start" : "Required to start"} icon={Lock} part={prog.required} />
-          <div className="my-3 border-t border-border-subtle" />
-          <Meter label={`Within ${windowDays} days`} icon={Clock} part={prog.window} hint={dueOn ? `by ${fmtDate(dueOn)}` : undefined} />
-        </Card>
-        <nav
-          aria-label="Sections"
-          className="scrollbar-thin -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:block lg:space-y-4 lg:overflow-visible lg:p-0"
-        >
-          {(["required", "within-window"] as const).map((when) => {
-            const list = ordered.filter((s) => (when === "required" ? s.when === "required" : s.when !== "required"));
-            if (!list.length) return null;
-            return (
-              <div key={when} className="flex shrink-0 gap-2 lg:block">
-                <div className="hidden px-1 pb-1.5 text-body font-medium uppercase tracking-wider text-muted-foreground lg:block">
-                  {when === "required" ? "Required to start" : `Within ${windowDays} days`}
-                </div>
-                <ul className="flex gap-2 lg:block lg:space-y-1">
-                  {list.map((s) => {
-                    const p = progressFor(s.key);
-                    const on = s.key === current.key;
-                    return (
-                      <li key={s.key} className="shrink-0">
-                        <button
-                          type="button"
-                          onClick={() => go(ordered.findIndex((x) => x.key === s.key))}
-                          aria-current={on ? "step" : undefined}
-                          className={cn(
-                            "flex w-full cursor-pointer items-center gap-2.5 whitespace-nowrap rounded-lg border px-3 py-2 text-left text-body transition lg:whitespace-normal",
-                            FOCUS,
-                            on ? "border-primary bg-primary-soft/60 text-primary" : "border-transparent bg-card hover:bg-muted lg:bg-transparent",
-                          )}
-                        >
-                          <span
+    <Files.Provider value={{ start: upload, files }}>
+      <div ref={topRef} className="grid scroll-mt-24 grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+          <Card className="p-4">
+            <Meter label={mode === "agency" ? "Needed to start" : "Required to start"} icon={Lock} part={prog.required} />
+            <div className="my-3 border-t border-border-subtle" />
+            <Meter label={`Within ${windowDays} days`} icon={Clock} part={prog.window} hint={dueOn ? `by ${fmtDate(dueOn)}` : undefined} />
+          </Card>
+          <nav
+            aria-label="Sections"
+            className="scrollbar-thin -mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:block lg:space-y-4 lg:overflow-visible lg:p-0"
+          >
+            {(["required", "within-window"] as const).map((when) => {
+              const list = ordered.filter((s) => (when === "required" ? s.when === "required" : s.when !== "required"));
+              if (!list.length) return null;
+              return (
+                <div key={when} className="flex shrink-0 gap-2 lg:block">
+                  <div className="hidden px-1 pb-1.5 text-body font-medium uppercase tracking-wider text-muted-foreground lg:block">
+                    {when === "required" ? "Required to start" : `Within ${windowDays} days`}
+                  </div>
+                  <ul className="flex gap-2 lg:block lg:space-y-1">
+                    {list.map((s) => {
+                      const p = progressFor(s.key);
+                      const on = s.key === current.key;
+                      return (
+                        <li key={s.key} className="shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => go(ordered.findIndex((x) => x.key === s.key))}
+                            aria-current={on ? "step" : undefined}
                             className={cn(
-                              "inline-flex size-5 shrink-0 items-center justify-center rounded-full",
-                              p.complete ? "bg-success text-success-foreground" : "border border-border-strong text-muted-foreground",
+                              "flex w-full cursor-pointer items-center gap-2.5 whitespace-nowrap rounded-lg border px-3 py-2 text-left text-body transition lg:whitespace-normal",
+                              FOCUS,
+                              on ? "border-primary bg-primary-soft/60 text-primary" : "border-transparent bg-card hover:bg-muted lg:bg-transparent",
                             )}
-                            aria-hidden
                           >
-                            {p.complete && <Check className="size-3" />}
-                          </span>
-                          <span className="min-w-0 flex-1 font-medium">{s.title}</span>
-                          <span className="shrink-0 tabular text-muted-foreground">
-                            {p.answered}/{p.total}
-                          </span>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            );
-          })}
-        </nav>
-      </aside>
+                            <span
+                              className={cn(
+                                "inline-flex size-5 shrink-0 items-center justify-center rounded-full",
+                                p.complete ? "bg-success text-success-foreground" : "border border-border-strong text-muted-foreground",
+                              )}
+                              aria-hidden
+                            >
+                              {p.complete && <Check className="size-3" />}
+                            </span>
+                            <span className="min-w-0 flex-1 font-medium">{s.title}</span>
+                            <span className="shrink-0 tabular text-muted-foreground">
+                              {p.answered}/{p.total}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
+          </nav>
+        </aside>
 
-      <div className="min-w-0 space-y-4">
-        {prog.required.complete && (
-          <div className="flex items-start gap-3 rounded-2xl border border-success/30 bg-success-soft/50 p-4">
-            <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-success-soft text-success ring-1 ring-success/30">
-              {prog.complete ? <PartyPopper className="size-4" /> : <CheckCircle2 className="size-4" />}
-            </span>
-            <div className="min-w-0 text-body">
-              <div className="font-semibold text-text-primary">
-                {prog.complete
-                  ? "All done — thank you!"
-                  : mode === "public"
-                    ? "You're all set to start"
-                    : mode === "agency"
-                      ? "The essentials are in"
-                      : "Required sections done — the gate can open"}
-              </div>
-              <div className="text-muted-foreground">
-                {prog.complete
-                  ? "Every section is answered."
-                  : `The rest can be answered within ${windowDays} days${dueOn ? ` (by ${fmtDate(dueOn)})` : ""}. Answers are saved — you can close this page and come back any time.`}
+        <div className="min-w-0 space-y-4">
+          {prog.required.complete && (
+            <div className="flex items-start gap-3 rounded-2xl border border-success/30 bg-success-soft/50 p-4">
+              <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl bg-success-soft text-success ring-1 ring-success/30">
+                {prog.complete ? <PartyPopper className="size-4" /> : <CheckCircle2 className="size-4" />}
+              </span>
+              <div className="min-w-0 text-body">
+                <div className="font-semibold text-text-primary">
+                  {prog.complete
+                    ? "All done — thank you!"
+                    : mode === "public"
+                      ? "You're all set to start"
+                      : mode === "agency"
+                        ? "The essentials are in"
+                        : "Required sections done — the gate can open"}
+                </div>
+                <div className="text-muted-foreground">
+                  {prog.complete
+                    ? "Every section is answered."
+                    : `The rest can be answered within ${windowDays} days${dueOn ? ` (by ${fmtDate(dueOn)})` : ""}. Answers are saved — you can close this page and come back any time.`}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        <Card className="overflow-hidden">
-          <div className="border-b border-border-subtle bg-surface-secondary px-5 py-4 sm:px-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge tone={current.when === "required" ? "danger" : "info"}>
-                {current.when === "required" ? (
+          <Card className="overflow-hidden">
+            <div className="border-b border-border-subtle bg-surface-secondary px-5 py-4 sm:px-6">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge tone={current.when === "required" ? "danger" : "info"}>
+                  {current.when === "required" ? (
+                    <>
+                      <Lock /> Required to start
+                    </>
+                  ) : (
+                    <>
+                      <Clock /> Within {windowDays} days
+                    </>
+                  )}
+                </Badge>
+                <span className="tabular text-body text-muted-foreground">
+                  Section {idx + 1} of {ordered.length} · {progressFor(current.key).answered}/{progressFor(current.key).total} answered
+                </span>
+              </div>
+              <h2 className="mt-2 text-subheading font-semibold tracking-tight">{current.title}</h2>
+              {current.intro && <p className="mt-0.5 text-body text-muted-foreground">{current.intro}</p>}
+              {internal && current.builds && (
+                <p className="mt-2 text-body text-muted-foreground">
+                  <span className="font-medium text-text-secondary">Builds:</span> {current.builds}
+                </p>
+              )}
+            </div>
+            <div className="divide-y divide-border-subtle">
+              {visibleQuestions(current, answers).map((q, i) => (
+                <div key={q.key} className="px-5 py-5 sm:px-6">
+                  <QuestionField q={q} index={i + 1} value={answers[q.key]} onChange={(v) => change(q, v)} showInternal={internal} state={states[q.key]} />
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle bg-surface-secondary px-5 py-3.5 sm:px-6">
+              <span className={cn("inline-flex items-center gap-1.5 text-body", failed ? "text-danger" : "text-muted-foreground")}>
+                {pending ? (
                   <>
-                    <Lock /> Required to start
+                    <Loader2 className="size-4 animate-spin" /> Saving…
+                  </>
+                ) : failed ? (
+                  <>
+                    <AlertCircle className="size-4" /> Some answers are not saved — see the questions marked in red
                   </>
                 ) : (
                   <>
-                    <Clock /> Within {windowDays} days
+                    <CloudCheck className="size-4 text-success" /> Saved as you go
                   </>
                 )}
-              </Badge>
-              <span className="tabular text-body text-muted-foreground">
-                Section {idx + 1} of {ordered.length} · {progressFor(current.key).answered}/{progressFor(current.key).total} answered
               </span>
-            </div>
-            <h2 className="mt-2 text-subheading font-semibold tracking-tight">{current.title}</h2>
-            {current.intro && <p className="mt-0.5 text-body text-muted-foreground">{current.intro}</p>}
-            {internal && current.builds && (
-              <p className="mt-2 text-body text-muted-foreground">
-                <span className="font-medium text-text-secondary">Builds:</span> {current.builds}
-              </p>
-            )}
-          </div>
-          <div className="divide-y divide-border-subtle">
-            {visibleQuestions(current, answers).map((q, i) => (
-              <div key={q.key} className="px-5 py-5 sm:px-6">
-                <QuestionField q={q} index={i + 1} value={answers[q.key]} onChange={(v) => change(q, v)} showInternal={internal} state={states[q.key]} />
-              </div>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle bg-surface-secondary px-5 py-3.5 sm:px-6">
-            <span className={cn("inline-flex items-center gap-1.5 text-body", failed ? "text-danger" : "text-muted-foreground")}>
-              {pending ? (
-                <>
-                  <Loader2 className="size-4 animate-spin" /> Saving…
-                </>
-              ) : failed ? (
-                <>
-                  <AlertCircle className="size-4" /> Some answers are not saved — see the questions marked in red
-                </>
-              ) : (
-                <>
-                  <CloudCheck className="size-4 text-success" /> Saved as you go
-                </>
-              )}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" disabled={idx === 0} onClick={() => go(idx - 1)}>
-                <ArrowLeft /> Back
-              </Button>
-              {idx < ordered.length - 1 && (
-                <Button size="sm" onClick={() => go(idx + 1)}>
-                  Next section <ArrowRight />
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" disabled={idx === 0} onClick={() => go(idx - 1)}>
+                  <ArrowLeft /> Back
                 </Button>
-              )}
+                {idx < ordered.length - 1 && (
+                  <Button size="sm" onClick={() => go(idx + 1)}>
+                    Next section <ArrowRight />
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
       </div>
-    </div>
+    </Files.Provider>
   );
 }
 
