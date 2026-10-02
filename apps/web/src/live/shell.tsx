@@ -60,6 +60,7 @@ import {
   X,
   Building,
   Layers,
+  LifeBuoy,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -80,7 +81,7 @@ import { BrandMark, BrandWordmark } from "@/components/shell/brand";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "./api";
 import { NotificationBell } from "./notifications";
-import { useCan, useMe, useSignOut, useSwitchAgency } from "./queries";
+import { useCan, useMe, useSignOut, useSupportVisit, useSwitchAgency } from "./queries";
 
 /** On the team (not a client's person, whose role reaches only the client portal). */
 const isTeam = (p: Record<string, unknown>) => Object.keys(p).some((area) => area !== "portal");
@@ -171,6 +172,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Payments", href: "/app/settings/payments", icon: CreditCard, area: "settings" },
       { title: "Genie Assistant", href: "/app/settings/genie", icon: Sparkles, area: "settings", suite: "genie" },
       { title: "Background jobs", href: "/app/settings/jobs", icon: Timer, area: "settings" },
+      { title: "Support access", href: "/app/settings/support", icon: LifeBuoy, area: "settings" },
       { title: "Audit log", href: "/app/audit", icon: History, area: "audit" },
     ],
   },
@@ -327,6 +329,31 @@ function UserMenu() {
   );
 }
 
+/** While the platform's support team is in an agency on its consent (P6-08): whose, how far, until when, and a way out. */
+function SupportBanner() {
+  const support = useMe().data?.support;
+  const visit = useSupportVisit();
+  if (!support) return null;
+  return (
+    <Alert tone="warning" className="mb-5 print:hidden">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span>
+          You are in {support.agencyName} as platform support ({support.level === "edit" ? "see and fix" : "see only"}) until{" "}
+          {new Date(support.until).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" })}. Everything you do is in their audit log.
+        </span>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={visit.isPending}
+          onClick={() => visit.mutate({ step: "leave" }, { onError: (e) => toast.error(errorMessage(e)) })}
+        >
+          Leave
+        </Button>
+      </div>
+    </Alert>
+  );
+}
+
 /** The plan's state above every page (ADR 0011): read-only and why, a payment due, or the trial's days left. */
 function PlanBanner() {
   const plan = useMe().data?.entitlements;
@@ -469,6 +496,7 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
         <main className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 print:max-w-none print:p-0">
+          <SupportBanner />
           <PlanBanner />
           {children}
         </main>

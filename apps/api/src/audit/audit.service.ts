@@ -52,9 +52,14 @@ export class AuditService {
 
   /** Inside the change's own transaction (`TenantDb.tx`): the change and its entry are saved together or not at all. */
   async record(tx: TenantTx, entry: AuditEntry) {
-    // A change a client made in their portal says who it was.
+    // A change a client made in their portal says who it was; one the platform's support team made says so (P6-08).
     const portal = this.tenant.portal;
-    const e = portal ? { ...entry, after: { ...(entry.after ?? {}), byClient: portal.name } } : entry;
+    const support = this.tenant.support;
+    const e = portal
+      ? { ...entry, after: { ...(entry.after ?? {}), byClient: portal.name } }
+      : support
+        ? { ...entry, after: { ...(entry.after ?? {}), byPlatformSupport: true } }
+        : entry;
     await tx.auditLog.create({ data: row(this.tenant.agencyId, this.tenant.userId, e) });
   }
 

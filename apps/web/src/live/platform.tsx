@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Building, Pencil, Plus, ReceiptText, Settings2, Trash2 } from "lucide-react";
+import { Building, LifeBuoy, Pencil, Plus, ReceiptText, Settings2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   GST_RATES,
@@ -30,7 +30,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fmtDate } from "@/lib/utils";
 import { errorMessage } from "./api";
 import { money } from "./plan";
-import { useMe, usePlatformAgencies, usePlatformConsoleAction, usePlatformInvoices, usePlatformSettings } from "./queries";
+import { useMe, usePlatformAgencies, usePlatformConsoleAction, usePlatformInvoices, usePlatformSettings, useSupportVisit } from "./queries";
 
 const onError = (e: unknown) => toast.error(errorMessage(e));
 const STATUS_TONE: Record<string, BadgeTone> = { trialing: "info", active: "success", past_due: "warning", expired: "danger", cancelled: "neutral" };
@@ -70,6 +70,7 @@ export function LivePlatform() {
 function Agencies() {
   const q = usePlatformAgencies();
   const [editing, setEditing] = useState<PlatformAgencyRow | null>(null);
+  const visit = useSupportVisit();
   if (q.isPending) return <SkeletonRows rows={5} />;
   if (q.error) return <Alert tone="danger">{errorMessage(q.error)}</Alert>;
   if (!q.data.length) return <EmptyState icon={Building} title="No agencies yet" description="Agencies show here as they sign up." />;
@@ -122,9 +123,22 @@ function Agencies() {
                 {a.failedJobs}
               </TD>
               <TD className="pr-5">
-                <Button size="xs" variant="ghost" aria-label={`Change ${a.name}'s plan`} onClick={() => setEditing(a)}>
-                  <Pencil />
-                </Button>
+                <div className="flex justify-end gap-1">
+                  {a.support && (
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      title={`They let support in (${a.support.level === "edit" ? "see and fix" : "see only"}) until ${new Date(a.support.until).toLocaleString("en-IN")}`}
+                      disabled={visit.isPending}
+                      onClick={() => visit.mutate({ step: "enter", agencyId: a.id }, { onError: (e) => toast.error(errorMessage(e)) })}
+                    >
+                      <LifeBuoy /> Enter
+                    </Button>
+                  )}
+                  <Button size="xs" variant="ghost" aria-label={`Change ${a.name}'s plan`} onClick={() => setEditing(a)}>
+                    <Pencil />
+                  </Button>
+                </div>
               </TD>
             </TR>
           ))}

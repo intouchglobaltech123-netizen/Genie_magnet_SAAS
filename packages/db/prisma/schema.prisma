@@ -2823,3 +2823,22 @@ model PlatformInvoice {
   @@index([agencyId, issuedOn])
   @@map("platform_invoices")
 }
+
+/// The agency's consent for the platform's support team to come in (P6-08): for some hours, seeing only or also
+/// fixing, for a reason; revocable, and every visit is in the agency's audit log.
+model SupportGrant {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  agencyId   String    @map("agency_id") @db.Uuid
+  /// view · edit
+  level      String    @default("view")
+  reason     String
+  expiresAt  DateTime  @map("expires_at")
+  grantedBy  String    @map("granted_by")
+  revokedAt  DateTime? @map("revoked_at")
+  revokedBy  String?   @map("revoked_by")
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([agencyId, expiresAt])
+  @@map("support_grants")
+}

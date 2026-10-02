@@ -43,8 +43,22 @@ export class MeController {
     if (ctx) {
       const permissions = await this.access.load(ctx);
       const role = await this.tenant.db.role.findUnique({ where: { agencyId_key: { agencyId: ctx.agencyId, key: ctx.role } }, select: { name: true } });
-      active = { agencyId: ctx.agencyId, role: { key: ctx.role, name: role?.name ?? ctx.role }, permissions, entitlements: await this.entitlements.load(ctx) };
+      active = {
+        agencyId: ctx.agencyId,
+        role: ctx.support ? { key: ctx.role, name: "Platform support" } : { key: ctx.role, name: role?.name ?? ctx.role },
+        permissions,
+        entitlements: await this.entitlements.load(ctx),
+      };
     }
+    // The platform's support team, in an agency on its consent (P6-08).
+    const support = ctx?.support
+      ? {
+          agencyId: ctx.agencyId,
+          agencyName: (await this.tenant.db.agency.findUnique({ where: { id: ctx.agencyId }, select: { name: true } }))?.name ?? "",
+          level: ctx.support.level,
+          until: ctx.support.until,
+        }
+      : null;
 
     return {
       user: { id: session.user.id, name: session.user.name, email: session.user.email, image: session.user.image ?? null },
@@ -54,6 +68,7 @@ export class MeController {
       entitlements: active?.entitlements ?? null,
       agencies: memberships.map((m) => ({ ...m.agency, role: m.role })),
       platformAdmin: this.env.PLATFORM_ADMIN_EMAILS.includes(session.user.email.toLowerCase()),
+      support,
     };
   }
 }

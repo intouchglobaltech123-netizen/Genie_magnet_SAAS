@@ -246,6 +246,8 @@ export interface PlatformAgencyRow {
   /** The latest change anyone made in it. */
   lastActivityAt: string | null;
   failedJobs: number;
+  /** The agency lets the platform's support team in until then (P6-08). */
+  support: { until: string; level: "view" | "edit" } | null;
 }
 
 /** PUT /platform/agencies/:id/subscription: the platform admin sets an agency's plan (or takes it off plans). */

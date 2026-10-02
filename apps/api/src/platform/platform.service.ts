@@ -6,6 +6,7 @@ import { AuditService } from "../audit/audit.service.js";
 import { entitlementsOf } from "../billing/entitlements.js";
 import { usageOf } from "../billing/plan.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
+import { SupportService } from "../support/support.service.js";
 import { PlatformSettingsService } from "./platform-settings.service.js";
 
 /**
@@ -18,6 +19,7 @@ export class PlatformService {
     private readonly prisma: PrismaService,
     private readonly settings: PlatformSettingsService,
     private readonly audit: AuditService,
+    private readonly support: SupportService,
   ) {}
 
   async agencies(): Promise<PlatformAgencyRow[]> {
@@ -27,7 +29,7 @@ export class PlatformService {
         tx.subscription.findMany(),
       ]),
     );
-    const settings = await this.settings.get();
+    const [settings, open] = await Promise.all([this.settings.get(), this.support.open()]);
     return Promise.all(
       agencies.map(async (a) => {
         const ent = entitlementsOf(subs.find((s) => s.agencyId === a.id) ?? null, settings);
@@ -55,6 +57,7 @@ export class PlatformService {
           storageBytes: usage.storageBytes,
           lastActivityAt: last?.at.toISOString() ?? null,
           failedJobs,
+          support: open.get(a.id) ?? null,
         };
       }),
     );

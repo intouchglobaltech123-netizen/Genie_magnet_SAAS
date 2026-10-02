@@ -106,6 +106,8 @@ import { PlanService } from "./billing/plan.service.js";
 import { PlatformSettingsService } from "./platform/platform-settings.service.js";
 import { PlatformController } from "./platform/platform.controller.js";
 import { PlatformService } from "./platform/platform.service.js";
+import { PlatformSupportController, SupportAccessController } from "./support/support.controller.js";
+import { SupportService } from "./support/support.service.js";
 import { DailySheetService } from "./daily-sheet/daily-sheet.service.js";
 import { LearningService } from "./performance/learning.service.js";
 import { PerformanceMetrics } from "./performance/metrics.js";
@@ -214,6 +216,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     PlatformController,
     BillingWebhookController,
     PlatformInvoicesController,
+    SupportAccessController,
+    PlatformSupportController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -380,6 +384,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
           : new OutboxBillingProvider(),
     },
     BillingService,
+    SupportService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

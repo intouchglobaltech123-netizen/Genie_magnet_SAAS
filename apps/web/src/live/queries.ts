@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   OWNER_ROLE,
@@ -114,6 +115,8 @@ import {
   type PlanCurrency,
   type PlanPage,
   type PlatformInvoiceRow,
+  type SupportGrantInput,
+  type SupportGrantRow,
   type PlatformAgencyRow,
   type PlatformSettings,
   type ProjectDetail,
@@ -2212,5 +2215,35 @@ export function usePlatformConsoleAction() {
         ? api<PlatformSettings>("/platform/settings", { method: "PUT", body: v.body })
         : api<PlatformAgencyRow>(`/platform/agencies/${v.agencyId}/subscription`, { method: "PUT", body: v.body }),
     onSuccess: () => Promise.all([qc.invalidateQueries({ queryKey: ["platform"] }), qc.invalidateQueries({ queryKey: ["plan"] })]),
+  });
+}
+
+// ─── Support access (P6-08) ────────────────────────────────────────────
+
+export const useSupportGrants = () => useQuery({ queryKey: ["support"], queryFn: () => api<SupportGrantRow[]>("/support-access") });
+
+export function useSupportAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { step: "grant"; body: SupportGrantInput } | { step: "revoke"; id: string }) =>
+      v.step === "grant"
+        ? api<SupportGrantRow[]>("/support-access", { body: v.body })
+        : api<SupportGrantRow[]>(`/support-access/${v.id}/revoke`, { method: "POST" }),
+    onSuccess: (rows) => qc.setQueryData(["support"], rows),
+  });
+}
+
+/** The platform's team coming into an agency on its consent, and leaving. */
+export function useSupportVisit() {
+  const qc = useQueryClient();
+  const router = useRouter();
+  return useMutation({
+    mutationFn: (v: { step: "enter"; agencyId: string } | { step: "leave" }) =>
+      v.step === "enter" ? api(`/platform/agencies/${v.agencyId}/support`, { method: "POST" }) : api("/platform/support", { method: "DELETE" }),
+    // Everything on screen belongs to another agency now: go to its home (or back to the console), then reload it all.
+    onSuccess: (_d, v) => {
+      router.push(v.step === "enter" ? "/app" : "/app/platform");
+      return qc.resetQueries();
+    },
   });
 }

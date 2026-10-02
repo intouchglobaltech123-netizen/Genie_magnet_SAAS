@@ -3,9 +3,10 @@ import { ForbiddenException, Inject, Injectable, type NestMiddleware, Optional, 
 import type { NextFunction, Request, Response } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import { createPrisma, forAgency, type TenantClient, withAgency } from "@gm/db";
-import { type AreaKey, FULL_ACCESS, OWNER_ROLE, type PermissionMatrix, scopeOf, type Entitlements } from "@gm/shared";
+import { type AreaKey, type Entitlements, FULL_ACCESS, OWNER_ROLE, type PermissionMatrix, scopeOf, type SupportLevel, supportPermissions } from "@gm/shared";
 import { AUTH, AUTH_PRISMA, type Auth } from "../auth/auth.js";
 import { locals } from "../common/request-context.js";
+import { Secrets } from "../common/secrets.js";
 import { ENV, type Env } from "../env.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 
@@ -20,6 +21,8 @@ export interface TenantContext {
   portal?: PortalPerson;
   /** The agency's plan: its suites, limits and whether it is read-only (ADR 0011), read once per request. */
   entitlements?: Entitlements;
+  /** Someone from the platform's support team, in the agency on its consent (P6-08). */
+  support?: { grantId: string; level: SupportLevel; until: string };
 }
 
 export interface PortalPerson {
@@ -60,6 +63,20 @@ export function asSystem<T>(agencyId: string, fn: () => Promise<T>, onBehalfOf?:
   return storage.run({ agencyId, role: "system", permissions: FULL_ACCESS, ...(onBehalfOf && { userId: onBehalfOf }) }, fn);
 }
 
+/** The role a support visit works under (P6-08); not one of the agency's own roles. */
+export const SUPPORT_ROLE = "support";
+/** The sealed cookie that carries a support visit. */
+export const SUPPORT_COOKIE = "gm_support";
+
+/** One cookie's value from the request's Cookie header. */
+export function readCookie(req: Request, name: string) {
+  for (const part of (req.headers.cookie ?? "").split(";")) {
+    const [k, ...v] = part.trim().split("=");
+    if (k === name) return decodeURIComponent(v.join("="));
+  }
+  return null;
+}
+
 /**
  * Resolves the agency for the request and keeps it for everything that runs in it.
  * better-auth: the session's active agency, checked against a live membership on every request, so a person
@@ -73,7 +90,37 @@ export class TenantMiddleware implements NestMiddleware {
     @Inject(ENV) private readonly env: Env,
     @Optional() @Inject(AUTH) private readonly auth: Auth | null,
     @Optional() @Inject(AUTH_PRISMA) private readonly authDb: ReturnType<typeof createPrisma> | null,
+    private readonly secrets: Secrets,
+    private readonly prisma: PrismaService,
   ) {}
+
+  /**
+   * A support visit (P6-08): the sealed cookie the platform console set, for this same person — still on the
+   * platform's team — while the agency's consent lasts. Anything else and the person is simply in their own agency.
+   */
+  private async supportVisit(req: Request, user: { id: string; email: string }): Promise<TenantContext | null> {
+    const sealed = readCookie(req, SUPPORT_COOKIE);
+    if (!sealed || !this.env.PLATFORM_ADMIN_EMAILS.includes(user.email.toLowerCase())) return null;
+    let v: { a: string; g: string; u: string };
+    try {
+      v = JSON.parse(this.secrets.decrypt(sealed)) as typeof v;
+    } catch {
+      return null;
+    }
+    if (v.u !== user.id) return null;
+    const grant = await forAgency(this.prisma.client, v.a, user.id).supportGrant.findFirst({
+      where: { id: v.g, revokedAt: null, expiresAt: { gt: new Date() } },
+    });
+    if (!grant) return null;
+    const level = grant.level === "edit" ? "edit" : "view";
+    return {
+      agencyId: v.a,
+      userId: user.id,
+      role: SUPPORT_ROLE,
+      permissions: supportPermissions(level),
+      support: { grantId: grant.id, level, until: grant.expiresAt.toISOString() },
+    };
+  }
 
   async use(req: Request, res: Response, next: NextFunction) {
     const run = (ctx: TenantContext) => {
@@ -88,6 +135,10 @@ export class TenantMiddleware implements NestMiddleware {
 
     if (!this.auth || !this.authDb) return next();
     const session = await this.auth.api.getSession({ headers: fromNodeHeaders(req.headers) });
+    if (session) {
+      const visit = await this.supportVisit(req, session.user);
+      if (visit) return run(visit);
+    }
     const agencyId = session?.session.activeOrganizationId;
     if (!session || !agencyId) return next();
     const membership = await this.authDb.membership.findFirst({ where: { agencyId, userId: session.user.id }, select: { role: true } });
@@ -132,6 +183,11 @@ export class TenantDb {
   /** The client contact, when the request comes from their portal. */
   get portal(): PortalPerson | undefined {
     return this.ctx().portal;
+  }
+
+  /** The platform's support team, when it is in the agency on its consent (P6-08). */
+  get support() {
+    return this.ctx().support;
   }
 
   /**
