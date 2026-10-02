@@ -122,6 +122,73 @@ export interface Agreement {
   renewalDue: boolean;
 }
 
+/** GET /invoice-settings (null until the agency sets them up). */
+export interface InvoiceSettings {
+  legalName: string;
+  gstin: string | null;
+  state: string;
+  address: string;
+  services: { name: string; sac: string; rate: 0 | 5 | 12 | 18 | 28 }[];
+  numberFormat: string;
+  nextNumber: number;
+  /** What the next invoice number will look like if issued today. */
+  nextNumberPreview: string;
+  paymentTermsDays: number;
+  bankName: string | null;
+  accountName: string | null;
+  accountNumber: string | null;
+  ifsc: string | null;
+  upiId: string | null;
+  footer: string | null;
+}
+
+export interface BilledTo {
+  name: string;
+  gstin: string | null;
+  state: string | null;
+  address: string | null;
+}
+
+/** An invoice (P1-20). */
+export interface Invoice {
+  id: string;
+  number: string | null;
+  status: "draft" | "sent" | "paid" | "cancelled";
+  client: { id: string; name: string; code: string };
+  agreement: { id: string; title: string } | null;
+  period: string | null;
+  issueDate: string | null;
+  dueDate: string | null;
+  placeOfSupply: string | null;
+  /** CGST + SGST (true) or IGST (false). */
+  intraState: boolean;
+  /** False when the agency has no GSTIN: no GST is charged. */
+  registered: boolean;
+  lines: { description: string; sac: string; quantity: number; rate: number; taxRate: 0 | 5 | 12 | 18 | 28; amount: number }[];
+  taxable: number;
+  cgst: number;
+  sgst: number;
+  igst: number;
+  total: number;
+  totalInWords: string;
+  /** For drafts, the client's and agency's details as they are now; for issued invoices, as they were when issued. */
+  billedTo: BilledTo;
+  seller:
+    | (Omit<InvoiceSettings, "services" | "numberFormat" | "nextNumber" | "nextNumberPreview" | "paymentTermsDays"> & {
+        logo: string | null;
+        brandColor: string | null;
+      })
+    | null;
+  notes: string | null;
+  sentAt: string | null;
+  paidOn: string | null;
+  paymentNote: string | null;
+  cancelReason: string | null;
+  /** Sent, unpaid and past its due date. */
+  overdue: boolean;
+  createdAt: string;
+}
+
 /** GET /clients/:id */
 export interface ClientDetail extends Client {
   /** Null when the person's role may not see agreements. */

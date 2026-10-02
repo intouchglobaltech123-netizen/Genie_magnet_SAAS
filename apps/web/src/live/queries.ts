@@ -10,6 +10,12 @@ import {
   type AgreementRenewal,
   type AgreementUpdate,
   type ClientDetail,
+  type Invoice,
+  type InvoiceInput,
+  type InvoicePayment,
+  type InvoiceSettings,
+  type InvoiceSettingsInput,
+  type InvoiceUpdate,
   type ClientUpdate,
   type ContactInput,
   type ContactUpdate,
@@ -56,6 +62,8 @@ export const keys = {
   stages: ["pipeline-stages"] as const,
   leads: ["leads"] as const,
   agreements: ["agreements"] as const,
+  invoices: ["invoices"] as const,
+  invoiceSettings: ["invoice-settings"] as const,
 };
 
 // ─── Session ──────────────────────────────────────────────────────────
@@ -243,7 +251,7 @@ export const useClient = (id: string) => useQuery({ queryKey: [...keys.clients, 
 /** Client and agreement changes show on the client page, the lists and Home. */
 function useRefreshClients() {
   const qc = useQueryClient();
-  return () => Promise.all([keys.clients, keys.agreements].map((queryKey) => qc.invalidateQueries({ queryKey })));
+  return () => Promise.all([keys.clients, keys.agreements, keys.invoices].map((queryKey) => qc.invalidateQueries({ queryKey })));
 }
 
 export function useUpdateClient(id: string) {
@@ -468,6 +476,62 @@ export function useWinLead() {
   const refresh = useRefreshDeals();
   return useMutation({
     mutationFn: (v: { leadId: string; input: WinInput }) => api<{ clientId: string; agreementId: string | null }>(`/leads/${v.leadId}/win`, { body: v.input }),
+    onSuccess: refresh,
+  });
+}
+
+// ─── Invoices ─────────────────────────────────────────────────────────
+
+/** Null until the agency sets them up. */
+export const useInvoiceSettings = (enabled = true) =>
+  useQuery({ queryKey: keys.invoiceSettings, queryFn: async () => (await api<InvoiceSettings | null>("/invoice-settings")) ?? null, enabled });
+
+export function useSaveInvoiceSettings() {
+  const refresh = useRefresh(keys.invoiceSettings, keys.invoices);
+  return useMutation({ mutationFn: (v: InvoiceSettingsInput) => api<InvoiceSettings>("/invoice-settings", { method: "PUT", body: v }), onSuccess: refresh });
+}
+
+/** `""` for all, `status=draft`, `overdue=1`, `clientId=…` */
+export const useInvoices = (query = "", enabled = true) =>
+  useQuery({ queryKey: [...keys.invoices, query], queryFn: () => api<Invoice[]>(`/invoices${query ? `?${query}` : ""}`), enabled });
+
+export const useInvoice = (id: string) => useQuery({ queryKey: [...keys.invoices, "one", id], queryFn: () => api<Invoice>(`/invoices/${id}`) });
+
+export function useSaveInvoice() {
+  const refresh = useRefresh(keys.invoices);
+  return useMutation({
+    mutationFn: (v: { id?: string; input: InvoiceInput | InvoiceUpdate }) =>
+      v.id ? api<Invoice>(`/invoices/${v.id}`, { method: "PATCH", body: v.input }) : api<Invoice>("/invoices", { body: v.input }),
+    onSuccess: refresh,
+  });
+}
+
+export function useInvoiceAgreementMonth() {
+  const refresh = useRefresh(keys.invoices);
+  return useMutation({
+    mutationFn: (v: { agreementId: string; period: string }) => api<Invoice>(`/agreements/${v.agreementId}/invoices`, { body: { period: v.period } }),
+    onSuccess: refresh,
+  });
+}
+
+export type InvoiceStep =
+  { step: "issue"; issueDate?: string } | { step: "paid"; input: InvoicePayment } | { step: "cancel"; reason: string } | { step: "delete" };
+
+export function useInvoiceStep() {
+  const refresh = useRefresh(keys.invoices);
+  return useMutation({
+    mutationFn: ({ id, ...v }: { id: string } & InvoiceStep) => {
+      switch (v.step) {
+        case "issue":
+          return api<Invoice>(`/invoices/${id}/issue`, { body: { issueDate: v.issueDate } });
+        case "paid":
+          return api<Invoice>(`/invoices/${id}/paid`, { body: v.input });
+        case "cancel":
+          return api<Invoice>(`/invoices/${id}/cancel`, { body: { reason: v.reason } });
+        default:
+          return api<Invoice | undefined>(`/invoices/${id}`, { method: "DELETE" });
+      }
+    },
     onSuccess: refresh,
   });
 }

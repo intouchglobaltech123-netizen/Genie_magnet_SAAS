@@ -21,6 +21,8 @@ import {
   Moon,
   Package,
   Plus,
+  Receipt,
+  ReceiptIndianRupee,
   ShieldCheck,
   Sun,
   Users,
@@ -63,6 +65,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Sales pipeline", href: "/app/sales", icon: Filter, area: "crm" },
       { title: "Clients", href: "/app/clients", icon: Building2, area: "clients" },
       { title: "Agreements", href: "/app/agreements", icon: FileSignature, area: "agreements" },
+      { title: "Invoices", href: "/app/invoices", icon: ReceiptIndianRupee, area: "invoices" },
       { title: "Import from Excel", href: "/app/import", icon: FileSpreadsheet, area: "clients", level: "edit" },
     ],
   },
@@ -72,6 +75,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Agency profile", href: "/app/settings/agency", icon: Landmark, area: "settings" },
       { title: "Packages", href: "/app/settings/packages", icon: Package },
       { title: "Pipeline stages", href: "/app/settings/pipeline", icon: ListOrdered, area: "settings" },
+      { title: "Invoice settings", href: "/app/settings/invoices", icon: Receipt, area: "invoices" },
       { title: "Team", href: "/app/settings/team", icon: Users, area: "team" },
       { title: "Roles and permissions", href: "/app/settings/roles", icon: ShieldCheck, area: "team" },
       { title: "Audit log", href: "/app/audit", icon: History, area: "audit" },
@@ -278,7 +282,7 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[256px] flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[256px] flex-col border-r border-sidebar-border bg-sidebar lg:flex print:hidden">
         <Link href="/app" className="flex h-16 shrink-0 items-center gap-3 px-5">
           <BrandMark />
           <BrandWordmark inverted sub="Agency workspace" />
@@ -313,8 +317,8 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>
 
-      <div className="lg:pl-[256px]">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-2 border-b border-border bg-background/90 px-4 backdrop-blur-md lg:px-8">
+      <div className="lg:pl-[256px] print:pl-0">
+        <header className="sticky top-0 z-20 flex h-16 items-center gap-2 border-b border-border bg-background/90 px-4 backdrop-blur-md lg:px-8 print:hidden">
           <Button variant="ghost" size="icon-sm" className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open navigation">
             <Menu />
           </Button>
@@ -327,7 +331,7 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
             <UserMenu />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+        <main className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 print:max-w-none print:p-0">{children}</main>
       </div>
     </div>
   );

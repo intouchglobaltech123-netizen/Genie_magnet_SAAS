@@ -78,6 +78,22 @@ export interface SeedAgency {
   packages: SeedPackage[];
   clients: SeedClient[];
   leads: SeedLead[];
+  /** Settings → Invoice settings (invented details; the bank is clearly a sample). */
+  invoiceSettings?: {
+    legalName: string;
+    gstin: string;
+    state: string;
+    address: string;
+    services: { name: string; sac: string; rate: number }[];
+    numberFormat: string;
+    paymentTermsDays: number;
+    bankName: string;
+    accountName: string;
+    accountNumber: string;
+    ifsc: string;
+    upiId: string;
+    footer: string;
+  };
 }
 
 const gm = (local: string) => `${local}@geniemagnet.test`;
@@ -89,6 +105,24 @@ export const genieMagnet: SeedAgency = {
   slug: "genie-magnet",
   plan: "internal",
   profile: { brandColor: "#1E3A8A", city: "Appakudal", phone: "+91 98400 11000", email: "hello@geniemagnet.test", languages: ["en", "ta"] },
+  invoiceSettings: {
+    legalName: "Genie Magnet Media LLP",
+    gstin: "33AAKFG5512R1Z1",
+    state: "33",
+    address: "12 Bhavani Main Road, Appakudal, Erode 638315",
+    services: [
+      { name: "Video production services", sac: "999612", rate: 18 },
+      { name: "Digital marketing and content services", sac: "998361", rate: 18 },
+    ],
+    numberFormat: "GM/{FY}/{0000}",
+    paymentTermsDays: 7,
+    bankName: "Sample Bank (test data)",
+    accountName: "Genie Magnet Media LLP",
+    accountNumber: "000011112222",
+    ifsc: "SMPL0000001",
+    upiId: "geniemagnet@sample",
+    footer: "Thank you for your business. Please quote the invoice number when you pay.",
+  },
   people: [
     { name: "Janarthanan", email: gm("jana"), role: "owner", title: "Founder & MD" },
     { name: "Ashwin", email: gm("ashwin"), role: "manager", title: "Company Manager" },

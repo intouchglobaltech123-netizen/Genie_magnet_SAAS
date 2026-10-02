@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarClock, FileSignature, Pause, Pencil, Play, Plus, RefreshCcw, ShieldCheck, Square, Trash2 } from "lucide-react";
+import { CalendarClock, FileSignature, Pause, Pencil, Play, Plus, ReceiptIndianRupee, RefreshCcw, ShieldCheck, Square, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { type Agreement, agreementEndDate, agreementInput, BILLING_TERMS, dayAfter, type DeliverableKind } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
@@ -18,6 +18,8 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { ApiError, errorMessage } from "./api";
 import { NoteDialog } from "./deals";
+import { fmtDate } from "./format";
+import { NewInvoiceDialog } from "./invoices";
 import { DeliverablesEditor, inr, type Line, PlatformPicker, PLATFORM_LABEL } from "./packages";
 import { type AgreementStep, useAgreements, useAgreementStep, useCan, usePackages, useSaveAgreement } from "./queries";
 
@@ -27,10 +29,6 @@ export const AGREEMENT_STATUS: Record<Agreement["status"], { label: string; tone
   paused: { label: "Paused", tone: "neutral" },
   ended: { label: "Ended", tone: "neutral" },
 };
-
-/** 1 Nov 2026 */
-export const fmtDate = (d: string) =>
-  new Date(`${d.slice(0, 10)}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 
 const firstOfNextMonth = () => {
   const d = new Date();
@@ -365,7 +363,7 @@ function EndDialog({ a, open, onOpenChange }: { a: Agreement; open: boolean; onO
 export function AgreementCard({ a, clientName }: { a: Agreement; clientName: string }) {
   const can = useCan();
   const step = useAgreementStep();
-  const [dialog, setDialog] = useState<"edit" | "renew" | "end" | "pause" | null>(null);
+  const [dialog, setDialog] = useState<"edit" | "renew" | "end" | "pause" | "invoice" | null>(null);
   const canEdit = can("agreements", "edit");
   const canApprove = can("agreements", "approve");
   const run = (v: AgreementStep, done: string) =>
@@ -456,6 +454,12 @@ export function AgreementCard({ a, clientName }: { a: Agreement; clientName: str
             Renew
           </Button>
         )}
+        {(a.status === "active" || a.status === "paused") && can("invoices", "edit") && (
+          <Button size="xs" variant="soft" onClick={() => setDialog("invoice")}>
+            <ReceiptIndianRupee />
+            Invoice a month
+          </Button>
+        )}
         {(a.status === "active" || a.status === "paused") && canApprove && (
           <Button size="xs" variant="ghost" onClick={() => setDialog("end")}>
             <Square />
@@ -466,6 +470,7 @@ export function AgreementCard({ a, clientName }: { a: Agreement; clientName: str
       {dialog === "edit" && <AgreementDialog clientId={a.clientId} clientName={clientName} editing={a} open onOpenChange={(o) => !o && setDialog(null)} />}
       {dialog === "renew" && <RenewDialog a={a} open onOpenChange={(o) => !o && setDialog(null)} />}
       {dialog === "end" && <EndDialog a={a} open onOpenChange={(o) => !o && setDialog(null)} />}
+      {dialog === "invoice" && <NewInvoiceDialog clientId={a.clientId} agreement={a} open onOpenChange={(o) => !o && setDialog(null)} />}
       <NoteDialog
         open={dialog === "pause"}
         title={`Pause ${a.title}`}

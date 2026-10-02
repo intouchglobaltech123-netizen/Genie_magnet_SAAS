@@ -57,6 +57,7 @@ export async function seedSampleData(prisma: PrismaClient, agencies: SeedAgency[
     await withAgency(prisma, a.id, async (tx) => {
       await tx.agency.create({ data: { id: a.id, name: a.name, slug: a.slug, plan: a.plan, ...a.profile } });
       await setUpAgencyDefaults(tx, a.id);
+      if (a.invoiceSettings) await tx.invoiceSettings.create({ data: { agencyId: a.id, ...a.invoiceSettings } });
       await tx.membership.createMany({ data: a.people.map((p) => ({ agencyId: a.id, userId: userId(p.email), role: p.role, title: p.title })) });
 
       const packages = new Map<string, string>();

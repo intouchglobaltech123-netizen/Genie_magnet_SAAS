@@ -143,18 +143,19 @@ export class ClientsService {
   /** The client page: details, contacts, agreements (for roles that may see them), and the lead it was won from. */
   async get(id: string) {
     const row = await this.find(id);
-    const [[client], lead, agreements, videos] = await Promise.all([
+    const [[client], lead, agreements, videos, invoices] = await Promise.all([
       this.present([row]),
       this.tenant.db.lead.findFirst({ where: { clientId: id }, select: { id: true, name: true, company: true } }),
       allows(this.tenant.permissions, "agreements", "view") ? this.agreements.list({ clientId: id }) : Promise.resolve(null),
       this.tenant.db.video.count({ where: { clientId: id } }),
+      this.tenant.db.invoice.count({ where: { clientId: id } }),
     ]);
     return {
       ...client!,
       agreements,
       lead,
       /** Only a client with nothing attached can be deleted; others are archived. */
-      canDelete: !row.agreements.length && !lead && !videos,
+      canDelete: !row.agreements.length && !lead && !videos && !invoices,
     };
   }
 

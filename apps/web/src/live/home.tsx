@@ -2,13 +2,41 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BadgePercent, Building2, CalendarClock, CheckCircle2, Circle, FileSignature, RefreshCcw, ShieldCheck, Users } from "lucide-react";
+import {
+  ArrowRight,
+  BadgePercent,
+  Building2,
+  CalendarClock,
+  CheckCircle2,
+  Circle,
+  FileSignature,
+  FileText,
+  ReceiptIndianRupee,
+  RefreshCcw,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, SectionCard } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useAgency, useAgreements, useAudit, useCan, useClients, useLeads, useMe, usePackages, useProposals, useStages, useTeam } from "./queries";
+import { inr } from "./packages";
+import {
+  useAgency,
+  useAgreements,
+  useAudit,
+  useCan,
+  useClients,
+  useInvoices,
+  useInvoiceSettings,
+  useLeads,
+  useMe,
+  usePackages,
+  useProposals,
+  useStages,
+  useTeam,
+} from "./queries";
 
 interface Step {
   title: string;
@@ -28,6 +56,7 @@ function SetupChecklist({ agencyId }: { agencyId: string }) {
   const roleChanges = useAudit("entity=role&limit=1", can("audit", "view"));
   const agency = useAgency();
   const packages = usePackages();
+  const invoiceSettings = useInvoiceSettings(can("invoices", "view"));
   const storageKey = `gm-live-setup-hidden:${agencyId}`;
   // Rendered only in the browser (the shell waits for the session), so reading storage here is safe.
   const [hidden, setHidden] = useState(() => {
@@ -69,8 +98,14 @@ function SetupChecklist({ agencyId }: { agencyId: string }) {
       href: "/app/clients",
       done: (clients.data?.length ?? 0) > 0,
     },
+    {
+      title: "Invoice settings",
+      why: "Your GSTIN and registered state, the services you invoice with their SAC codes, how invoices are numbered, and your bank details.",
+      href: "/app/settings/invoices",
+      done: !!invoiceSettings.data,
+    },
   ];
-  const coming: Step[] = [{ title: "Invoice settings", why: "GSTIN, invoice number format, bank details and payment terms." }];
+  const coming: Step[] = [{ title: "Onboarding questions", why: "The questions new clients answer, starting from the Growth OS question sets." }];
   const done = steps.filter((s) => s.done).length;
 
   if (hidden) return null;
@@ -152,6 +187,8 @@ export function LiveHome() {
   const leads = useLeads(can("crm", "view"));
   const approvals = useProposals("pending_approval", can("crm", "approve"));
   const toSign = useAgreements("status=draft", can("agreements", "approve"));
+  const toIssue = useInvoices("status=draft", can("invoices", "approve"));
+  const overdue = useInvoices("overdue=1", can("invoices", "view"));
   const renewals = useAgreements("renewal=1", can("agreements", "view"));
   const stages = useStages();
   const open = new Set((stages.data ?? []).filter((s) => s.kind === "open").map((s) => s.key));
@@ -177,6 +214,17 @@ export function LiveHome() {
         <div className="space-y-3">
           {can("crm", "approve") && !!approvals.data?.length && (
             <Shortcut href="/app/sales" icon={BadgePercent} title="Discounts waiting for your approval" value={approvals.data.length} />
+          )}
+          {can("invoices", "view") && !!overdue.data?.length && (
+            <Shortcut
+              href="/app/invoices?view=overdue"
+              icon={ReceiptIndianRupee}
+              title={`Invoices overdue (${overdue.data.length})`}
+              value={inr(overdue.data.reduce((n, i) => n + i.total, 0))}
+            />
+          )}
+          {can("invoices", "approve") && !!toIssue.data?.length && (
+            <Shortcut href="/app/invoices?view=drafts" icon={FileText} title="Draft invoices to issue" value={toIssue.data.length} />
           )}
           {can("agreements", "approve") && !!toSign.data?.length && (
             <Shortcut href="/app/agreements?view=drafts" icon={FileSignature} title="Agreements waiting for your sign-off" value={toSign.data.length} />

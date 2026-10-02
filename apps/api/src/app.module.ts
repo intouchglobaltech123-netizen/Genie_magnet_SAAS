@@ -8,6 +8,8 @@ import { AUTH, AUTH_PRISMA, createAuth } from "./auth/auth.js";
 import { MeController } from "./auth/me.controller.js";
 import { Outbox } from "./auth/outbox.js";
 import { AgreementsService } from "./clients/agreements.service.js";
+import { AgreementInvoicesController, InvoiceSettingsController, InvoicesController } from "./invoices/invoices.controller.js";
+import { InvoicesService } from "./invoices/invoices.service.js";
 import { AgreementsController, ClientsController } from "./clients/clients.controller.js";
 import { ClientsService } from "./clients/clients.service.js";
 import { ErrorFilter } from "./common/error.filter.js";
@@ -43,6 +45,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     AuditController,
     ClientsController,
     AgreementsController,
+    InvoiceSettingsController,
+    InvoicesController,
+    AgreementInvoicesController,
     PipelineController,
     LeadsController,
     ProposalsController,
@@ -75,6 +80,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     PackagesService,
     ClientsService,
     AgreementsService,
+    InvoicesService,
     PipelineService,
     LeadsService,
     ProposalsService,

@@ -29,8 +29,57 @@ import { Select } from "@/components/ui/select";
 import { AgreementCard, AgreementDialog } from "./agreements";
 import { ApiError, errorMessage } from "./api";
 import { FITMENT, FITMENT_TONE } from "./clients";
+import { InvoiceTable, NewInvoiceDialog } from "./invoices";
 import { inr } from "./packages";
-import { useArchiveClient, useCan, useClient, useDeleteClient, useMe, useRemoveContact, useSaveContact, useTeam, useUpdateClient } from "./queries";
+import {
+  useArchiveClient,
+  useCan,
+  useClient,
+  useDeleteClient,
+  useInvoices,
+  useMe,
+  useRemoveContact,
+  useSaveContact,
+  useTeam,
+  useUpdateClient,
+} from "./queries";
+
+function ClientInvoices({ clientId }: { clientId: string }) {
+  const can = useCan();
+  const invoices = useInvoices(`clientId=${clientId}`);
+  const [adding, setAdding] = useState(false);
+  const unpaid = (invoices.data ?? []).filter((i) => i.status === "sent").reduce((n, i) => n + i.total, 0);
+  return (
+    <SectionCard
+      title="Invoices"
+      description={unpaid ? `${inr(unpaid)} waiting to be paid.` : undefined}
+      contentClassName="p-0"
+      actions={
+        can("invoices", "edit") && (
+          <Button size="sm" variant="secondary" onClick={() => setAdding(true)}>
+            <Plus />
+            New invoice
+          </Button>
+        )
+      }
+    >
+      {invoices.isPending ? (
+        <div className="p-4">
+          <SkeletonRows rows={2} />
+        </div>
+      ) : invoices.error ? (
+        <div className="p-4">
+          <Alert tone="danger">{errorMessage(invoices.error)}</Alert>
+        </div>
+      ) : invoices.data.length ? (
+        <InvoiceTable invoices={invoices.data} showClient={false} />
+      ) : (
+        <p className="px-5 pb-5 text-body text-muted-foreground">No invoices yet.</p>
+      )}
+      {adding && <NewInvoiceDialog clientId={clientId} open onOpenChange={setAdding} />}
+    </SectionCard>
+  );
+}
 
 const STAGE_LABEL = (s: string | null) => BUSINESS_STAGES.find((l) => l.toLowerCase() === s) ?? "";
 const FITMENT_LABEL = (f: string | null) => (f ? (FITMENT[f] ?? "") : "");
@@ -503,6 +552,7 @@ export function LiveClient({ id }: { id: string }) {
           ) : (
             <Alert tone="info">Your role does not show agreements.</Alert>
           )}
+          {can("invoices", "view") && <ClientInvoices clientId={c.id} />}
           <Alert tone="info" icon={Building2}>
             Onboarding, content and videos for this client will show here as those parts of the app arrive.
           </Alert>

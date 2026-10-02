@@ -30,33 +30,33 @@ enum Plan {
 }
 
 model Agency {
-  id            String         @id @default(uuid(7)) @db.Uuid
-  name          String
-  slug          String         @unique
+  id                String         @id @default(uuid(7)) @db.Uuid
+  name              String
+  slug              String         @unique
   /// Small image as a data URL (resized in the browser) until file storage arrives.
-  logo          String?
+  logo              String?
   /// Better Auth organization metadata (JSON string).
-  metadata      String?
-  plan          Plan           @default(starter)
+  metadata          String?
+  plan              Plan           @default(starter)
   /// Brand colour (#rrggbb) for the client portal and documents.
-  brandColor    String?        @map("brand_color")
+  brandColor        String?        @map("brand_color")
   /// The agency's own Growth OS stage.
-  businessStage BusinessStage? @map("business_stage")
-  phone         String?
-  email         String?
-  website       String?
-  city          String?
+  businessStage     BusinessStage? @map("business_stage")
+  phone             String?
+  email             String?
+  website           String?
+  city              String?
   /// Days to complete the deeper onboarding sections (Growth OS default 7).
-  windowDays    Int            @default(7) @map("window_days")
+  windowDays        Int            @default(7) @map("window_days")
   /// Days after sending a questionnaire when reminders go out (Growth OS default day 2 and day 5).
-  reminderDays  Int[]          @default([2, 5]) @map("reminder_days")
+  reminderDays      Int[]          @default([2, 5]) @map("reminder_days")
   /// Languages used with clients (ISO codes), e.g. en, ta.
-  languages     String[]       @default(["en"])
+  languages         String[]       @default(["en"])
   /// Largest discount (%) a proposal can carry without approval (Growth OS sales authority, default 10).
-  discountLimit Int            @default(10) @map("discount_limit")
+  discountLimit     Int            @default(10) @map("discount_limit")
   /// Days before an agreement ends that it shows as due for renewal (P1-19).
-  renewalNoticeDays Int        @default(45) @map("renewal_notice_days")
-  createdAt     DateTime       @default(now()) @map("created_at")
+  renewalNoticeDays Int            @default(45) @map("renewal_notice_days")
+  createdAt         DateTime       @default(now()) @map("created_at")
 
   memberships Membership[]
   invitations Invitation[]
@@ -390,6 +390,7 @@ model Client {
   agency      Agency                  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   contacts    Contact[]
   agreements  Agreement[]
+  invoices    Invoice[]
   responses   QuestionnaireResponse[]
   content     ContentItem[]
   videos      Video[]
@@ -478,14 +479,89 @@ model Agreement {
   createdBy               String?         @map("created_by")
   createdAt               DateTime        @default(now()) @map("created_at")
 
-  client  Client   @relation(fields: [clientId], references: [id], onDelete: Restrict)
-  package Package? @relation(fields: [packageId], references: [id], onDelete: SetNull)
-  cycles  Cycle[]
+  client   Client    @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  package  Package?  @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  cycles   Cycle[]
+  invoices Invoice[]
 
   @@index([agencyId, clientId])
   @@index([agencyId, status])
   @@index([agencyId, renewsId])
   @@map("agreements")
+}
+
+/// The agency's invoice details (P1-20): who invoices, from which state, numbering, payment terms and bank details.
+model InvoiceSettings {
+  agencyId         String   @id @map("agency_id") @db.Uuid
+  legalName        String   @map("legal_name")
+  gstin            String?
+  /// Registered state (GST state code): CGST + SGST for clients in this state, IGST for others.
+  state            String
+  address          String
+  /// Services invoiced: [{ name, sac, rate }] (invoiceService in @gm/shared).
+  services         Json     @default("[]")
+  /// e.g. GM/{FY}/{0000} (formatInvoiceNumber in @gm/shared).
+  numberFormat     String   @map("number_format")
+  /// The numbering series the next number belongs to: the financial year when the format shows it, otherwise "all".
+  numberSeries     String?  @map("number_series")
+  nextNumber       Int      @default(1) @map("next_number")
+  paymentTermsDays Int      @default(7) @map("payment_terms_days")
+  bankName         String?  @map("bank_name")
+  accountName      String?  @map("account_name")
+  accountNumber    String?  @map("account_number")
+  ifsc             String?
+  upiId            String?  @map("upi_id")
+  footer           String?
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("invoice_settings")
+}
+
+/// A GST invoice (P1-20). Drafts have no number; issuing numbers it and keeps a copy of the seller's and client's
+/// details, so later changes to either never alter an issued invoice.
+model Invoice {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  agencyId      String    @map("agency_id") @db.Uuid
+  clientId      String    @map("client_id") @db.Uuid
+  agreementId   String?   @map("agreement_id") @db.Uuid
+  /// Set when issued.
+  number        String?
+  /// draft · sent · paid · cancelled
+  status        String    @default("draft")
+  /// The month billed (YYYY-MM), for agreement invoices.
+  period        String?
+  issueDate     DateTime? @map("issue_date") @db.Date
+  dueDate       DateTime? @map("due_date") @db.Date
+  /// GST state code of the place of supply (the client's state).
+  placeOfSupply String?   @map("place_of_supply")
+  /// [{ description, sac, quantity, rate, taxRate }] (invoiceLine in @gm/shared).
+  lines         Json      @default("[]")
+  taxable       Int       @default(0)
+  cgst          Int       @default(0)
+  sgst          Int       @default(0)
+  igst          Int       @default(0)
+  total         Int       @default(0)
+  /// The client's billing details when issued: { name, gstin, state, address }.
+  billedTo      Json?     @map("billed_to")
+  /// The agency's invoice details when issued.
+  seller        Json?
+  notes         String?
+  sentAt        DateTime? @map("sent_at")
+  paidOn        DateTime? @map("paid_on") @db.Date
+  paymentNote   String?   @map("payment_note")
+  cancelReason  String?   @map("cancel_reason")
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  client    Client     @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  agreement Agreement? @relation(fields: [agreementId], references: [id], onDelete: SetNull)
+
+  @@unique([agencyId, number])
+  @@index([agencyId, status])
+  @@index([agencyId, clientId])
+  @@index([agencyId, agreementId, period])
+  @@map("invoices")
 }
 
 enum CycleStatus {
