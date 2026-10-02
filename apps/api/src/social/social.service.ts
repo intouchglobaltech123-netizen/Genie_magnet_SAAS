@@ -78,7 +78,8 @@ export class SocialService {
   }
 
   private network(c: { platform: string }): SocialNetwork {
-    if (!isSocialPlatform(c.platform)) throw new BadRequestException(`${label(c.platform)} is posted by hand; Instagram, Facebook and YouTube connect.`);
+    if (!isSocialPlatform(c.platform))
+      throw new BadRequestException(`${label(c.platform)} is posted by hand; Instagram, Facebook, YouTube, LinkedIn and X connect.`);
     const net = this.networks.get(c.platform);
     if (!net) throw new ConflictException(`Connecting ${label(c.platform)} is not switched on yet — post by hand meanwhile.`);
     return net;
@@ -123,7 +124,7 @@ export class SocialService {
         }
         try {
           const net = this.network(c);
-          const grant = await net.exchange(q.code, this.redirectUri(net.platform));
+          const grant = await net.exchange(q.code, this.redirectUri(net.platform), q.state ?? "");
           const accounts = await net.accounts(grant, { handle: c.handle });
           if (!accounts.length) {
             await this.problem(c, `No ${label(c.platform)} account came with this sign-in — sign in with the login that manages ${c.handle}.`);

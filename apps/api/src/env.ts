@@ -64,8 +64,9 @@ export const envSchema = z
     PAYMENTS_PROVIDER: z.enum(["razorpay", "outbox"]).optional(),
     RAZORPAY_API_URL: z.url().default("https://api.razorpay.com/v1"),
     /**
-     * How clients' Instagram, Facebook Pages and YouTube are reached (P3-11): "live" through our Meta app (META_APP_ID,
-     * META_APP_SECRET) and Google app (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, also used for Google sign-in); a platform
+     * How clients' Instagram, Facebook Pages, YouTube, LinkedIn pages and X are reached (P3-11, P5-22): "live" through our
+     * Meta app (META_APP_ID, META_APP_SECRET), Google app (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, also used for Google
+     * sign-in), LinkedIn app (LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET) and X app (X_CLIENT_ID, X_CLIENT_SECRET); a platform
      * whose app keys are missing is posted by hand. "outbox" uses pretend platforms (development and tests). Defaults
      * to live in production.
      */
@@ -73,6 +74,17 @@ export const envSchema = z
     META_APP_ID: z.string().optional(),
     META_APP_SECRET: z.string().optional(),
     META_GRAPH_URL: z.url().default("https://graph.facebook.com/v21.0"),
+    /** Clients' LinkedIn company pages (P5-22), through our LinkedIn app with the Community Management API. */
+    LINKEDIN_CLIENT_ID: z.string().optional(),
+    LINKEDIN_CLIENT_SECRET: z.string().optional(),
+    /** The LinkedIn API version (yyyymm) the app is written against; LinkedIn keeps each for about a year. */
+    LINKEDIN_API_VERSION: z
+      .string()
+      .regex(/^\d{6}$/)
+      .default("202608"),
+    /** Clients' X accounts (P5-22), through our X app (OAuth 2.0, with media upload). */
+    X_CLIENT_ID: z.string().optional(),
+    X_CLIENT_SECRET: z.string().optional(),
     /**
      * Genie Assistant's model (Phase 4, ADR 0008): Claude on our own Anthropic account. Without a key, development and
      * test servers use a stand-in that makes drafts up, and real servers have drafting off. `GENIE_AI=stand-in` forces

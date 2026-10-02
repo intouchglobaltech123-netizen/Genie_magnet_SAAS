@@ -286,6 +286,11 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
               graphUrl: env.META_GRAPH_URL,
               googleClientId: env.GOOGLE_CLIENT_ID,
               googleClientSecret: env.GOOGLE_CLIENT_SECRET,
+              linkedinClientId: env.LINKEDIN_CLIENT_ID,
+              linkedinClientSecret: env.LINKEDIN_CLIENT_SECRET,
+              linkedinVersion: env.LINKEDIN_API_VERSION,
+              xClientId: env.X_CLIENT_ID,
+              xClientSecret: env.X_CLIENT_SECRET,
             })
           : new OutboxSocialNetworks(),
     },

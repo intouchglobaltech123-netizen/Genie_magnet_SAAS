@@ -682,7 +682,7 @@ export interface PlatformConnectionRow {
   autoPublish: boolean;
   /** Why the last sign-in or post did not work. */
   lastError: string | null;
-  /** Instagram, Facebook and YouTube connect, when switched on for this server. */
+  /** Instagram, Facebook, YouTube, LinkedIn and X connect, when switched on for this server. */
   canConnect: boolean;
 }
 

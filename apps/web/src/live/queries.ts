@@ -1104,7 +1104,7 @@ export function usePlatformAction(clientId: string) {
   });
 }
 
-/** Whether connecting Instagram, Facebook and YouTube is switched on here (P3-11). */
+/** Whether connecting Instagram, Facebook, YouTube, LinkedIn and X is switched on here (P3-11, P5-22). */
 export const useSocial = () => useQuery({ queryKey: ["social"], queryFn: () => api<SocialSettings>("/social"), staleTime: 5 * 60_000 });
 
 /** The platform's sign-in page for one of a client's platforms. */

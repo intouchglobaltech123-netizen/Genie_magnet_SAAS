@@ -1,16 +1,22 @@
-// Social connections (P3-11): a client's Instagram, Facebook Page or YouTube channel, connected through the
-// platform's own sign-in, posts at the scheduled time and brings in each post's numbers every day. Other platforms,
-// and any platform not connected, are posted by hand as before.
+// Social connections (P3-11, P5-22): a client's Instagram, Facebook Page, YouTube channel, LinkedIn company page or X
+// account, connected through the platform's own sign-in, posts at the scheduled time and brings in each post's numbers
+// every day. Other platforms, and any platform not connected, are posted by hand as before.
 import { z } from "zod";
 import type { Platform } from "./enums.js";
 
 /** Platforms that can be connected. */
-export const SOCIAL_PLATFORMS = ["instagram", "facebook", "youtube"] as const satisfies readonly Platform[];
+export const SOCIAL_PLATFORMS = ["instagram", "facebook", "youtube", "linkedin", "x"] as const satisfies readonly Platform[];
 export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
 export const isSocialPlatform = (p: string): p is SocialPlatform => (SOCIAL_PLATFORMS as readonly string[]).includes(p);
 
 /** Whose sign-in a platform uses. */
-export const SOCIAL_NETWORK: Record<SocialPlatform, "meta" | "google"> = { instagram: "meta", facebook: "meta", youtube: "google" };
+export const SOCIAL_NETWORK: Record<SocialPlatform, "meta" | "google" | "linkedin" | "x"> = {
+  instagram: "meta",
+  facebook: "meta",
+  youtube: "google",
+  linkedin: "linkedin",
+  x: "x",
+};
 
 /**
  * A client platform: posted by hand, connected, waiting for the account to be chosen after signing in, or its sign-in

@@ -1,5 +1,5 @@
-// Social connections (P3-11): Instagram, Facebook and YouTube connected through the platform's sign-in, posting by
-// themselves at the scheduled time, numbers each day, and posting by hand whenever the app cannot.
+// Social connections (P3-11, P5-22): Instagram, Facebook, YouTube, LinkedIn and X connected through the platform's
+// sign-in, posting by themselves at the scheduled time, numbers each day, and posting by hand whenever the app cannot.
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -87,7 +87,7 @@ beforeAll(async () => {
   for (const [platform, handle] of [
     ["instagram", "@tiruppurknits"],
     ["youtube", "@choose-tk"],
-    ["x", "@tpk"],
+    ["threads", "@tpk"],
   ] as const) {
     const rows = (await meena.post(`/clients/${clientId}/platforms`).send({ platform, handle }).expect(201)).body as PlatformConnectionRow[];
     ids[platform] = rows.find((r) => r.platform === platform)!.id;
@@ -102,14 +102,14 @@ afterAll(async () => {
 }, 60_000);
 
 describe("connecting a client's platforms", () => {
-  it("is switched on for Instagram, Facebook and YouTube; other platforms are posted by hand", async () => {
+  it("is switched on for Instagram, Facebook, YouTube, LinkedIn and X; other platforms are posted by hand", async () => {
     expect((await meena.get("/social").expect(200)).body as SocialSettings).toEqual({
       provider: "outbox",
-      available: { instagram: true, facebook: true, youtube: true },
+      available: { instagram: true, facebook: true, youtube: true, linkedin: true, x: true },
     });
     const rows = await platforms();
-    expect(rows.find((r) => r.platform === "x")).toMatchObject({ status: "manual", canConnect: false, linked: null });
-    await meena.post(`/clients/${clientId}/platforms/${ids.x}/connect`).expect(400);
+    expect(rows.find((r) => r.platform === "threads")).toMatchObject({ status: "manual", canConnect: false, linked: null });
+    await meena.post(`/clients/${clientId}/platforms/${ids.threads}/connect`).expect(400);
     await divya.post(`/clients/${clientId}/platforms/${ids.instagram}/connect`).expect(403);
   });
 
@@ -243,6 +243,42 @@ describe("numbers", () => {
     expect((await platforms()).find((r) => r.platform === "instagram")).toMatchObject({ status: "expired", lastError: "instagram: the sign-in has expired." });
     const n = (await meena.get("/notifications").expect(200)).body.items as { title: string; link: string }[];
     expect(n.find((x) => x.title === "Connect Instagram again for Tiruppur Knits")).toMatchObject({ link: `/app/clients/${clientId}` });
+  });
+});
+
+describe("LinkedIn and X (P5-22)", () => {
+  it("connect through their own sign-in and post the approved video by themselves", async () => {
+    for (const [platform, handle] of [
+      ["linkedin", "tiruppur-knits"],
+      ["x", "@tpk"],
+    ] as const) {
+      const rows = (await meena.post(`/clients/${clientId}/platforms`).send({ platform, handle }).expect(201)).body as PlatformConnectionRow[];
+      ids[platform] = rows.find((r) => r.platform === platform)!.id;
+      expect(rows.find((r) => r.platform === platform)).toMatchObject({ status: "manual", canConnect: true });
+      const { url } = (await meena.post(`/clients/${clientId}/platforms/${ids[platform]}/connect`).expect(200)).body as { url: string };
+      expect(new URL(url).pathname).toBe(`/webhooks/social/${platform}`);
+      expect(await signIn(ids[platform]!)).toBe(`http://localhost:3000/app/clients/${clientId}?social=linked&platform=${platform}`);
+    }
+    const [x] = await t.sql<{ refresh_token: string | null }>(`SELECT refresh_token FROM platform_connections WHERE id = '${ids.x}'`);
+    expect(x!.refresh_token).toBeTruthy(); // X's access lasts two hours; it is refreshed
+    const video = await approvedVideo("Festive range", true);
+    for (const platform of ["linkedin", "x"] as const)
+      await meena
+        .post("/publishing/posts")
+        .send({ videoId: video, connectionId: ids[platform], scheduledAt: later(1).toISOString(), caption: "Festive range, out now" })
+        .expect(201);
+    await runner.tick(later(2));
+    const posts = await postsOf(video);
+    expect(posts.map((p) => [p.status, p.via])).toEqual([
+      ["published", "connector"],
+      ["published", "connector"],
+    ]);
+    expect(outbox.posts.slice(-2).map((p) => [p.platform, p.account, p.caption])).toEqual(
+      expect.arrayContaining([
+        ["linkedin", "linkedin-tiruppur-knits", "Festive range, out now"],
+        ["x", "x-tpk", "Festive range, out now"],
+      ]),
+    );
   });
 });
 

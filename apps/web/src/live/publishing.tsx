@@ -587,7 +587,7 @@ export function ClientPlatforms({ clientId, canEdit }: { clientId: string; canEd
   return (
     <SectionCard
       title="Platforms"
-      description="Where the client's videos are published. Connect Instagram, Facebook and YouTube to post scheduled videos by themselves and bring in the numbers each day; the others are posted by hand."
+      description="Where the client's videos are published. Connect Instagram, Facebook, YouTube, LinkedIn and X to post scheduled videos by themselves and bring in the numbers each day; the others are posted by hand."
     >
       {social.data?.provider === "outbox" && (
         <Alert tone="info" className="mb-3">

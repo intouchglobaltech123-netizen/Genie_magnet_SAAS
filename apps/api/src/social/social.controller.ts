@@ -10,7 +10,7 @@ import { SocialService } from "./social.service.js";
 
 const schema = (s: z.ZodType) => z.toJSONSchema(s, { io: "input" }) as Record<string, unknown>;
 
-/** Whether connecting Instagram, Facebook and YouTube is switched on for this server (P3-11). */
+/** Whether connecting Instagram, Facebook, YouTube, LinkedIn and X is switched on for this server (P3-11, P5-22). */
 @ApiTags("social")
 @Controller("social")
 export class SocialController {
