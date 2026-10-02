@@ -7,6 +7,7 @@ import { PrismaService } from "../prisma/prisma.service.js";
 import { asSystem, TenantDb } from "../tenancy/tenant-context.js";
 import { PaymentsService } from "../payments/payments.service.js";
 import { ReportsService } from "../reports/reports.service.js";
+import { GenieService } from "../genie/genie.service.js";
 import { SocialService } from "../social/social.service.js";
 import { WhatsAppService } from "../whatsapp/whatsapp.service.js";
 import { DailyChecks } from "./daily-checks.service.js";
@@ -51,7 +52,10 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
     reports: ReportsService,
     payments: PaymentsService,
     social: SocialService,
+    genie: GenieService,
   ) {
+    /** A daily job looks at the agency as of its morning, however late it runs. */
+    const morning = (p: Record<string, unknown>) => new Date(`${dayOf(p)}T${this.env.JOBS_DAILY_AT}:00Z`);
     this.handlers = {
       "videos.due": (tx, p) => checks.videosDue(tx, dayOf(p)),
       "onboarding.reminders": (tx, p) => checks.onboardingReminders(tx, dayOf(p)),
@@ -65,6 +69,7 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
       "payments.cancel": (tx, p) => payments.cancelLink(tx, String(p.invoiceId)),
       "social.publish": { long: (p, attempt) => social.publishJob(p, attempt) },
       "social.metrics": { long: () => social.metricsJob() },
+      "genie.rules": (tx, p) => genie.run(tx, morning(p)),
     };
   }
 

@@ -38,6 +38,7 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Sun,
+  Sparkles,
   Timer,
   Users,
   X,
@@ -80,6 +81,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
     title: "Workspace",
     items: [
       { title: "Home", href: "/app", icon: Home },
+      { title: "Genie Assistant", href: "/app/genie", icon: Sparkles },
       { title: "Sales pipeline", href: "/app/sales", icon: Filter, area: "crm" },
       { title: "Clients", href: "/app/clients", icon: Building2, area: "clients" },
       { title: "Client requests", href: "/app/requests", icon: Inbox, area: "clients" },
@@ -110,6 +112,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Roles and permissions", href: "/app/settings/roles", icon: ShieldCheck, area: "team" },
       { title: "WhatsApp", href: "/app/settings/whatsapp", icon: MessageCircle, area: "settings" },
       { title: "Payments", href: "/app/settings/payments", icon: CreditCard, area: "settings" },
+      { title: "Genie Assistant", href: "/app/settings/genie", icon: Sparkles, area: "settings" },
       { title: "Background jobs", href: "/app/settings/jobs", icon: Timer, area: "settings" },
       { title: "Audit log", href: "/app/audit", icon: History, area: "audit" },
     ],

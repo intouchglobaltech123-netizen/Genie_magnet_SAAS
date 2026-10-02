@@ -1425,36 +1425,6 @@ model MonthlyReport {
   @@map("monthly_reports")
 }
 
-// ───────────────────────────── Genie Assistant ─────────────────────────────
-
-enum InsightStatus {
-  open
-  approved
-  edited
-  dismissed
-}
-
-model Insight {
-  id          String        @id @default(uuid(7)) @db.Uuid
-  agencyId    String        @map("agency_id") @db.Uuid
-  rule        String
-  area        String
-  severity    String
-  title       String
-  evidence    Json
-  /// Draft written by the language model; numbers always come from the rule's evidence.
-  draft       Json?
-  status      InsightStatus @default(open)
-  decidedById String?       @map("decided_by_id")
-  decidedAt   DateTime?     @map("decided_at")
-  dedupeKey   String        @map("dedupe_key")
-  createdAt   DateTime      @default(now()) @map("created_at")
-
-  @@unique([agencyId, dedupeKey])
-  @@index([agencyId, status])
-  @@map("insights")
-}
-
 // ───────────────────────────── STOP reviews ─────────────────────────────
 
 enum ReviewCadence {
@@ -1497,4 +1467,50 @@ model Commitment {
 
   @@index([agencyId, status])
   @@map("commitments")
+}
+
+// ───────────────────────────── Genie Assistant ─────────────────────────────
+
+/// Genie Assistant's rules as each agency set them (P4-01): on or off, and each rule's threshold.
+model GenieSettings {
+  agencyId  String    @id @map("agency_id") @db.Uuid
+  /// { ruleKey: { enabled, threshold } } — anything not set uses the rule's default.
+  rules     Json      @default("{}")
+  lastRunAt DateTime? @map("last_run_at")
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("genie_settings")
+}
+
+/// Something a rule found (P4-02): one per finding, open until someone acts on it or the rule no longer finds it.
+model Insight {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  agencyId    String    @map("agency_id") @db.Uuid
+  rule        String
+  /// The rule and the record (and period) it is about, so a finding is never raised twice.
+  dedupeKey   String    @map("dedupe_key")
+  /// info · warning · critical
+  severity    String
+  title       String
+  body        String?
+  /// Who may see it: people who may view this area.
+  area        String
+  entity      String?
+  entityId    String?   @map("entity_id")
+  clientId    String?   @map("client_id") @db.Uuid
+  link        String?
+  /// Who should act on it.
+  ownerId     String?   @map("owner_id")
+  evidence    Json      @default("{}")
+  /// open · done · dismissed · resolved
+  status      String    @default("open")
+  firstSeenAt DateTime  @default(now()) @map("first_seen_at")
+  lastSeenAt  DateTime  @default(now()) @map("last_seen_at")
+  resolvedAt  DateTime? @map("resolved_at")
+  decidedBy   String?   @map("decided_by")
+  decidedAt   DateTime? @map("decided_at")
+
+  @@unique([agencyId, dedupeKey])
+  @@index([agencyId, status])
+  @@map("insights")
 }

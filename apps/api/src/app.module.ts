@@ -69,6 +69,8 @@ import { CloudApiProvider, OutboxProvider, WHATSAPP_PROVIDER } from "./whatsapp/
 import { LiveSocialNetworks, OutboxSocialNetworks, SOCIAL_NETWORKS } from "./social/provider.js";
 import { ClientSocialController, SocialController, SocialWebhookController } from "./social/social.controller.js";
 import { SocialService } from "./social/social.service.js";
+import { GenieController } from "./genie/genie.controller.js";
+import { GenieService } from "./genie/genie.service.js";
 import { ContactWhatsAppController, WhatsAppController, WhatsAppWebhookController } from "./whatsapp/whatsapp.controller.js";
 import { WhatsAppService } from "./whatsapp/whatsapp.service.js";
 import { AgencyService } from "./settings/agency.service.js";
@@ -134,6 +136,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     SocialController,
     ClientSocialController,
     SocialWebhookController,
+    GenieController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -222,6 +225,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
           : new OutboxSocialNetworks(),
     },
     SocialService,
+    GenieService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

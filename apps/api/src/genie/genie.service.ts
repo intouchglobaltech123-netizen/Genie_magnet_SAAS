@@ -1,0 +1,235 @@
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import type { Prisma, TenantTx } from "@gm/db";
+import {
+  allows,
+  GENIE_RULE_KEYS,
+  GENIE_RULES,
+  type GenieRuleKey,
+  type GenieRulesInput,
+  type GenieSettings,
+  genieRuleSettings,
+  type InsightRow,
+  type InsightSeverity,
+  type InsightStatus,
+  scopeOf,
+} from "@gm/shared";
+import { AuditService } from "../audit/audit.service.js";
+import { NotificationsService } from "../notifications/notifications.service.js";
+import { ProductionSettingsService } from "../production/production-settings.service.js";
+import { TenantDb } from "../tenancy/tenant-context.js";
+import { type Finding, RULES } from "./rules.js";
+
+const SEVERITY_ORDER: Record<InsightSeverity, number> = { critical: 0, warning: 1, info: 2 };
+
+/**
+ * Genie Assistant's rules (P4-01 to P4-04, ADR 0008): plain code over the agency's data, run every morning (job
+ * `genie.rules`) or when someone asks. Each finding is one insight — raised once, kept up to date while the rule still
+ * finds it, resolved by itself when it no longer does — for whoever should act, and seen by the people who may view
+ * its area (only their own when their role is limited to its own work).
+ */
+@Injectable()
+export class GenieService {
+  constructor(
+    private readonly tenant: TenantDb,
+    private readonly audit: AuditService,
+    private readonly notifications: NotificationsService,
+    private readonly production: ProductionSettingsService,
+  ) {}
+
+  // ─── Settings ───────────────────────────────────────────────────────
+
+  async settings(): Promise<GenieSettings> {
+    const row = await this.tenant.db.genieSettings.findUnique({ where: { agencyId: this.tenant.agencyId } });
+    return { rules: genieRuleSettings(row?.rules as never), lastRunAt: row?.lastRunAt?.toISOString() ?? null };
+  }
+
+  async updateRules(input: GenieRulesInput) {
+    const issues = Object.entries(input.rules).flatMap(([k, v]) => {
+      const t = GENIE_RULES[k as GenieRuleKey].threshold;
+      return v && (v.threshold < t.min || v.threshold > t.max) ? [{ path: `rules.${k}.threshold`, message: `Between ${t.min} and ${t.max}` }] : [];
+    });
+    if (issues.length) throw new BadRequestException({ message: "Some thresholds are out of range.", issues });
+    const before = (await this.settings()).rules;
+    const after = genieRuleSettings({ ...before, ...input.rules });
+    await this.tenant.tx(async (tx) => {
+      await tx.genieSettings.upsert({
+        where: { agencyId: this.tenant.agencyId },
+        create: { agencyId: this.tenant.agencyId, rules: after as unknown as Prisma.InputJsonValue },
+        update: { rules: after as unknown as Prisma.InputJsonValue },
+      });
+      const changed = GENIE_RULE_KEYS.filter((k) => JSON.stringify(before[k]) !== JSON.stringify(after[k]));
+      if (changed.length)
+        await this.audit.record(tx, {
+          action: "update",
+          entity: "genie_rules",
+          before: Object.fromEntries(changed.map((k) => [k, before[k]])),
+          after: Object.fromEntries(changed.map((k) => [k, after[k]])),
+        });
+    });
+    return this.settings();
+  }
+
+  // ─── Running the rules ──────────────────────────────────────────────
+
+  /** Runs every rule for the agency: new findings are raised, known ones kept up to date, the rest resolved. */
+  async run(tx: TenantTx, now = new Date()) {
+    const agencyId = this.tenant.agencyId;
+    const today = now.toISOString().slice(0, 10);
+    const [row, agency, production] = await Promise.all([
+      tx.genieSettings.findUnique({ where: { agencyId } }),
+      tx.agency.findUniqueOrThrow({ where: { id: agencyId }, select: { windowDays: true } }),
+      this.production.get(),
+    ]);
+    const rules = genieRuleSettings(row?.rules as never);
+    const counts = { raised: 0, kept: 0, resolved: 0 };
+
+    for (const key of GENIE_RULE_KEYS) {
+      const setting = rules[key];
+      const findings = setting.enabled
+        ? await RULES[key].find({ tx, threshold: setting.threshold, now, today, agency, kits: production.kits.map((k) => ({ key: k.key, items: k.items })) })
+        : [];
+      const keys = new Map(findings.map((f) => [`${key}:${f.key}`, f]));
+      const known = await tx.insight.findMany({
+        where: { rule: key, OR: [{ status: { not: "resolved" } }, { dedupeKey: { in: [...keys.keys()] } }] },
+      });
+      const byKey = new Map(known.map((i) => [i.dedupeKey, i]));
+
+      for (const [dedupeKey, f] of keys) {
+        const found = byKey.get(dedupeKey);
+        const content = {
+          severity: f.severity,
+          title: f.title,
+          body: f.body ?? null,
+          link: f.link ?? null,
+          ownerId: f.ownerId ?? null,
+          evidence: f.evidence as Prisma.InputJsonValue,
+          lastSeenAt: now,
+        };
+        if (!found) {
+          await tx.insight.create({
+            data: {
+              agencyId,
+              rule: key,
+              dedupeKey,
+              area: GENIE_RULES[key].area,
+              entity: f.entity ?? null,
+              entityId: f.entityId ?? null,
+              clientId: f.clientId ?? null,
+              firstSeenAt: now,
+              ...content,
+            },
+          });
+          await this.tell(tx, key, f);
+          counts.raised++;
+        } else if (found.status === "resolved") {
+          // It came back after it had cleared: raised again.
+          await tx.insight.update({
+            where: { id: found.id },
+            data: { ...content, status: "open", firstSeenAt: now, resolvedAt: null, decidedBy: null, decidedAt: null },
+          });
+          await this.tell(tx, key, f);
+          counts.raised++;
+        } else {
+          // Kept up to date; a dismissed or done one stays as the person left it.
+          await tx.insight.update({ where: { id: found.id }, data: content });
+          counts.kept++;
+        }
+      }
+      // What the rule no longer finds (or a rule switched off) has cleared.
+      const cleared = known.filter((i) => i.status !== "resolved" && !keys.has(i.dedupeKey)).map((i) => i.id);
+      if (cleared.length) {
+        await tx.insight.updateMany({ where: { id: { in: cleared } }, data: { status: "resolved", resolvedAt: now } });
+        counts.resolved += cleared.length;
+      }
+    }
+    await tx.genieSettings.upsert({ where: { agencyId }, create: { agencyId, lastRunAt: now }, update: { lastRunAt: now } });
+    return counts;
+  }
+
+  /** Runs the rules now, for whoever asked. */
+  async runNow() {
+    const counts = await this.tenant.tx((tx) => this.run(tx), { timeout: 60_000 });
+    return { ...counts, insights: await this.list({ status: "open" }) };
+  }
+
+  private async tell(tx: TenantTx, key: GenieRuleKey, f: Finding) {
+    const rule = RULES[key];
+    if (!rule.notify && !f.ownerId) return;
+    await this.notifications.notify(
+      tx,
+      { users: [f.ownerId ?? null], ...(rule.notify && { can: rule.notify }) },
+      { kind: "genie_insight", title: f.title, body: f.body, link: f.link ?? "/app/genie" },
+    );
+  }
+
+  // ─── The inbox ──────────────────────────────────────────────────────
+
+  /** Whether this person may see an insight: they have the rule's access to its area, and it is theirs when their role sees only its own. */
+  private visible(i: { rule: string; ownerId: string | null }) {
+    const perms = this.tenant.permissions;
+    const rule = GENIE_RULES[i.rule as GenieRuleKey];
+    if (!rule) return false;
+    return allows(perms, rule.area, rule.level) && (scopeOf(perms, rule.area) !== "own" || i.ownerId === this.tenant.userId);
+  }
+
+  async list(f: { status?: string; rule?: string; mine?: boolean } = {}): Promise<InsightRow[]> {
+    const status = (["open", "done", "dismissed", "resolved"] as const).includes(f.status as InsightStatus) ? (f.status as InsightStatus) : "open";
+    const rows = await this.tenant.db.insight.findMany({
+      where: {
+        status,
+        ...(f.rule && (GENIE_RULE_KEYS as string[]).includes(f.rule) && { rule: f.rule }),
+        ...(f.mine && { ownerId: this.tenant.userId }),
+      },
+      orderBy: { lastSeenAt: "desc" },
+      take: 500,
+    });
+    const shown = rows.filter((r) => this.visible(r));
+    const [clients, people] = await Promise.all([
+      this.tenant.db.client.findMany({
+        where: { id: { in: [...new Set(shown.map((r) => r.clientId).filter((id): id is string => !!id))] } },
+        select: { id: true, name: true, code: true },
+      }),
+      this.tenant.db.user.findMany({
+        where: { id: { in: [...new Set(shown.map((r) => r.ownerId).filter((id): id is string => !!id))] } },
+        select: { id: true, name: true },
+      }),
+    ]);
+    return shown
+      .sort((a, b) => SEVERITY_ORDER[a.severity as InsightSeverity] - SEVERITY_ORDER[b.severity as InsightSeverity])
+      .slice(0, 200)
+      .map((r) => ({
+        id: r.id,
+        rule: r.rule as GenieRuleKey,
+        severity: r.severity as InsightSeverity,
+        title: r.title,
+        body: r.body,
+        link: r.link,
+        client: clients.find((c) => c.id === r.clientId) ?? null,
+        owner: r.ownerId ? { id: r.ownerId, name: people.find((p) => p.id === r.ownerId)?.name ?? null } : null,
+        status: r.status as InsightStatus,
+        firstSeenAt: r.firstSeenAt.toISOString(),
+        lastSeenAt: r.lastSeenAt.toISOString(),
+        resolvedAt: r.resolvedAt?.toISOString() ?? null,
+      }));
+  }
+
+  /** Done (acted on), dismissed (not worth acting on), or open again. */
+  async decide(id: string, status: "done" | "dismissed" | "open") {
+    const i = await this.tenant.db.insight.findFirst({ where: { id } });
+    if (!i || !this.visible(i)) throw new NotFoundException("No insight with that id.");
+    await this.tenant.tx(async (tx) => {
+      await tx.insight.update({
+        where: { id },
+        data: { status, decidedBy: status === "open" ? null : this.tenant.userId, decidedAt: status === "open" ? null : new Date() },
+      });
+      await this.audit.record(tx, {
+        action: status === "open" ? "reopen" : status,
+        entity: "insight",
+        entityId: id,
+        before: { status: i.status },
+        after: { title: i.title, status },
+      });
+    });
+    return (await this.list({ status })).find((r) => r.id === id) ?? null;
+  }
+}

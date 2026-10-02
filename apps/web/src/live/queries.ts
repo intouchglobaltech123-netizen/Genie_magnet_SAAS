@@ -83,7 +83,10 @@ import {
   type Proposal,
   type ProposalInput,
   type WinInput,
+  type GenieRulesInput,
+  type GenieSettings,
   type ImportDetail,
+  type InsightRow,
   type ImportRecord,
   type ImportResult,
   type Me,
@@ -1019,6 +1022,41 @@ export function useRetryJob() {
   return useMutation({
     mutationFn: (id: string) => api<JobRow>(`/jobs/${id}/retry`, { body: {} }),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.jobs }),
+  });
+}
+
+// ─── Genie Assistant ──────────────────────────────────────────────────
+
+export const useGenieSettings = () => useQuery({ queryKey: ["genie", "settings"], queryFn: () => api<GenieSettings>("/genie/settings") });
+
+export function useSaveGenieSettings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: GenieRulesInput) => api<GenieSettings>("/genie/settings", { method: "PUT", body: v }),
+    onSuccess: (data) => qc.setQueryData(["genie", "settings"], data),
+  });
+}
+
+/** What the rules found that this person may see. */
+export const useInsights = (f: { status?: string; rule?: string; mine?: boolean } = {}) => {
+  const q = new URLSearchParams({ status: f.status ?? "open", ...(f.rule && { rule: f.rule }), ...(f.mine && { mine: "1" }) });
+  return useQuery({ queryKey: ["genie", "insights", q.toString()], queryFn: () => api<InsightRow[]>(`/genie/insights?${q}`) });
+};
+
+export function useInsightDecision() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; status: "done" | "dismissed" | "open" }) =>
+      api<InsightRow | null>(`/genie/insights/${v.id}`, { method: "PUT", body: { status: v.status } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["genie", "insights"] }),
+  });
+}
+
+export function useRunGenie() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api<{ raised: number; kept: number; resolved: number }>("/genie/run", { body: {} }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["genie"] }),
   });
 }
 

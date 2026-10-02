@@ -43,6 +43,7 @@ import {
   useSetup,
   useHideSetup,
 } from "./queries";
+import { GenieHomeCard } from "./genie";
 
 interface Step {
   key: SetupStep;
@@ -269,6 +270,7 @@ export function LiveHome() {
       <PageHeader title={`Welcome, ${firstName}`} description={`${agency?.name ?? ""} · you are signed in as ${me.role?.name ?? "a member"}.`} />
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6">
+          <GenieHomeCard />
           {canSetUp && me.activeAgencyId ? (
             <SetupChecklist />
           ) : (
