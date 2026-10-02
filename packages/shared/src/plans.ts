@@ -171,6 +171,29 @@ export const DEFAULT_PLATFORM_SETTINGS: PlatformSettings = {
   flags: [],
 };
 
+/** GET /public/site (P6-12): what the marketing site and pricing page show, from the platform settings. */
+export interface PublicSite {
+  brandName: string;
+  domain: string;
+  trialDays: number;
+  /** The plan a new agency tries, by name. */
+  trialPlan: string | null;
+  plans: Pick<PlanDef, "key" | "name" | "description" | "suites" | "limits" | "priceInr" | "priceUsd">[];
+}
+
+/** The public part of the platform settings: the offered plans, never our invoice details or anything internal. */
+export function publicSite(s: PlatformSettings): PublicSite {
+  return {
+    brandName: s.brandName,
+    domain: s.domain,
+    trialDays: s.trialDays,
+    trialPlan: s.plans.find((p) => p.key === s.trialPlan)?.name ?? null,
+    plans: s.plans
+      .filter((p) => p.offered)
+      .map(({ key, name, description, suites, limits, priceInr, priceUsd }) => ({ key, name, description, suites, limits, priceInr, priceUsd })),
+  };
+}
+
 /** On GET /me: an announcement for this agency today. */
 export interface AnnouncementView {
   id: string;

@@ -30,7 +30,7 @@ export function FeedbackButton() {
 
 
   // The real app (/app) is not the demo: demo feedback (with the demo role) does not apply there.
-  if (pathname === "/login" || pathname === "/app" || pathname.startsWith("/app/")) return null;
+  if (pathname === "/login" || pathname === "/welcome" || pathname === "/pricing" || pathname === "/app" || pathname.startsWith("/app/")) return null;
   const moduleName = moduleForPath(pathname);
 
   const submit = async () => {

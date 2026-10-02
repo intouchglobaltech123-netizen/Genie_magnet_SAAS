@@ -109,6 +109,7 @@ import { PlatformService } from "./platform/platform.service.js";
 import { PlatformSupportController, SupportAccessController } from "./support/support.controller.js";
 import { SupportService } from "./support/support.service.js";
 import { DataController } from "./data/data.controller.js";
+import { SiteController } from "./platform/site.controller.js";
 import { DataService } from "./data/data.service.js";
 import { DailySheetService } from "./daily-sheet/daily-sheet.service.js";
 import { LearningService } from "./performance/learning.service.js";
@@ -224,6 +225,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     SupportAccessController,
     PlatformSupportController,
     DataController,
+    SiteController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
