@@ -13,6 +13,7 @@ import {
 import type { z } from "zod";
 import { AuditService } from "../audit/audit.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
+import { PayrollLock } from "../payroll/payroll-lock.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { AttendanceService, datesBetween, offDay } from "./attendance.service.js";
 
@@ -33,6 +34,7 @@ export class LeaveService {
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
     private readonly attendance: AttendanceService,
+    private readonly payrollLock: PayrollLock,
   ) {}
 
   private all() {
@@ -210,6 +212,7 @@ export class LeaveService {
     if (!r) throw new NotFoundException("No leave request with that id.");
     if (r.status !== "pending") throw new ConflictException("It is already decided.");
     this.tenant.notOwnRequest(r.userId, "leave");
+    if (d.approved) await this.payrollLock.assertOpen(datesBetween(day(r.from), day(r.to)), "its attendance");
     const s = await this.attendance.settings();
     await this.tenant.tx(async (tx) => {
       await tx.leaveRequest.update({

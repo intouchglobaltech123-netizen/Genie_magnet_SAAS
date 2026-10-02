@@ -12,6 +12,7 @@ import {
   dayStatus,
 } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
+import { PayrollLock } from "../payroll/payroll-lock.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 
@@ -46,6 +47,7 @@ export class AttendanceService {
     private readonly tenant: TenantDb,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly payrollLock: PayrollLock,
   ) {}
 
   async settings(): Promise<AttendanceSettings> {
@@ -74,15 +76,19 @@ export class AttendanceService {
     return allows(this.tenant.permissions, "hr", "view");
   }
 
-  /** The month for everyone (HR) or for the person themselves. */
-  async month(month: string): Promise<AttendanceMonth> {
+  /**
+   * The month for everyone (HR) or for the person themselves; `everyone` for payroll, whatever HR access the person
+   * running it has. A working day with no record is absent when an import covers it (from its first day to its last)
+   * and the person is on the attendance device (they have an employee code, or are in an export) and with the agency.
+   */
+  async month(month: string, everyone = this.all()): Promise<AttendanceMonth> {
     if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) throw new BadRequestException("Give the month as YYYY-MM.");
     const start = utc(`${month}-01`);
     const end = new Date(start);
     end.setUTCMonth(end.getUTCMonth() + 1);
     const last = day(new Date(end.getTime() - DAY));
-    const mine = this.all() ? {} : { userId: this.tenant.userId ?? "" };
-    const [s, members, records, leaves] = await Promise.all([
+    const mine = everyone ? {} : { userId: this.tenant.userId ?? "" };
+    const [s, members, records, leaves, profiles, imports] = await Promise.all([
       this.settings(),
       this.tenant.db.membership.findMany({ where: { agencyId: this.tenant.agencyId, ...mine }, select: { user: { select: { id: true, name: true } } } }),
       this.tenant.db.attendanceRecord.findMany({ where: { date: { gte: start, lt: end }, ...mine } }),
@@ -90,8 +96,17 @@ export class AttendanceService {
         where: { status: "approved", from: { lt: end }, to: { gte: start }, ...mine },
         select: { userId: true, from: true, to: true },
       }),
+      this.tenant.db.employeeProfile.findMany({ select: { userId: true, employeeCode: true, joiningDate: true, exitDate: true } }),
+      this.tenant.db.attendanceRecord.groupBy({
+        by: ["importId"],
+        where: { date: { gte: start, lt: end }, source: "import", importId: { not: null } },
+        _min: { date: true },
+        _max: { date: true },
+      }),
     ]);
     const dates = datesBetween(`${month}-01`, last);
+    const covers = imports.map((i) => [day(i._min.date!), day(i._max.date!)] as const);
+    const covered = (d: string) => covers.some(([a, b]) => d >= a && d <= b);
     const yesterday = day(new Date(Date.now() - DAY));
     const offDays = dates.flatMap((d) => {
       const o = offDay(s, d);
@@ -105,11 +120,15 @@ export class AttendanceService {
         for (const l of leaves.filter((x) => x.userId === m.user.id))
           for (const d of datesBetween(day(l.from), day(l.to)))
             if (d.startsWith(month) && !days[d] && !offDay(s, d)) days[d] = { status: "leave", firstIn: null, lastOut: null, source: "leave" };
-        // Absent: working days without a record, up to the last day the export covers (and never today or later).
-        const covered = theirs.reduce((x, r) => (day(r.date) > x ? day(r.date) : x), "");
-        if (covered)
+        // Absent: working days an import covers without a record, for people on the device (never today or later).
+        const prof = profiles.find((p) => p.userId === m.user.id);
+        const onDevice = !!prof?.employeeCode || theirs.some((r) => r.source === "import");
+        const joined = prof?.joiningDate ? day(prof.joiningDate) : "";
+        const left = prof?.exitDate ? day(prof.exitDate) : "9999";
+        if (onDevice)
           for (const d of dates)
-            if (d <= covered && d <= yesterday && !days[d] && !offDay(s, d)) days[d] = { status: "absent", firstIn: null, lastOut: null, source: "missing" };
+            if (covered(d) && d >= joined && d <= left && d <= yesterday && !days[d] && !offDay(s, d))
+              days[d] = { status: "absent", firstIn: null, lastOut: null, source: "missing" };
         const totals = Object.fromEntries(ATTENDANCE_STATUSES.map((st) => [st, Object.values(days).filter((x) => x.status === st).length])) as Record<
           AttendanceStatus,
           number
@@ -177,6 +196,7 @@ export class AttendanceService {
     if (!c) throw new NotFoundException("No correction with that id.");
     if (c.state !== "pending") throw new ConflictException("It is already decided.");
     this.tenant.notOwnRequest(c.userId, "correction");
+    if (d.approved) await this.payrollLock.assertOpen([day(c.date)], "its attendance");
     const s = await this.settings();
     await this.tenant.tx(async (tx) => {
       await tx.attendanceCorrection.update({

@@ -134,7 +134,7 @@ describe("attendance", () => {
     expect(r.report).toMatchObject({ rows: 7, imported: 7, grouped: { fileRows: 15, into: "days" } });
   });
 
-  it("shows each person's month: absences between imported days, weekly offs and holidays", async () => {
+  it("shows each person's month: absences on the days an import covers, weekly offs and holidays", async () => {
     const m = (await harini.get("/attendance?month=2026-09").expect(200)).body as AttendanceMonth;
     const d = m.people.find((p) => p.user.id === DIVYA)!;
     expect(Object.fromEntries(Object.entries(d.days).map(([k, v]) => [k, v.status]))).toEqual({
@@ -147,8 +147,19 @@ describe("attendance", () => {
     });
     expect(m.offDays).toContainEqual({ date: "2026-09-07", name: "Local festival" });
     expect(m.offDays).toContainEqual({ date: "2026-09-06", name: null });
+    // Surya is on the device: absent on the working days the import covers (1 to 8 September) he has no record for.
+    const s = m.people.find((p) => p.user.id === SURYA)!;
+    expect(
+      Object.entries(s.days)
+        .filter(([, v]) => v.status === "absent")
+        .map(([k]) => k),
+    ).toEqual(["2026-09-02", "2026-09-03", "2026-09-04", "2026-09-05", "2026-09-08"]);
+    // Nobody is absent outside what the import covers, and people not on the device never are.
+    expect(Object.keys(d.days).every((k) => k <= "2026-09-08")).toBe(true);
+    expect(m.people.find((p) => p.user.id === seedUserId("jana@geniemagnet.test"))!.days).toEqual({});
     const mine = (await divya.get("/attendance?month=2026-09").expect(200)).body as AttendanceMonth;
     expect(mine.people.map((p) => p.user.id)).toEqual([DIVYA]);
+    expect(mine.people[0]!.days["2026-09-04"]).toMatchObject({ status: "absent" });
   });
 
   it("is corrected when HR approves what the person asks, and a later import keeps the correction", async () => {

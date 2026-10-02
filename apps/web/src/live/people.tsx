@@ -376,8 +376,8 @@ function MonthGrid({ month }: { month: string }) {
         </tbody>
       </table>
       <p className="border-t border-border-subtle px-4 py-2 text-body text-muted-foreground">
-        P present · L late · ½ half day · A absent · LV on leave · H holiday · — weekly off. Absent days are counted up to each person&rsquo;s last day in the export,
-        so people who don&rsquo;t use the device are never marked absent.
+        P present · L late · ½ half day · A absent · LV on leave · H holiday · — weekly off. A working day with no record is absent when an export covers it,
+        for people on the device (with an employee code, or in an export).
       </p>
     </Card>
   );

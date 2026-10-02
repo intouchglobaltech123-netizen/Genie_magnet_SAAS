@@ -77,6 +77,9 @@ import { AttendanceService } from "./people/attendance.service.js";
 import { EmployeesService } from "./people/employees.service.js";
 import { LeaveService } from "./people/leave.service.js";
 import { AttendanceController, LeaveController, PeopleController } from "./people/people.controller.js";
+import { PayrollController, PayslipsController } from "./payroll/payroll.controller.js";
+import { PayrollLock } from "./payroll/payroll-lock.js";
+import { PayrollService } from "./payroll/payroll.service.js";
 import { CostingService } from "./finance/costing.service.js";
 import { ExpensesService } from "./finance/expenses.service.js";
 import { CollectionsController, CostingController, ExpensesController, FinanceController, VendorsController } from "./finance/finance.controller.js";
@@ -158,6 +161,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     PeopleController,
     AttendanceController,
     LeaveController,
+    PayrollController,
+    PayslipsController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -268,6 +273,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     EmployeesService,
     AttendanceService,
     LeaveService,
+    PayrollLock,
+    PayrollService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

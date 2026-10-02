@@ -45,6 +45,8 @@ import {
   Contact,
   Fingerprint,
   CalendarOff,
+  Banknote,
+  ReceiptText,
   Users,
   X,
 } from "lucide-react";
@@ -107,6 +109,8 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "People", href: "/app/people", icon: Contact },
       { title: "Attendance", href: "/app/attendance", icon: Fingerprint },
       { title: "Leave", href: "/app/leave", icon: CalendarOff },
+      { title: "Payroll", href: "/app/payroll", icon: Banknote, area: "salaries" },
+      { title: "My payslips", href: "/app/payslips", icon: ReceiptText },
       { title: "Import from Excel", href: "/app/import", icon: FileSpreadsheet, area: "clients", level: "edit" },
     ],
   },

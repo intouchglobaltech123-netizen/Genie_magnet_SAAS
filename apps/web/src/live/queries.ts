@@ -105,6 +105,13 @@ import {
   type LeaveRequestInput,
   type LeaveRequestRow,
   type LeaveTypeRow,
+  type PayrollRunRow,
+  type PayrollSettings,
+  type PayrollSettingsInput,
+  type PayslipChange,
+  type PayslipRow,
+  type SalaryInput,
+  type SalaryRow,
   type FinanceMonthRow,
   type ExpenseInput,
   type ExpenseRow,
@@ -1322,6 +1329,59 @@ export function useLeaveAction() {
     },
   });
 }
+
+// ─── Payroll ──────────────────────────────────────────────────────────
+
+export const usePayrollSettings = () => useQuery({ queryKey: ["payroll", "settings"], queryFn: () => api<PayrollSettings>("/payroll/settings") });
+export const useSalaries = () => useQuery({ queryKey: ["payroll", "salaries"], queryFn: () => api<SalaryRow[]>("/payroll/salaries") });
+export const usePayrollRuns = () => useQuery({ queryKey: ["payroll", "runs"], queryFn: () => api<PayrollRunRow[]>("/payroll/runs") });
+export const usePayrollRun = (month: string | null) =>
+  useQuery({ queryKey: ["payroll", "runs", month], queryFn: () => api<PayrollRunRow>(`/payroll/runs/${month}`), enabled: !!month });
+export const useMyPayslips = () => useQuery({ queryKey: ["payslips"], queryFn: () => api<PayslipRow[]>("/payslips") });
+export const usePayslip = (id: string) => useQuery({ queryKey: ["payslips", id], queryFn: () => api<PayslipRow>(`/payslips/${id}`) });
+
+export function usePayrollAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "settings"; body: PayrollSettingsInput }
+        | { step: "salary"; userId: string; body: SalaryInput }
+        | { step: "removeSalary"; id: string }
+        | { step: "start"; month: string }
+        | { step: "refresh" | "lock" | "remove"; month: string }
+        | { step: "unlock"; month: string; reason: string }
+        | { step: "change"; month: string; userId: string; body: PayslipChange },
+    ) => {
+      switch (v.step) {
+        case "settings":
+          return api("/payroll/settings", { method: "PUT", body: v.body });
+        case "salary":
+          return api(`/payroll/salaries/${v.userId}`, { method: "PUT", body: v.body });
+        case "removeSalary":
+          return api(`/payroll/salaries/${v.id}`, { method: "DELETE" });
+        case "start":
+          return api("/payroll/runs", { body: { month: v.month } });
+        case "refresh":
+        case "lock":
+          return api(`/payroll/runs/${v.month}/${v.step}`, { body: {} });
+        case "remove":
+          return api(`/payroll/runs/${v.month}`, { method: "DELETE" });
+        case "unlock":
+          return api(`/payroll/runs/${v.month}/unlock`, { body: { reason: v.reason } });
+        case "change":
+          return api(`/payroll/runs/${v.month}/payslips/${v.userId}`, { method: "PUT", body: v.body });
+      }
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["payroll"] });
+      void qc.invalidateQueries({ queryKey: ["payslips"] });
+    },
+  });
+}
+
+/** The bank's transfer sheet for a locked month. */
+export const fetchBankSheet = (month: string) => api<{ fileName: string; csv: string; missing: string[] }>(`/payroll/runs/${month}/bank-sheet`);
 
 // ─── Calendar and time ────────────────────────────────────────────────
 

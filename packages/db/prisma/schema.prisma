@@ -484,14 +484,14 @@ model Client {
 }
 
 model Contact {
-  id       String  @id @default(uuid(7)) @db.Uuid
-  agencyId String  @map("agency_id") @db.Uuid
-  clientId String  @map("client_id") @db.Uuid
-  name     String
-  title    String?
-  email    String?
-  phone    String
-  approver Boolean @default(false)
+  id                  String    @id @default(uuid(7)) @db.Uuid
+  agencyId            String    @map("agency_id") @db.Uuid
+  clientId            String    @map("client_id") @db.Uuid
+  name                String
+  title               String?
+  email               String?
+  phone               String
+  approver            Boolean   @default(false)
   /// The contact agreed to get messages on WhatsApp (P3-07); messages go only to contacts who did.
   whatsappOptIn       Boolean   @default(false) @map("whatsapp_opt_in")
   whatsappOptInAt     DateTime? @map("whatsapp_opt_in_at")
@@ -507,17 +507,17 @@ model Contact {
 
 /// A client contact's private portal link (P3-01): only its hash is kept, replaced or switched off by the team.
 model PortalLink {
-  id         String    @id @default(uuid(7)) @db.Uuid
-  agencyId   String    @map("agency_id") @db.Uuid
-  clientId   String    @map("client_id") @db.Uuid
-  contactId  String    @unique @map("contact_id") @db.Uuid
+  id          String    @id @default(uuid(7)) @db.Uuid
+  agencyId    String    @map("agency_id") @db.Uuid
+  clientId    String    @map("client_id") @db.Uuid
+  contactId   String    @unique @map("contact_id") @db.Uuid
   /// sha256 of the link's token.
   token       String    @unique
   /// The token itself, encrypted (P3-06), so messages the app sends can carry the link.
   tokenSecret String?   @map("token_secret")
-  createdBy  String?   @map("created_by")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  lastUsedAt DateTime? @map("last_used_at")
+  createdBy   String?   @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  lastUsedAt  DateTime? @map("last_used_at")
 
   contact Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
 
@@ -1323,11 +1323,11 @@ model ShootIncident {
 // ───────────────────────────── Publishing & messaging ─────────────────────────────
 
 model PlatformConnection {
-  id          String   @id @default(uuid(7)) @db.Uuid
-  agencyId    String   @map("agency_id") @db.Uuid
-  clientId    String   @map("client_id") @db.Uuid
+  id             String    @id @default(uuid(7)) @db.Uuid
+  agencyId       String    @map("agency_id") @db.Uuid
+  clientId       String    @map("client_id") @db.Uuid
   /// instagram | facebook | youtube | linkedin | x | threads | pinterest | gbp
-  platform    String
+  platform       String
   handle         String
   /// manual · linked · choose · expired · error (P3-11)
   status         String    @default("manual")
@@ -1475,7 +1475,7 @@ model Commitment {
 
 /// Genie Assistant's rules as each agency set them (P4-01): on or off, and each rule's threshold.
 model GenieSettings {
-  agencyId  String    @id @map("agency_id") @db.Uuid
+  agencyId      String    @id @map("agency_id") @db.Uuid
   /// { ruleKey: { enabled, threshold } } — anything not set uses the rule's default.
   rules         Json      @default("{}")
   lastRunAt     DateTime? @map("last_run_at")
@@ -1526,33 +1526,33 @@ model Insight {
 /// A draft written by the model for a person to approve, edit or reject (P4-06): a WhatsApp nudge, a caption, content
 /// ideas or a report summary. What was approved, and how much it was edited, is kept.
 model Draft {
-  id         String    @id @default(uuid(7)) @db.Uuid
-  agencyId   String    @map("agency_id") @db.Uuid
+  id        String    @id @default(uuid(7)) @db.Uuid
+  agencyId  String    @map("agency_id") @db.Uuid
   /// nudge · caption · ideas · report_summary
-  kind       String
+  kind      String
   /// draft · approved · rejected
-  status     String    @default("draft")
+  status    String    @default("draft")
   /// What it is for: insight, video, client or report, and its id.
-  entity     String
-  entityId   String    @map("entity_id")
-  clientId   String?   @map("client_id") @db.Uuid
+  entity    String
+  entityId  String    @map("entity_id")
+  clientId  String?   @map("client_id") @db.Uuid
   /// What the person asked for (notes, platform…).
-  request    Json      @default("{}")
+  request   Json      @default("{}")
   /// The prompt's context, kept for the agency's retention period then cleared.
-  context    String?
+  context   String?
   /// What the model wrote.
-  output     Json
+  output    Json
   /// What was approved (after any edits).
-  final      Json?
+  final     Json?
   /// How much of the draft the person changed, 0 to 100.
-  editedPct  Int?      @map("edited_pct")
+  editedPct Int?      @map("edited_pct")
   /// claude · stand-in
-  source     String
-  model      String?
-  createdBy  String?   @map("created_by")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  decidedBy  String?   @map("decided_by")
-  decidedAt  DateTime? @map("decided_at")
+  source    String
+  model     String?
+  createdBy String?   @map("created_by")
+  createdAt DateTime  @default(now()) @map("created_at")
+  decidedBy String?   @map("decided_by")
+  decidedAt DateTime? @map("decided_at")
 
   @@index([agencyId, entity, entityId])
   @@index([agencyId, kind, status])
@@ -1860,4 +1860,88 @@ model LeaveRequest {
   @@index([agencyId, userId])
   @@index([agencyId, status])
   @@map("leave_requests")
+}
+
+// ───────────────────────────── Payroll ─────────────────────────────
+
+/// A person's monthly salary from a day on, in parts (P5-09); on each day, the latest that started by then applies.
+/// Restricted to those who may see salaries.
+model SalaryStructure {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  userId    String   @map("user_id")
+  from      DateTime @db.Date
+  /// [{ name, amount }]: rupees a month.
+  earnings  Json
+  note      String?
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([agencyId, userId, from])
+  @@map("salary_structures")
+}
+
+/// The agency's payroll rules (P5-09): what a day's pay is, lateness, and its own deductions — never assumed.
+model PayrollSettings {
+  agencyId        String   @id @map("agency_id") @db.Uuid
+  /// calendar · working · thirty
+  dayBasis        String   @default("calendar") @map("day_basis")
+  latesPerHalfDay Int?     @map("lates_per_half_day")
+  /// The agency's deductions and contributions, as its auditor sets them.
+  deductions      Json     @default("[]")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("payroll_settings")
+}
+
+/// A month's payroll (P5-09): a draft worked out from attendance and leave, then locked — when each person's payslip
+/// is theirs to see and the month's attendance stops changing.
+model PayrollRun {
+  id        String    @id @default(uuid(7)) @db.Uuid
+  agencyId  String    @map("agency_id") @db.Uuid
+  /// YYYY-MM
+  month     String
+  /// draft · locked
+  status    String    @default("draft")
+  /// People left out, and things worth a look.
+  notes     Json      @default("[]")
+  createdBy String?   @map("created_by")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at")
+  lockedBy  String?   @map("locked_by")
+  lockedAt  DateTime? @map("locked_at")
+  payslips  Payslip[]
+
+  @@unique([agencyId, month])
+  @@map("payroll_runs")
+}
+
+/// One person's pay for a month (P5-09), as worked out and as payroll changed it.
+model Payslip {
+  id              String     @id @default(uuid(7)) @db.Uuid
+  agencyId        String     @map("agency_id") @db.Uuid
+  runId           String     @map("run_id") @db.Uuid
+  userId          String     @map("user_id")
+  /// Who they were that month: name, code, designation, department, bank and PAN hints, UAN.
+  person          Json
+  /// The basis, days with the agency, days without pay and why, days paid.
+  days            Json
+  earnings        Json
+  deductions      Json
+  /// Paid by the agency on top of the salary.
+  contributions   Json       @default("[]")
+  adjustments     Json       @default("[]")
+  /// Amounts entered this month for deductions entered for each person (such as TDS).
+  entries         Json       @default("{}")
+  extraLop        Float      @default(0) @map("extra_lop")
+  gross           Int
+  totalDeductions Int        @map("total_deductions")
+  net             Int
+  employerCost    Int        @default(0) @map("employer_cost")
+  notes           Json       @default("[]")
+  run             PayrollRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, userId])
+  @@index([agencyId, userId])
+  @@map("payslips")
 }

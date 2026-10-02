@@ -34,6 +34,7 @@ import { ProductionSettingsService } from "../production/production-settings.ser
 import { VideosService } from "../production/videos.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { matrixOf } from "../team/roles.service.js";
+import { PayrollLock } from "../payroll/payroll-lock.js";
 import { AttendanceService, offDay } from "../people/attendance.service.js";
 import { TeamService } from "../team/team.service.js";
 import { CheckReport, dateText, money } from "./check-report.js";
@@ -76,6 +77,7 @@ export class ImportsService {
     private readonly agreements: AgreementsService,
     private readonly notifications: NotificationsService,
     private readonly attendance: AttendanceService,
+    private readonly payrollLock: PayrollLock,
   ) {}
 
   private canEdit(kind: ImportKind) {
@@ -664,6 +666,10 @@ export class ImportsService {
       else seen.set(key, i);
     });
     refuse(issues);
+    await this.payrollLock.assertOpen(
+      rows.map((r) => r.date),
+      "its attendance",
+    );
 
     const report = new CheckReport(input).groupedInto("days");
     const kept = await this.tenant.db.attendanceRecord.findMany({
@@ -750,7 +756,12 @@ export class ImportsService {
         throw new ConflictException("Some of these videos have been worked on since the import, so undoing it would lose that work.");
     }
     if (kind === "attendance") {
-      // Days HR corrected since stay; the rest of what the import brought in goes.
+      // Days HR corrected since stay; the rest of what the import brought in goes — unless payroll has locked the month.
+      const days = await this.tenant.db.attendanceRecord.findMany({ where: { importId: id, source: "import" }, select: { date: true } });
+      await this.payrollLock.assertOpen(
+        days.map((d) => d.date.toISOString().slice(0, 10)),
+        "its attendance",
+      );
     }
     if (kind === "agreements") {
       const [changed, invoices, videos, renewals] = await Promise.all([
