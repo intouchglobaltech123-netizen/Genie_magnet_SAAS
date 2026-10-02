@@ -49,6 +49,14 @@ export const envSchema = z
     FILE_MAX_MB: z.coerce.number().int().min(1).max(10_000).default(1024),
     /** Signs upload and download links; falls back to BETTER_AUTH_SECRET. */
     FILES_SECRET: z.string().min(32, "FILES_SECRET must be at least 32 characters").optional(),
+    /** Encrypts secrets kept in the database (WhatsApp and Razorpay keys, social tokens); falls back to BETTER_AUTH_SECRET. */
+    SECRETS_KEY: z.string().min(32, "SECRETS_KEY must be at least 32 characters").optional(),
+    /**
+     * How WhatsApp messages leave (P3-07): "cloud" sends through each agency's own WhatsApp Cloud API number; "outbox"
+     * keeps them in the app only (development and tests). Defaults to cloud in production.
+     */
+    WHATSAPP_PROVIDER: z.enum(["cloud", "outbox"]).optional(),
+    WHATSAPP_API_URL: z.url().default("https://graph.facebook.com/v21.0"),
     /**
      * Run background jobs in this process (ADR 0010). On for a single server; off on the API when a separate worker
      * process (`node dist/worker.js`, always on) runs them. Off in tests, which run the jobs themselves.
@@ -73,6 +81,10 @@ export const envSchema = z
   .refine((e) => !(realData(e) && e.AUTH_MODE === "better-auth" && !e.REQUIRE_EMAIL_VERIFICATION), {
     message: "REQUIRE_EMAIL_VERIFICATION must be on in production",
     path: ["REQUIRE_EMAIL_VERIFICATION"],
+  })
+  .refine((e) => !(e.NODE_ENV === "production" && !e.SECRETS_KEY && !e.BETTER_AUTH_SECRET), {
+    message: "Stored secrets need SECRETS_KEY (or BETTER_AUTH_SECRET) in production",
+    path: ["SECRETS_KEY"],
   })
   .refine((e) => !(e.NODE_ENV === "production" && !e.FILES_SECRET && !e.BETTER_AUTH_SECRET), {
     message: "File links need FILES_SECRET (or BETTER_AUTH_SECRET) in production",

@@ -1,8 +1,9 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { Prisma } from "@gm/db";
-import type { PostInput, PublishedInput } from "@gm/shared";
+import { PLATFORM_LABELS, type Platform, type PostInput, type PublishedInput } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
+import { ClientMessages } from "../whatsapp/client-messages.service.js";
 import { CyclesService, thisMonth } from "./cycles.service.js";
 
 /**
@@ -16,6 +17,7 @@ export class PublishingService {
     private readonly tenant: TenantDb,
     private readonly audit: AuditService,
     private readonly cycles: CyclesService,
+    private readonly messages: ClientMessages,
   ) {}
 
   async connections(clientId: string) {
@@ -171,6 +173,8 @@ export class PublishingService {
         entityId: id,
         after: { code: p.video.code, platform: p.connection.platform, url: input.url },
       });
+      const video = await tx.video.findUniqueOrThrow({ where: { id: p.videoId }, select: { id: true, code: true, title: true, clientId: true } });
+      await this.messages.videoPublished(tx, video.clientId, video, PLATFORM_LABELS[p.connection.platform as Platform] ?? p.connection.platform, input.url);
       const open = await tx.scheduledPost.count({ where: { videoId: p.videoId, status: { not: "published" } } });
       if (!open && p.video.stage === "approved") {
         await tx.video.update({ where: { id: p.videoId }, data: { stage: "published" } });

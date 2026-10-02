@@ -46,6 +46,8 @@ TRUST_PROXY="1"
 FILES_DIR="/data/files"
 FILES_SECRET="${{secret(48)}}"
 RUN_JOBS="true"
+SECRETS_KEY="${{secret(48)}}"
+WHATSAPP_PROVIDER="outbox"
 ```
 
 ### `web` variables
@@ -62,6 +64,7 @@ The web app forwards `/api/*` to the API over Railway's private network, so sign
 - `DATABASE_OWNER_URL` is used only by `db:setup` (roles and migrations). The API itself connects as `genie_app`, which row-level security always applies to, and sign-in as `genie_auth`, which reaches only the sign-in tables.
 - `RUN_JOBS="true"` runs the background jobs (the morning checks and reminders) inside the API. When the API needs more than one copy, turn it off there and add a `worker` service with the same settings and start command `node apps/api/dist/worker.js`.
 - `FILES_DIR` keeps uploads on the volume; without the volume they are lost on each deploy.
+- `WHATSAPP_PROVIDER="outbox"` keeps WhatsApp messages in the app: the sample contacts' phone numbers are made up and may belong to real people. Switch to `cloud` only to test with your own numbers as contacts.
 
 ## Optional
 

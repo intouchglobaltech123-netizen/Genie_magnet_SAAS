@@ -42,7 +42,7 @@ export async function startSeededApp(env: Record<string, string> = {}): Promise<
     ...env,
   });
   const mod = await Test.createTestingModule({ imports: [AppModule] }).compile();
-  const app = configureApp(mod.createNestApplication<NestExpressApplication>({ bodyParser: false, logger: false }));
+  const app = configureApp(mod.createNestApplication<NestExpressApplication>({ bodyParser: false, rawBody: true, logger: false }));
   // Listening once (on any free port) lets parallel requests share the server instead of each opening one.
   await app.listen(0, "127.0.0.1");
 

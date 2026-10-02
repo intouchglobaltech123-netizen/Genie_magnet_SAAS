@@ -21,6 +21,8 @@ import {
   type CalendarEvent,
   type ClientRequestRow,
   type JobOverview,
+  type WhatsAppMessageRow,
+  type WhatsAppSettings,
   type PortalLinkRow,
   type SetupStatus,
   type JobRow,
@@ -1019,5 +1021,53 @@ export function useAnswerRequest() {
   return useMutation({
     mutationFn: (v: { id: string; answer: string }) => api<ClientRequestRow>(`/client-requests/${v.id}/answer`, { body: { answer: v.answer } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["client-requests"] }),
+  });
+}
+
+// ─── WhatsApp ─────────────────────────────────────────────────────────
+
+export const useWhatsApp = (enabled = true) => useQuery({ queryKey: ["whatsapp"], queryFn: () => api<WhatsAppSettings>("/whatsapp"), enabled });
+
+export function useWhatsAppAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "connect"; body: unknown }
+        | { step: "check" }
+        | { step: "disconnect" }
+        | { step: "template"; body: unknown }
+        | { step: "removeTemplate"; purpose: string },
+    ) =>
+      v.step === "connect"
+        ? api<WhatsAppSettings>("/whatsapp/connection", { method: "PUT", body: v.body })
+        : v.step === "check"
+          ? api<WhatsAppSettings>("/whatsapp/connection/check", { body: {} })
+          : v.step === "disconnect"
+            ? api<WhatsAppSettings>("/whatsapp/connection", { method: "DELETE" })
+            : v.step === "template"
+              ? api<WhatsAppSettings>("/whatsapp/templates", { method: "PUT", body: v.body })
+              : api<WhatsAppSettings>(`/whatsapp/templates/${v.purpose}`, { method: "DELETE" }),
+    onSuccess: (data) => qc.setQueryData(["whatsapp"], data),
+  });
+}
+
+export const useWhatsAppTest = () =>
+  useMutation({ mutationFn: (phone: string) => api<{ sent: boolean; template: string }>("/whatsapp/test", { body: { phone } }) });
+
+export const useWhatsAppMessages = (clientId?: string, enabled = true) =>
+  useQuery({
+    queryKey: ["whatsapp-messages", clientId ?? ""],
+    queryFn: () => api<WhatsAppMessageRow[]>(`/whatsapp/messages${clientId ? `?clientId=${clientId}` : ""}`),
+    enabled,
+    refetchInterval: 30_000,
+  });
+
+export function useContactWhatsApp(clientId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { contactId: string; optIn: boolean; source?: string }) =>
+      api(`/clients/${clientId}/contacts/${v.contactId}/whatsapp`, { method: "PUT", body: { optIn: v.optIn, source: v.source } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["portal-links", clientId] }),
   });
 }

@@ -19,6 +19,8 @@ import { InvoicesService } from "../invoices/invoices.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { ContentService } from "../production/content.service.js";
+import { Secrets } from "../common/secrets.js";
+import { WhatsAppService } from "../whatsapp/whatsapp.service.js";
 import { VideosService } from "../production/videos.service.js";
 import { asPortal, type PortalPerson, TenantDb } from "../tenancy/tenant-context.js";
 
@@ -46,6 +48,8 @@ export class PortalService {
     private readonly content: ContentService,
     private readonly videos: VideosService,
     private readonly invoices: InvoicesService,
+    private readonly secrets: Secrets,
+    private readonly whatsapp: WhatsAppService,
   ) {}
 
   // ─── The team: links and requests ──────────────────────────────────
@@ -67,6 +71,8 @@ export class PortalService {
       active: !!c.portalLink,
       createdAt: c.portalLink?.createdAt.toISOString() ?? null,
       lastUsedAt: c.portalLink?.lastUsedAt?.toISOString() ?? null,
+      whatsappOptIn: c.whatsappOptIn,
+      whatsappSource: c.whatsappOptInSource,
     }));
   }
 
@@ -77,12 +83,9 @@ export class PortalService {
     const token = randomBytes(24).toString("base64url");
     await this.tenant.tx(async (tx) => {
       const existing = await tx.portalLink.findUnique({ where: { contactId } });
-      if (existing)
-        await tx.portalLink.update({
-          where: { contactId },
-          data: { token: hash(token), createdBy: this.tenant.userId, createdAt: new Date(), lastUsedAt: null },
-        });
-      else await tx.portalLink.create({ data: { agencyId: this.tenant.agencyId, clientId, contactId, token: hash(token), createdBy: this.tenant.userId } });
+      const data = { token: hash(token), tokenSecret: this.secrets.encrypt(token), createdBy: this.tenant.userId };
+      if (existing) await tx.portalLink.update({ where: { contactId }, data: { ...data, createdAt: new Date(), lastUsedAt: null } });
+      else await tx.portalLink.create({ data: { ...data, agencyId: this.tenant.agencyId, clientId, contactId } });
       await this.audit.record(tx, {
         action: "share",
         entity: "portal_link",
@@ -185,8 +188,20 @@ export class PortalService {
     return this.tenant.db.client.findUniqueOrThrow({ where: { id: clientId }, select: { name: true, accountOwnerId: true } });
   }
 
+  /** The contact agrees to (or stops) WhatsApp messages themselves. */
+  async setWhatsApp(token: string, optIn: boolean) {
+    return this.as(token, async (p) => {
+      await this.whatsapp.setOptIn(p.contactId, optIn, optIn ? "Agreed in their portal" : "Turned off in their portal");
+      return { optIn };
+    });
+  }
+
   async home(token: string): Promise<PortalHome> {
     return this.as(token, async (p) => {
+      const [whatsapp, contact] = await Promise.all([
+        this.tenant.db.whatsAppConnection.findUnique({ where: { agencyId: this.tenant.agencyId }, select: { status: true } }),
+        this.tenant.db.contact.findUniqueOrThrow({ where: { id: p.contactId }, select: { whatsappOptIn: true } }),
+      ]);
       const [agency, client, topics, scripts, videos, invoices] = await Promise.all([
         this.tenant.db.agency.findUniqueOrThrow({ where: { id: this.tenant.agencyId }, select: { name: true, logo: true, brandColor: true } }),
         this.tenant.db.client.findUniqueOrThrow({ where: { id: p.clientId }, select: { name: true } }),
@@ -195,7 +210,13 @@ export class PortalService {
         this.tenant.db.video.count({ where: { clientId: p.clientId, stage: "client_review", versions: { some: { status: "sent" } } } }),
         this.tenant.db.invoice.count({ where: { clientId: p.clientId, status: "sent" } }),
       ]);
-      return { agency, client, contact: { name: p.name }, todo: { topics, scripts, videos, invoices } };
+      return {
+        agency,
+        client,
+        contact: { name: p.name },
+        todo: { topics, scripts, videos, invoices },
+        whatsapp: { available: whatsapp?.status === "connected", optIn: contact.whatsappOptIn },
+      };
     });
   }
 

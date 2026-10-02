@@ -76,6 +76,16 @@ export type ReviewCadence = (typeof REVIEW_CADENCES)[number];
 
 export const PLATFORMS = ["instagram", "facebook", "youtube", "linkedin", "x", "threads", "pinterest", "gbp"] as const;
 export type Platform = (typeof PLATFORMS)[number];
+export const PLATFORM_LABELS: Record<Platform, string> = {
+  instagram: "Instagram",
+  facebook: "Facebook",
+  youtube: "YouTube",
+  linkedin: "LinkedIn",
+  x: "X",
+  threads: "Threads",
+  pinterest: "Pinterest",
+  gbp: "Google Business Profile",
+};
 
 export const QUESTION_TYPES = ["text", "long", "number", "currency", "choice", "multi", "yesno", "rating", "table", "file"] as const;
 export type QuestionType = (typeof QUESTION_TYPES)[number];

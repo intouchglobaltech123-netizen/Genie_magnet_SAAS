@@ -490,6 +490,11 @@ model Contact {
   email    String?
   phone    String
   approver Boolean @default(false)
+  /// The contact agreed to get messages on WhatsApp (P3-07); messages go only to contacts who did.
+  whatsappOptIn       Boolean   @default(false) @map("whatsapp_opt_in")
+  whatsappOptInAt     DateTime? @map("whatsapp_opt_in_at")
+  /// How they agreed (or stopped): in their portal, told the team, replied STOP.
+  whatsappOptInSource String?   @map("whatsapp_opt_in_source")
 
   client     Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
   portalLink PortalLink?
@@ -505,7 +510,9 @@ model PortalLink {
   clientId   String    @map("client_id") @db.Uuid
   contactId  String    @unique @map("contact_id") @db.Uuid
   /// sha256 of the link's token.
-  token      String    @unique
+  token       String    @unique
+  /// The token itself, encrypted (P3-06), so messages the app sends can carry the link.
+  tokenSecret String?   @map("token_secret")
   createdBy  String?   @map("created_by")
   createdAt  DateTime  @default(now()) @map("created_at")
   lastUsedAt DateTime? @map("last_used_at")
@@ -514,6 +521,87 @@ model PortalLink {
 
   @@index([agencyId, clientId])
   @@map("portal_links")
+}
+
+/// An agency's own WhatsApp Business number (P3-07): the Cloud API details it entered, secrets encrypted (P3-06).
+model WhatsAppConnection {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  agencyId      String    @unique @map("agency_id") @db.Uuid
+  phoneNumberId String    @map("phone_number_id")
+  businessId    String?   @map("business_id")
+  displayPhone  String?   @map("display_phone")
+  verifiedName  String?   @map("verified_name")
+  /// Encrypted.
+  accessToken   String    @map("access_token")
+  tokenHint     String    @map("token_hint")
+  /// Encrypted; checks the signature on what WhatsApp sends us.
+  appSecret     String?   @map("app_secret")
+  /// Pasted into Meta's webhook settings; Meta sends it back when it checks the address.
+  verifyToken   String    @map("verify_token")
+  /// unchecked · connected · error
+  status        String    @default("unchecked")
+  lastError     String?   @map("last_error")
+  checkedAt     DateTime? @map("checked_at")
+  /// No messages to clients between these times (India), unless the agency changes them.
+  quietFrom     String    @default("21:00") @map("quiet_from")
+  quietTo       String    @default("08:00") @map("quiet_to")
+  createdBy     String?   @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("whatsapp_connections")
+}
+
+/// A message template the agency had approved in WhatsApp Manager, registered for one purpose (P3-07).
+model WhatsAppTemplate {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  /// One of WHATSAPP_PURPOSES in @gm/shared.
+  purpose   String
+  /// The template's name in WhatsApp Manager.
+  name      String
+  language  String   @default("en")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([agencyId, purpose])
+  @@map("whatsapp_templates")
+}
+
+/// Every WhatsApp message sent or received (P3-07): the log, and how a reply finds what it answers.
+model WhatsAppMessage {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  agencyId    String    @map("agency_id") @db.Uuid
+  /// out · in
+  direction   String
+  clientId    String?   @map("client_id") @db.Uuid
+  contactId   String?   @map("contact_id") @db.Uuid
+  phone       String
+  /// The template's purpose, or "text" for a free message.
+  purpose     String
+  template    String?
+  /// The template's values, or the text sent or received.
+  body        Json      @default("{}")
+  /// What it is about: video_version, script, invoice, onboarding, report.
+  relatedType String?   @map("related_type")
+  relatedId   String?   @map("related_id")
+  /// queued · sent · delivered · read · failed · skipped · received
+  status      String
+  /// Why it was skipped or failed.
+  reason      String?
+  /// WhatsApp's message id.
+  providerId  String?   @map("provider_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  sentAt      DateTime? @map("sent_at")
+  deliveredAt DateTime? @map("delivered_at")
+  readAt      DateTime? @map("read_at")
+
+  @@unique([agencyId, providerId])
+  @@index([agencyId, clientId, createdAt])
+  @@index([agencyId, contactId, createdAt])
+  @@index([agencyId, status, createdAt])
+  @@map("whatsapp_messages")
 }
 
 /// Something a client asks the team from the portal (P3-05): an idea, a change, a question.
@@ -762,6 +850,8 @@ model QuestionnaireResponse {
   clientId        String?   @map("client_id") @db.Uuid
   /// SHA-256 of the private link's token: the link itself is shown only when it is made.
   token           String    @unique
+  /// The token itself, encrypted (P3-06), so reminders the app sends can carry the link.
+  tokenSecret     String?   @map("token_secret")
   /// link · assisted
   mode            String    @default("link")
   /// The language the client sees it in (one of the agency's languages).
@@ -1221,23 +1311,6 @@ model ScheduledPost {
 
   @@index([agencyId, scheduledAt])
   @@map("scheduled_posts")
-}
-
-model WhatsAppMessage {
-  id          String   @id @default(uuid(7)) @db.Uuid
-  agencyId    String   @map("agency_id") @db.Uuid
-  clientId    String?  @map("client_id") @db.Uuid
-  toPhone     String   @map("to_phone")
-  template    String
-  variables   Json     @default("{}")
-  status      String   @default("queued")
-  relatedType String?  @map("related_type")
-  relatedId   String?  @map("related_id")
-  reply       String?
-  sentAt      DateTime @default(now()) @map("sent_at")
-
-  @@index([agencyId, clientId, sentAt])
-  @@map("whatsapp_messages")
 }
 
 // ───────────────────────────── Genie Assistant ─────────────────────────────

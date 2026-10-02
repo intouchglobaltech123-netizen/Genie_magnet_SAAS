@@ -33,6 +33,7 @@ import { FilesCard } from "./files";
 import { ClientVideos } from "./production";
 import { ClientPlatforms } from "./publishing";
 import { ClientPortalLinks } from "./portal-links";
+import { ClientWhatsApp } from "./whatsapp-messages";
 import { InvoiceTable, NewInvoiceDialog } from "./invoices";
 import { onboardingStatus } from "./onboarding";
 import { inr } from "./packages";
@@ -649,6 +650,7 @@ export function LiveClient({ id }: { id: string }) {
           </SectionCard>
           <Contacts client={c} canEdit={canEdit} />
           <ClientPortalLinks clientId={c.id} clientName={c.name} agencyName={agencyName} canEdit={canEdit && !c.archivedAt} />
+          <ClientWhatsApp clientId={c.id} />
           <FilesCard entity="client" entityId={c.id} title="Brand files" description="Logos, brand guide, fonts, photos." canEdit={canEdit && !c.archivedAt} />
           {can("publishing", "view") && <ClientPlatforms clientId={c.id} canEdit={can("publishing", "edit")} />}
           <SectionCard title="Billing" description="Used on invoices.">

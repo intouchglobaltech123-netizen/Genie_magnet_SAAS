@@ -15,6 +15,7 @@ import {
 import { AuditService, changes } from "../audit/audit.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
+import { ClientMessages } from "../whatsapp/client-messages.service.js";
 
 type Settings = Prisma.InvoiceSettingsGetPayload<object>;
 const WITH = {
@@ -64,6 +65,7 @@ export class InvoicesService {
     private readonly tenant: TenantDb,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly messages: ClientMessages,
   ) {}
 
   // ─── Settings ─────────────────────────────────────────────────────
@@ -376,6 +378,7 @@ export class InvoicesService {
           before: { status: "draft" },
           after: { status: "sent", number, issueDate, client: current.client.name, total: t.total },
         });
+        await this.messages.invoiceIssued(tx, current.clientId, { id, number, total: t.total, dueDate: addDays(issueDate, s.paymentTermsDays) });
       });
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002")

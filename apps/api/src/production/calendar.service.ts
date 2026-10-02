@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { allows, type CalendarEvent, DONE_STAGES, PLATFORMS, scopeOf, type TimeEntryRow } from "@gm/shared";
+import { allows, type CalendarEvent, DONE_STAGES, PLATFORM_LABELS, scopeOf, type TimeEntryRow } from "@gm/shared";
 import { TenantDb } from "../tenancy/tenant-context.js";
 
 const DAY = 86_400_000;
@@ -10,7 +10,7 @@ const ist = (d: Date) => {
   const t = new Date(d.getTime() + 330 * 60_000).toISOString();
   return { date: t.slice(0, 10), time: t.slice(11, 16) };
 };
-const PLATFORM_LABEL: Record<string, string> = Object.fromEntries(PLATFORMS.map((p) => [p, p.charAt(0).toUpperCase() + p.slice(1)]));
+const PLATFORM_LABEL: Record<string, string> = PLATFORM_LABELS;
 
 /**
  * The production calendar and time (P2-13): shoots, videos due and to publish, scheduled posts and agreements ending,

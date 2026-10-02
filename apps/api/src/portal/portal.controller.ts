@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from "@nestjs/common";
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
-import { clientDecision, type ClientDecision, clientRequestAnswer, clientRequestInput, portalComment, portalPick } from "@gm/shared";
+import { clientDecision, type ClientDecision, clientRequestAnswer, clientRequestInput, portalComment, portalPick, whatsappOptIn } from "@gm/shared";
 import { Can, Public } from "../access/access.js";
 import { RateLimit } from "../common/rate-limit.js";
 import { ZodPipe } from "../common/zod.pipe.js";
@@ -23,6 +23,15 @@ export class PortalController {
   @RateLimit({ max: 120, windowSeconds: 60 })
   home(@Param("token") token: string) {
     return this.portal.home(token);
+  }
+
+  /** The contact switches WhatsApp messages on or off. */
+  @Put("whatsapp")
+  @Public()
+  @RateLimit({ max: 20, windowSeconds: 60 })
+  @ApiBody({ schema: schema(whatsappOptIn) })
+  whatsapp(@Param("token") token: string, @Body(new ZodPipe(whatsappOptIn)) b: z.output<typeof whatsappOptIn>) {
+    return this.portal.setWhatsApp(token, b.optIn);
   }
 
   @Get("topics")

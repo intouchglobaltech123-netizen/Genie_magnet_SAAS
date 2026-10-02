@@ -2,7 +2,16 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "./generated/prisma/client.js";
 
 export * from "./generated/prisma/client.js";
-export { findPortalLink, findQuestionnaireLink, forAgency, withAgency, TenancyError, type TenantClient, type TenantTx } from "./tenancy.js";
+export {
+  findPortalLink,
+  findQuestionnaireLink,
+  findWhatsAppConnection,
+  forAgency,
+  withAgency,
+  TenancyError,
+  type TenantClient,
+  type TenantTx,
+} from "./tenancy.js";
 export { claimJobs, releaseStuckJobs, scheduleJobs, type ClaimedJob, type ScheduledJob } from "./jobs.js";
 export { ensureDefaultQuestionnaires, ensureDefaultRoles, ensureDefaultStages, setUpAgencyDefaults } from "./defaults.js";
 

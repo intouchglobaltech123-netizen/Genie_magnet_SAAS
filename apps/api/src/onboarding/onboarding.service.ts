@@ -30,6 +30,7 @@ import { NotificationsService } from "../notifications/notifications.service.js"
 import { ENV, type Env } from "../env.js";
 import { FilesService } from "../files/files.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
+import { Secrets } from "../common/secrets.js";
 import { asLinkHolder, TenantDb } from "../tenancy/tenant-context.js";
 import { QuestionnairesService } from "./questionnaires.service.js";
 
@@ -67,6 +68,7 @@ export class OnboardingService {
     private readonly files: FilesService,
     private readonly prisma: PrismaService,
     @Inject(ENV) private readonly env: Env,
+    private readonly secrets: Secrets,
   ) {}
 
   private agency() {
@@ -233,7 +235,10 @@ export class OnboardingService {
     if (!row.clientId) throw new BadRequestException("The agency's own questionnaire is filled in here, not by link.");
     const token = randomBytes(24).toString("base64url");
     await this.tenant.tx(async (tx) => {
-      await tx.questionnaireResponse.update({ where: { id }, data: { token: hash(token), ...(row.sentAt ? {} : { sentAt: new Date() }) } });
+      await tx.questionnaireResponse.update({
+        where: { id },
+        data: { token: hash(token), tokenSecret: this.secrets.encrypt(token), ...(row.sentAt ? {} : { sentAt: new Date() }) },
+      });
       await this.audit.record(tx, {
         action: "share",
         entity: "onboarding",

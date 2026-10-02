@@ -65,6 +65,18 @@ export async function findPortalLink(prisma: PrismaClient, tokenHash: string) {
   });
 }
 
+/**
+ * WhatsApp's notices arrive at an address carrying a connection's id (P3-07): finds that connection and its agency,
+ * without knowing the agency. Row-level security shows a connection only when `app.whatsapp_connection` holds its id.
+ */
+export async function findWhatsAppConnection(prisma: PrismaClient, id: string) {
+  if (!UUID.test(id)) return null;
+  return prisma.$transaction(async (tx) => {
+    await tx.$executeRaw`SELECT set_config('app.whatsapp_connection', ${id}, TRUE)`;
+    return tx.whatsAppConnection.findUnique({ where: { id }, select: { id: true, agencyId: true, verifyToken: true, appSecret: true } });
+  });
+}
+
 /** Several operations in one transaction, all inside the agency (e.g. create a client with its contacts). */
 export async function withAgency<T>(
   prisma: PrismaClient,

@@ -21,6 +21,7 @@ import { lockRow } from "../common/lock-row.js";
 import { FilesService } from "../files/files.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
+import { ClientMessages } from "../whatsapp/client-messages.service.js";
 import { CyclesService } from "./cycles.service.js";
 import { ProductionSettingsService } from "./production-settings.service.js";
 
@@ -64,6 +65,7 @@ export class VideosService {
     private readonly settings: ProductionSettingsService,
     private readonly cycles: CyclesService,
     private readonly files: FilesService,
+    private readonly messages: ClientMessages,
   ) {}
 
   /** Roles limited to their own videos: the ones they edit, shoot or direct. */
@@ -582,6 +584,7 @@ export class VideosService {
     await this.tenant.tx(async (tx) => {
       await tx.videoVersion.update({ where: { id: latest.id }, data: { status: "sent", sentAt: new Date() } });
       await this.moveIn(tx, v, "client_review", `${latest.label} sent to the client`);
+      await this.messages.approvalRequest(tx, v.clientId, `${v.code} “${v.title}” (${latest.label})`, { type: "video", id, extra: { versionId: latest.id } });
     });
     return this.get(id);
   }
@@ -596,7 +599,14 @@ export class VideosService {
       await tx.videoVersion.update({ where: { id: latest.id }, data: { status: d.approved ? "approved" : "changes_requested", decidedAt: new Date() } });
       if (d.note)
         await tx.reviewComment.create({
-          data: { agencyId: this.tenant.agencyId, versionId: latest.id, author: client.name, text: d.note, createdBy: this.tenant.userId },
+          // The client's own words: their name when they answered themselves (portal or WhatsApp), else the client's.
+          data: {
+            agencyId: this.tenant.agencyId,
+            versionId: latest.id,
+            author: this.tenant.portal?.name ?? client.name,
+            text: d.note,
+            createdBy: this.tenant.userId,
+          },
         });
       await this.moveIn(
         tx,

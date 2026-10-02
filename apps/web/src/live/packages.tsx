@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Archive, ArchiveRestore, Package as PackageIcon, Pencil, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { BILLING_TERMS, DELIVERABLE_KINDS, type DeliverableKind, EXAMPLE_PACKAGES, type Package, packageInput, PLATFORMS } from "@gm/shared";
+import { PLATFORM_LABELS, BILLING_TERMS, DELIVERABLE_KINDS, type DeliverableKind, EXAMPLE_PACKAGES, type Package, packageInput, PLATFORMS } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,16 +19,7 @@ import { useCan, useDeletePackage, usePackages, useSavePackage, useSetPackageAct
 
 export const inr = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 
-export const PLATFORM_LABEL: Record<string, string> = {
-  instagram: "Instagram",
-  facebook: "Facebook",
-  youtube: "YouTube",
-  linkedin: "LinkedIn",
-  x: "X",
-  threads: "Threads",
-  pinterest: "Pinterest",
-  gbp: "Google Business Profile",
-};
+export const PLATFORM_LABEL: Record<string, string> = PLATFORM_LABELS;
 const KIND_LABEL: Record<DeliverableKind, string> = { video: "Video", post: "Post", story: "Story", other: "Other" };
 
 export type Line = { name: string; perMonth: string; kind: DeliverableKind };

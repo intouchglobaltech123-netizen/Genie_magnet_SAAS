@@ -4,6 +4,7 @@ import { allows, type ClientDecision, type ContentInput, type ContentUpdate, typ
 import { AuditService } from "../audit/audit.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
+import { ClientMessages } from "../whatsapp/client-messages.service.js";
 import { thisMonth } from "./cycles.service.js";
 import { VideosService } from "./videos.service.js";
 
@@ -39,6 +40,7 @@ export class ContentService {
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
     private readonly videos: VideosService,
+    private readonly messages: ClientMessages,
   ) {}
 
   private scope(): Prisma.ContentItemWhereInput {
@@ -253,6 +255,7 @@ export class ContentService {
       await tx.scriptVersion.update({ where: { id: last.id }, data: { status: "sent", sentAt: new Date() } });
       await tx.contentItem.update({ where: { id }, data: { stage: "approval" } });
       await this.audit.record(tx, { action: "send", entity: "content", entityId: id, after: { title: c.title, script: `v${last.number}` } });
+      await this.messages.approvalRequest(tx, c.clientId, `the script for “${c.title}”`, { type: "script", id, extra: { script: `v${last.number}` } });
     });
     return this.get(id);
   }

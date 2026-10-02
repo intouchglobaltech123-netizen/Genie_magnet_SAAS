@@ -734,6 +734,8 @@ export interface PortalHome {
   client: { name: string };
   contact: { name: string };
   todo: { topics: number; scripts: number; videos: number; invoices: number };
+  /** WhatsApp messages: whether the agency sends them, and whether this contact agreed. */
+  whatsapp: { available: boolean; optIn: boolean };
 }
 
 export interface PortalTopicList {
@@ -808,4 +810,46 @@ export interface PortalLinkRow {
   active: boolean;
   createdAt: string | null;
   lastUsedAt: string | null;
+  /** Agreed to WhatsApp messages, and how (or how they stopped). */
+  whatsappOptIn: boolean;
+  whatsappSource: string | null;
+}
+
+// ─── WhatsApp (P3-07, P3-08) ───────────────────────────────────────────
+
+export interface WhatsAppSettings {
+  connection: {
+    phoneNumberId: string;
+    businessId: string | null;
+    displayPhone: string | null;
+    verifiedName: string | null;
+    tokenHint: string;
+    hasAppSecret: boolean;
+    status: "unchecked" | "connected" | "error";
+    lastError: string | null;
+    checkedAt: string | null;
+    quietFrom: string;
+    quietTo: string;
+    /** Paste these into the Meta app's webhook settings. */
+    webhookUrl: string;
+    verifyToken: string;
+  } | null;
+  templates: { purpose: string; name: string; language: string; active: boolean }[];
+  /** "outbox" while messages are kept in the app (development); "cloud" when they really go. */
+  provider: "cloud" | "outbox";
+}
+
+export interface WhatsAppMessageRow {
+  id: string;
+  direction: "out" | "in";
+  client: { id: string; name: string } | null;
+  contact: { id: string; name: string } | null;
+  phone: string;
+  purpose: string;
+  /** What it said: the template's values or the text. */
+  text: string;
+  status: "queued" | "sent" | "delivered" | "read" | "failed" | "skipped" | "received";
+  reason: string | null;
+  createdAt: string;
+  sentAt: string | null;
 }

@@ -5,6 +5,7 @@ import { ENV, type Env } from "../env.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { asSystem, TenantDb } from "../tenancy/tenant-context.js";
+import { WhatsAppService } from "../whatsapp/whatsapp.service.js";
 import { DailyChecks } from "./daily-checks.service.js";
 
 type Handler = (tx: TenantTx, payload: Record<string, unknown>) => Promise<unknown>;
@@ -41,6 +42,7 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
     private readonly tenant: TenantDb,
     private readonly notifications: NotificationsService,
     checks: DailyChecks,
+    whatsapp: WhatsAppService,
   ) {
     this.handlers = {
       "videos.due": (tx, p) => checks.videosDue(tx, dayOf(p)),
@@ -49,6 +51,7 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
       "invoices.overdue": (tx, p) => checks.invoicesOverdue(tx, dayOf(p)),
       "cycles.month": (tx, p) => checks.month(tx, dayOf(p)),
       "files.cleanup": (tx) => checks.filesCleanup(tx),
+      "whatsapp.send": (tx, p) => whatsapp.send(tx, String(p.messageId)),
     };
   }
 

@@ -12,7 +12,8 @@ import { SkeletonRows } from "@/components/ui/feedback";
 import { Input } from "@/components/ui/input";
 import { errorMessage } from "./api";
 import { fmtDate } from "./format";
-import { usePortalLinkAction, usePortalLinks } from "./queries";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useContactWhatsApp, usePortalLinkAction, usePortalLinks } from "./queries";
 
 /** wa.me wants the number with its country code and digits only. */
 const whatsapp = (phone: string, text: string) => `https://wa.me/${phone.replace(/\D/g, "").replace(/^0+/, "")}?text=${encodeURIComponent(text)}`;
@@ -34,6 +35,7 @@ export function ClientPortalLinks({
 }) {
   const links = usePortalLinks(clientId);
   const act = usePortalLinkAction(clientId);
+  const wa = useContactWhatsApp(clientId);
   const [shown, setShown] = useState<{ row: PortalLinkRow; link: string } | null>(null);
   return (
     <SectionCard
@@ -51,6 +53,19 @@ export function ClientPortalLinks({
                 <div className="text-muted-foreground">
                   {r.active ? (r.lastUsedAt ? `Opened ${fmtDate(r.lastUsedAt)}` : "Link made, not opened yet") : "No link"}
                 </div>
+                <label className="mt-1 flex items-center gap-2 text-muted-foreground">
+                  <Checkbox
+                    checked={r.whatsappOptIn}
+                    disabled={!canEdit || wa.isPending}
+                    onCheckedChange={(on) =>
+                      wa.mutate(
+                        { contactId: r.contactId, optIn: on === true, source: on === true ? "Told the team" : "Turned off by the team" },
+                        { onError: (e) => toast.error(errorMessage(e)) },
+                      )
+                    }
+                  />
+                  WhatsApp messages{r.whatsappSource ? ` · ${r.whatsappSource}` : ""}
+                </label>
               </div>
               <div className="flex shrink-0 items-center gap-1.5">
                 {r.active && <Badge tone="success">On</Badge>}

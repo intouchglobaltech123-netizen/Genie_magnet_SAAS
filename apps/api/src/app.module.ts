@@ -57,6 +57,12 @@ import { JobsService } from "./jobs/jobs.service.js";
 import { ClientRequestsController, PortalController, PortalLinksController } from "./portal/portal.controller.js";
 import { PortalService } from "./portal/portal.service.js";
 import { PrismaService } from "./prisma/prisma.service.js";
+import { Secrets } from "./common/secrets.js";
+import { ClientMessages } from "./whatsapp/client-messages.service.js";
+import { WhatsAppInbound } from "./whatsapp/inbound.service.js";
+import { CloudApiProvider, OutboxProvider, WHATSAPP_PROVIDER } from "./whatsapp/provider.js";
+import { ContactWhatsAppController, WhatsAppController, WhatsAppWebhookController } from "./whatsapp/whatsapp.controller.js";
+import { WhatsAppService } from "./whatsapp/whatsapp.service.js";
 import { AgencyService } from "./settings/agency.service.js";
 import { PackagesService } from "./settings/packages.service.js";
 import { SetupService } from "./settings/setup.service.js";
@@ -109,6 +115,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     PortalController,
     PortalLinksController,
     ClientRequestsController,
+    WhatsAppController,
+    ContactWhatsAppController,
+    WhatsAppWebhookController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -157,6 +166,19 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     ImportsService,
     JobsService,
     PortalService,
+    Secrets,
+    // Messages leave through each agency's own WhatsApp number in production; elsewhere they stay in an outbox.
+    {
+      provide: WHATSAPP_PROVIDER,
+      inject: [ENV],
+      useFactory: (env: Env) =>
+        (env.WHATSAPP_PROVIDER ?? (env.NODE_ENV === "production" ? "cloud" : "outbox")) === "cloud"
+          ? new CloudApiProvider(env.WHATSAPP_API_URL)
+          : new OutboxProvider(),
+    },
+    WhatsAppService,
+    ClientMessages,
+    WhatsAppInbound,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

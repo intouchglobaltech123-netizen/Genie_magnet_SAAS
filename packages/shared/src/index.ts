@@ -13,3 +13,4 @@ export * from "./files.js";
 export * from "./production.js";
 export * from "./jobs.js";
 export * from "./portal.js";
+export * from "./whatsapp.js";

@@ -5,6 +5,7 @@ import { FileStore } from "../files/file-store.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { CyclesService } from "../production/cycles.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
+import { ClientMessages } from "../whatsapp/client-messages.service.js";
 
 const DAY = 86_400_000;
 const utc = (d: string) => new Date(`${d}T00:00:00Z`);
@@ -27,6 +28,7 @@ export class DailyChecks {
     private readonly notifications: NotificationsService,
     private readonly cycles: CyclesService,
     private readonly store: FileStore,
+    private readonly messages: ClientMessages,
   ) {}
 
   /** Videos due tomorrow (their editor and director), and videos late since today (also whoever approves production). */
@@ -63,18 +65,33 @@ export class DailyChecks {
 
   /** A client's onboarding reminder falls due today, or their onboarding goes past its window today. */
   async onboardingReminders(tx: TenantTx, date: string) {
-    const agency = await tx.agency.findUniqueOrThrow({ where: { id: this.tenant.agencyId }, select: { windowDays: true, reminderDays: true } });
+    const agency = await tx.agency.findUniqueOrThrow({ where: { id: this.tenant.agencyId }, select: { name: true, windowDays: true, reminderDays: true } });
     const rows = await tx.questionnaireResponse.findMany({
       where: { clientId: { not: null }, sentAt: { not: null }, completedAt: null },
-      select: { id: true, sentAt: true, client: { select: { name: true, accountOwnerId: true } }, reminders: { select: { day: true } } },
+      select: {
+        id: true,
+        clientId: true,
+        sentAt: true,
+        tokenSecret: true,
+        client: { select: { name: true, accountOwnerId: true } },
+        reminders: { select: { day: true } },
+      },
     });
     let reminders = 0;
+    let sent = 0;
     let overdue = 0;
     for (const r of rows) {
       const { day } = windowOf(r.sentAt!.toISOString(), agency.windowDays, false, date);
       if (day === null) continue;
       const who = r.client?.accountOwnerId ? { users: [r.client.accountOwnerId] } : { can: { area: "onboarding" as const, level: "edit" as const } };
       if (agency.reminderDays.includes(day) && !r.reminders.some((x) => x.day === day)) {
+        // Sent by the app itself on WhatsApp when it can; the team is asked only otherwise.
+        const queued = await this.messages.onboardingReminder(tx, { id: r.id, clientId: r.clientId!, tokenSecret: r.tokenSecret }, agency.name);
+        if (queued.length) {
+          sent++;
+          await tx.questionnaireReminder.create({ data: { agencyId: this.tenant.agencyId, responseId: r.id, day, channel: "whatsapp" } });
+          continue;
+        }
         reminders++;
         await this.notifications.notify(tx, who, {
           kind: "onboarding_reminder",
@@ -97,7 +114,7 @@ export class DailyChecks {
         );
       }
     }
-    return { reminders, overdue };
+    return { reminders, sentOnWhatsApp: sent, overdue };
   }
 
   /** An agreement's notice period starts today, or a running agreement ended yesterday without a renewal. */

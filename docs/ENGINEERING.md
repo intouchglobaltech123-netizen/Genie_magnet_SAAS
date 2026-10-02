@@ -93,6 +93,12 @@ Work that happens outside a request (ADR 0010): the daily checks each agency get
 - **Running them:** `RUN_JOBS=true` runs them in the API process (`npm run dev:local` does this); `npm run dev:worker` runs them on their own. Daily jobs run at `JOBS_DAILY_AT` UTC (default 02:30, 08:00 in India). Tests call `JobRunner.tick(now)` with the time they need.
 - **Adding a job:** a name and label in `packages/shared/src/jobs.ts`, a handler in `JobRunner`, and a test.
 
+## Secrets and WhatsApp
+
+- **Secrets in the database** (an agency's WhatsApp token and app secret, payment keys, the raw token of a private link the app sends on) are encrypted with AES-256-GCM by `Secrets` (`common/secrets.ts`), keyed by `SECRETS_KEY`. Never return them; show `Secrets.hint()` instead, and keep them out of the audit log.
+- **WhatsApp** (`apps/api/src/whatsapp`): each agency enters its own Cloud API details. `ClientMessages` decides who hears what (approvers who agreed, with their own portal link); `WhatsAppService.queue` logs every message — skipped ones with the reason — and sends through the `whatsapp.send` job outside the agency's quiet hours. `WHATSAPP_PROVIDER=outbox` (the default outside production) keeps messages in the app; tests read them from the `OutboxProvider`.
+- **Webhooks** live under `/webhooks/…`, are `@Public`, and check a signature over `req.rawBody` (the app is created with `rawBody: true`) before believing anything. WhatsApp's address carries the connection id, found with `findWhatsAppConnection` (an RLS policy like the private links').
+
 ## Permissions
 
 Each agency edits its own permission matrix (Settings → Roles): areas × roles, each cell none / view / edit / approve, some areas limited to "own records". Defaults and the check functions are in `packages/shared/src/permissions.ts`; the API reads the person's row on every request.

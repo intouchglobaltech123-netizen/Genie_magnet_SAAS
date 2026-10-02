@@ -7,6 +7,7 @@ export const JOB_NAMES = {
   "invoices.overdue": "Invoices that became overdue",
   "cycles.month": "Monthly delivery set up, and last month to close",
   "files.cleanup": "Unfinished uploads cleared",
+  "whatsapp.send": "A WhatsApp message",
 } as const;
 export type JobName = keyof typeof JOB_NAMES;
 

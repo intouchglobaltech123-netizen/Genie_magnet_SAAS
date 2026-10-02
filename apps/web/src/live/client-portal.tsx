@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, SectionCard } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, EmptyState, SkeletonRows } from "@/components/ui/feedback";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -471,6 +472,40 @@ function Ask({ token }: { token: string }) {
   );
 }
 
+/** The contact chooses to get updates on WhatsApp — their own consent, kept with how they gave it. */
+function WhatsAppChoice({ token, on, agency, onChange }: { token: string; on: boolean; agency: string; onChange: () => void }) {
+  const [pending, setPending] = useState(false);
+  return (
+    <Card className="mt-6">
+      <CardContent className="flex items-start gap-3 p-4 text-body">
+        <Checkbox
+          id="whatsapp-updates"
+          checked={on}
+          disabled={pending}
+          onCheckedChange={async (v) => {
+            setPending(true);
+            try {
+              await api(`/portal/${token}/whatsapp`, { method: "PUT", body: { optIn: v === true } });
+              toast.success(v === true ? "You will get updates on WhatsApp" : "No more WhatsApp updates");
+              onChange();
+            } catch (e) {
+              toast.error(errorMessage(e));
+            } finally {
+              setPending(false);
+            }
+          }}
+        />
+        <label htmlFor="whatsapp-updates" className="cursor-pointer">
+          <span className="font-medium">Send me updates on WhatsApp</span>
+          <span className="block text-muted-foreground">
+            {agency} tells you on WhatsApp when something needs you — approve straight from the message. Reply STOP any time.
+          </span>
+        </label>
+      </CardContent>
+    </Card>
+  );
+}
+
 /**
  * The client portal (P3-01 to P3-05): opened from a contact's private link, in the agency's name and colour. The client
  * picks topics, approves scripts and videos (or asks for changes, with comments at a moment in the video), sees their
@@ -564,6 +599,7 @@ export function ClientPortal({ token }: { token: string }) {
                   ))}
               </div>
             )}
+            {h.whatsapp.available && <WhatsAppChoice token={token} on={h.whatsapp.optIn} agency={h.agency.name} onChange={refresh} />}
           </TabsContent>
           <TabsContent value="topics">
             <Topics token={token} />
