@@ -9,6 +9,7 @@ const PROFILE = {
   slug: true,
   logo: true,
   brandColor: true,
+  appBranding: true,
   businessStage: true,
   phone: true,
   email: true,

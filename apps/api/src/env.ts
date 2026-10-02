@@ -18,6 +18,8 @@ export const envSchema = z
     /** The genie_auth role — Better Auth only; it can reach the sign-in tables and nothing else. */
     AUTH_DATABASE_URL: z.string().startsWith("postgres").optional(),
     WEB_ORIGIN: z.url().default("http://localhost:3000"),
+    /** Where agencies point their own portal address (a CNAME); the web origin's host when not set (P6-07). */
+    PORTAL_CNAME_TARGET: z.string().trim().toLowerCase().optional(),
     /**
      * better-auth: the agency comes from the signed-in session (default).
      * dev-header: the agency comes from an `x-agency-id` header (local development and tests only).

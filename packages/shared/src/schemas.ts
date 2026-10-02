@@ -151,6 +151,8 @@ export const agencyProfileInput = z
       .string()
       .regex(/^#[0-9a-fA-F]{6}$/, "Pick a colour like #1E3A8A")
       .nullable(),
+    /** The brand colour in the team's own app too (P6-07). */
+    appBranding: z.boolean(),
     businessStage: z.enum(BUSINESS_STAGES).nullable(),
     phone: z
       .string()

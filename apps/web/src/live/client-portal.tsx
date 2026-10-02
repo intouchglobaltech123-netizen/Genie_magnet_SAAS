@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   CheckCircle2,
@@ -588,6 +588,11 @@ export function ClientPortal({ token }: { token: string }) {
   const home = usePortal<PortalHome>(token, "");
   const [tab, setTab] = useState<Tab>("home");
   const refresh = () => qc.invalidateQueries({ queryKey: ["portal", token] });
+  // The agency's name in the browser tab: the portal is theirs (P6-07).
+  const agencyName = home.data?.agency.name;
+  useEffect(() => {
+    if (agencyName) document.title = `${agencyName} · Your portal`;
+  }, [agencyName]);
 
   if (home.isPending)
     return (

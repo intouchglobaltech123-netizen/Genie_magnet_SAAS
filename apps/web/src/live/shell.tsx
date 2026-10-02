@@ -65,7 +65,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
-import type { AreaKey, SuiteKey } from "@gm/shared";
+import { type AreaKey, brandPalette, type SuiteKey } from "@gm/shared";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -392,6 +392,49 @@ function SupportBanner() {
   );
 }
 
+/** The agency's colour across its team's app, when it chose so (P6-07): light and dark sets of the colour tokens. */
+function BrandStyle() {
+  const b = useMe().data?.branding;
+  if (!b?.inApp || !b.color) return null;
+  const p = brandPalette(b.color);
+  const vars = (set: Record<string, string>) =>
+    Object.entries(set)
+      .map(([k, v]) => `${k}:${v};`)
+      .join("");
+  return <style>{`html:not(.dark){${vars(p.light)}}html.dark{${vars(p.dark)}}`}</style>;
+}
+
+/** The top of the side menu: the agency's logo and name when it brands the app, the platform's otherwise. */
+function SidebarBrand() {
+  const b = useMe().data?.branding;
+  if (!b?.inApp)
+    return (
+      <>
+        <BrandMark />
+        <BrandWordmark inverted sub="Agency workspace" />
+      </>
+    );
+  return (
+    <>
+      {b.logo ? (
+        // eslint-disable-next-line @next/next/no-img-element -- the agency's logo, a small data URL
+        <img src={b.logo} alt="" className="size-8 shrink-0 rounded-lg bg-white object-contain p-0.5" />
+      ) : (
+        <span
+          className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-subheading font-semibold text-primary-foreground"
+          aria-hidden
+        >
+          {b.name.slice(0, 1).toUpperCase()}
+        </span>
+      )}
+      <div className="min-w-0 leading-tight">
+        <div className="truncate text-subheading font-semibold tracking-tight text-white">{b.name}</div>
+        <div className="truncate text-body text-sidebar-muted">Agency workspace</div>
+      </div>
+    </>
+  );
+}
+
 /** The workspace is to be deleted (P6-10): when, and where the owner can stop it. */
 function DeletionBanner() {
   const deletion = useMe().data?.deletion;
@@ -499,10 +542,10 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
+      <BrandStyle />
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[256px] flex-col border-r border-sidebar-border bg-sidebar lg:flex print:hidden">
         <Link href="/app" className="flex h-16 shrink-0 items-center gap-3 px-5">
-          <BrandMark />
-          <BrandWordmark inverted sub="Agency workspace" />
+          <SidebarBrand />
         </Link>
         <NavList />
         <SidebarFooter />
@@ -517,9 +560,8 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
           >
             <DialogPrimitive.Title className="sr-only">Navigation</DialogPrimitive.Title>
             <div className="flex h-16 shrink-0 items-center justify-between px-5">
-              <Link href="/app" onClick={() => setMobileOpen(false)} className="flex items-center gap-3">
-                <BrandMark />
-                <BrandWordmark inverted sub="Agency workspace" />
+              <Link href="/app" onClick={() => setMobileOpen(false)} className="flex min-w-0 items-center gap-3">
+                <SidebarBrand />
               </Link>
               <DialogPrimitive.Close
                 aria-label="Close navigation"

@@ -3,6 +3,7 @@ import type { PermissionMatrix } from "./permissions.js";
 import type { AnnouncementView, Entitlements } from "./plans.js";
 import type { SupportVisit } from "./support.js";
 import type { WorkspaceDeletion } from "./data.js";
+import type { Branding } from "./brand.js";
 import type { BusinessStage } from "./enums.js";
 import type { ImportKind, ImportReport } from "./imports.js";
 import type { ConnectionStatus, PostStatus } from "./social.js";
@@ -39,6 +40,8 @@ export interface Me {
   flags: string[];
   /** Set while the active agency is due to be deleted (P6-10). */
   deletion: WorkspaceDeletion | null;
+  /** The active agency's brand (P6-07). */
+  branding: Branding | null;
 }
 
 /** GET /team */
@@ -251,6 +254,7 @@ export interface AgencyProfile {
   slug: string;
   logo: string | null;
   brandColor: string | null;
+  appBranding: boolean;
   businessStage: BusinessStage | null;
   phone: string | null;
   email: string | null;

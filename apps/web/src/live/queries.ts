@@ -117,6 +117,7 @@ import {
   type PlatformInvoiceRow,
   type SupportGrantInput,
   type DataExportRow,
+  type PortalDomain,
   type SampleData,
   type SampleRemoved,
   type SetupWizard,
@@ -1940,6 +1941,22 @@ export const useTimeEntries = (from: string, to: string, enabled = true) =>
 // ─── Set-up guide ─────────────────────────────────────────────────────
 
 export const useSetup = () => useQuery({ queryKey: ["setup"], queryFn: () => api<SetupStatus>("/agency/setup"), staleTime: 30_000 });
+
+/** The agency's own address for its client links (P6-07); null until one is added. */
+export const usePortalDomain = () => useQuery({ queryKey: ["portal-domain"], queryFn: () => api<PortalDomain | null>("/agency/portal-domain") });
+
+export function usePortalDomainAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { step: "set"; domain: string } | { step: "check" } | { step: "remove" }) =>
+      v.step === "set"
+        ? api<PortalDomain>("/agency/portal-domain", { method: "PUT", body: { domain: v.domain } })
+        : v.step === "check"
+          ? api<PortalDomain>("/agency/portal-domain/check", { method: "POST" })
+          : api<null>("/agency/portal-domain", { method: "DELETE" }),
+    onSuccess: (d) => qc.setQueryData(["portal-domain"], d ?? null),
+  });
+}
 
 /** The set-up wizard (P6-06). */
 export const useSetupWizard = () => useQuery({ queryKey: ["setup", "wizard"], queryFn: () => api<SetupWizard>("/agency/setup/wizard") });

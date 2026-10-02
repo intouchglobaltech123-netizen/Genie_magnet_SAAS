@@ -1,10 +1,10 @@
 import { createHash, randomBytes } from "node:crypto";
-import { Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import type { TenantTx } from "@gm/db";
 import { firstName } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
 import { Secrets } from "../common/secrets.js";
-import { ENV, type Env } from "../env.js";
+import { PortalDomainService } from "../settings/portal-domain.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { type Recipient, WhatsAppService } from "./whatsapp.service.js";
 
@@ -20,11 +20,11 @@ const fmt = (d: Date) => d.toLocaleDateString("en-IN", { day: "numeric", month: 
 @Injectable()
 export class ClientMessages {
   constructor(
-    @Inject(ENV) private readonly env: Env,
     private readonly tenant: TenantDb,
     private readonly audit: AuditService,
     private readonly secrets: Secrets,
     private readonly whatsapp: WhatsAppService,
+    private readonly domain: PortalDomainService,
   ) {}
 
   private async approvers(tx: TenantTx, clientId: string): Promise<Recipient[]> {
@@ -38,7 +38,8 @@ export class ClientMessages {
   /** The contact's portal link; a link the app cannot read back (made before links were kept encrypted) is replaced. */
   async portalLink(tx: TenantTx, contact: { id: string; clientId: string; name: string }) {
     const existing = await tx.portalLink.findUnique({ where: { contactId: contact.id } });
-    if (existing?.tokenSecret) return `${this.env.WEB_ORIGIN}/app/c/${this.secrets.decrypt(existing.tokenSecret)}`;
+    const links = await this.domain.links();
+    if (existing?.tokenSecret) return links.portal(this.secrets.decrypt(existing.tokenSecret));
     const token = randomBytes(24).toString("base64url");
     const data = { token: hash(token), tokenSecret: this.secrets.encrypt(token) };
     if (existing) await tx.portalLink.update({ where: { id: existing.id }, data });
@@ -49,7 +50,7 @@ export class ClientMessages {
       entityId: contact.id,
       after: { contact: contact.name, link: existing ? "replaced" : "new", via: "whatsapp" },
     });
-    return `${this.env.WEB_ORIGIN}/app/c/${token}`;
+    return links.portal(token);
   }
 
   /** Links for each recipient, made before the messages are queued. */
@@ -100,7 +101,7 @@ export class ClientMessages {
    */
   async onboardingReminder(tx: TenantTx, response: { id: string; clientId: string; tokenSecret: string | null }, agencyName: string) {
     if (!response.tokenSecret || !(await this.active(tx))) return [];
-    const link = `${this.env.WEB_ORIGIN}/app/q/${this.secrets.decrypt(response.tokenSecret)}`;
+    const link = (await this.domain.links()).questionnaire(this.secrets.decrypt(response.tokenSecret));
     const to = await this.approvers(tx, response.clientId);
     return this.whatsapp.queue(tx, "onboarding_reminder", to, (r) => [firstName(r.name), agencyName, link], { type: "onboarding", id: response.id });
   }

@@ -58,6 +58,13 @@ model Agency {
   renewalNoticeDays Int            @default(45) @map("renewal_notice_days")
   /// The owner hid the set-up guide on Home (P1-32).
   setupHiddenAt     DateTime?      @map("setup_hidden_at")
+  /// The brand colour across the team's own app too, not only for clients (P6-07).
+  appBranding       Boolean        @default(false) @map("app_branding")
+  /// The agency's own address for its client links, e.g. portal.youragency.com (P6-07), the token of the DNS record
+  /// proving it controls it, and when that record was seen.
+  portalDomain           String?   @unique @map("portal_domain")
+  portalDomainToken      String?   @map("portal_domain_token")
+  portalDomainVerifiedAt DateTime? @map("portal_domain_verified_at")
   /// How client onboarding is filled in by default: "link" (the client answers by private link) or "assisted"
   /// (the account manager fills it in with the client on a call). Both are always available (P1-22).
   onboardingMode    String         @default("link") @map("onboarding_mode")

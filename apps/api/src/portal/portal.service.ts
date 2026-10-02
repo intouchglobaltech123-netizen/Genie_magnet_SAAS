@@ -20,6 +20,7 @@ import { NotificationsService } from "../notifications/notifications.service.js"
 import { PrismaService } from "../prisma/prisma.service.js";
 import { ContentService } from "../production/content.service.js";
 import { Secrets } from "../common/secrets.js";
+import { PortalDomainService } from "../settings/portal-domain.service.js";
 import { WhatsAppService } from "../whatsapp/whatsapp.service.js";
 import { ReportsService } from "../reports/reports.service.js";
 import { VideosService } from "../production/videos.service.js";
@@ -52,6 +53,7 @@ export class PortalService {
     private readonly secrets: Secrets,
     private readonly whatsapp: WhatsAppService,
     private readonly reports: ReportsService,
+    private readonly domain: PortalDomainService,
   ) {}
 
   // ─── The team: links and requests ──────────────────────────────────
@@ -95,7 +97,7 @@ export class PortalService {
         after: { client: c.client.name, contact: c.name, link: existing ? "replaced" : "new" },
       });
     });
-    return { link: `${this.env.WEB_ORIGIN}/app/c/${token}`, links: await this.links(clientId) };
+    return { link: (await this.domain.links()).portal(token), links: await this.links(clientId) };
   }
 
   /** Switches the contact's link off at once. */

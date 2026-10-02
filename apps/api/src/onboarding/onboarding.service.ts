@@ -31,6 +31,7 @@ import { ENV, type Env } from "../env.js";
 import { FilesService } from "../files/files.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { Secrets } from "../common/secrets.js";
+import { PortalDomainService } from "../settings/portal-domain.service.js";
 import { asLinkHolder, TenantDb } from "../tenancy/tenant-context.js";
 import { QuestionnairesService } from "./questionnaires.service.js";
 
@@ -69,6 +70,7 @@ export class OnboardingService {
     private readonly prisma: PrismaService,
     @Inject(ENV) private readonly env: Env,
     private readonly secrets: Secrets,
+    private readonly domain: PortalDomainService,
   ) {}
 
   private agency() {
@@ -246,7 +248,7 @@ export class OnboardingService {
         after: { client: row.client?.name, link: row.sentAt ? "replaced" : "new" },
       });
     });
-    return { link: `${this.env.WEB_ORIGIN}/app/q/${token}`, onboarding: await this.get(id) };
+    return { link: (await this.domain.links()).questionnaire(token), onboarding: await this.get(id) };
   }
 
   async update(id: string, input: { mode?: "link" | "assisted"; language?: string }) {

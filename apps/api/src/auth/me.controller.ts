@@ -38,7 +38,7 @@ export class MeController {
     if (!session) throw new UnauthorizedException("Not signed in.");
     const memberships = await this.authDb.membership.findMany({
       where: { userId: session.user.id },
-      select: { role: true, agency: { select: { id: true, name: true, slug: true, logo: true } } },
+      select: { role: true, agency: { select: { id: true, name: true, slug: true, logo: true, brandColor: true, appBranding: true } } },
       orderBy: { createdAt: "asc" },
     });
 
@@ -55,6 +55,11 @@ export class MeController {
         entitlements: await this.entitlements.load(ctx),
       };
     }
+    // The active agency's brand (P6-07); a support visitor sees it as the agency does.
+    const brand = active
+      ? (memberships.find((m) => m.agency.id === active.agencyId)?.agency ??
+        (await this.tenant.db.agency.findUnique({ where: { id: active.agencyId }, select: { name: true, logo: true, brandColor: true, appBranding: true } })))
+      : null;
     // The platform's support team, in an agency on its consent (P6-08).
     const support = ctx?.support
       ? {
@@ -71,7 +76,7 @@ export class MeController {
       role: active?.role ?? null,
       permissions: active?.permissions ?? null,
       entitlements: active?.entitlements ?? null,
-      agencies: memberships.map((m) => ({ ...m.agency, role: m.role })),
+      agencies: memberships.map(({ agency: { id, name, slug, logo }, role }) => ({ id, name, slug, logo, role })),
       platformAdmin: this.env.PLATFORM_ADMIN_EMAILS.includes(session.user.email.toLowerCase()),
       support,
       ...(active
@@ -83,6 +88,7 @@ export class MeController {
           )
         : { announcements: [], flags: [] }),
       deletion: active ? await this.data.deletion() : null,
+      branding: brand ? { name: brand.name, logo: brand.logo, color: brand.brandColor, inApp: brand.appBranding && !!brand.brandColor } : null,
     };
   }
 }

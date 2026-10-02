@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ImageUp, Plus, Trash2, X } from "lucide-react";
+import { Copy, Globe, ImageUp, Plus, RefreshCcw, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { type AgencyProfile, agencyProfileInput, type AgencyProfileInput, BUSINESS_STAGES, LANGUAGES } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
@@ -12,8 +12,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, SkeletonRows } from "@/components/ui/feedback";
 import { Field, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { ApiError, errorMessage } from "./api";
-import { useAgency, useCan, useHideSetup, useSetup, useUpdateAgency } from "./queries";
+import { useAgency, useCan, useHideSetup, usePortalDomain, usePortalDomainAction, useSetup, useUpdateAgency } from "./queries";
 
 const STAGE_HINT: Record<(typeof BUSINESS_STAGES)[number], string> = {
   Struggle: "Finding steady clients and cash.",
@@ -49,6 +50,7 @@ type Form = {
   name: string;
   logo: string | null;
   brandColor: string;
+  appBranding: boolean;
   businessStage: string;
   phone: string;
   email: string;
@@ -65,6 +67,7 @@ const toForm = (a: AgencyProfile): Form => ({
   name: a.name,
   logo: a.logo,
   brandColor: a.brandColor ?? "",
+  appBranding: a.appBranding,
   businessStage: a.businessStage ?? "",
   phone: a.phone ?? "",
   email: a.email ?? "",
@@ -92,6 +95,7 @@ function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: bool
       name: f.name,
       logo: f.logo,
       brandColor: f.brandColor || null,
+      appBranding: f.appBranding && !!f.brandColor,
       businessStage: (f.businessStage || null) as AgencyProfileInput["businessStage"],
       phone: f.phone,
       email: f.email,
@@ -154,6 +158,23 @@ function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: bool
                   )}
                 </div>
               </Field>
+              <label className="flex items-start gap-3 text-body">
+                <Switch
+                  className="mt-0.5"
+                  checked={f.appBranding && !!f.brandColor}
+                  disabled={!f.brandColor}
+                  onCheckedChange={(v) => setF({ ...f, appBranding: v })}
+                  aria-label="Use the brand colour in your team's app"
+                />
+                <span>
+                  <span className="font-medium">Use it in your team&apos;s app too</span>
+                  <span className="block text-muted-foreground">
+                    {f.brandColor
+                      ? "Buttons, links and the side menu take your colour, with your logo at the top, for everyone on the team."
+                      : "Pick a brand colour first."}
+                  </span>
+                </span>
+              </label>
             </div>
             <div>
               <div className="mb-1.5 text-body font-medium text-text-secondary">Logo</div>
@@ -368,8 +389,120 @@ export function LiveAgencyProfile() {
       ) : agency.error ? (
         <Alert tone="danger">{errorMessage(agency.error)}</Alert>
       ) : (
-        <ProfileForm key={agency.data.id} agency={agency.data} canEdit={can("settings", "edit")} />
+        <>
+          <ProfileForm key={agency.data.id} agency={agency.data} canEdit={can("settings", "edit")} />
+          <PortalAddress canEdit={can("settings", "edit")} />
+        </>
       )}
     </>
+  );
+}
+
+/** The agency's own address for the links it sends clients (P6-07): the DNS records to add, and checking them. */
+function PortalAddress({ canEdit }: { canEdit: boolean }) {
+  const q = usePortalDomain();
+  const act = usePortalDomainAction();
+  const [domain, setDomain] = useState("");
+  const [error, setError] = useState<string>();
+  const d = q.data;
+  const copy = (v: string) => navigator.clipboard?.writeText(v).then(() => toast("Copied"));
+  return (
+    <SectionCard
+      title="Your portal address"
+      description="Send clients their portal and questionnaire links on your own address, like portal.youragency.com, instead of the platform's."
+      className="mt-6"
+    >
+      {q.isPending ? (
+        <SkeletonRows rows={2} />
+      ) : q.error ? (
+        <Alert tone="danger">{errorMessage(q.error)}</Alert>
+      ) : d ? (
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-2 text-body">
+            <Globe className="size-4 text-muted-foreground" />
+            <span className="font-medium">{d.domain}</span>
+            <Badge tone={d.verifiedAt ? "success" : "warning"}>{d.verifiedAt ? "Verified: new links use it" : "Waiting for the records below"}</Badge>
+          </div>
+          <p className="text-body text-muted-foreground">
+            Add these two records where your domain&apos;s DNS is managed (usually where you bought the domain). The first sends visitors to your portal; the
+            second shows the address is yours. Changes can take a few hours to show.
+          </p>
+          <div className="divide-y divide-border-subtle rounded-lg border border-border">
+            {d.records.map((r) => (
+              <div key={r.type} className="grid gap-1 p-3 text-body sm:grid-cols-[5rem_1fr_1fr] sm:items-center sm:gap-3">
+                <Badge tone="outline" className="w-fit">
+                  {r.type}
+                </Badge>
+                <code className="break-all font-mono">{r.name}</code>
+                <span className="flex items-center gap-1">
+                  <code className="min-w-0 flex-1 break-all font-mono">{r.value}</code>
+                  <Button size="xs" variant="ghost" aria-label={`Copy the ${r.type} value`} onClick={() => copy(r.value)}>
+                    <Copy />
+                  </Button>
+                </span>
+              </div>
+            ))}
+          </div>
+          {d.pointed === false && (
+            <Alert tone="warning">
+              {d.verifiedAt
+                ? "The address is yours, but the first record is not showing yet: until it does, links on it will not open."
+                : "Neither record is showing yet. Check again once you have added them."}
+            </Alert>
+          )}
+          {canEdit && (
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={act.isPending}
+                onClick={() =>
+                  act.mutate(
+                    { step: "check" },
+                    {
+                      onSuccess: (r) => (r?.verifiedAt ? toast.success("Verified: new links use your address") : toast("Not verified yet")),
+                      onError: (e) => toast.error(errorMessage(e)),
+                    },
+                  )
+                }
+              >
+                <RefreshCcw /> Check now
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={act.isPending}
+                onClick={() => act.mutate({ step: "remove" }, { onSuccess: () => toast("Links use the platform's address again") })}
+              >
+                <Trash2 /> Remove
+              </Button>
+            </div>
+          )}
+        </div>
+      ) : canEdit ? (
+        <form
+          className="flex flex-wrap items-start gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            act.mutate(
+              { step: "set", domain },
+              {
+                onSuccess: () => (setDomain(""), setError(undefined)),
+                onError: (err) => setError(err instanceof ApiError ? (err.issue("domain") ?? err.message) : errorMessage(err)),
+              },
+            );
+          }}
+        >
+          <Field label="Address" error={error} className="min-w-[16rem] flex-1">
+            <Input value={domain} onChange={(e) => setDomain(e.target.value)} placeholder="portal.youragency.com" />
+          </Field>
+          <Button type="submit" className="mt-6" disabled={act.isPending || !domain.trim()}>
+            Add
+          </Button>
+        </form>
+      ) : (
+        <p className="text-body text-muted-foreground">Not set: links use the platform&apos;s address.</p>
+      )}
+    </SectionCard>
   );
 }

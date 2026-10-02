@@ -1,11 +1,12 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Put, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Put, Query } from "@nestjs/common";
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
-import { agencyProfileInput, type AgencyProfileInput, packageInput, type PackageInput } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { agencyProfileInput, type AgencyProfileInput, packageInput, type PackageInput, portalDomainInput } from "@gm/shared";
+import { Can, Public, Staff } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { AgencyService } from "./agency.service.js";
 import { PackagesService } from "./packages.service.js";
+import { PortalDomainService } from "./portal-domain.service.js";
 import { SampleService } from "./sample.service.js";
 import { SetupService } from "./setup.service.js";
 
@@ -21,7 +22,35 @@ export class AgencyController {
     private readonly agency: AgencyService,
     private readonly setup: SetupService,
     private readonly sample: SampleService,
+    private readonly portalDomain: PortalDomainService,
   ) {}
+
+  /** The agency's own address for its client links (P6-07): the DNS records to add, and whether it is verified. */
+  @Get("portal-domain")
+  @Staff()
+  getPortalDomain() {
+    return this.portalDomain.get();
+  }
+
+  @Put("portal-domain")
+  @Can("settings", "edit")
+  @ApiBody({ schema: schema(portalDomainInput) })
+  setPortalDomain(@Body(new ZodPipe(portalDomainInput)) body: { domain: string }) {
+    return this.portalDomain.set(body.domain);
+  }
+
+  @Post("portal-domain/check")
+  @HttpCode(200)
+  @Can("settings", "edit")
+  checkPortalDomain() {
+    return this.portalDomain.check();
+  }
+
+  @Delete("portal-domain")
+  @Can("settings", "edit")
+  removePortalDomain() {
+    return this.portalDomain.remove();
+  }
 
   @Get()
   @Staff()
@@ -119,5 +148,23 @@ export class PackagesController {
   @HttpCode(204)
   remove(@Param("id", ParseUUIDPipe) id: string) {
     return this.packages.remove(id);
+  }
+}
+
+/**
+ * For the server issuing certificates for agencies' own portal addresses (P6-07): it asks before issuing one, so
+ * only verified addresses get a certificate. 200 when it may, 404 when not.
+ */
+@ApiTags("settings")
+@Controller("domains")
+export class DomainsController {
+  constructor(private readonly portalDomain: PortalDomainService) {}
+
+  @Get("allowed")
+  @Public()
+  @ApiQuery({ name: "domain", required: true })
+  async allowed(@Query("domain") domain = "") {
+    if (!(await this.portalDomain.allowed(domain))) throw new NotFoundException("Not a verified portal address.");
+    return { allowed: true };
   }
 }
