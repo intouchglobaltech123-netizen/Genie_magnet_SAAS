@@ -1724,37 +1724,39 @@ model Department {
 /// A team member's employee record (P5-06). Personal details are for HR; bank account and PAN are encrypted and for
 /// payroll only.
 model EmployeeProfile {
-  id             String    @id @default(uuid(7)) @db.Uuid
-  agencyId       String    @map("agency_id") @db.Uuid
-  userId         String    @map("user_id")
+  id              String    @id @default(uuid(7)) @db.Uuid
+  agencyId        String    @map("agency_id") @db.Uuid
+  userId          String    @map("user_id")
   /// The code the attendance device and payroll use.
-  employeeCode   String?   @map("employee_code")
-  departmentId   String?   @map("department_id") @db.Uuid
-  designation    String?
+  employeeCode    String?   @map("employee_code")
+  departmentId    String?   @map("department_id") @db.Uuid
+  designation     String?
   /// full_time · part_time · intern · freelancer
-  employmentType String    @default("full_time") @map("employment_type")
-  joiningDate    DateTime? @map("joining_date") @db.Date
-  exitDate       DateTime? @map("exit_date") @db.Date
-  phone          String?
-  personalEmail  String?   @map("personal_email")
-  dateOfBirth    DateTime? @map("date_of_birth") @db.Date
-  address        String?
-  emergencyName  String?   @map("emergency_name")
-  emergencyPhone String?   @map("emergency_phone")
+  employmentType  String    @default("full_time") @map("employment_type")
+  joiningDate     DateTime? @map("joining_date") @db.Date
+  exitDate        DateTime? @map("exit_date") @db.Date
+  phone           String?
+  personalEmail   String?   @map("personal_email")
+  dateOfBirth     DateTime? @map("date_of_birth") @db.Date
+  address         String?
+  emergencyName   String?   @map("emergency_name")
+  emergencyPhone  String?   @map("emergency_phone")
   /// Encrypted; the last digits are kept apart to show.
-  bankAccount    String?   @map("bank_account")
-  bankHint       String?   @map("bank_hint")
-  ifsc           String?
+  bankAccount     String?   @map("bank_account")
+  bankHint        String?   @map("bank_hint")
+  ifsc            String?
   /// Encrypted.
-  pan            String?
-  panHint        String?   @map("pan_hint")
-  uan            String?
-  esiNumber      String?   @map("esi_number")
+  pan             String?
+  panHint         String?   @map("pan_hint")
+  uan             String?
+  esiNumber       String?   @map("esi_number")
   /// Who they report to: their manager reviews their month (P5-11).
-  managerId      String?   @map("manager_id")
+  managerId       String?   @map("manager_id")
   /// The KRAs their month is scored on (P5-11).
-  kraTemplateId  String?   @map("kra_template_id") @db.Uuid
-  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at")
+  kraTemplateId   String?   @map("kra_template_id") @db.Uuid
+  /// The daily data sheet they fill in (P5-12).
+  sheetTemplateId String?   @map("sheet_template_id") @db.Uuid
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
 
   @@unique([agencyId, userId])
   @@unique([agencyId, employeeCode])
@@ -2203,4 +2205,59 @@ model SkillLevel {
 
   @@unique([skillId, userId])
   @@map("skill_levels")
+}
+
+// ───────────────────────────── Daily data sheet ─────────────────────────────
+
+/// The agency's daily sheet rules (P5-12): the shift, the cut-off, the slack before the day needs a reason.
+model SheetSettings {
+  agencyId  String   @id @map("agency_id") @db.Uuid
+  rule      Json
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("sheet_settings")
+}
+
+/// A role's daily sheet (P5-12): its counters, and who signs it in which order.
+model SheetTemplate {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  name      String
+  /// [{ key, label, hours, bad }]
+  counters  Json     @default("[]")
+  taskHint  String   @default("") @map("task_hint")
+  /// manager · hr, in signing order.
+  signers   String[]
+  position  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([agencyId, name])
+  @@map("sheet_templates")
+}
+
+/// One person's day on their sheet (P5-12): tasks with times, counters, submitted and signed.
+model DailySheet {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  agencyId    String    @map("agency_id") @db.Uuid
+  userId      String    @map("user_id")
+  date        DateTime  @db.Date
+  templateId  String    @map("template_id") @db.Uuid
+  rows        Json      @default("[]")
+  counters    Json      @default("{}")
+  otherWorks  String    @default("") @map("other_works")
+  dayReason   String    @default("") @map("day_reason")
+  /// draft · submitted · signed
+  status      String    @default("draft")
+  submittedAt DateTime? @map("submitted_at")
+  late        Boolean   @default(false)
+  /// [{ signer, by, at }]
+  signatures  Json      @default("[]")
+  returnNote  String?   @map("return_note")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([agencyId, userId, date])
+  @@index([agencyId, date])
+  @@map("daily_sheets")
 }

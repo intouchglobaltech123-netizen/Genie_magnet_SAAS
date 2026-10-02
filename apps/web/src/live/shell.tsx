@@ -112,6 +112,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "People", href: "/app/people", icon: Contact },
       { title: "Attendance", href: "/app/attendance", icon: Fingerprint },
       { title: "Leave", href: "/app/leave", icon: CalendarOff },
+      { title: "Daily sheet", href: "/app/daily-sheet", icon: ClipboardList },
       { title: "Hiring", href: "/app/hiring", icon: Briefcase, area: "hr" },
       { title: "Performance", href: "/app/performance", icon: Gauge },
       { title: "Learning", href: "/app/learning", icon: GraduationCap },

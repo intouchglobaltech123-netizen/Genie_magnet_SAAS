@@ -64,6 +64,7 @@ export class EmployeesService {
           emergencyPhone: p?.emergencyPhone ?? null,
           manager: p?.managerId ? { id: p.managerId, name: names.get(p.managerId) ?? "" } : null,
           kraTemplateId: p?.kraTemplateId ?? null,
+          sheetTemplateId: p?.sheetTemplateId ?? null,
           bank: ownOrPayroll
             ? { account: p?.bankHint ?? null, ifsc: p?.ifsc ?? null, pan: p?.panHint ?? null, uan: p?.uan ?? null, esiNumber: p?.esiNumber ?? null }
             : null,
@@ -97,6 +98,8 @@ export class EmployeesService {
       !(await this.tenant.db.membership.findFirst({ where: { agencyId: this.tenant.agencyId, userId: input.managerId }, select: { id: true } }))
     )
       throw new BadRequestException({ message: "Choose someone in your team.", issues: [{ path: "managerId", message: "Choose their manager" }] });
+    if (input.sheetTemplateId && !(await this.tenant.db.sheetTemplate.findFirst({ where: { id: input.sheetTemplateId }, select: { id: true } })))
+      throw new BadRequestException({ message: "Choose one of your daily sheets.", issues: [{ path: "sheetTemplateId", message: "Choose the sheet" }] });
     if (input.kraTemplateId && !(await this.tenant.db.kraTemplate.findFirst({ where: { id: input.kraTemplateId }, select: { id: true } })))
       throw new BadRequestException({ message: "Choose one of your KRA templates.", issues: [{ path: "kraTemplateId", message: "Choose the KRAs" }] });
     const data = {
@@ -114,6 +117,7 @@ export class EmployeesService {
       emergencyPhone: input.emergencyPhone ?? null,
       ...(input.managerId !== undefined && { managerId: input.managerId }),
       ...(input.kraTemplateId !== undefined && { kraTemplateId: input.kraTemplateId }),
+      ...(input.sheetTemplateId !== undefined && { sheetTemplateId: input.sheetTemplateId }),
     };
     try {
       await this.tenant.tx(async (tx) => {

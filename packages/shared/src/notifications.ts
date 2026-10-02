@@ -33,6 +33,8 @@ export const NOTIFICATION_KINDS = [
   { key: "hire_to_approve", group: "People", label: "A candidate waits for my approval to be hired" },
   { key: "scorecard_shared", group: "People", label: "My month's scorecard is shared with me, or someone replies to one I shared" },
   { key: "learning_assigned", group: "People", label: "A learning path is given to me" },
+  { key: "sheet_to_sign", group: "People", label: "A daily sheet waits for my signature" },
+  { key: "sheet_returned", group: "People", label: "My daily sheet is sent back to me" },
   { key: "post_failed", group: "Delivery", label: "The app could not post a video, or a client's platform needs connecting again" },
   { key: "genie_insight", group: "Genie Assistant", label: "Genie Assistant finds something I should act on" },
   { key: "job_failed", group: "Settings", label: "Background work failed after all its tries" },

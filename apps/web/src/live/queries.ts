@@ -105,6 +105,12 @@ import {
   type LeaveRequestInput,
   type LeaveRequestRow,
   type LeaveTypeRow,
+  type DailySheetRow,
+  type SheetInput,
+  type SheetSettings,
+  type SheetTeamRow,
+  type SheetTemplate,
+  type SheetTemplateInput,
   type KraTemplateInput,
   type KraTemplateRow,
   type LeaderboardRow,
@@ -1347,6 +1353,57 @@ export function useLeaveAction() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["leave"] });
       void qc.invalidateQueries({ queryKey: ["attendance"] });
+    },
+  });
+}
+
+// ─── Daily data sheet ─────────────────────────────────────────────────
+
+export type SheetTemplateRow = SheetTemplate & { id: string; people: number };
+export const useSheetTemplates = () => useQuery({ queryKey: ["sheets", "templates"], queryFn: () => api<SheetTemplateRow[]>("/daily-sheets/templates") });
+export const useSheetSettings = () => useQuery({ queryKey: ["sheets", "settings"], queryFn: () => api<SheetSettings>("/daily-sheets/settings") });
+export const useSheetDay = (date: string, person?: string) =>
+  useQuery({
+    queryKey: ["sheets", "day", date, person ?? ""],
+    queryFn: () => api<DailySheetRow>(`/daily-sheets/day/${date}${person ? `?person=${person}` : ""}`),
+    retry: false,
+  });
+export const useSheetTeam = (date: string) =>
+  useQuery({ queryKey: ["sheets", "team", date], queryFn: () => api<SheetTeamRow[]>(`/daily-sheets/team?date=${date}`) });
+
+export function useSheetAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "settings"; body: SheetSettings }
+        | { step: "template"; id?: string; body: SheetTemplateInput }
+        | { step: "removeTemplate"; id: string }
+        | { step: "save"; date: string; body: SheetInput }
+        | { step: "submit"; date: string }
+        | { step: "sign"; id: string }
+        | { step: "sendBack"; id: string; note: string },
+    ) => {
+      switch (v.step) {
+        case "settings":
+          return api("/daily-sheets/settings", { method: "PUT", body: v.body });
+        case "template":
+          return api(v.id ? `/daily-sheets/templates/${v.id}` : "/daily-sheets/templates", { method: v.id ? "PUT" : "POST", body: v.body });
+        case "removeTemplate":
+          return api(`/daily-sheets/templates/${v.id}`, { method: "DELETE" });
+        case "save":
+          return api<DailySheetRow>(`/daily-sheets/day/${v.date}`, { method: "PUT", body: v.body });
+        case "submit":
+          return api<DailySheetRow>(`/daily-sheets/day/${v.date}/submit`, { body: {} });
+        case "sign":
+          return api<DailySheetRow>(`/daily-sheets/${v.id}/sign`, { body: {} });
+        case "sendBack":
+          return api<DailySheetRow>(`/daily-sheets/${v.id}/send-back`, { body: { note: v.note } });
+      }
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["sheets"] });
+      void qc.invalidateQueries({ queryKey: ["people"] });
     },
   });
 }

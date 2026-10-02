@@ -39,6 +39,7 @@ import {
   useDepartments,
   useKraTemplates,
   useLeaveAction,
+  useSheetTemplates,
   useLeaveBalances,
   useLeaveRequests,
   useLeaveTypes,
@@ -75,7 +76,9 @@ function EmployeeDialog({ p, onClose }: { p: EmployeeRow; onClose: () => void })
     emergencyPhone: p.emergencyPhone ?? "",
     managerId: p.manager?.id ?? "",
     kraTemplateId: p.kraTemplateId ?? "",
+    sheetTemplateId: p.sheetTemplateId ?? "",
   });
+  const sheets = useSheetTemplates();
   const team = usePeople();
   const templates = useKraTemplates();
   const [bank, setBank] = useState({ bankAccount: "", ifsc: p.bank?.ifsc ?? "", pan: "", uan: p.bank?.uan ?? "", esiNumber: p.bank?.esiNumber ?? "" });
@@ -128,6 +131,13 @@ function EmployeeDialog({ p, onClose }: { p: EmployeeRow; onClose: () => void })
                 value={f.kraTemplateId || "_none"}
                 onValueChange={(v) => setF({ ...f, kraTemplateId: v === "_none" ? "" : v })}
                 options={[{ value: "_none", label: "None yet" }, ...(templates.data ?? []).map((t) => ({ value: t.id, label: t.name }))]}
+              />
+            </Field>
+            <Field label="Daily sheet" hint="The sheet they fill in each day" error={errors.sheetTemplateId}>
+              <Select
+                value={f.sheetTemplateId || "_none"}
+                onValueChange={(v) => setF({ ...f, sheetTemplateId: v === "_none" ? "" : v })}
+                options={[{ value: "_none", label: "None" }, ...(sheets.data ?? []).map((t) => ({ value: t.id, label: t.name }))]}
               />
             </Field>
             <Field label="Joined" error={errors.joiningDate}>
@@ -219,7 +229,11 @@ function EmployeeDialog({ p, onClose }: { p: EmployeeRow; onClose: () => void })
               disabled={act.isPending}
               onClick={() =>
                 act.mutate(
-                  { step: "update", userId: p.user.id, body: { ...f, managerId: f.managerId || null, kraTemplateId: f.kraTemplateId || null } },
+                  {
+                    step: "update",
+                    userId: p.user.id,
+                    body: { ...f, managerId: f.managerId || null, kraTemplateId: f.kraTemplateId || null, sheetTemplateId: f.sheetTemplateId || null },
+                  },
                   { onSuccess: () => (toast.success("Saved"), onClose()), onError: issuesOf(setErrors) },
                 )
               }
