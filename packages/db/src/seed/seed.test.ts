@@ -64,6 +64,7 @@ describe("sample data (P1-02)", () => {
         clients: { level: "view" },
         content: { level: "view" },
         production: { level: "edit", scope: "own" },
+        equipment: { level: "view" },
       });
     } finally {
       await app.$disconnect();

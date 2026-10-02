@@ -8,6 +8,7 @@ import {
   type CostRateRow,
   type CostSettings,
   type CostSettingsInput,
+  perHourCost,
   type VideoCostRow,
 } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
@@ -15,6 +16,7 @@ import { ProductionSettingsService } from "../production/production-settings.ser
 import { TenantDb } from "../tenancy/tenant-context.js";
 
 const DAY = 86_400_000;
+const IST = 330 * 60_000;
 const day = (d: Date) => d.toISOString().slice(0, 10);
 const utc = (d: string) => new Date(`${d}T00:00:00Z`);
 const round = (n: number) => Math.round(n);
@@ -39,7 +41,8 @@ function monthRange(month: string) {
 
 /**
  * True costing (P5-01, P5-03): what each video and client really costs. Labour is the time logged on it at each
- * person's cost rate on that day; a shoot's crew time and kit day rate are shared across its videos; approved expenses
+ * person's cost rate on that day; a shoot's crew time and kit are shared across its videos — the kit at its items' cost
+ * per hour for the hours recorded when they came back from the shoot (P5-20), or else its kit list's day rate; approved expenses
  * go to the video or client they are for; overheads (the month's figure plus unallocated expenses) are shared by hours.
  * Time logged while a video was in revision is shown as rework. Revenue is the agreement's monthly fee — per video,
  * shared across the month's promised videos.
@@ -125,7 +128,7 @@ export class CostingService {
 
   private async compute(month: string) {
     const { start, end, last } = monthRange(month);
-    const [settingsRow, rateRows, cycles, monthVideoLogs, monthShootLogs, monthExpenses, agreements] = await Promise.all([
+    const [settingsRow, rateRows, cycles, monthVideoLogs, monthShootLogs, monthExpenses, agreements, monthShoots] = await Promise.all([
       this.tenant.db.costSettings.findUnique({ where: { agencyId: this.tenant.agencyId } }),
       this.tenant.db.personCostRate.findMany({ orderBy: { effectiveFrom: "desc" } }),
       this.tenant.db.cycle.findMany({
@@ -142,6 +145,7 @@ export class CostingService {
         where: { status: { in: [...RUNNING] }, startDate: { lte: last }, endDate: { gte: start } },
         select: { clientId: true, monthlyFee: true, package: { select: { name: true } } },
       }),
+      this.tenant.db.shoot.findMany({ where: { date: { gte: start, lt: end } }, select: { id: true, kit: true, date: true } }),
     ]);
     const kitRates = (settingsRow?.kitRates ?? {}) as Record<string, number>;
     const ratesOf = new Map<string, Rate[]>();
@@ -164,13 +168,21 @@ export class CostingService {
     });
     const ids = videos.map((v) => v.id);
     const shootIds = [...new Set([...videos.map((v) => v.shootId).filter((x): x is string => !!x), ...monthShootLogs.map((l) => l.shootId)])];
-    const [allVideoLogs, changes, shoots, shootVideos, allShootLogs, videoExpenses] = await Promise.all([
+    const [allVideoLogs, changes, shoots, shootVideos, allShootLogs, videoExpenses, kitUse] = await Promise.all([
       this.tenant.db.videoTimeLog.findMany({ where: { videoId: { in: ids } }, select: { videoId: true, userId: true, date: true, minutes: true } }),
       this.tenant.db.videoStageChange.findMany({ where: { videoId: { in: ids } }, orderBy: { at: "asc" }, select: { videoId: true, to: true, at: true } }),
       this.tenant.db.shoot.findMany({ where: { id: { in: shootIds } }, select: { id: true, kit: true, date: true, status: true, clientId: true } }),
       this.tenant.db.video.groupBy({ by: ["shootId"], where: { shootId: { in: shootIds } }, _count: { _all: true } }),
       this.tenant.db.shootTimeLog.findMany({ where: { shootId: { in: shootIds } }, select: { shootId: true, userId: true, date: true, minutes: true } }),
       this.tenant.db.expense.findMany({ where: { status: "approved", videoId: { in: ids } }, select: { amount: true, videoId: true } }),
+      this.tenant.db.assetCustody.findMany({
+        where: { shootId: { in: [...shootIds, ...monthShoots.map((s) => s.id)] }, returnedAt: { not: null }, minutes: { not: null } },
+        select: {
+          shootId: true,
+          minutes: true,
+          asset: { select: { purchaseDate: true, purchaseValue: true, residualValue: true, usefulLifeYears: true, hoursPerYear: true } },
+        },
+      }),
     ]);
 
     // Overheads for the month, shared by every hour logged in it.
@@ -178,8 +190,14 @@ export class CostingService {
     const overheads = (settingsRow?.monthlyOverhead ?? 0) + monthExpenses.filter((e) => !e.videoId && !e.clientId).reduce((n, e) => n + e.amount, 0);
     const perHour = hours ? overheads / hours : 0;
 
-    /** A shoot's kit costs its day rate once its day has come. */
-    const kitOf = (s: { kit: string; date: Date }) => (s.date <= new Date() ? (kitRates[s.kit] ?? 0) : 0);
+    // The kit items checked out for a shoot and back, at their cost per hour for the hours recorded.
+    const registerKit = new Map<string, number>();
+    for (const c of kitUse) {
+      const hourly = perHourCost({ ...c.asset, purchaseDate: day(c.asset.purchaseDate) }) ?? 0;
+      registerKit.set(c.shootId!, (registerKit.get(c.shootId!) ?? 0) + (hourly * c.minutes!) / 60);
+    }
+    /** A shoot's kit, once its day has come in India: what its items' use cost, or else its kit list's day rate. */
+    const kitOf = (s: { id: string; kit: string; date: Date }) => (s.date.getTime() <= Date.now() + IST ? (registerKit.get(s.id) ?? kitRates[s.kit] ?? 0) : 0);
     // A shoot's whole cost (crew time and kit), and its share per video.
     const shootCost = new Map<string, { cost: number; hours: number }>();
     for (const s of shoots) {
@@ -276,7 +294,6 @@ export class CostingService {
 
     const people = missing.size ? await this.tenant.db.user.findMany({ where: { id: { in: [...missing.keys()] } }, select: { id: true, name: true } }) : [];
     // Everything the month cost: all time logged in it, the kit of its shoots, its approved expenses and overheads.
-    const monthShoots = await this.tenant.db.shoot.findMany({ where: { date: { gte: start, lt: end } }, select: { kit: true, date: true } });
     const totalCost =
       [...monthVideoLogs, ...monthShootLogs].reduce((n, l) => n + cost(l), 0) +
       monthShoots.reduce((n, s) => n + kitOf(s), 0) +

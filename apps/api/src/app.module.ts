@@ -93,6 +93,8 @@ import { SopsService } from "./sops/sops.service.js";
 import { DiagnosticController } from "./diagnostic/diagnostic.controller.js";
 import { DiagnosticService } from "./diagnostic/diagnostic.service.js";
 import { PlannerController, PlannerService } from "./planner/planner.controller.js";
+import { AssetsController } from "./assets/assets.controller.js";
+import { AssetsService } from "./assets/assets.service.js";
 import { DailySheetService } from "./daily-sheet/daily-sheet.service.js";
 import { LearningService } from "./performance/learning.service.js";
 import { PerformanceMetrics } from "./performance/metrics.js";
@@ -194,6 +196,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     SopsController,
     DiagnosticController,
     PlannerController,
+    AssetsController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -320,6 +323,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     SopsService,
     DiagnosticService,
     PlannerService,
+    AssetsService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

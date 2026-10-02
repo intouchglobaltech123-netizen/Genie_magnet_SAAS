@@ -109,6 +109,17 @@ import {
   type DiagnosticInput,
   type DiagnosticView,
   type PlannerData,
+  type AssetDetail,
+  type AssetInput,
+  type AssetPerson,
+  type AssetReservationRow,
+  type AssetRow,
+  type AssetShootRef,
+  type BackInServiceInput,
+  type CheckOutInput,
+  type MaintenanceInput,
+  type ReservationInput,
+  type ReturnInput,
   type FitmentQuadrant,
   type RoadMapInput,
   type RoadMapRow,
@@ -2047,3 +2058,54 @@ export function useRequestPayLink() {
 
 /** The signed-in person's own financial planner; `null` until they first save it. */
 export const useMyPlanner = () => useQuery({ queryKey: ["planner"], queryFn: () => api<PlannerData | null>("/planner"), retry: false, staleTime: Infinity });
+
+// ─── Equipment and assets ──────────────────────────────────────────────
+
+export const useAssets = () => useQuery({ queryKey: ["assets"], queryFn: () => api<AssetRow[]>("/assets") });
+export const useAsset = (id: string | null) => useQuery({ queryKey: ["assets", "one", id], queryFn: () => api<AssetDetail>(`/assets/${id}`), enabled: !!id });
+export const useAssetReservations = () => useQuery({ queryKey: ["assets", "reservations"], queryFn: () => api<AssetReservationRow[]>("/assets/reservations") });
+export const useAssetShoots = (enabled = true) => useQuery({ queryKey: ["assets", "shoots"], queryFn: () => api<AssetShootRef[]>("/assets/shoots"), enabled });
+export const useAssetPeople = (enabled = true) => useQuery({ queryKey: ["assets", "people"], queryFn: () => api<AssetPerson[]>("/assets/people"), enabled });
+
+export function useAssetAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "save"; id?: string; body: AssetInput }
+        | { step: "checkOut"; id: string; body: CheckOutInput }
+        | { step: "return"; id: string; body: ReturnInput }
+        | { step: "reserve"; id: string; body: ReservationInput }
+        | { step: "cancelReservation"; reservationId: string }
+        | { step: "problem"; id: string; note: string }
+        | { step: "maintenance"; id: string; body: MaintenanceInput }
+        | { step: "backInService"; maintenanceId: string; body: BackInServiceInput }
+        | { step: "retire"; id: string; note: string },
+    ) => {
+      switch (v.step) {
+        case "save":
+          return v.id ? api<AssetDetail>(`/assets/${v.id}`, { method: "PUT", body: v.body }) : api<AssetDetail>("/assets", { body: v.body });
+        case "checkOut":
+          return api<AssetDetail>(`/assets/${v.id}/check-out`, { body: v.body });
+        case "return":
+          return api<AssetDetail>(`/assets/${v.id}/return`, { body: v.body });
+        case "reserve":
+          return api<AssetDetail>(`/assets/${v.id}/reservations`, { body: v.body });
+        case "cancelReservation":
+          return api<AssetDetail>(`/assets/reservations/${v.reservationId}`, { method: "DELETE" });
+        case "problem":
+          return api<AssetDetail>(`/assets/${v.id}/problem`, { body: { note: v.note } });
+        case "maintenance":
+          return api<AssetDetail>(`/assets/${v.id}/maintenance`, { body: v.body });
+        case "backInService":
+          return api<AssetDetail>(`/assets/maintenance/${v.maintenanceId}/back-in-service`, { body: v.body });
+        case "retire":
+          return api<AssetDetail>(`/assets/${v.id}/retire`, { body: { note: v.note } });
+      }
+    },
+    onSuccess: (d) => {
+      qc.setQueryData(["assets", "one", d.id], d);
+      return qc.invalidateQueries({ queryKey: ["assets"] });
+    },
+  });
+}

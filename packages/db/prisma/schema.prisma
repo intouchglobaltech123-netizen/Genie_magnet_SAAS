@@ -2577,3 +2577,109 @@ model PersonalPlanner {
   @@unique([agencyId, userId])
   @@map("personal_planners")
 }
+
+// ───────────────────────────── Equipment and assets (P5-20) ─────────────────────────────
+
+/// An item the agency owns: its cost and useful life for straight-line depreciation, and its condition.
+model Asset {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  agencyId        String    @map("agency_id") @db.Uuid
+  tag             String
+  name            String
+  category        String
+  serialNo        String    @default("") @map("serial_no")
+  purchaseDate    DateTime  @map("purchase_date") @db.Date
+  purchaseValue   Int       @map("purchase_value")
+  residualValue   Int       @default(0) @map("residual_value")
+  usefulLifeYears Int       @map("useful_life_years")
+  /// Productive hours a year, for its cost per hour; null when its use is not costed by the hour.
+  hoursPerYear    Int?      @map("hours_per_year")
+  /// Excellent · Good · Fair · Needs repair
+  condition       String    @default("Good")
+  location        String    @default("")
+  notes           String    @default("")
+  retiredAt       DateTime? @map("retired_at")
+  retiredNote     String    @default("") @map("retired_note")
+  createdBy       String?   @map("created_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  custody      AssetCustody[]
+  reservations AssetReservation[]
+  maintenance  AssetMaintenance[]
+
+  @@unique([agencyId, tag])
+  @@map("assets")
+}
+
+/// Who has it: checked out for a while (a shoot, a trip) or assigned for good, and when it came back.
+model AssetCustody {
+  id              String    @id @default(uuid(7)) @db.Uuid
+  agencyId        String    @map("agency_id") @db.Uuid
+  assetId         String    @map("asset_id") @db.Uuid
+  /// out · assigned
+  kind            String    @default("out")
+  userId          String    @map("user_id")
+  shootId         String?   @map("shoot_id") @db.Uuid
+  purpose         String    @default("")
+  dueOn           DateTime? @map("due_on") @db.Date
+  note            String    @default("")
+  outAt           DateTime  @default(now()) @map("out_at")
+  outBy           String?   @map("out_by")
+  returnedAt      DateTime? @map("returned_at")
+  returnedTo      String?   @map("returned_to")
+  returnCondition String?   @map("return_condition")
+  /// Minutes of use, recorded on its return.
+  minutes         Int?
+  returnNote      String    @default("") @map("return_note")
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, assetId])
+  @@index([agencyId, shootId])
+  @@index([agencyId, userId])
+  @@map("asset_custody")
+}
+
+/// An item booked for a day, for a person and a shoot or purpose.
+model AssetReservation {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  assetId   String   @map("asset_id") @db.Uuid
+  date      DateTime @db.Date
+  userId    String   @map("user_id")
+  shootId   String?  @map("shoot_id") @db.Uuid
+  purpose   String   @default("")
+  location  String   @default("")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, assetId, date])
+  @@index([agencyId, date])
+  @@map("asset_reservations")
+}
+
+/// A service or repair; one that takes the item out of service stays open until it is back.
+model AssetMaintenance {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  agencyId       String    @map("agency_id") @db.Uuid
+  assetId        String    @map("asset_id") @db.Uuid
+  date           DateTime  @db.Date
+  title          String
+  by             String    @default("")
+  cost           Int       @default(0)
+  note           String    @default("")
+  outOfService   Boolean   @default(false) @map("out_of_service")
+  closedAt       DateTime? @map("closed_at")
+  closedBy       String?   @map("closed_by")
+  closeCondition String?   @map("close_condition")
+  createdBy      String?   @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, assetId])
+  @@map("asset_maintenance")
+}
