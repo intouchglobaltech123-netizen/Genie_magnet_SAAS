@@ -50,6 +50,7 @@ import {
   Briefcase,
   Gauge,
   GraduationCap,
+  Target,
   Users,
   X,
 } from "lucide-react";
@@ -105,10 +106,21 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Monthly delivery", href: "/app/cycles", icon: Repeat, area: "production" },
       { title: "Monthly reports", href: "/app/reports", icon: FileBarChart, area: "reports" },
       { title: "Agreements", href: "/app/agreements", icon: FileSignature, area: "agreements" },
+      { title: "Import from Excel", href: "/app/import", icon: FileSpreadsheet, area: "clients", level: "edit" },
+    ],
+  },
+  {
+    title: "Money",
+    items: [
       { title: "Invoices", href: "/app/invoices", icon: ReceiptIndianRupee, area: "invoices" },
       { title: "Expenses", href: "/app/expenses", icon: Wallet },
       { title: "Costing", href: "/app/costing", icon: Calculator, area: "finance" },
       { title: "Finance", href: "/app/finance", icon: Landmark, area: "finance" },
+    ],
+  },
+  {
+    title: "People",
+    items: [
       { title: "People", href: "/app/people", icon: Contact },
       { title: "Attendance", href: "/app/attendance", icon: Fingerprint },
       { title: "Leave", href: "/app/leave", icon: CalendarOff },
@@ -118,8 +130,11 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Learning", href: "/app/learning", icon: GraduationCap },
       { title: "Payroll", href: "/app/payroll", icon: Banknote, area: "salaries" },
       { title: "My payslips", href: "/app/payslips", icon: ReceiptText },
-      { title: "Import from Excel", href: "/app/import", icon: FileSpreadsheet, area: "clients", level: "edit" },
     ],
+  },
+  {
+    title: "Management",
+    items: [{ title: "Goals", href: "/app/goals", icon: Target }],
   },
   {
     title: "Settings",

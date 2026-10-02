@@ -2261,3 +2261,68 @@ model DailySheet {
   @@index([agencyId, date])
   @@map("daily_sheets")
 }
+
+// ───────────────────────────── Goals ─────────────────────────────
+
+/// The agency's goal rule (P5-13): when a goal is on track or at risk, when its year starts, and the revenue cascade as last saved.
+model GoalSettings {
+  agencyId  String   @id @map("agency_id") @db.Uuid
+  rule      Json
+  /// The revenue cascade's inputs as last saved.
+  cascade   Json?
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("goal_settings")
+}
+
+/// A goal (P5-13): the company's, a department's serving it, or a person's serving that.
+model Goal {
+  id           String        @id @default(uuid(7)) @db.Uuid
+  agencyId     String        @map("agency_id") @db.Uuid
+  parentId     String?       @map("parent_id") @db.Uuid
+  /// company · department · person
+  level        String
+  title        String
+  departmentId String?       @map("department_id") @db.Uuid
+  /// financial · functional · learning · operational
+  type         String
+  ownerIds     String[]      @map("owner_ids")
+  measure      String        @default("")
+  /// inr · pct · count · hours · days
+  unit         String
+  baseline     Float         @default(0)
+  target       Float
+  /// Entered by hand when it does not follow a figure the app knows.
+  actual       Float         @default(0)
+  metric       String?
+  startDate    DateTime      @map("start_date") @db.Date
+  dueDate      DateTime      @map("due_date") @db.Date
+  /// strategic · tactical · operational
+  cadence      String
+  /// { specific, measurable, achievable, relevant, timeBound }
+  smart        Json          @default("{}")
+  createdBy    String?       @map("created_by")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @default(now()) @updatedAt @map("updated_at")
+  checkIns     GoalCheckIn[]
+
+  @@index([agencyId, parentId])
+  @@map("goals")
+}
+
+/// A check-in on a goal (P5-13): an update, a breakthrough or a breakdown, with a new figure for a goal entered by hand.
+model GoalCheckIn {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  goalId    String   @map("goal_id") @db.Uuid
+  by        String
+  /// update · breakthrough · breakdown
+  kind      String
+  note      String
+  value     Float?
+  createdAt DateTime @default(now()) @map("created_at")
+  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, goalId])
+  @@map("goal_check_ins")
+}

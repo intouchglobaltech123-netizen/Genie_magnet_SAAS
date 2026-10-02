@@ -18,6 +18,7 @@ export * from "./invoices.js";
 export * from "./onboarding.js";
 export * from "./notifications.js";
 export * from "./files.js";
+export * from "./goals.js";
 export * from "./production.js";
 export * from "./jobs.js";
 export * from "./portal.js";

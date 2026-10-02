@@ -105,6 +105,12 @@ import {
   type LeaveRequestInput,
   type LeaveRequestRow,
   type LeaveTypeRow,
+  type CascadeInputs,
+  type CascadeView,
+  type CheckInInput,
+  type GoalInput,
+  type GoalRow,
+  type GoalSettings,
   type DailySheetRow,
   type SheetInput,
   type SheetSettings,
@@ -1354,6 +1360,44 @@ export function useLeaveAction() {
       void qc.invalidateQueries({ queryKey: ["leave"] });
       void qc.invalidateQueries({ queryKey: ["attendance"] });
     },
+  });
+}
+
+// ─── Goals ────────────────────────────────────────────────────────────
+
+export const useGoals = () => useQuery({ queryKey: ["goals"], queryFn: () => api<GoalRow[]>("/goals") });
+export const useGoalSettings = () => useQuery({ queryKey: ["goals", "settings"], queryFn: () => api<GoalSettings>("/goals/settings") });
+export const useCascade = (enabled = true) =>
+  useQuery({ queryKey: ["goals", "cascade"], queryFn: () => api<CascadeView>("/goals/cascade"), enabled, retry: false });
+
+export function useGoalAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "save"; id?: string; body: GoalInput }
+        | { step: "remove"; id: string }
+        | { step: "checkIn"; id: string; body: CheckInInput }
+        | { step: "settings"; body: GoalSettings }
+        | { step: "cascade"; body: CascadeInputs }
+        | { step: "apply"; links: { goalId: string; figure: string }[] },
+    ) => {
+      switch (v.step) {
+        case "save":
+          return api<GoalRow>(v.id ? `/goals/${v.id}` : "/goals", { method: v.id ? "PUT" : "POST", body: v.body });
+        case "remove":
+          return api(`/goals/${v.id}`, { method: "DELETE" });
+        case "checkIn":
+          return api(`/goals/${v.id}/check-ins`, { body: v.body });
+        case "settings":
+          return api("/goals/settings", { method: "PUT", body: v.body });
+        case "cascade":
+          return api("/goals/cascade", { method: "PUT", body: v.body });
+        case "apply":
+          return api("/goals/cascade/apply", { body: { links: v.links } });
+      }
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["goals"] }),
   });
 }
 
