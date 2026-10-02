@@ -2,9 +2,10 @@
 // which checks them again with these same rules before saving anything.
 import { z } from "zod";
 import { leadInput } from "./pipeline.js";
+import { URGENCIES, VIDEO_STAGE_KEYS, VIDEO_STAGE_LABEL, type VideoStageKey } from "./production.js";
 import { clientInput } from "./schemas.js";
 
-export const IMPORT_KINDS = ["clients", "team", "leads"] as const;
+export const IMPORT_KINDS = ["clients", "team", "leads", "videos"] as const;
 export type ImportKind = (typeof IMPORT_KINDS)[number];
 
 const fileName = z.string().trim().min(1).max(200);
@@ -48,6 +49,36 @@ export const leadImport = z.object({
   rows: z.array(leadImportRow).min(1, "There are no rows to import").max(2000, "Import at most 2,000 rows at a time"),
 });
 export type LeadImport = z.output<typeof leadImport>;
+
+/**
+ * One video in progress from the agency's tracking sheet (P2-16). The client is its code (the importer matches names
+ * too), the editor an email (the importer matches names), the stage a key (the importer matches the words people use).
+ */
+export const videoImportRow = z.object({
+  clientCode: z.string().regex(/^[A-Z]{2,4}$/, "Use one of your clients' codes or names"),
+  /** Their own code is kept; the next code in the agency's format otherwise. */
+  code: z.string().trim().max(40).optional(),
+  title: z.string().trim().min(2, "Name the video").max(200),
+  format: z.string().trim().min(1, "Choose the format").max(40),
+  stage: z.enum(VIDEO_STAGE_KEYS).default("planned"),
+  dueDate: z.iso.date("Use a date like 2026-10-05 or 05/10/2026"),
+  publishDate: z.iso.date("Use a date like 2026-10-05 or 05/10/2026").optional(),
+  editorEmail: z
+    .email("Use the editor's email or name as in your team")
+    .transform((e) => e.toLowerCase())
+    .optional(),
+  urgency: z.enum(URGENCIES).default("standard"),
+  clipNo: z.string().trim().max(120).optional(),
+  /** Footage backed up and verified (VP). */
+  footageProtected: z.boolean().default(false),
+  notes: z.string().trim().max(4000).optional(),
+});
+export type VideoImportRow = z.input<typeof videoImportRow>;
+export const videoImport = z.object({
+  fileName,
+  rows: z.array(videoImportRow).min(1, "There are no rows to import").max(2000, "Import at most 2,000 rows at a time"),
+});
+export type VideoImport = z.output<typeof videoImport>;
 
 /** A template column: the field it fills, its heading, and other headings people use for the same thing. */
 export interface ImportColumn {
@@ -157,6 +188,65 @@ export const LEAD_IMPORT_COLUMNS: ImportColumn[] = [
   { key: "notes", label: "Notes", aliases: ["notes", "remarks", "comments", "comment", "details"], example: "Wants festive reels" },
 ];
 
+export const VIDEO_IMPORT_COLUMNS: ImportColumn[] = [
+  {
+    key: "client",
+    label: "Client",
+    required: true,
+    aliases: ["client", "client code", "client name", "brand", "customer", "account"],
+    hint: "The client's code or name, as in your clients",
+    example: "KVR",
+  },
+  {
+    key: "code",
+    label: "Video code",
+    aliases: ["code", "video code", "video id", "id", "ref", "reference"],
+    hint: "Kept as it is; the next code in your format when empty",
+    example: "KVR-0926-05",
+  },
+  {
+    key: "title",
+    label: "Video",
+    required: true,
+    aliases: ["video", "title", "video title", "topic", "content", "idea", "subject", "video name"],
+    example: "Millet dosa in 60 seconds",
+  },
+  { key: "format", label: "Format", aliases: ["format", "type", "video type", "kind"], hint: "One of your formats; the first when empty", example: "Reel" },
+  {
+    key: "stage",
+    label: "Stage",
+    aliases: ["stage", "status", "current stage", "where it is", "progress"],
+    hint: "e.g. Planned, Shot, Editing, QC, With client, Approved, Published",
+    example: "Editing",
+  },
+  {
+    key: "dueDate",
+    label: "Due",
+    required: true,
+    aliases: ["due", "due date", "deadline", "delivery date", "target date", "date"],
+    hint: "A date, e.g. 2026-10-25 or 25/10/2026",
+    example: "2026-10-25",
+  },
+  { key: "publishDate", label: "Publish on", aliases: ["publish", "publish date", "posting date", "post date", "go live", "live date"], example: "2026-10-28" },
+  {
+    key: "editor",
+    label: "Editor",
+    aliases: ["editor", "edited by", "editor name", "assigned to", "editor email"],
+    hint: "Their name or email, as in your team",
+    example: "Divya Lakshmi",
+  },
+  { key: "urgency", label: "Urgency", aliases: ["urgency", "priority", "urgent"], hint: "Rush, Priority or Standard", example: "Standard" },
+  { key: "clipNo", label: "Clip no.", aliases: ["clip no", "clip no.", "clip number", "clip numbers", "clips", "file no"], example: "C0012–C0019" },
+  {
+    key: "footageProtected",
+    label: "VP",
+    aliases: ["vp", "footage protected", "backed up", "backup", "video protected", "footage backup"],
+    hint: "yes when the raw footage is backed up and verified",
+    example: "yes",
+  },
+  { key: "notes", label: "Notes", aliases: ["notes", "remarks", "comments", "brief", "details"], example: "Client wants the logo bigger" },
+];
+
 export const TEAM_IMPORT_COLUMNS: ImportColumn[] = [
   { key: "email", label: "Email", required: true, aliases: ["email", "email id", "mail", "e mail", "email address"], example: "priya@youragency.example" },
   { key: "role", label: "Role", required: true, aliases: ["role", "position", "designation", "access", "job"], example: "Editor" },
@@ -241,4 +331,55 @@ export function suggestCode(name: string, taken: Set<string>): string {
   for (const c of words.join("").slice(1) + LETTERS) if (!taken.has(stem + c)) return stem + c;
   for (const a of LETTERS) for (const b of LETTERS) if (!taken.has(base.slice(0, 2) + a + b)) return base.slice(0, 2) + a + b;
   return base;
+}
+
+const STAGE_WORDS: Record<string, VideoStageKey> = {
+  idea: "planned",
+  "not started": "planned",
+  todo: "planned",
+  "to do": "planned",
+  pending: "planned",
+  script: "scripting",
+  "script writing": "scripting",
+  writing: "scripting",
+  "to shoot": "shoot_scheduled",
+  "shoot pending": "shoot_scheduled",
+  scheduled: "shoot_scheduled",
+  "shoot scheduled": "shoot_scheduled",
+  shooting: "shoot_scheduled",
+  "shoot done": "shot",
+  "shooting done": "shot",
+  "editing pending": "shot",
+  "in editing": "editing",
+  edit: "editing",
+  "edit in progress": "editing",
+  qc: "internal_qc",
+  "quality check": "internal_qc",
+  "internal review": "internal_qc",
+  review: "client_review",
+  "with client": "client_review",
+  "sent to client": "client_review",
+  "client approval": "client_review",
+  "waiting for approval": "client_review",
+  changes: "revision",
+  "changes requested": "revision",
+  correction: "revision",
+  corrections: "revision",
+  rework: "revision",
+  "client approved": "approved",
+  "ready to post": "approved",
+  "ready to publish": "approved",
+  done: "approved",
+  completed: "approved",
+  posted: "published",
+  live: "published",
+  uploaded: "published",
+};
+
+/** A stage as people write it in a tracking sheet — "QC", "With client", "Posted" — or undefined when unclear. */
+export function parseVideoStage(v: string): VideoStageKey | undefined {
+  const s = norm(v);
+  if (!s) return undefined;
+  const byLabel = VIDEO_STAGE_KEYS.find((k) => norm(VIDEO_STAGE_LABEL[k]) === s || norm(k) === s);
+  return byLabel ?? STAGE_WORDS[s];
 }

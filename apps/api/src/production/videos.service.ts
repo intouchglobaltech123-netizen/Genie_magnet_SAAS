@@ -265,7 +265,12 @@ export class VideosService {
   async insert(
     tx: TenantTx,
     input: VideoInput & { aspect: string; urgency: string; platforms: string[] },
-    extra: { contentItemId?: string; stage?: VideoStageKey } = {},
+    extra: {
+      contentItemId?: string;
+      stage?: VideoStageKey;
+      /** Imported from a tracking sheet (P2-16): their own code, clip numbers and backup, and nobody is notified. */
+      imported?: { fileName: string; code?: string; clipNo?: string; footageProtected?: boolean };
+    } = {},
   ) {
     const client = await tx.client.findFirst({ where: { id: input.clientId }, select: { id: true, code: true, name: true, archivedAt: true } });
     if (!client) throw new BadRequestException({ message: "Choose one of your clients.", issues: [{ path: "clientId", message: "Choose the client" }] });
@@ -277,8 +282,9 @@ export class VideosService {
     const month = input.dueDate.slice(0, 7);
     const cycleId = agreement ? await this.cycles.ensure(tx, agreement, month) : null;
     const planned = s.formats.find((f) => f.name === input.format)?.minutes ?? 0;
+    const imported = extra.imported;
     for (let attempt = 0; ; attempt++) {
-      const code = await this.nextCode(tx, s.videoCodeFormat, client.code, month);
+      const code = imported?.code || (await this.nextCode(tx, s.videoCodeFormat, client.code, month));
       try {
         const v = await tx.video.create({
           data: {
@@ -301,6 +307,8 @@ export class VideosService {
             platforms: input.platforms.length ? input.platforms : (agreement?.platforms ?? []),
             plannedMinutes: planned,
             notes: input.notes,
+            clipNo: imported?.clipNo,
+            ...(imported?.footageProtected ? { protectedAt: new Date(), protectedBy: this.tenant.userId } : {}),
             createdBy: this.tenant.userId,
           },
         });
@@ -309,17 +317,18 @@ export class VideosService {
           action: "create",
           entity: "video",
           entityId: v.id,
-          after: { code, title: v.title, client: client.name, dueDate: input.dueDate },
+          after: { code, title: v.title, client: client.name, dueDate: input.dueDate, ...(imported && { stage: v.stage, via: imported.fileName }) },
         });
-        await this.notifications.notify(
-          tx,
-          { users: [v.editorId, v.directorId, v.cameraId] },
-          { kind: "video_assigned", title: `New video for you: ${code}`, body: v.title, link: `/app/production/${v.id}` },
-        );
+        if (!imported)
+          await this.notifications.notify(
+            tx,
+            { users: [v.editorId, v.directorId, v.cameraId] },
+            { kind: "video_assigned", title: `New video for you: ${code}`, body: v.title, link: `/app/production/${v.id}` },
+          );
         return v.id;
       } catch (e) {
-        // Two videos made at the same moment can pick the same code: try the next one.
-        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002" && attempt < 3) continue;
+        // Two videos made at the same moment can pick the same code: try the next one (never for a code given to us).
+        if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002" && attempt < 3 && !imported?.code) continue;
         throw e;
       }
     }
@@ -451,7 +460,7 @@ export class VideosService {
   }
 
   async editStep(id: string, step: string, done: boolean) {
-    await this.find(id);
+    const v = await this.find(id);
     const s = await this.settings.get();
     if (!s.editSteps.includes(step)) throw new BadRequestException("That is not one of your edit steps.");
     await this.tenant.tx(async (tx) => {
@@ -461,6 +470,7 @@ export class VideosService {
       if (done) steps[step] = { by: this.tenant.userId ?? null, at: new Date().toISOString() };
       else delete steps[step];
       await tx.video.update({ where: { id }, data: { editSteps: steps as Prisma.InputJsonValue } });
+      await this.audit.record(tx, { action: done ? "edit_step" : "edit_step_undone", entity: "video", entityId: id, after: { code: v.code, step } });
     });
     return this.get(id);
   }

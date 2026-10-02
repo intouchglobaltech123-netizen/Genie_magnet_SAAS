@@ -156,3 +156,78 @@ describe("importing the team", () => {
       .expect(403);
   });
 });
+
+describe("importing videos in progress", () => {
+  type Video = { id: string; code: string; stage: string; editor: { name: string | null } | null; protected: boolean; clipNo: string | null };
+  const v = (title: string, extra: Record<string, unknown> = {}) => ({ clientCode: "KVR", title, format: "Reel", dueDate: "2026-12-20", ...extra });
+  let importId: string;
+
+  it("refuses the file when a client, format, editor or code is wrong", async () => {
+    const res = await ashwin
+      .post("/imports/videos")
+      .send({
+        fileName: "tracking.xlsx",
+        rows: [
+          v("Unknown client", { clientCode: "ZZZ" }),
+          v("Odd format", { format: "Hologram" }),
+          v("Stranger edits", { editorEmail: "stranger@example.com" }),
+          v("Twice A", { code: "KVR-1226-90" }),
+          v("Twice B", { code: "KVR-1226-90" }),
+        ],
+      })
+      .expect(400);
+    expect((res.body.issues as { path: string }[]).map((i) => i.path)).toEqual(["rows.0.clientCode", "rows.1.format", "rows.2.editorEmail", "rows.4.code"]);
+    expect(((await ashwin.get("/videos?clientId=").expect(200)).body as Video[]).some((x) => x.code === "KVR-1226-90")).toBe(false);
+  });
+
+  it("brings each video in at its stage, keeps its own code, and counts earlier work as done", async () => {
+    const res = await ashwin
+      .post("/imports/videos")
+      .send({
+        fileName: "tracking.xlsx",
+        rows: [
+          v("Turmeric story", { code: "KVR-1226-90", stage: "editing", editorEmail: "divya@geniemagnet.test", clipNo: "C0012–C0019", footageProtected: true }),
+          v("Millet laddu", { stage: "client_review", urgency: "rush" }),
+          v("Festive hamper", {}),
+        ],
+      })
+      .expect(201);
+    expect(res.body.created).toBe(3);
+    importId = res.body.id;
+    const all = (await ashwin.get("/videos").expect(200)).body as Video[];
+    const turmeric = all.find((x) => x.code === "KVR-1226-90")!;
+    expect(turmeric).toMatchObject({ stage: "editing", editor: { name: "Divya Lakshmi" }, protected: true, clipNo: "C0012–C0019" });
+    const laddu = all.find((x) => x.code !== "KVR-1226-90" && x.stage === "client_review")!;
+    const detail = (await ashwin.get(`/videos/${laddu.id}`).expect(200)).body as { qc: { result: string | null }[]; editSteps: { done: boolean }[] };
+    expect(detail.qc.every((c) => c.result === "pass")).toBe(true);
+    expect(detail.editSteps.every((s) => s.done)).toBe(true);
+    // Nobody is told about imported videos.
+    const divya = await t.signInAs("divya@geniemagnet.test");
+    expect(((await divya.get("/notifications").expect(200)).body as { items: { title: string }[] }).items.some((n) => n.title.includes("KVR-1226-90"))).toBe(
+      false,
+    );
+  });
+
+  it("is undone while nobody has worked on its videos", async () => {
+    await ashwin.delete(`/imports/${importId}`).expect(200);
+    expect(((await ashwin.get("/videos").expect(200)).body as Video[]).some((x) => x.code === "KVR-1226-90")).toBe(false);
+
+    const again = (
+      await ashwin
+        .post("/imports/videos")
+        .send({ fileName: "tracking-2.xlsx", rows: [v("Pepper drying", { stage: "shot" })] })
+        .expect(201)
+    ).body;
+    const [video] = ((await ashwin.get("/videos").expect(200)).body as (Video & { title?: string })[]).filter((x) => x.stage === "shot");
+    await ashwin.put(`/videos/${video!.id}/protect`).send({ done: true }).expect(200);
+    expect((await ashwin.delete(`/imports/${again.id}`).expect(409)).body.message).toMatch(/worked on/);
+  });
+
+  it("needs a role that changes every video", async () => {
+    const divya = await t.signInAs("divya@geniemagnet.test");
+    await divya
+      .post("/imports/videos")
+      .send({ fileName: "x.xlsx", rows: [v("Mine")] })
+      .expect(403);
+  });
+});

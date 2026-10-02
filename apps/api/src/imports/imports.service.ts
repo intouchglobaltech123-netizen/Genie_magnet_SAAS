@@ -10,10 +10,14 @@ import {
   permissionArea,
   scopeOf,
   type TeamImport,
+  VIDEO_STAGE_KEYS,
+  type VideoImport,
 } from "@gm/shared";
 import { AuditService } from "../audit/audit.service.js";
 import { Outbox } from "../auth/outbox.js";
 import { PipelineService } from "../crm/pipeline.service.js";
+import { ProductionSettingsService } from "../production/production-settings.service.js";
+import { VideosService } from "../production/videos.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { matrixOf } from "../team/roles.service.js";
 import { TeamService } from "../team/team.service.js";
@@ -47,14 +51,17 @@ export class ImportsService {
     private readonly team: TeamService,
     private readonly outbox: Outbox,
     private readonly pipeline: PipelineService,
+    private readonly videos: VideosService,
+    private readonly productionSettings: ProductionSettingsService,
   ) {}
 
   private canEdit(kind: ImportKind) {
-    return allows(this.tenant.permissions, kind === "clients" ? "clients" : kind === "leads" ? "crm" : "team", "edit");
+    const area = ({ clients: "clients", leads: "crm", team: "team", videos: "production" } as const)[kind];
+    return allows(this.tenant.permissions, area, "edit") && (kind !== "videos" || scopeOf(this.tenant.permissions, "production") === "all");
   }
 
   async list() {
-    const kinds = (["clients", "team", "leads"] as const).filter((k) => this.canEdit(k));
+    const kinds = (["clients", "team", "leads", "videos"] as const).filter((k) => this.canEdit(k));
     const rows = await this.tenant.db.import.findMany({ where: { kind: { in: kinds } }, orderBy: { createdAt: "desc" }, take: 50 });
     const ids = [...new Set(rows.map((r) => r.createdBy).filter((id): id is string => !!id))];
     const people = ids.length ? await this.tenant.db.user.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } }) : [];
@@ -278,6 +285,88 @@ export class ImportsService {
     });
   }
 
+  // ─── Videos in progress ─────────────────────────────────────────────
+
+  /**
+   * Videos already in progress, from the agency's tracking sheet (P2-16): each at the stage it has reached, with its
+   * own code when it has one. Work done before the app is taken as done — a video past editing has its edit steps
+   * ticked, one past the quality check has it passed — so it is not held back by checks that happened elsewhere.
+   * Nobody is notified about imported videos.
+   */
+  async importVideos({ fileName, rows }: VideoImport) {
+    const agencyId = this.tenant.agencyId;
+    const userId = this.tenant.userId;
+    if (!userId) throw new UnauthorizedException("Sign in to import.");
+    if (!this.canEdit("videos")) throw new ForbiddenException("Importing videos needs a role that sees and changes every video.");
+
+    const given = rows.map((r) => r.code).filter((c): c is string => !!c);
+    const [clients, members, settings, taken] = await Promise.all([
+      this.tenant.db.client.findMany({ select: { id: true, code: true, name: true, archivedAt: true } }),
+      this.tenant.db.user.findMany({ where: { memberships: { some: { agencyId } } }, select: { id: true, email: true } }),
+      this.productionSettings.get(),
+      given.length ? this.tenant.db.video.findMany({ where: { code: { in: given } }, select: { code: true } }) : [],
+    ]);
+    const clientByCode = new Map(clients.map((c) => [c.code, c]));
+    const byEmail = new Map(members.map((m) => [m.email.toLowerCase(), m.id]));
+    const formats = new Map(settings.formats.map((f) => [f.name.toLowerCase(), f.name]));
+    const usedCodes = new Set(taken.map((t) => t.code));
+    const seenCodes = new Map<string, number>();
+    const issues: Issue[] = [];
+
+    rows.forEach((r, i) => {
+      const client = clientByCode.get(r.clientCode);
+      if (!client) issues.push({ path: `rows.${i}.clientCode`, message: `No client with the code ${r.clientCode}` });
+      else if (client.archivedAt) issues.push({ path: `rows.${i}.clientCode`, message: `${client.name} is archived` });
+      if (!formats.has(r.format.toLowerCase()))
+        issues.push({ path: `rows.${i}.format`, message: `Not one of your formats (${settings.formats.map((f) => f.name).join(", ")})` });
+      if (r.editorEmail && !byEmail.has(r.editorEmail)) issues.push({ path: `rows.${i}.editorEmail`, message: "No one in your team has this email" });
+      if (r.code) {
+        if (usedCodes.has(r.code)) issues.push({ path: `rows.${i}.code`, message: `${r.code} is already one of your videos` });
+        const first = seenCodes.get(r.code);
+        if (first !== undefined) issues.push({ path: `rows.${i}.code`, message: `Same code as row ${first + 1}` });
+        else seenCodes.set(r.code, i);
+      }
+    });
+    refuse(issues);
+
+    const past = (stage: string, gate: string) => VIDEO_STAGE_KEYS.indexOf(stage as never) > VIDEO_STAGE_KEYS.indexOf(gate as never);
+    return this.tenant.tx(
+      async (tx) => {
+        const ids: string[] = [];
+        const at = new Date().toISOString();
+        for (const r of rows) {
+          const format = formats.get(r.format.toLowerCase())!;
+          const id = await this.videos.insert(
+            tx,
+            {
+              clientId: clientByCode.get(r.clientCode)!.id,
+              title: r.title,
+              format,
+              aspect: /long|youtube|podcast|interview|webinar/i.test(format) ? "16:9" : "9:16",
+              urgency: r.urgency,
+              dueDate: r.dueDate,
+              publishDate: r.publishDate,
+              editorId: r.editorEmail ? byEmail.get(r.editorEmail) : undefined,
+              platforms: [],
+              notes: r.notes,
+            },
+            { stage: r.stage, imported: { fileName, code: r.code, clipNo: r.clipNo, footageProtected: r.footageProtected } },
+          );
+          const done: Record<string, unknown> = {};
+          if (past(r.stage, "editing")) done.editSteps = Object.fromEntries(settings.editSteps.map((s) => [s, { by: userId, at }]));
+          if (past(r.stage, "internal_qc"))
+            done.qc = Object.fromEntries(settings.qcChecks.map((c) => [c.key, { result: "pass", note: "Done before the import", by: userId, at }]));
+          if (Object.keys(done).length) await tx.video.update({ where: { id }, data: done });
+          ids.push(id);
+        }
+        const record = await tx.import.create({ data: { agencyId, kind: "videos", fileName, rowCount: rows.length, createdIds: ids, createdBy: userId } });
+        await this.audit.record(tx, { action: "import", entity: "import", entityId: record.id, after: { kind: "videos", fileName, rows: rows.length } });
+        return { id: record.id, created: ids.length };
+      },
+      { timeout: 300_000 },
+    );
+  }
+
   // ─── Undo ───────────────────────────────────────────────────────────
 
   async undo(id: string) {
@@ -295,6 +384,18 @@ export class ImportsService {
         this.tenant.db.activity.count({ where: { leadId: { in: ids } } }),
       ]);
       if (changed || activities) throw new ConflictException("Some of these leads have been worked on since the import, so undoing it would lose that work.");
+    }
+    if (kind === "videos") {
+      const [changed, versions, logs, posts, requests, inShoots] = await Promise.all([
+        this.tenant.db.auditLog.count({ where: { entity: "video", entityId: { in: ids }, NOT: { action: "create" } } }),
+        this.tenant.db.videoVersion.count({ where: { videoId: { in: ids } } }),
+        this.tenant.db.videoTimeLog.count({ where: { videoId: { in: ids } } }),
+        this.tenant.db.scheduledPost.count({ where: { videoId: { in: ids } } }),
+        this.tenant.db.changeRequest.count({ where: { videoId: { in: ids } } }),
+        this.tenant.db.video.count({ where: { id: { in: ids }, shootId: { not: null } } }),
+      ]);
+      if (changed || versions || logs || posts || requests || inShoots)
+        throw new ConflictException("Some of these videos have been worked on since the import, so undoing it would lose that work.");
     }
     if (kind === "clients") {
       // Undo only what nobody has touched since: no later change to these clients, nothing made from them.
@@ -316,6 +417,13 @@ export class ImportsService {
           await this.audit.record(tx, { action: "delete", entity: "client", entityId: c.id, before: { code: c.code, name: c.name, via: "undo import" } });
         }
         removed = clients.length;
+      } else if (kind === "videos") {
+        const videos = await tx.video.findMany({ where: { id: { in: ids } }, select: { id: true, code: true, title: true } });
+        for (const v of videos) {
+          await tx.video.delete({ where: { id: v.id } });
+          await this.audit.record(tx, { action: "delete", entity: "video", entityId: v.id, before: { code: v.code, title: v.title, via: "undo import" } });
+        }
+        removed = videos.length;
       } else if (kind === "leads") {
         const leads = await tx.lead.findMany({ where: { id: { in: ids } }, select: { id: true, name: true } });
         for (const l of leads) {

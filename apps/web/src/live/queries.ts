@@ -428,7 +428,7 @@ export function useDeletePackage() {
 export const useImports = () => useQuery({ queryKey: keys.imports, queryFn: () => api<ImportRecord[]>("/imports") });
 
 export function useImport(kind: ImportKind) {
-  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads);
+  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads, keys.videos, keys.cycles);
   return useMutation({
     mutationFn: (v: { fileName: string; rows: unknown[] }) => api<ImportResult>(`/imports/${kind}`, { body: v }),
     onSuccess: refresh,
@@ -436,7 +436,7 @@ export function useImport(kind: ImportKind) {
 }
 
 export function useUndoImport() {
-  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads);
+  const refresh = useRefresh(keys.imports, keys.clients, keys.team, keys.leads, keys.videos, keys.cycles);
   return useMutation({ mutationFn: (id: string) => api<{ removed: number; kept: number }>(`/imports/${id}`, { method: "DELETE" }), onSuccess: refresh });
 }
 

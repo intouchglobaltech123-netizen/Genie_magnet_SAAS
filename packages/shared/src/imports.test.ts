@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { CLIENT_IMPORT_COLUMNS, clientImport, matchColumns, parseDateText, parseRupees, parseYesNo, suggestCode, TEAM_IMPORT_COLUMNS } from "./imports.js";
+import {
+  CLIENT_IMPORT_COLUMNS,
+  clientImport,
+  matchColumns,
+  parseDateText,
+  parseRupees,
+  parseVideoStage,
+  parseYesNo,
+  suggestCode,
+  TEAM_IMPORT_COLUMNS,
+  VIDEO_IMPORT_COLUMNS,
+  videoImportRow,
+} from "./imports.js";
 
 describe("matching a sheet's columns", () => {
   it("uses the template headings, then the headings people usually write", () => {
@@ -49,5 +61,32 @@ describe("rows sent to the API", () => {
 
   it("understand yes and no", () => {
     expect([parseYesNo("Yes"), parseYesNo("N"), parseYesNo(""), parseYesNo("maybe")]).toEqual([true, false, undefined, undefined]);
+  });
+});
+
+describe("videos from a tracking sheet", () => {
+  it("matches the headings people use", () => {
+    const m = matchColumns(["#", "Code", "Urgency", "Video", "Clip No.", "VP", "Editor", "Status", "Deadline"], VIDEO_IMPORT_COLUMNS);
+    expect(m).toMatchObject({ code: 1, urgency: 2, title: 3, clipNo: 4, footageProtected: 5, editor: 6, stage: 7, dueDate: 8, client: null });
+  });
+
+  it("reads stages the way they are written", () => {
+    expect(parseVideoStage("Internal QC")).toBe("internal_qc");
+    expect(parseVideoStage("qc")).toBe("internal_qc");
+    expect(parseVideoStage("With client")).toBe("client_review");
+    expect(parseVideoStage("Shoot scheduled")).toBe("shoot_scheduled");
+    expect(parseVideoStage("posted")).toBe("published");
+    expect(parseVideoStage("")).toBeUndefined();
+    expect(parseVideoStage("somewhere")).toBeUndefined();
+  });
+
+  it("needs a client code, a title and a due date", () => {
+    expect(videoImportRow.safeParse({ clientCode: "KVR", title: "Millet dosa", format: "Reel", dueDate: "2026-10-25" }).data).toMatchObject({
+      stage: "planned",
+      urgency: "standard",
+      footageProtected: false,
+    });
+    const bad = videoImportRow.safeParse({ clientCode: "Kaveri", title: "", format: "Reel", dueDate: "25/10" });
+    expect(bad.error?.issues.map((i) => i.path[0]).sort()).toEqual(["clientCode", "dueDate", "title"]);
   });
 });

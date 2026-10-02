@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post } from "@nestjs/common";
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
-import { clientImport, type ClientImport, leadImport, type LeadImport, teamImport, type TeamImport } from "@gm/shared";
+import { clientImport, type ClientImport, leadImport, type LeadImport, teamImport, type TeamImport, videoImport, type VideoImport } from "@gm/shared";
 import { Can, Staff } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { ImportsService } from "./imports.service.js";
@@ -45,6 +45,14 @@ export class ImportsController {
   @ApiBody({ schema: schema(leadImport) })
   leads(@Body(new ZodPipe(leadImport)) body: LeadImport) {
     return this.imports.importLeads(body);
+  }
+
+  /** Videos in progress from a tracking sheet; clients by code, editors by email, stages by key (the importer matches the words). */
+  @Post("videos")
+  @Can("production", "edit")
+  @ApiBody({ schema: schema(videoImport) })
+  videos(@Body(new ZodPipe(videoImport)) body: VideoImport) {
+    return this.imports.importVideos(body);
   }
 
   /** Within 24 hours: removes the clients it created (if untouched since) or cancels its waiting invitations. */

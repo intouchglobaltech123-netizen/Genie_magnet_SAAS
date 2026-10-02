@@ -18,10 +18,16 @@ import {
   type ImportResult,
   matchColumns,
   OWNER_ROLE,
+  parseVideoStage,
   parseYesNo,
+  scopeOf,
   suggestCode,
   TEAM_IMPORT_COLUMNS,
   teamImportRow,
+  URGENCY_LABEL,
+  VIDEO_IMPORT_COLUMNS,
+  VIDEO_STAGE_LABEL,
+  videoImportRow,
 } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -34,18 +40,36 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { ApiError, errorMessage } from "./api";
-import { useCan, useClients, useImport, useImports, useMe, useRoles, useStages, useTeam, useUndoImport } from "./queries";
+import { useCan, useClients, useImport, useImports, useMe, useProductionSettings, useRoles, useStages, useTeam, useUndoImport } from "./queries";
 
-const COLUMNS: Record<ImportKind, ImportColumn[]> = { clients: CLIENT_IMPORT_COLUMNS, team: TEAM_IMPORT_COLUMNS, leads: LEAD_IMPORT_COLUMNS };
-const MAX_ROWS: Record<ImportKind, number> = { clients: 1000, team: 500, leads: 2000 };
-const WHAT: Record<ImportKind, string> = { clients: "clients", team: "people", leads: "leads" };
-const ONE: Record<ImportKind, string> = { clients: "client", team: "person", leads: "lead" };
+const COLUMNS: Record<ImportKind, ImportColumn[]> = {
+  clients: CLIENT_IMPORT_COLUMNS,
+  team: TEAM_IMPORT_COLUMNS,
+  leads: LEAD_IMPORT_COLUMNS,
+  videos: VIDEO_IMPORT_COLUMNS,
+};
+const MAX_ROWS: Record<ImportKind, number> = { clients: 1000, team: 500, leads: 2000, videos: 2000 };
+const WHAT: Record<ImportKind, string> = { clients: "clients", team: "people", leads: "leads", videos: "videos" };
+const ONE: Record<ImportKind, string> = { clients: "client", team: "person", leads: "lead", videos: "video" };
 const count = (n: number, kind: ImportKind) => `${n} ${n === 1 ? ONE[kind] : WHAT[kind]}`;
-const AREA = { clients: "clients", team: "team", leads: "crm" } as const;
+const AREA = { clients: "clients", team: "team", leads: "crm", videos: "production" } as const;
 const DONE_LINK: Record<ImportKind, { href: string; label: string }> = {
   clients: { href: "/app/clients", label: "See the clients" },
   team: { href: "/app/settings/team", label: "See the team" },
   leads: { href: "/app/sales", label: "See the pipeline" },
+  videos: { href: "/app/production?tab=sheet", label: "See the videos" },
+};
+/** The API's field names for videos, as the importer's columns. */
+const VIDEO_PATHS: Record<string, string> = { clientCode: "client", editorEmail: "editor" };
+const URGENCY_WORDS: Record<string, "rush" | "priority" | "standard"> = {
+  rush: "rush",
+  urgent: "rush",
+  asap: "rush",
+  priority: "priority",
+  high: "priority",
+  standard: "standard",
+  normal: "standard",
+  regular: "standard",
 };
 
 interface Sheet {
@@ -225,6 +249,76 @@ function useLeadRows(sheet: Sheet | null, mapping: Record<string, number | null>
   }, [sheet, mapping, stages.data, team.data, me, can]);
 }
 
+function useVideoRows(sheet: Sheet | null, mapping: Record<string, number | null>) {
+  const can = useCan();
+  const clients = useClients();
+  const team = useTeam(can("team", "view"));
+  const settings = useProductionSettings();
+  return useMemo(() => {
+    if (!sheet || !clients.data || !settings.data || (can("team", "view") && !team.data)) return null;
+    const byCode = new Map(clients.data.map((c) => [c.code, c]));
+    const byName = new Map(clients.data.map((c) => [c.name.toLowerCase(), c]));
+    const people = (team.data?.members ?? []).map((m) => m.user);
+    const formats = settings.data.formats.map((f) => f.name);
+    const inFile = new Map<string, number>();
+    return sheet.rows.map((r, i): PreviewRow => {
+      const get = (k: string) => (mapping[k] == null ? "" : (r[mapping[k]!] ?? "").trim());
+      const values: Record<string, string> = Object.fromEntries(VIDEO_IMPORT_COLUMNS.map((c) => [c.key, get(c.key)]));
+      const issues: Record<string, string> = {};
+      const client = byCode.get(values.client!.toUpperCase()) ?? byName.get(values.client!.toLowerCase());
+      if (values.client && !client) issues.client = `No client called "${values.client}"`;
+      const format = values.format ? formats.find((f) => f.toLowerCase() === values.format!.toLowerCase()) : formats[0];
+      if (!format) issues.format = `Not one of your formats (${formats.join(", ")})`;
+      const stage = values.stage ? parseVideoStage(values.stage) : "planned";
+      if (!stage) issues.stage = "Not a stage we know — e.g. Editing, QC, With client, Approved";
+      const dueDate = values.dueDate ? parseDateText(values.dueDate) : undefined;
+      if (values.dueDate && !dueDate) issues.dueDate = "Use a date like 2026-10-25 or 25/10/2026";
+      const publishDate = values.publishDate ? parseDateText(values.publishDate) : undefined;
+      if (values.publishDate && !publishDate) issues.publishDate = "Use a date like 2026-10-28 or 28/10/2026";
+      const wanted = values.editor!.toLowerCase();
+      const editor = wanted ? people.find((p) => p.email.toLowerCase() === wanted || p.name.toLowerCase() === wanted) : undefined;
+      if (wanted && !editor && !(wanted.includes("@") && !can("team", "view"))) issues.editor = `No one called "${values.editor}" in your team`;
+      const urgency = values.urgency ? URGENCY_WORDS[values.urgency.toLowerCase()] : "standard";
+      if (!urgency) issues.urgency = "Rush, Priority or Standard";
+      const vp = values.footageProtected ? parseYesNo(values.footageProtected) : false;
+      if (vp === undefined) issues.footageProtected = "yes or no";
+      const code = values.code!.toUpperCase();
+      if (code && inFile.has(code)) issues.code = `Same code as row ${inFile.get(code)}`;
+      else if (code) inFile.set(code, i + 2);
+      const payload = {
+        clientCode: client?.code ?? values.client,
+        code: code || undefined,
+        title: values.title,
+        format: format ?? values.format,
+        stage: stage ?? "planned",
+        dueDate: dueDate ?? values.dueDate,
+        publishDate,
+        editorEmail: editor?.email ?? (wanted.includes("@") ? wanted : undefined),
+        urgency: urgency ?? "standard",
+        clipNo: values.clipNo || undefined,
+        footageProtected: vp ?? false,
+        notes: values.notes || undefined,
+      };
+      const parsed = videoImportRow.safeParse(payload);
+      if (!parsed.success)
+        for (const issue of parsed.error.issues) {
+          const key = String(issue.path[0]);
+          issues[VIDEO_PATHS[key] ?? key] ??= issue.message;
+        }
+      const shown = {
+        ...values,
+        client: client ? `${client.code} · ${client.name}` : values.client!,
+        format: format ?? values.format!,
+        stage: stage ? VIDEO_STAGE_LABEL[stage] : values.stage!,
+        editor: editor?.name ?? values.editor!,
+        urgency: urgency ? URGENCY_LABEL[urgency] : values.urgency!,
+        footageProtected: vp ? "Yes" : vp === false && values.footageProtected ? "No" : values.footageProtected!,
+      };
+      return { line: i + 2, values: shown, issues, payload: parsed.success ? parsed.data : null };
+    });
+  }, [sheet, mapping, clients.data, team.data, settings.data, can]);
+}
+
 // ─── Screens ──────────────────────────────────────────────────────────
 
 function Importer({ kind }: { kind: ImportKind }) {
@@ -242,10 +336,11 @@ function Importer({ kind }: { kind: ImportKind }) {
   const clientRows = useClientRows(kind === "clients" ? sheet : null, mapping);
   const teamRows = useTeamRows(kind === "team" ? sheet : null, mapping);
   const leadRows = useLeadRows(kind === "leads" ? sheet : null, mapping);
+  const videoRows = useVideoRows(kind === "videos" ? sheet : null, mapping);
   const rows = useMemo(() => {
-    const base = kind === "clients" ? clientRows : kind === "leads" ? leadRows : teamRows;
+    const base = kind === "clients" ? clientRows : kind === "leads" ? leadRows : kind === "videos" ? videoRows : teamRows;
     return base?.map((r, i) => (serverIssues[i] ? { ...r, issues: { ...serverIssues[i], ...r.issues } } : r)) ?? null;
-  }, [kind, clientRows, teamRows, leadRows, serverIssues]);
+  }, [kind, clientRows, teamRows, leadRows, videoRows, serverIssues]);
   const good = rows?.filter((r) => !Object.keys(r.issues).length && r.payload) ?? [];
   const bad = (rows?.length ?? 0) - good.length;
   const missingRequired = columns.filter((c) => c.required && mapping[c.key] == null && !(kind === "clients" && c.key === "code"));
@@ -285,7 +380,12 @@ function Importer({ kind }: { kind: ImportKind }) {
               const [, idx, ...field] = issue.path.split(".");
               const row = sent[Number(idx)];
               const rowIndex = rows!.indexOf(row!);
-              const key = kind === "clients" ? (CLIENT_PATHS[field.join(".")] ?? "name") : (field[0] ?? (kind === "team" ? "email" : "name"));
+              const key =
+                kind === "clients"
+                  ? (CLIENT_PATHS[field.join(".")] ?? "name")
+                  : kind === "videos"
+                    ? (VIDEO_PATHS[field[0] ?? ""] ?? field[0] ?? "title")
+                    : (field[0] ?? (kind === "team" ? "email" : "name"));
               (next[rowIndex] ??= {})[key] = issue.message;
             }
             setServerIssues(next);
@@ -514,7 +614,10 @@ export function LiveImport() {
   const can = useCan();
   const router = useRouter();
   const params = useSearchParams();
-  const kinds = (["clients", "leads", "team"] as const).filter((k) => can(AREA[k], "edit"));
+  const me = useMe().data;
+  const kinds = (["clients", "leads", "team", "videos"] as const).filter(
+    (k) => can(AREA[k], "edit") && (k !== "videos" || (!!me?.permissions && scopeOf(me.permissions, "production") === "all")),
+  );
   const wanted = params.get("kind");
   const kind = kinds.find((k) => k === wanted) ?? kinds[0];
 
@@ -534,6 +637,7 @@ export function LiveImport() {
                 {kinds.includes("clients") && <TabsTrigger value="clients">Clients</TabsTrigger>}
                 {kinds.includes("leads") && <TabsTrigger value="leads">Leads</TabsTrigger>}
                 {kinds.includes("team") && <TabsTrigger value="team">Team</TabsTrigger>}
+                {kinds.includes("videos") && <TabsTrigger value="videos">Videos in progress</TabsTrigger>}
               </TabsList>
             </Tabs>
           )}

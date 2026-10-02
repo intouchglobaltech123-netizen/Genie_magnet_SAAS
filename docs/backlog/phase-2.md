@@ -57,4 +57,6 @@ Stories are refined into full acceptance criteria near the end of Phase 1. Check
 
 **P2-15 · Screens** — **Done.** Content (board, topic lists, idea bank) and the item page; Production (board, sheet, quality check, revisions) and the video page; Shoots and the shoot sheet; Publishing (to publish, quotas, published); Monthly delivery; Settings → Production; videos and platforms on the client page; shortcuts on Home.
 
-**P2-16 · Import of videos in progress** and **P2-17 · Exit-gate scenario test** — to do.
+**P2-16 · Import of videos in progress** — **Done.** Import from Excel → Videos in progress: the agency's own tracking sheet (template to download), columns matched from the headings people use (Client, Video, Status, Deadline, Editor, VP, Clip no.…), clients by code or name, editors by name or email, stages from the words people write (QC, With client, Posted…), formats from Settings → Production. Their own video codes are kept, the next code is given otherwise; each video goes into its client's month. Work done before the app counts as done (edit steps past editing, the quality check past it), nobody is notified, and the import can be undone for 24 hours while nobody has worked on its videos. `/imports/videos`.
+
+**P2-17 · Exit-gate scenario test** — to do.
