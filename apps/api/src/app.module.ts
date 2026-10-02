@@ -78,6 +78,8 @@ import { EmployeesService } from "./people/employees.service.js";
 import { LeaveService } from "./people/leave.service.js";
 import { AttendanceController, LeaveController, PeopleController } from "./people/people.controller.js";
 import { PayrollController, PayslipsController } from "./payroll/payroll.controller.js";
+import { HiringController } from "./hiring/hiring.controller.js";
+import { HiringService } from "./hiring/hiring.service.js";
 import { PayrollLock } from "./payroll/payroll-lock.js";
 import { PayrollService } from "./payroll/payroll.service.js";
 import { CostingService } from "./finance/costing.service.js";
@@ -163,6 +165,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     LeaveController,
     PayrollController,
     PayslipsController,
+    HiringController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -179,6 +182,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
               outbox,
               audit: audit.recordFor,
               setUpAgency: (agencyId) => withAgency(app.client, agencyId, (tx) => setUpAgencyDefaults(tx, agencyId)),
+              joined: (agencyId, invitationId, userId) => withAgency(app.client, agencyId, (tx) => HiringService.linkHire(tx, agencyId, invitationId, userId)),
             })
           : null,
     },
@@ -275,6 +279,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     LeaveService,
     PayrollLock,
     PayrollService,
+    HiringService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

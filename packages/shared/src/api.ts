@@ -722,7 +722,7 @@ export interface TimeEntryRow {
 
 /** Something on the calendar: a shoot, a video due or to publish, a post, a sales follow-up, an agreement ending. */
 export interface CalendarEvent {
-  kind: "shoot" | "due" | "publish" | "post" | "renewal" | "followup";
+  kind: "shoot" | "due" | "publish" | "post" | "renewal" | "followup" | "interview";
   date: string;
   /** 24-hour time in India, when it has one. */
   time: string | null;

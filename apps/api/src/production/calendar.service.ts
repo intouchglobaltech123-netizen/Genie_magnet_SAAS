@@ -3,6 +3,8 @@ import { allows, type CalendarEvent, DONE_STAGES, PLATFORM_LABELS, scopeOf, type
 import { TenantDb } from "../tenancy/tenant-context.js";
 
 const DAY = 86_400_000;
+/** India's offset from UTC: interview times are shown in India. */
+const IST = 330 * 60_000;
 const day = (d: Date) => d.toISOString().slice(0, 10);
 const utc = (d: string) => new Date(`${d}T00:00:00Z`);
 /** India time for a moment: its day and HH:MM. */
@@ -146,7 +148,29 @@ export class CalendarService {
         });
     }
 
-    const order = { shoot: 0, post: 1, followup: 2, due: 3, publish: 4, renewal: 5 };
+    // Interviews: HR sees all of them; everyone else those they hold.
+    const interviews = await this.tenant.db.interview.findMany({
+      where: {
+        at: { gte: new Date(a.getTime() - IST), lt: new Date(b.getTime() + DAY - IST) },
+        ...(allows(perms, "hr", "view") ? {} : { interviewerId: this.tenant.userId ?? "" }),
+      },
+      include: { candidate: { select: { id: true, name: true, stage: true, opening: { select: { title: true } } } } },
+    });
+    for (const i of interviews) {
+      const local = new Date(i.at.getTime() + IST);
+      events.push({
+        kind: "interview",
+        date: day(local),
+        time: local.toISOString().slice(11, 16),
+        title: `Interview ${i.candidate.name}`,
+        detail: i.candidate.opening.title,
+        client: null,
+        link: `/app/hiring?candidate=${i.candidate.id}`,
+        state: ["joined", "rejected"].includes(i.candidate.stage) ? "done" : "open",
+      });
+    }
+
+    const order = { shoot: 0, post: 1, interview: 2, followup: 3, due: 4, publish: 5, renewal: 6 };
     return events.sort((x, y) => x.date.localeCompare(y.date) || (x.time ?? "99").localeCompare(y.time ?? "99") || order[x.kind] - order[y.kind]);
   }
 

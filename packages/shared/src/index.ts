@@ -6,6 +6,7 @@ export * from "./imports.js";
 export * from "./social.js";
 export * from "./genie.js";
 export * from "./finance.js";
+export * from "./hiring.js";
 export * from "./payroll.js";
 export * from "./people.js";
 export * from "./pipeline.js";

@@ -105,6 +105,15 @@ import {
   type LeaveRequestInput,
   type LeaveRequestRow,
   type LeaveTypeRow,
+  type CandidateInput,
+  type CandidateRow,
+  type CandidateStage,
+  type HiringSettings,
+  type InterviewInput,
+  type OfferInput,
+  type OpeningInput,
+  type OpeningRow,
+  type ScorecardInput,
   type PayrollRunRow,
   type PayrollSettings,
   type PayrollSettingsInput,
@@ -1326,6 +1335,67 @@ export function useLeaveAction() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["leave"] });
       void qc.invalidateQueries({ queryKey: ["attendance"] });
+    },
+  });
+}
+
+// ─── Hiring ───────────────────────────────────────────────────────────
+
+export const useOpenings = () => useQuery({ queryKey: ["hiring", "openings"], queryFn: () => api<OpeningRow[]>("/hiring/openings") });
+export const useCandidates = (openingId?: string) =>
+  useQuery({
+    queryKey: ["hiring", "candidates", openingId ?? ""],
+    queryFn: () => api<CandidateRow[]>(`/hiring/candidates${openingId ? `?openingId=${openingId}` : ""}`),
+  });
+export const useCandidate = (id: string | null) =>
+  useQuery({ queryKey: ["hiring", "candidate", id], queryFn: () => api<CandidateRow>(`/hiring/candidates/${id}`), enabled: !!id });
+export const useHiringSettings = () => useQuery({ queryKey: ["hiring", "settings"], queryFn: () => api<HiringSettings>("/hiring/settings") });
+
+export function useHiringAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "settings"; body: Partial<HiringSettings> }
+        | { step: "opening"; id?: string; body: OpeningInput }
+        | { step: "candidate"; id?: string; body: CandidateInput }
+        | { step: "move"; id: string; stage: CandidateStage; reason?: string }
+        | { step: "interview"; id: string; body: InterviewInput }
+        | { step: "cancelInterview"; interviewId: string }
+        | { step: "score"; id: string; body: ScorecardInput }
+        | { step: "approve"; id: string; approved: boolean; note?: string }
+        | { step: "offer"; id: string; body: OfferInput }
+        | { step: "answer"; id: string; accepted: boolean }
+        | { step: "join"; id: string },
+    ) => {
+      switch (v.step) {
+        case "settings":
+          return api("/hiring/settings", { method: "PUT", body: v.body });
+        case "opening":
+          return api<OpeningRow>(v.id ? `/hiring/openings/${v.id}` : "/hiring/openings", { method: v.id ? "PUT" : "POST", body: v.body });
+        case "candidate":
+          return api<CandidateRow>(v.id ? `/hiring/candidates/${v.id}` : "/hiring/candidates", { method: v.id ? "PUT" : "POST", body: v.body });
+        case "move":
+          return api(`/hiring/candidates/${v.id}/stage`, { method: "PUT", body: { stage: v.stage, reason: v.reason } });
+        case "interview":
+          return api(`/hiring/candidates/${v.id}/interviews`, { body: v.body });
+        case "cancelInterview":
+          return api(`/hiring/interviews/${v.interviewId}`, { method: "DELETE" });
+        case "score":
+          return api(`/hiring/candidates/${v.id}/scorecard`, { method: "PUT", body: v.body });
+        case "approve":
+          return api(`/hiring/candidates/${v.id}/approval`, { body: { approved: v.approved, note: v.note } });
+        case "offer":
+          return api(`/hiring/candidates/${v.id}/offer`, { method: "PUT", body: v.body });
+        case "answer":
+          return api(`/hiring/candidates/${v.id}/offer/answer`, { body: { accepted: v.accepted } });
+        case "join":
+          return api(`/hiring/candidates/${v.id}/join`, { body: {} });
+      }
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["hiring"] });
+      void qc.invalidateQueries({ queryKey: keys.team });
     },
   });
 }

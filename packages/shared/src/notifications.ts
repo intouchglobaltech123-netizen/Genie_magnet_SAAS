@@ -29,6 +29,8 @@ export const NOTIFICATION_KINDS = [
   { key: "leave_to_approve", group: "People", label: "A leave request or attendance correction waits for my approval" },
   { key: "leave_decided", group: "People", label: "My leave or attendance correction is approved or not" },
   { key: "payslip_ready", group: "People", label: "My payslip is ready" },
+  { key: "interview_assigned", group: "People", label: "An interview is set up with me" },
+  { key: "hire_to_approve", group: "People", label: "A candidate waits for my approval to be hired" },
   { key: "post_failed", group: "Delivery", label: "The app could not post a video, or a client's platform needs connecting again" },
   { key: "genie_insight", group: "Genie Assistant", label: "Genie Assistant finds something I should act on" },
   { key: "job_failed", group: "Settings", label: "Background work failed after all its tries" },

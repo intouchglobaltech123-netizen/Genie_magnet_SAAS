@@ -25,6 +25,7 @@ const KIND: Record<CalendarEvent["kind"], { label: string; bar: string }> = {
   publish: { label: "To publish", bar: "border-l-success" },
   renewal: { label: "Agreement ends", bar: "border-l-accent-strong" },
   followup: { label: "Follow-up", bar: "border-l-secondary" },
+  interview: { label: "Interview", bar: "border-l-danger" },
 };
 
 /** The Monday on or before the 1st to the Sunday on or after the last day: whole weeks. */

@@ -36,6 +36,8 @@ export interface AuthDeps {
   audit: AuditWriter;
   /** Gives a new agency its default roles and pipeline stages. */
   setUpAgency: (agencyId: string) => Promise<void>;
+  /** Someone accepted an invitation: a hired candidate's employee record starts from their offer. */
+  joined?: (agencyId: string, invitationId: string, userId: string) => Promise<void>;
 }
 
 /**
@@ -43,7 +45,7 @@ export interface AuthDeps {
  * invitations. An agency is a Better Auth organization; the session's active organization is the agency every
  * API request works in. Runs on the genie_auth database role.
  */
-export function createAuth(env: Env, prisma: ReturnType<typeof createPrisma>, { outbox, audit, setUpAgency }: AuthDeps) {
+export function createAuth(env: Env, prisma: ReturnType<typeof createPrisma>, { outbox, audit, setUpAgency, joined }: AuthDeps) {
   const log = new Logger("Auth");
   /** Agency changes made here are audited right after they happen; a failed entry is logged, never hidden. */
   const record = async (agencyId: string, fallbackActor: string | undefined, entry: Parameters<AuditWriter>[2]) => {
@@ -113,13 +115,19 @@ export function createAuth(env: Env, prisma: ReturnType<typeof createPrisma>, { 
               entityId: member.id,
               after: { userId: user.id, name: user.name, role: member.role },
             }),
-          afterAcceptInvitation: ({ invitation, member, user, organization }) =>
-            record(organization.id, user.id, {
+          afterAcceptInvitation: async ({ invitation, member, user, organization }) => {
+            await record(organization.id, user.id, {
               action: "accept",
               entity: "invitation",
               entityId: invitation.id,
               after: { membershipId: member.id, name: user.name, role: member.role },
-            }),
+            });
+            try {
+              await joined?.(organization.id, invitation.id, user.id);
+            } catch (e) {
+              log.error("A hired candidate's employee record was not started", { agencyId: organization.id, error: String(e) });
+            }
+          },
           afterRejectInvitation: ({ invitation, user, organization }) =>
             record(organization.id, user.id, { action: "reject", entity: "invitation", entityId: invitation.id, after: { email: invitation.email } }),
         },

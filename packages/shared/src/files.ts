@@ -50,6 +50,8 @@ export const FILE_ENTITIES = {
   expense: "finance",
   /** An employee's documents: HR only. */
   employee: "hr",
+  /** A candidate's CV and papers: HR only. */
+  candidate: "hr",
 } as const;
 export type FileEntity = keyof typeof FILE_ENTITIES;
 

@@ -1945,3 +1945,121 @@ model Payslip {
   @@index([agencyId, userId])
   @@map("payslips")
 }
+
+// ───────────────────────────── Hiring ─────────────────────────────
+
+/// The agency's hiring rule (P5-10): what a scorecard recommends, and where candidates come from.
+model HiringSettings {
+  agencyId  String   @id @map("agency_id") @db.Uuid
+  /// { hireEach, hireTotal, hireTask, holdTotal, holdTask, sources }
+  rule      Json
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("hiring_settings")
+}
+
+/// An opening and the role's task document (P5-10).
+model Opening {
+  id              String      @id @default(uuid(7)) @db.Uuid
+  agencyId        String      @map("agency_id") @db.Uuid
+  title           String
+  departmentId    String?     @map("department_id") @db.Uuid
+  positions       Int         @default(1)
+  hiringManagerId String?     @map("hiring_manager_id")
+  /// Monthly pay the agency means to offer, in rupees.
+  budgetFrom      Int?        @map("budget_from")
+  budgetTo        Int?        @map("budget_to")
+  /// open · on_hold · closed
+  status          String      @default("open")
+  definition      String      @default("")
+  deliverables    String[]
+  tasks           String[]
+  /// { skills, knowledge, selfImage, traits, motives }: lines for each.
+  competence      Json        @default("{}")
+  /// The behavioural interview's questions: { situation, task, action, result }.
+  star            Json        @default("{}")
+  sources         String[]
+  createdBy       String?     @map("created_by")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @default(now()) @updatedAt @map("updated_at")
+  candidates      Candidate[]
+
+  @@index([agencyId, status])
+  @@map("openings")
+}
+
+/// Someone applying for an opening (P5-10), from their application to joining or not.
+model Candidate {
+  id             String               @id @default(uuid(7)) @db.Uuid
+  agencyId       String               @map("agency_id") @db.Uuid
+  openingId      String               @map("opening_id") @db.Uuid
+  name           String
+  email          String?
+  phone          String?
+  city           String?
+  source         String?
+  experience     String?
+  currentPay     Int?                 @map("current_pay")
+  expectedPay    Int?                 @map("expected_pay")
+  notes          String?
+  /// applied · screening · interview · scorecard · approval · offer · joined · rejected
+  stage          String               @default("applied")
+  rejectedReason String?              @map("rejected_reason")
+  approvedBy     String?              @map("approved_by")
+  approvedAt     DateTime?            @map("approved_at")
+  /// { designation, monthlyPay, joiningDate, role, notes, status, madeAt }
+  offer          Json?
+  /// The invitation to the workspace when they join, and who they became.
+  invitationId   String?              @map("invitation_id")
+  userId         String?              @map("user_id")
+  createdBy      String?              @map("created_by")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @default(now()) @updatedAt @map("updated_at")
+  opening        Opening              @relation(fields: [openingId], references: [id], onDelete: Restrict)
+  interviews     Interview[]
+  scorecards     InterviewScorecard[]
+
+  @@index([agencyId, openingId, stage])
+  @@index([invitationId])
+  @@map("candidates")
+}
+
+/// An interview with a candidate (P5-10), on the interviewer's calendar.
+model Interview {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  agencyId      String    @map("agency_id") @db.Uuid
+  candidateId   String    @map("candidate_id") @db.Uuid
+  at            DateTime
+  interviewerId String    @map("interviewer_id")
+  /// in_person · video · phone
+  mode          String    @default("in_person")
+  where         String?
+  createdAt     DateTime  @default(now()) @map("created_at")
+  candidate     Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, at])
+  @@index([candidateId])
+  @@map("interviews")
+}
+
+/// One interviewer's scorecard for a candidate (P5-10): five ratings, the STAR answers and the task, by the agency's rule.
+model InterviewScorecard {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  agencyId       String    @map("agency_id") @db.Uuid
+  candidateId    String    @map("candidate_id") @db.Uuid
+  interviewerId  String    @map("interviewer_id")
+  ratings        Json
+  star           Json
+  taskScore      Int       @map("task_score")
+  remarks        String    @default("")
+  total          Int
+  percent        Int
+  /// hire · hold · not_taken
+  recommendation String
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at")
+  candidate      Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, interviewerId])
+  @@map("interview_scorecards")
+}
