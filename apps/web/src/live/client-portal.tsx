@@ -2,13 +2,28 @@
 
 import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, ExternalLink, FileText, Film, LinkIcon, ListChecks, MessageSquare, Printer, Receipt, Send, ThumbsDown, ThumbsUp } from "lucide-react";
+import {
+  CheckCircle2,
+  ExternalLink,
+  FileBarChart,
+  FileText,
+  Film,
+  LinkIcon,
+  ListChecks,
+  MessageSquare,
+  Printer,
+  Receipt,
+  Send,
+  ThumbsDown,
+  ThumbsUp,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   CLIENT_REQUEST_KINDS,
   type ClientRequestKind,
   type ClientRequestRow,
   type Invoice,
+  type MonthlyReport,
   parseVideoTime,
   type PortalHome,
   type PortalInvoiceRow,
@@ -30,9 +45,10 @@ import { cn } from "@/lib/utils";
 import { api, ApiError, errorMessage } from "./api";
 import { fmtDate } from "./format";
 import { InvoiceDocument } from "./invoices";
+import { ReportDocument } from "./report-document";
 import { inr, PLATFORM_LABEL } from "./packages";
 
-type Tab = "home" | "topics" | "scripts" | "videos" | "invoices" | "ask";
+type Tab = "home" | "topics" | "scripts" | "videos" | "invoices" | "reports" | "ask";
 const monthName = (m: string) => new Date(`${m}-01T00:00:00Z`).toLocaleDateString("en-IN", { month: "long", year: "numeric", timeZone: "UTC" });
 
 /** Reads one part of the portal; every part refreshes after the client acts. */
@@ -402,6 +418,55 @@ function Invoices({ token }: { token: string }) {
   );
 }
 
+function Reports({ token }: { token: string }) {
+  const rows = usePortal<{ id: string; month: string; releasedAt: string | null }[]>(token, "/reports");
+  const [open, setOpen] = useState<string | null>(null);
+  const report = useQuery({
+    queryKey: ["portal", token, "report", open],
+    queryFn: () => api<MonthlyReport>(`/portal/${token}/reports/${open}`),
+    enabled: !!open,
+  });
+  if (rows.isPending) return <SkeletonRows rows={3} />;
+  if (rows.error) return <Alert tone="danger">{errorMessage(rows.error)}</Alert>;
+  if (open)
+    return (
+      <div className="space-y-3">
+        <div className="flex flex-wrap gap-2 print:hidden">
+          <Button variant="ghost" onClick={() => setOpen(null)}>
+            Back to reports
+          </Button>
+          <Button variant="secondary" onClick={() => window.print()}>
+            <Printer />
+            Print or save as PDF
+          </Button>
+        </div>
+        {report.isPending ? (
+          <SkeletonRows rows={8} />
+        ) : report.error ? (
+          <Alert tone="danger">{errorMessage(report.error)}</Alert>
+        ) : (
+          <ReportDocument report={report.data} />
+        )}
+      </div>
+    );
+  if (!rows.data.length)
+    return <EmptyState icon={FileBarChart} title="No reports yet" description="Your monthly report shows here at the end of each month." />;
+  return (
+    <Card>
+      <ul className="divide-y divide-border">
+        {rows.data.map((r) => (
+          <li key={r.id} className="flex items-center justify-between gap-2 px-5 py-3 text-body">
+            <span className="font-medium">{monthName(r.month)}</span>
+            <Button size="sm" variant="secondary" onClick={() => setOpen(r.id)}>
+              View
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
 function Ask({ token }: { token: string }) {
   const qc = useQueryClient();
   const mine = usePortal<ClientRequestRow[]>(token, "/requests");
@@ -573,6 +638,7 @@ export function ClientPortal({ token }: { token: string }) {
             <TabsTrigger value="scripts">Scripts</TabsTrigger>
             <TabsTrigger value="videos">Videos</TabsTrigger>
             <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            <TabsTrigger value="reports">Reports</TabsTrigger>
             <TabsTrigger value="ask">Ask us</TabsTrigger>
           </TabsList>
           <TabsContent value="home">
@@ -612,6 +678,9 @@ export function ClientPortal({ token }: { token: string }) {
           </TabsContent>
           <TabsContent value="invoices">
             <Invoices token={token} />
+          </TabsContent>
+          <TabsContent value="reports">
+            <Reports token={token} />
           </TabsContent>
           <TabsContent value="ask">
             <Ask token={token} />

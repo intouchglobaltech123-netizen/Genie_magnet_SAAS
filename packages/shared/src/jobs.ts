@@ -7,12 +7,21 @@ export const JOB_NAMES = {
   "invoices.overdue": "Invoices that became overdue",
   "cycles.month": "Monthly delivery set up, and last month to close",
   "files.cleanup": "Unfinished uploads cleared",
+  "reports.draft": "Monthly reports drafted (on the 25th)",
   "whatsapp.send": "A WhatsApp message",
 } as const;
 export type JobName = keyof typeof JOB_NAMES;
 
 /** Run once a day for every agency, in the morning. */
-export const DAILY_JOBS: JobName[] = ["videos.due", "onboarding.reminders", "agreements.renewals", "invoices.overdue", "cycles.month", "files.cleanup"];
+export const DAILY_JOBS: JobName[] = [
+  "videos.due",
+  "onboarding.reminders",
+  "agreements.renewals",
+  "invoices.overdue",
+  "cycles.month",
+  "files.cleanup",
+  "reports.draft",
+];
 
 export const JOB_STATUSES = ["queued", "running", "done", "failed"] as const;
 export type JobStatus = (typeof JOB_STATUSES)[number];

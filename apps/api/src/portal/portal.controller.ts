@@ -116,6 +116,20 @@ export class PortalController {
     return this.portal.invoice(token, id);
   }
 
+  @Get("reports")
+  @Public()
+  @RateLimit({ max: 120, windowSeconds: 60 })
+  reports(@Param("token") token: string) {
+    return this.portal.reportsFor(token);
+  }
+
+  @Get("reports/:id")
+  @Public()
+  @RateLimit({ max: 120, windowSeconds: 60 })
+  report(@Param("token") token: string, @Param("id", ParseUUIDPipe) id: string) {
+    return this.portal.report(token, id);
+  }
+
   @Get("requests")
   @Public()
   @RateLimit({ max: 120, windowSeconds: 60 })

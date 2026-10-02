@@ -86,6 +86,14 @@ export class ClientMessages {
     );
   }
 
+  /** The month's report is released to the portal. */
+  async reportReady(tx: TenantTx, clientId: string, month: string, reportId: string) {
+    if (!(await this.active(tx))) return [];
+    const to = await this.approvers(tx, clientId);
+    const links = await this.links(tx, to);
+    return this.whatsapp.queue(tx, "report_ready", to, (r) => [firstName(r.name), month, links.get(r.id) ?? ""], { type: "report", id: reportId });
+  }
+
   /**
    * An onboarding reminder sent by the app itself (P3-08). Needs the onboarding link kept encrypted; returns how many
    * were queued — none when WhatsApp cannot take it, and the team is then asked to send it themselves.

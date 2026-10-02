@@ -21,6 +21,7 @@ import { PrismaService } from "../prisma/prisma.service.js";
 import { ContentService } from "../production/content.service.js";
 import { Secrets } from "../common/secrets.js";
 import { WhatsAppService } from "../whatsapp/whatsapp.service.js";
+import { ReportsService } from "../reports/reports.service.js";
 import { VideosService } from "../production/videos.service.js";
 import { asPortal, type PortalPerson, TenantDb } from "../tenancy/tenant-context.js";
 
@@ -50,6 +51,7 @@ export class PortalService {
     private readonly invoices: InvoicesService,
     private readonly secrets: Secrets,
     private readonly whatsapp: WhatsAppService,
+    private readonly reports: ReportsService,
   ) {}
 
   // ─── The team: links and requests ──────────────────────────────────
@@ -423,6 +425,15 @@ export class PortalService {
         paidOn: day(r.paidOn),
       }));
     });
+  }
+
+  /** Released monthly reports (P3-09). */
+  async reportsFor(token: string) {
+    return this.as(token, (p) => this.reports.released(p.clientId));
+  }
+
+  async report(token: string, id: string) {
+    return this.as(token, (p) => this.reports.releasedOne(p.clientId, id));
   }
 
   /** One issued invoice, to view and print. */

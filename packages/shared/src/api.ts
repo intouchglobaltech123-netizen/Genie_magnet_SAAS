@@ -853,3 +853,47 @@ export interface WhatsAppMessageRow {
   createdAt: string;
   sentAt: string | null;
 }
+
+// ─── Monthly reports (P3-09) ───────────────────────────────────────────
+
+export type Metrics = Partial<Record<"views" | "reach" | "likes" | "comments" | "shares" | "saves", number | null>>;
+
+/** The month as it stood when the report was made or last refreshed. */
+export interface MonthlyReportData {
+  agency: { name: string; logo: string | null; brandColor: string | null };
+  client: { name: string; code: string };
+  month: string;
+  promised: number;
+  carriedIn: number;
+  delivered: number;
+  videos: {
+    id: string;
+    code: string;
+    title: string;
+    format: string;
+    stage: string;
+    delivered: boolean;
+    posts: { id: string; platform: string; url: string | null; publishedAt: string; metrics: Metrics | null }[];
+  }[];
+  totals: { posts: number } & Required<Record<"views" | "reach" | "likes" | "comments" | "shares" | "saves", number>>;
+  /** The topics the client picked for next month, when there are any. */
+  nextMonth: string[];
+}
+
+export interface MonthlyReport {
+  id: string;
+  client: { id: string; name: string; code: string };
+  month: string;
+  status: "draft" | "released";
+  note: string | null;
+  data: MonthlyReportData;
+  updatedAt: string;
+  releasedAt: string | null;
+  releasedBy: { id: string; name: string | null } | null;
+}
+
+/** A client with a running agreement in the month, and its report when one is made. */
+export interface ReportRow {
+  client: { id: string; name: string; code: string };
+  report: { id: string; status: "draft" | "released"; updatedAt: string; releasedAt: string | null } | null;
+}

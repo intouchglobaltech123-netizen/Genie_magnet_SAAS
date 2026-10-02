@@ -23,6 +23,7 @@ export const NOTIFICATION_KINDS = [
   { key: "invoice_overdue", group: "Money", label: "An invoice becomes overdue" },
   { key: "month_to_close", group: "Delivery", label: "Last month's delivery waits to be closed" },
   { key: "client_portal", group: "Clients", label: "A client I look after picks topics, comments on a video or asks something in their portal" },
+  { key: "report_draft", group: "Clients", label: "A client's monthly report is drafted and waits to be released" },
   { key: "job_failed", group: "Settings", label: "Background work failed after all its tries" },
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number]["key"];

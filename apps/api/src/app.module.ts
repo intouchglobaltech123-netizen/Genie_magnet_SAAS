@@ -58,6 +58,8 @@ import { ClientRequestsController, PortalController, PortalLinksController } fro
 import { PortalService } from "./portal/portal.service.js";
 import { PrismaService } from "./prisma/prisma.service.js";
 import { Secrets } from "./common/secrets.js";
+import { PostMetricsController, ReportsController } from "./reports/reports.controller.js";
+import { ReportsService } from "./reports/reports.service.js";
 import { ClientMessages } from "./whatsapp/client-messages.service.js";
 import { WhatsAppInbound } from "./whatsapp/inbound.service.js";
 import { CloudApiProvider, OutboxProvider, WHATSAPP_PROVIDER } from "./whatsapp/provider.js";
@@ -118,6 +120,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     WhatsAppController,
     ContactWhatsAppController,
     WhatsAppWebhookController,
+    ReportsController,
+    PostMetricsController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -179,6 +183,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     WhatsAppService,
     ClientMessages,
     WhatsAppInbound,
+    ReportsService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

@@ -5,6 +5,7 @@ import { ENV, type Env } from "../env.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { asSystem, TenantDb } from "../tenancy/tenant-context.js";
+import { ReportsService } from "../reports/reports.service.js";
 import { WhatsAppService } from "../whatsapp/whatsapp.service.js";
 import { DailyChecks } from "./daily-checks.service.js";
 
@@ -43,6 +44,7 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
     private readonly notifications: NotificationsService,
     checks: DailyChecks,
     whatsapp: WhatsAppService,
+    reports: ReportsService,
   ) {
     this.handlers = {
       "videos.due": (tx, p) => checks.videosDue(tx, dayOf(p)),
@@ -52,6 +54,7 @@ export class JobRunner implements OnApplicationBootstrap, OnApplicationShutdown 
       "cycles.month": (tx, p) => checks.month(tx, dayOf(p)),
       "files.cleanup": (tx) => checks.filesCleanup(tx),
       "whatsapp.send": (tx, p) => whatsapp.send(tx, String(p.messageId)),
+      "reports.draft": (tx, p) => reports.draftAll(tx, dayOf(p)),
     };
   }
 

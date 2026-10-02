@@ -21,6 +21,8 @@ import {
   type CalendarEvent,
   type ClientRequestRow,
   type JobOverview,
+  type MonthlyReport,
+  type ReportRow,
   type WhatsAppMessageRow,
   type WhatsAppSettings,
   type PortalLinkRow,
@@ -1071,3 +1073,36 @@ export function useContactWhatsApp(clientId: string) {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["portal-links", clientId] }),
   });
 }
+
+// ─── Monthly reports ──────────────────────────────────────────────────
+
+export const useReports = (month: string) => useQuery({ queryKey: ["reports", month], queryFn: () => api<ReportRow[]>(`/reports?month=${month}`) });
+export const useReport = (id: string) => useQuery({ queryKey: ["reports", "one", id], queryFn: () => api<MonthlyReport>(`/reports/${id}`) });
+
+export function useMakeReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { clientId: string; month: string }) => api<MonthlyReport>("/reports", { body: v }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["reports"] }),
+  });
+}
+
+export function useReportAction(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { step: "refresh" | "release" } | { step: "note"; note: string | null }) =>
+      v.step === "note"
+        ? api<MonthlyReport>(`/reports/${id}/note`, { method: "PUT", body: { note: v.note } })
+        : api<MonthlyReport>(`/reports/${id}/${v.step}`, { body: {} }),
+    onSuccess: (data) => {
+      qc.setQueryData(["reports", "one", id], data);
+      return qc.invalidateQueries({ queryKey: ["reports"], predicate: (q) => q.queryKey[1] !== "one" });
+    },
+  });
+}
+
+export const usePostMetrics = () =>
+  useMutation({
+    mutationFn: (v: { postId: string; values: Record<string, number | null> }) =>
+      api(`/publishing/posts/${v.postId}/metrics`, { method: "PUT", body: v.values }),
+  });

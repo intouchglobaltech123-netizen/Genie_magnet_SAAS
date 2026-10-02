@@ -1308,9 +1308,53 @@ model ScheduledPost {
 
   video      Video              @relation(fields: [videoId], references: [id], onDelete: Cascade)
   connection PlatformConnection @relation(fields: [connectionId], references: [id], onDelete: Restrict)
+  metric     PostMetric?
 
   @@index([agencyId, scheduledAt])
   @@map("scheduled_posts")
+}
+
+/// The latest numbers for a published post (P3-09): entered by the team, or brought in by a platform connection.
+model PostMetric {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  agencyId   String   @map("agency_id") @db.Uuid
+  postId     String   @unique @map("post_id") @db.Uuid
+  views      Int?
+  reach      Int?
+  likes      Int?
+  comments   Int?
+  shares     Int?
+  saves      Int?
+  /// manual · connector
+  source     String   @default("manual")
+  recordedAt DateTime @default(now()) @map("recorded_at")
+  recordedBy String?  @map("recorded_by")
+
+  post ScheduledPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("post_metrics")
+}
+
+/// A client's monthly report (P3-09): the month as it stood, the team's note, released to the client's portal.
+model MonthlyReport {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  agencyId   String    @map("agency_id") @db.Uuid
+  clientId   String    @map("client_id") @db.Uuid
+  month      DateTime  @db.Date
+  /// draft · released
+  status     String    @default("draft")
+  /// MonthlyReportData in @gm/shared, as of when it was made or last refreshed; kept as it is once released.
+  data       Json      @default("{}")
+  note       String?
+  createdBy  String?   @map("created_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at")
+  releasedAt DateTime? @map("released_at")
+  releasedBy String?   @map("released_by")
+
+  @@unique([agencyId, clientId, month])
+  @@index([agencyId, month])
+  @@map("monthly_reports")
 }
 
 // ───────────────────────────── Genie Assistant ─────────────────────────────
