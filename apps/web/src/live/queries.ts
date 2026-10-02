@@ -105,6 +105,9 @@ import {
   type LeaveRequestInput,
   type LeaveRequestRow,
   type LeaveTypeRow,
+  type RtFeedback,
+  type RtSessionInput,
+  type RtSessionRow,
   type CadenceInput,
   type CadenceRow,
   type CommitmentInput,
@@ -1369,6 +1372,54 @@ export function useLeaveAction() {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ["leave"] });
       void qc.invalidateQueries({ queryKey: ["attendance"] });
+    },
+  });
+}
+
+// ─── Round Table ──────────────────────────────────────────────────────
+
+export const useRoundTables = () =>
+  useQuery({ queryKey: ["round-tables"], queryFn: () => api<Pick<RtSessionRow, "id" | "name" | "status" | "createdAt" | "releasedAt">[]>("/round-tables") });
+/** While it is live, it is read every two seconds so everyone follows the rounds. */
+export const useRoundTable = (id: string | null) =>
+  useQuery({
+    queryKey: ["round-tables", id],
+    queryFn: () => api<RtSessionRow>(`/round-tables/${id}`),
+    enabled: !!id,
+    refetchInterval: (q) => (q.state.data?.status === "live" ? 2000 : false),
+  });
+export const useRtMine = (id: string | null, enabled: boolean) =>
+  useQuery({ queryKey: ["round-tables", id, "mine"], queryFn: () => api<RtFeedback>(`/round-tables/${id}/mine`), enabled: !!id && enabled });
+
+export function useRtAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "create"; body: RtSessionInput }
+        | { step: "start" | "next" | "release"; id: string }
+        | { step: "answer"; id: string; answers: [string, string, string] }
+        | { step: "hide"; answerId: string; hidden: boolean; reason: string }
+        | { step: "commit"; id: string; text: string },
+    ) => {
+      switch (v.step) {
+        case "create":
+          return api<RtSessionRow>("/round-tables", { body: v.body });
+        case "start":
+        case "next":
+        case "release":
+          return api<RtSessionRow>(`/round-tables/${v.id}/${v.step}`, { body: {} });
+        case "answer":
+          return api<RtSessionRow>(`/round-tables/${v.id}/answer`, { method: "PUT", body: { answers: v.answers } });
+        case "hide":
+          return api<RtSessionRow>(`/round-tables/answers/${v.answerId}`, { method: "PUT", body: { hidden: v.hidden, reason: v.reason } });
+        case "commit":
+          return api(`/round-tables/${v.id}/commitment`, { body: { text: v.text } });
+      }
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["round-tables"] });
+      void qc.invalidateQueries({ queryKey: ["reviews"] });
     },
   });
 }

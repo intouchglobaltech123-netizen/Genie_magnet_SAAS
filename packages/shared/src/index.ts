@@ -25,4 +25,5 @@ export * from "./portal.js";
 export * from "./whatsapp.js";
 export * from "./reports.js";
 export * from "./reviews.js";
+export * from "./round-table.js";
 export * from "./payments.js";

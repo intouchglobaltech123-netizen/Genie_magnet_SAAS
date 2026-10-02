@@ -39,6 +39,7 @@ export const NOTIFICATION_KINDS = [
   { key: "goal_breakdown", group: "Management", label: "A breakdown is reported on a goal I own, or one serving it" },
   { key: "review_scheduled", group: "Management", label: "A review I take part in is scheduled" },
   { key: "commitment_assigned", group: "Management", label: "A commitment is given to me" },
+  { key: "round_table_released", group: "Management", label: "What my team said at a Round Table is ready" },
   { key: "genie_insight", group: "Genie Assistant", label: "Genie Assistant finds something I should act on" },
   { key: "job_failed", group: "Settings", label: "Background work failed after all its tries" },
 ] as const;

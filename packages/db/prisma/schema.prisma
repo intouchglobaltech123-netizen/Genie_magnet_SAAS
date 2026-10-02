@@ -2392,3 +2392,48 @@ model GoalCheckIn {
   @@index([agencyId, goalId])
   @@map("goal_check_ins")
 }
+
+// ───────────────────────────── Round Table ─────────────────────────────
+
+/// A Round Table (P5-15): the peer review in timed rounds, one person each, moderated and then released.
+model RtSession {
+  id               String     @id @default(uuid(7)) @db.Uuid
+  agencyId         String     @map("agency_id") @db.Uuid
+  name             String
+  meetingId        String?    @map("meeting_id") @db.Uuid
+  facilitatorId    String?    @map("facilitator_id")
+  participantIds   String[]   @map("participant_ids")
+  questions        String[]
+  secondsPerPerson Int        @map("seconds_per_person")
+  /// draft · live · moderation · released
+  status           String     @default("draft")
+  currentIndex     Int        @default(0) @map("current_index")
+  roundEndsAt      DateTime?  @map("round_ends_at")
+  releasedAt       DateTime?  @map("released_at")
+  createdAt        DateTime   @default(now()) @map("created_at")
+  answers          RtAnswer[]
+
+  @@index([agencyId, createdAt])
+  @@map("rt_sessions")
+}
+
+/// What one person wrote about another (or themselves) in a Round Table (P5-15).
+model RtAnswer {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  agencyId     String    @map("agency_id") @db.Uuid
+  sessionId    String    @map("session_id") @db.Uuid
+  subjectId    String    @map("subject_id")
+  authorId     String    @map("author_id")
+  answers      String[]
+  /// The buzzer went before they wrote anything.
+  missed       Boolean   @default(false)
+  hidden       Boolean   @default(false)
+  hiddenReason String?   @map("hidden_reason")
+  /// The commitment the subject made from it, on their own self row.
+  commitmentId String?   @map("commitment_id") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at")
+  session      RtSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, subjectId, authorId])
+  @@map("rt_answers")
+}
