@@ -199,7 +199,7 @@ As the owner, I want emails to reach people, addresses confirmed, two-factor sig
 
 ## Exit gate
 
-**P1-30 · Exit-gate scenario (M)**
+**P1-30 · Exit-gate scenario (M)** — **Done** as an automated story (`apps/api/src/exit-gate/phase-1.e2e.test.ts`): the owner makes a Sales manager role whose discounts need approval and invites a manager with it, who signs up and joins; changes an onboarding question and the invoice number format (both apply at once); the manager adds a lead, logs a call and proposes a 15% discount that waits for the owner, who approves; the deal is won with client, agreement and onboarding set up; the client answers the required part by link, the 7-day part waits, and the next morning's job asks for the day-2 reminder; the gate opens once deliverables are confirmed; the audit log has every step; the other agency sees none of it. Two-factor joins step 1 in the last step.
 An automated end-to-end test (and a live demo) of the whole phase:
 
 1. The owner signs in and invites a manager (with two-factor once P1-10 is done).
