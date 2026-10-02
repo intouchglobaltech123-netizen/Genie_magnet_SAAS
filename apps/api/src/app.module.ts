@@ -97,6 +97,12 @@ import { AssetsController } from "./assets/assets.controller.js";
 import { AssetsService } from "./assets/assets.service.js";
 import { ProjectsController, TasksController } from "./projects/projects.controller.js";
 import { ProjectsService } from "./projects/projects.service.js";
+import { EntitlementsService } from "./billing/entitlements.js";
+import { PlanController } from "./billing/plan.controller.js";
+import { PlanService } from "./billing/plan.service.js";
+import { PlatformSettingsService } from "./platform/platform-settings.service.js";
+import { PlatformController } from "./platform/platform.controller.js";
+import { PlatformService } from "./platform/platform.service.js";
 import { DailySheetService } from "./daily-sheet/daily-sheet.service.js";
 import { LearningService } from "./performance/learning.service.js";
 import { PerformanceMetrics } from "./performance/metrics.js";
@@ -201,6 +207,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     AssetsController,
     ProjectsController,
     TasksController,
+    PlanController,
+    PlatformController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -210,13 +218,27 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     { provide: AUTH_PRISMA, inject: [ENV], useFactory: (env: Env) => (env.AUTH_DATABASE_URL ? createPrisma(env.AUTH_DATABASE_URL) : null) },
     {
       provide: AUTH,
-      inject: [ENV, AUTH_PRISMA, Outbox, AuditService, PrismaService],
-      useFactory: (env: Env, db: ReturnType<typeof createPrisma> | null, outbox: Outbox, audit: AuditService, app: PrismaService) =>
+      inject: [ENV, AUTH_PRISMA, Outbox, AuditService, PrismaService, PlatformSettingsService],
+      useFactory: (
+        env: Env,
+        db: ReturnType<typeof createPrisma> | null,
+        outbox: Outbox,
+        audit: AuditService,
+        app: PrismaService,
+        platform: PlatformSettingsService,
+      ) =>
         db && env.BETTER_AUTH_SECRET
           ? createAuth(env, db, {
               outbox,
               audit: audit.recordFor,
-              setUpAgency: (agencyId) => withAgency(app.client, agencyId, (tx) => setUpAgencyDefaults(tx, agencyId)),
+              // A new agency gets the Growth OS defaults and starts its trial (ADR 0011).
+              setUpAgency: async (agencyId) => {
+                const settings = await platform.get();
+                await withAgency(app.client, agencyId, async (tx) => {
+                  await setUpAgencyDefaults(tx, agencyId);
+                  await PlanService.startTrial(tx, agencyId, settings);
+                });
+              },
               joined: (agencyId, invitationId, userId) => withAgency(app.client, agencyId, (tx) => HiringService.linkHire(tx, agencyId, invitationId, userId)),
             })
           : null,
@@ -334,6 +356,10 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     PlannerService,
     AssetsService,
     ProjectsService,
+    PlatformSettingsService,
+    EntitlementsService,
+    PlanService,
+    PlatformService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

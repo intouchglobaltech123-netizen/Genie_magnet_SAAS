@@ -4,6 +4,8 @@ import type { Request } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import type { createPrisma } from "@gm/db";
 import { AccessService, Public } from "../access/access.js";
+import { EntitlementsService } from "../billing/entitlements.js";
+import { ENV, type Env } from "../env.js";
 import { currentTenant, TenantDb } from "../tenancy/tenant-context.js";
 import { AUTH, AUTH_PRISMA, type Auth } from "./auth.js";
 
@@ -19,6 +21,8 @@ export class MeController {
     @Optional() @Inject(AUTH_PRISMA) private readonly authDb: ReturnType<typeof createPrisma> | null,
     private readonly access: AccessService,
     private readonly tenant: TenantDb,
+    private readonly entitlements: EntitlementsService,
+    @Inject(ENV) private readonly env: Env,
   ) {}
 
   @Get()
@@ -39,7 +43,7 @@ export class MeController {
     if (ctx) {
       const permissions = await this.access.load(ctx);
       const role = await this.tenant.db.role.findUnique({ where: { agencyId_key: { agencyId: ctx.agencyId, key: ctx.role } }, select: { name: true } });
-      active = { agencyId: ctx.agencyId, role: { key: ctx.role, name: role?.name ?? ctx.role }, permissions };
+      active = { agencyId: ctx.agencyId, role: { key: ctx.role, name: role?.name ?? ctx.role }, permissions, entitlements: await this.entitlements.load(ctx) };
     }
 
     return {
@@ -47,7 +51,9 @@ export class MeController {
       activeAgencyId: active?.agencyId ?? null,
       role: active?.role ?? null,
       permissions: active?.permissions ?? null,
+      entitlements: active?.entitlements ?? null,
       agencies: memberships.map((m) => ({ ...m.agency, role: m.role })),
+      platformAdmin: this.env.PLATFORM_ADMIN_EMAILS.includes(session.user.email.toLowerCase()),
     };
   }
 }

@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put } from
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { rtAnswerInput, rtCommitInput, rtHideInput, type RtSessionInput, rtSessionInput } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { RoundTableService } from "./round-table.service.js";
 
@@ -10,6 +10,7 @@ const schema = (s: z.ZodType) => z.toJSONSchema(s, { io: "input" }) as Record<st
 
 /** Round Table (P5-15). */
 @ApiTags("management")
+@Suite("management")
 @Controller("round-tables")
 export class RoundTableController {
   constructor(private readonly rt: RoundTableService) {}

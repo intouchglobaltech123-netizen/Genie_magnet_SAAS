@@ -12,7 +12,7 @@ import {
   playerRatingInput,
   scorecardLines,
 } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { LearningService, skillsInput } from "./learning.service.js";
 import { PerformanceService } from "./performance.service.js";
@@ -32,6 +32,7 @@ const monthOf = (m?: string) => {
 
 /** Performance (P5-11): KRA templates, the month's scorecards, the A–C rating and the leaderboard. */
 @ApiTags("performance")
+@Suite("people")
 @Controller("performance")
 export class PerformanceController {
   constructor(private readonly performance: PerformanceService) {}
@@ -161,6 +162,7 @@ export class PerformanceController {
 
 /** Learning (P5-11): paths, who has which, progress, and the skill matrix. */
 @ApiTags("performance")
+@Suite("people")
 @Controller("learning")
 export class LearningController {
   constructor(private readonly learning: LearningService) {}

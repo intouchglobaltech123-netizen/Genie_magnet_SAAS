@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Pu
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { costRateInput, costSettingsInput, expenseDecision, type ExpenseInput, expenseInput, reopenInput } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { CollectionsService } from "./collections.service.js";
 import { CostingService } from "./costing.service.js";
@@ -14,6 +14,7 @@ const thisMonth = () => new Date().toISOString().slice(0, 7);
 
 /** Expenses (P5-02): anyone submits their own; finance sees all and approves. */
 @ApiTags("finance")
+@Suite("finance")
 @Controller("expenses")
 export class ExpensesController {
   constructor(private readonly expenses: ExpensesService) {}
@@ -65,6 +66,7 @@ export class ExpensesController {
 }
 
 @ApiTags("finance")
+@Suite("finance")
 @Controller("vendors")
 export class VendorsController {
   constructor(private readonly expenses: ExpensesService) {}
@@ -78,6 +80,7 @@ export class VendorsController {
 
 /** The month's money (P5-05), and closing a month. */
 @ApiTags("finance")
+@Suite("finance")
 @Controller("finance")
 export class FinanceController {
   constructor(private readonly report: FinanceReportService) {}
@@ -112,6 +115,7 @@ export class FinanceController {
 
 /** Collections (P5-04): what clients owe, by how late. */
 @ApiTags("finance")
+@Suite("finance")
 @Controller("collections")
 export class CollectionsController {
   constructor(private readonly collections: CollectionsService) {}
@@ -125,6 +129,7 @@ export class CollectionsController {
 
 /** True costing (P5-01, P5-03): rates are restricted like salaries; reports need finance access. */
 @ApiTags("finance")
+@Suite("finance")
 @Controller("costing")
 export class CostingController {
   constructor(private readonly costing: CostingService) {}

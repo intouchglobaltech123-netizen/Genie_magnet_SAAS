@@ -110,6 +110,9 @@ import {
   type DiagnosticView,
   type PlannerData,
   type AssetDetail,
+  type PlanPage,
+  type PlatformAgencyRow,
+  type PlatformSettings,
   type ProjectDetail,
   type ProjectInput,
   type ProjectRow,
@@ -2163,5 +2166,45 @@ export function useProjectAction() {
         qc.invalidateQueries({ queryKey: ["projects"] }),
         ...(v.step === "fromCommitment" || v.step === "status" ? [qc.invalidateQueries({ queryKey: ["reviews", "commitments"] })] : []),
       ]),
+  });
+}
+
+// ─── The plan and the platform console (ADR 0011) ─────────────────────
+
+export const usePlan = () => useQuery({ queryKey: ["plan"], queryFn: () => api<PlanPage>("/plan") });
+
+export function usePlanAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (plan: string) => api<PlanPage>("/plan/choose", { body: { plan } }),
+    onSuccess: (page) => {
+      qc.setQueryData(["plan"], page);
+      // The menu and the banner follow the new plan.
+      return qc.invalidateQueries({ queryKey: keys.me });
+    },
+  });
+}
+
+export const usePlatformAgencies = (enabled = true) =>
+  useQuery({ queryKey: ["platform", "agencies"], queryFn: () => api<PlatformAgencyRow[]>("/platform/agencies"), enabled });
+export const usePlatformSettings = (enabled = true) =>
+  useQuery({ queryKey: ["platform", "settings"], queryFn: () => api<PlatformSettings>("/platform/settings"), enabled });
+
+export function usePlatformConsoleAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "settings"; body: PlatformSettings }
+        | {
+            step: "subscription";
+            agencyId: string;
+            body: { plan: string | null; status: string; trialEndsAt: string | null; currentPeriodEnd: string | null };
+          },
+    ): Promise<unknown> =>
+      v.step === "settings"
+        ? api<PlatformSettings>("/platform/settings", { method: "PUT", body: v.body })
+        : api<PlatformAgencyRow>(`/platform/agencies/${v.agencyId}/subscription`, { method: "PUT", body: v.body }),
+    onSuccess: () => Promise.all([qc.invalidateQueries({ queryKey: ["platform"] }), qc.invalidateQueries({ queryKey: ["plan"] })]),
   });
 }

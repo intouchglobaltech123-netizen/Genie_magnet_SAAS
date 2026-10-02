@@ -97,6 +97,8 @@ const api = spawn(process.execPath, [join(root, "apps/api/dist/main.js")], {
     REQUIRE_EMAIL_VERIFICATION: "false",
     // Background jobs in the same process (ADR 0010): the daily reminders and checks.
     RUN_JOBS: "true",
+    // The sample owner may open the platform console here (ADR 0011); on a real server it is the platform's own team.
+    PLATFORM_ADMIN_EMAILS: process.env.PLATFORM_ADMIN_EMAILS ?? "jana@geniemagnet.test",
   },
 });
 

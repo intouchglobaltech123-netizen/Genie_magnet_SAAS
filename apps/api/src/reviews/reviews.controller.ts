@@ -16,7 +16,7 @@ import {
   REVIEW_CADENCES,
   type ReviewCadence,
 } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { ReviewsService } from "./reviews.service.js";
 
@@ -25,6 +25,7 @@ const cadencePipe = new ZodPipe(z.enum(REVIEW_CADENCES));
 
 /** STOP reviews (P5-14), decisions and commitments (P5-16). */
 @ApiTags("management")
+@Suite("management")
 @Controller()
 export class ReviewsController {
   constructor(private readonly reviews: ReviewsService) {}

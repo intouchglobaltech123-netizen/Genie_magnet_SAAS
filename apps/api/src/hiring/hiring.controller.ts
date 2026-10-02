@@ -15,7 +15,7 @@ import {
   type ScorecardInput,
   scorecardInput,
 } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { HiringService } from "./hiring.service.js";
 
@@ -30,6 +30,7 @@ const answer = z.object({ accepted: z.boolean() });
  * scorecards; approving a hire needs HR approval.
  */
 @ApiTags("hiring")
+@Suite("people")
 @Controller("hiring")
 export class HiringController {
   constructor(private readonly hiring: HiringService) {}

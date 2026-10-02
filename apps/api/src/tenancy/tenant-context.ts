@@ -3,7 +3,7 @@ import { ForbiddenException, Inject, Injectable, type NestMiddleware, Optional, 
 import type { NextFunction, Request, Response } from "express";
 import { fromNodeHeaders } from "better-auth/node";
 import { createPrisma, forAgency, type TenantClient, withAgency } from "@gm/db";
-import { type AreaKey, FULL_ACCESS, OWNER_ROLE, type PermissionMatrix, scopeOf } from "@gm/shared";
+import { type AreaKey, FULL_ACCESS, OWNER_ROLE, type PermissionMatrix, scopeOf, type Entitlements } from "@gm/shared";
 import { AUTH, AUTH_PRISMA, type Auth } from "../auth/auth.js";
 import { locals } from "../common/request-context.js";
 import { ENV, type Env } from "../env.js";
@@ -18,6 +18,8 @@ export interface TenantContext {
   permissions?: PermissionMatrix;
   /** A client contact in their portal (P3-01): everything is limited to this client. */
   portal?: PortalPerson;
+  /** The agency's plan: its suites, limits and whether it is read-only (ADR 0011), read once per request. */
+  entitlements?: Entitlements;
 }
 
 export interface PortalPerson {

@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Pu
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { type ProjectInput, projectInput, type ProjectSettingsInput, projectSettingsInput, type TaskInput, taskInput, taskStatusInput } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { ProjectsService } from "./projects.service.js";
 
@@ -10,6 +10,7 @@ const schema = (s: z.ZodType) => z.toJSONSchema(s, { io: "input" }) as Record<st
 
 /** Projects (P5-21). */
 @ApiTags("operations")
+@Suite("operations")
 @Controller("projects")
 export class ProjectsController {
   constructor(private readonly projects: ProjectsService) {}
@@ -56,6 +57,7 @@ export class ProjectsController {
 
 /** Tasks (P5-21). */
 @ApiTags("operations")
+@Suite("operations")
 @Controller("tasks")
 export class TasksController {
   constructor(private readonly projects: ProjectsService) {}

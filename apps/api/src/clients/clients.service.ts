@@ -15,6 +15,7 @@ import {
   scopeOf,
 } from "@gm/shared";
 import { AuditService, changes } from "../audit/audit.service.js";
+import { PlanService } from "../billing/plan.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { AgreementsService } from "./agreements.service.js";
 
@@ -80,6 +81,7 @@ export class ClientsService {
     private readonly tenant: TenantDb,
     private readonly audit: AuditService,
     private readonly agreements: AgreementsService,
+    private readonly plans: PlanService,
   ) {}
 
   private async names(ids: (string | null)[]) {
@@ -176,6 +178,7 @@ export class ClientsService {
 
   async create(input: ClientInput) {
     const agencyId = this.tenant.agencyId;
+    await this.plans.assertRoom("clients");
     const state = input.state ?? (input.gstin ? gstinState(input.gstin) : undefined);
     if (gstinStateMismatch(input.gstin, state))
       throw new BadRequestException({

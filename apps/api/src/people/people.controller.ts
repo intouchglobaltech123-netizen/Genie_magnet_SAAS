@@ -14,7 +14,7 @@ import {
   leaveRequestInput,
   leaveTypesInput,
 } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { AttendanceService } from "./attendance.service.js";
 import { EmployeesService } from "./employees.service.js";
@@ -26,6 +26,7 @@ const decision = z.object({ approved: z.boolean(), note: z.string().trim().max(5
 
 /** Employee records (P5-06): HR sees everyone; each person sees their own. */
 @ApiTags("people")
+@Suite("people")
 @Controller("people")
 export class PeopleController {
   constructor(private readonly employees: EmployeesService) {}
@@ -79,6 +80,7 @@ export class PeopleController {
 
 /** Attendance (P5-07): imported through Import from Excel; corrections asked for by anyone, decided by HR. */
 @ApiTags("people")
+@Suite("people")
 @Controller("attendance")
 export class AttendanceController {
   constructor(private readonly attendance: AttendanceService) {}
@@ -128,6 +130,7 @@ export class AttendanceController {
 
 /** Leave (P5-08): anyone asks for their own; HR approves and keeps the kinds of leave. */
 @ApiTags("people")
+@Suite("people")
 @Controller("leave")
 export class LeaveController {
   constructor(private readonly leave: LeaveService) {}

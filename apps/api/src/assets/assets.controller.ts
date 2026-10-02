@@ -17,7 +17,7 @@ import {
   type ReturnInput,
   returnInput,
 } from "@gm/shared";
-import { Can } from "../access/access.js";
+import { Can, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { AssetsService } from "./assets.service.js";
 
@@ -25,6 +25,7 @@ const schema = (s: z.ZodType) => z.toJSONSchema(s, { io: "input" }) as Record<st
 
 /** Equipment and assets (P5-20). */
 @ApiTags("operations")
+@Suite("operations")
 @Controller("assets")
 export class AssetsController {
   constructor(private readonly assets: AssetsService) {}

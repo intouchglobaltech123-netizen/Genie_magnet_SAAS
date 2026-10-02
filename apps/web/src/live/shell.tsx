@@ -58,10 +58,12 @@ import {
   PiggyBank,
   Users,
   X,
+  Building,
+  Layers,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
-import type { AreaKey } from "@gm/shared";
+import type { AreaKey, SuiteKey } from "@gm/shared";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -73,7 +75,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/feedback";
+import { Alert, Skeleton } from "@/components/ui/feedback";
 import { BrandMark, BrandWordmark } from "@/components/shell/brand";
 import { cn } from "@/lib/utils";
 import { errorMessage } from "./api";
@@ -90,6 +92,8 @@ interface NavItem {
   /** Shown only to people whose role has at least this access (view unless said) to this area. */
   area?: AreaKey;
   level?: "view" | "edit";
+  /** The add-on suite it is part of: hidden when the agency's plan does not have it (ADR 0011). */
+  suite?: SuiteKey;
 }
 
 const NAV: { title: string; items: NavItem[] }[] = [
@@ -97,7 +101,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
     title: "Workspace",
     items: [
       { title: "Home", href: "/app", icon: Home },
-      { title: "Genie Assistant", href: "/app/genie", icon: Sparkles },
+      { title: "Genie Assistant", href: "/app/genie", icon: Sparkles, suite: "genie" },
       { title: "Sales pipeline", href: "/app/sales", icon: Filter, area: "crm" },
       { title: "Clients", href: "/app/clients", icon: Building2, area: "clients" },
       { title: "Client requests", href: "/app/requests", icon: Inbox, area: "clients" },
@@ -106,9 +110,9 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Content", href: "/app/content", icon: Lightbulb, area: "content" },
       { title: "Production", href: "/app/production", icon: Clapperboard, area: "production" },
       { title: "Shoots", href: "/app/shoots", icon: Camera, area: "production" },
-      { title: "Equipment", href: "/app/assets", icon: Boxes, area: "equipment" },
+      { title: "Equipment", href: "/app/assets", icon: Boxes, area: "equipment", suite: "operations" },
       { title: "Calendar", href: "/app/calendar", icon: CalendarDays, area: "production" },
-      { title: "Projects and tasks", href: "/app/projects", icon: FolderKanban },
+      { title: "Projects and tasks", href: "/app/projects", icon: FolderKanban, suite: "operations" },
       { title: "Publishing", href: "/app/publishing", icon: Megaphone, area: "publishing" },
       { title: "Monthly delivery", href: "/app/cycles", icon: Repeat, area: "production" },
       { title: "Monthly reports", href: "/app/reports", icon: FileBarChart, area: "reports" },
@@ -120,51 +124,52 @@ const NAV: { title: string; items: NavItem[] }[] = [
     title: "Money",
     items: [
       { title: "Invoices", href: "/app/invoices", icon: ReceiptIndianRupee, area: "invoices" },
-      { title: "Expenses", href: "/app/expenses", icon: Wallet },
-      { title: "Costing", href: "/app/costing", icon: Calculator, area: "finance" },
-      { title: "Finance", href: "/app/finance", icon: Landmark, area: "finance" },
+      { title: "Expenses", href: "/app/expenses", icon: Wallet, suite: "finance" },
+      { title: "Costing", href: "/app/costing", icon: Calculator, area: "finance", suite: "finance" },
+      { title: "Finance", href: "/app/finance", icon: Landmark, area: "finance", suite: "finance" },
     ],
   },
   {
     title: "People",
     items: [
-      { title: "People", href: "/app/people", icon: Contact },
-      { title: "Attendance", href: "/app/attendance", icon: Fingerprint },
-      { title: "Leave", href: "/app/leave", icon: CalendarOff },
-      { title: "Daily sheet", href: "/app/daily-sheet", icon: ClipboardList },
-      { title: "Hiring", href: "/app/hiring", icon: Briefcase, area: "hr" },
-      { title: "Performance", href: "/app/performance", icon: Gauge },
-      { title: "Learning", href: "/app/learning", icon: GraduationCap },
-      { title: "Payroll", href: "/app/payroll", icon: Banknote, area: "salaries" },
-      { title: "My payslips", href: "/app/payslips", icon: ReceiptText },
-      { title: "My financial planner", href: "/app/planner", icon: PiggyBank, area: "personal_finance" },
+      { title: "People", href: "/app/people", icon: Contact, suite: "people" },
+      { title: "Attendance", href: "/app/attendance", icon: Fingerprint, suite: "people" },
+      { title: "Leave", href: "/app/leave", icon: CalendarOff, suite: "people" },
+      { title: "Daily sheet", href: "/app/daily-sheet", icon: ClipboardList, suite: "people" },
+      { title: "Hiring", href: "/app/hiring", icon: Briefcase, area: "hr", suite: "people" },
+      { title: "Performance", href: "/app/performance", icon: Gauge, suite: "people" },
+      { title: "Learning", href: "/app/learning", icon: GraduationCap, suite: "people" },
+      { title: "Payroll", href: "/app/payroll", icon: Banknote, area: "salaries", suite: "people" },
+      { title: "My payslips", href: "/app/payslips", icon: ReceiptText, suite: "people" },
+      { title: "My financial planner", href: "/app/planner", icon: PiggyBank, area: "personal_finance", suite: "people" },
     ],
   },
   {
     title: "Management",
     items: [
-      { title: "Goals", href: "/app/goals", icon: Target },
-      { title: "Reviews", href: "/app/reviews", icon: CalendarCheck },
-      { title: "Round Table", href: "/app/round-table", icon: Users },
-      { title: "SOPs and checklists", href: "/app/sops", icon: ListChecks },
-      { title: "Business diagnostic", href: "/app/diagnostic", icon: Stethoscope, area: "reports" },
+      { title: "Goals", href: "/app/goals", icon: Target, suite: "management" },
+      { title: "Reviews", href: "/app/reviews", icon: CalendarCheck, suite: "management" },
+      { title: "Round Table", href: "/app/round-table", icon: Users, suite: "management" },
+      { title: "SOPs and checklists", href: "/app/sops", icon: ListChecks, suite: "management" },
+      { title: "Business diagnostic", href: "/app/diagnostic", icon: Stethoscope, area: "reports", suite: "management" },
     ],
   },
   {
     title: "Settings",
     items: [
+      { title: "Plan", href: "/app/settings/plan", icon: Layers },
       { title: "Agency profile", href: "/app/settings/agency", icon: Landmark, area: "settings" },
       { title: "Packages", href: "/app/settings/packages", icon: Package },
       { title: "Pipeline stages", href: "/app/settings/pipeline", icon: ListOrdered, area: "settings" },
       { title: "Invoice settings", href: "/app/settings/invoices", icon: Receipt, area: "invoices" },
-      { title: "Costing", href: "/app/settings/costing", icon: Calculator, area: "finance" },
+      { title: "Costing", href: "/app/settings/costing", icon: Calculator, area: "finance", suite: "finance" },
       { title: "Onboarding questions", href: "/app/settings/onboarding", icon: ListChecks, area: "onboarding" },
       { title: "Production", href: "/app/settings/production", icon: SlidersHorizontal, area: "production" },
       { title: "Team", href: "/app/settings/team", icon: Users, area: "team" },
       { title: "Roles and permissions", href: "/app/settings/roles", icon: ShieldCheck, area: "team" },
       { title: "WhatsApp", href: "/app/settings/whatsapp", icon: MessageCircle, area: "settings" },
       { title: "Payments", href: "/app/settings/payments", icon: CreditCard, area: "settings" },
-      { title: "Genie Assistant", href: "/app/settings/genie", icon: Sparkles, area: "settings" },
+      { title: "Genie Assistant", href: "/app/settings/genie", icon: Sparkles, area: "settings", suite: "genie" },
       { title: "Background jobs", href: "/app/settings/jobs", icon: Timer, area: "settings" },
       { title: "Audit log", href: "/app/audit", icon: History, area: "audit" },
     ],
@@ -174,10 +179,12 @@ const NAV: { title: string; items: NavItem[] }[] = [
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const can = useCan();
+  const plan = useMe().data?.entitlements;
+  const has = (suite?: SuiteKey) => !suite || !plan || plan.suites.includes(suite);
   return (
     <nav className="scrollbar-thin flex-1 space-y-5 overflow-y-auto px-3 pb-6 pt-2" aria-label="Main">
       {NAV.map((section) => {
-        const items = section.items.filter((i) => !i.area || can(i.area, i.level ?? "view"));
+        const items = section.items.filter((i) => (!i.area || can(i.area, i.level ?? "view")) && has(i.suite));
         if (!items.length) return null;
         return (
           <div key={section.title}>
@@ -298,6 +305,12 @@ function UserMenu() {
           )}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {me.platformAdmin && (
+          <DropdownMenuItem onSelect={() => router.push("/app/platform")}>
+            <Building className="size-4" />
+            Platform console
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem
           onSelect={() =>
             signOut.mutate(undefined, {
@@ -312,6 +325,41 @@ function UserMenu() {
       </DropdownMenuContent>
     </DropdownMenu>
   );
+}
+
+/** The plan's state above every page (ADR 0011): read-only and why, a payment due, or the trial's days left. */
+function PlanBanner() {
+  const plan = useMe().data?.entitlements;
+  const pathname = usePathname();
+  const [today] = useState(() => Date.now());
+  if (!plan?.status || pathname.startsWith("/app/settings/plan")) return null;
+  const link = (
+    <Link href="/app/settings/plan" className="font-medium underline underline-offset-2">
+      Settings → Plan
+    </Link>
+  );
+  if (plan.readOnly)
+    return (
+      <Alert tone="danger" className="mb-5 print:hidden">
+        {plan.readOnlyReason?.replace("Settings → Plan", "") ?? "This workspace is read-only."} {link}
+      </Alert>
+    );
+  if (plan.status === "past_due")
+    return (
+      <Alert tone="warning" className="mb-5 print:hidden">
+        A payment is due. Pay it in {link} to keep working without a break.
+      </Alert>
+    );
+  if (plan.status === "trialing" && plan.trialEndsAt) {
+    const left = Math.max(0, Math.ceil((new Date(plan.trialEndsAt).getTime() - today) / 86_400_000));
+    if (left > 7) return null;
+    return (
+      <Alert tone="info" className="mb-5 print:hidden">
+        {left === 0 ? "The trial ends today" : `${left} ${left === 1 ? "day" : "days"} left in the trial`} of {plan.plan?.name}. Choose a plan in {link}.
+      </Alert>
+    );
+  }
+  return null;
 }
 
 function toggleTheme() {
@@ -420,7 +468,10 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
             <UserMenu />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 print:max-w-none print:p-0">{children}</main>
+        <main className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 print:max-w-none print:p-0">
+          <PlanBanner />
+          {children}
+        </main>
       </div>
     </div>
   );

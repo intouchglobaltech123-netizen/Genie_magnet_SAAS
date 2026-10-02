@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { sopCheckInput, type SopInput, sopInput, type SopRunInput, sopRunInput, type SopVersionInput, sopVersionInput } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { SopsService } from "./sops.service.js";
 
@@ -13,6 +13,7 @@ const decision = z
 
 /** SOPs and checklists (P5-17). */
 @ApiTags("management")
+@Suite("management")
 @Controller("sops")
 export class SopsController {
   constructor(private readonly sops: SopsService) {}

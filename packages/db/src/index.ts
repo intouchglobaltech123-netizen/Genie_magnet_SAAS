@@ -14,6 +14,7 @@ export {
   type TenantTx,
 } from "./tenancy.js";
 export { claimJobs, releaseStuckJobs, scheduleJobs, type ClaimedJob, type ScheduledJob } from "./jobs.js";
+export { asPlatform } from "./platform.js";
 export { ensureDefaultQuestionnaires, ensureDefaultRoles, ensureDefaultStages, setUpAgencyDefaults } from "./defaults.js";
 
 /**

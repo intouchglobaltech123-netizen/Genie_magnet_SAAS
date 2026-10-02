@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Pu
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { type PayrollSettingsInput, payrollMonth, payrollSettingsInput, type PayslipChange, payslipChange, type SalaryInput, salaryInput } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { PayrollService } from "./payroll.service.js";
 
@@ -17,6 +17,7 @@ const unlock = z.object({ reason: z.string().trim().min(3, "Say why it is unlock
  * owner by default; locking and the bank sheet need approval.
  */
 @ApiTags("payroll")
+@Suite("people")
 @Controller("payroll")
 export class PayrollController {
   constructor(private readonly payroll: PayrollService) {}
@@ -116,6 +117,7 @@ export class PayrollController {
 
 /** Each person's own payslips, once their month is locked. */
 @ApiTags("payroll")
+@Suite("people")
 @Controller("payslips")
 export class PayslipsController {
   constructor(private readonly payroll: PayrollService) {}

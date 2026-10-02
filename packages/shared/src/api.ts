@@ -1,5 +1,6 @@
 // What the API returns, as the web app receives it (dates are ISO strings). The API's e2e tests check these shapes.
 import type { PermissionMatrix } from "./permissions.js";
+import type { Entitlements } from "./plans.js";
 import type { BusinessStage } from "./enums.js";
 import type { ImportKind, ImportReport } from "./imports.js";
 import type { ConnectionStatus, PostStatus } from "./social.js";
@@ -24,7 +25,11 @@ export interface Me {
   activeAgencyId: string | null;
   role: RoleRef | null;
   permissions: PermissionMatrix | null;
+  /** The active agency's plan: its suites, limits, and whether it is read-only (ADR 0011). */
+  entitlements: Entitlements | null;
   agencies: { id: string; name: string; slug: string; logo: string | null; role: string }[];
+  /** On the platform's own team: may open the platform console. */
+  platformAdmin: boolean;
 }
 
 /** GET /team */

@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Pu
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { type SheetInput, sheetInput, sheetSettingsInput, type SheetTemplateInput, sheetTemplateInput } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { DailySheetService } from "./daily-sheet.service.js";
 
@@ -13,6 +13,7 @@ const today = () => new Date(Date.now() + 330 * 60_000).toISOString().slice(0, 1
 
 /** The daily data sheet (P5-12). */
 @ApiTags("people")
+@Suite("people")
 @Controller("daily-sheets")
 export class DailySheetController {
   constructor(private readonly sheets: DailySheetService) {}

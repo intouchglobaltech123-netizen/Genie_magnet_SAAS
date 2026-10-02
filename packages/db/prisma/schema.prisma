@@ -2759,3 +2759,33 @@ model ProjectSettings {
 
   @@map("project_settings")
 }
+
+// ───────────────────────────── Plans and the platform (P6-01 to P6-03, ADR 0011) ─────────────────────────────
+
+/// The platform's own settings: brand, trial, grace period, plans and our invoice details. One row.
+model PlatformSettings {
+  id        Int      @id @default(1)
+  data      Json
+  updatedBy String?  @map("updated_by")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("platform_settings")
+}
+
+/// An agency's plan and where it stands with paying. No row: every suite and no limits.
+model Subscription {
+  agencyId         String    @id @map("agency_id") @db.Uuid
+  planKey          String    @map("plan_key")
+  /// trialing · active · past_due · expired · cancelled
+  status           String    @default("trialing")
+  trialEndsAt      DateTime? @map("trial_ends_at")
+  currentPeriodEnd DateTime? @map("current_period_end")
+  graceUntil       DateTime? @map("grace_until")
+  /// outbox · razorpay · stripe
+  provider         String    @default("outbox")
+  providerRef      String?   @map("provider_ref")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("subscriptions")
+}

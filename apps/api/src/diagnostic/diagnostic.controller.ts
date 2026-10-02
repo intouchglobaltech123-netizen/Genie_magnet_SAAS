@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Pu
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { type DiagnosticInput, diagnosticInput, FITMENT_QUADRANTS, type RoadMapInput, roadMapInput, type ScenarioInput, scenarioInput } from "@gm/shared";
-import { Can } from "../access/access.js";
+import { Can, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { DiagnosticService } from "./diagnostic.service.js";
 
@@ -11,6 +11,7 @@ const fitment = z.object({ fitment: z.enum(FITMENT_QUADRANTS).nullable() });
 
 /** The business diagnostic, road map and scenarios (P5-18): seen by those who may see reviews, changed by those who may edit them. */
 @ApiTags("management")
+@Suite("management")
 @Controller()
 export class DiagnosticController {
   constructor(private readonly diagnostic: DiagnosticService) {}

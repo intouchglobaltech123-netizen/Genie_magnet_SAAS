@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Pu
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { aiSettingsInput, askInput, type DraftRequest, draftDecision, draftRequest, evaluationInput, genieRulesInput, insightDecisionInput } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { RateLimit } from "../common/rate-limit.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { AskService } from "./ask.service.js";
@@ -13,6 +13,7 @@ const schema = (s: z.ZodType) => z.toJSONSchema(s, { io: "input" }) as Record<st
 
 /** Genie Assistant: its rules (Settings → Genie Assistant) and the insights they raise. */
 @ApiTags("genie")
+@Suite("genie")
 @Controller("genie")
 export class GenieController {
   constructor(

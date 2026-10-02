@@ -2,7 +2,7 @@ import { Body, Controller, Get, Injectable, Put, UnauthorizedException } from "@
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { type PlannerData, plannerData } from "@gm/shared";
-import { Can } from "../access/access.js";
+import { Can, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 
@@ -37,6 +37,7 @@ export class PlannerService {
 }
 
 @ApiTags("people")
+@Suite("people")
 @Controller("planner")
 export class PlannerController {
   constructor(private readonly planner: PlannerService) {}

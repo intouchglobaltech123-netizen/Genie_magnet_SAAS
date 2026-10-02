@@ -91,6 +91,16 @@ export const envSchema = z
      * the stand-in (staging).
      */
     ANTHROPIC_API_KEY: z.string().optional(),
+    /** The platform's own team (ADR 0011): addresses that may open the platform console, comma-separated. */
+    PLATFORM_ADMIN_EMAILS: z
+      .string()
+      .default("")
+      .transform((s) =>
+        s
+          .split(",")
+          .map((x) => x.trim().toLowerCase())
+          .filter(Boolean),
+      ),
     GENIE_AI: z.enum(["claude", "stand-in", "off"]).optional(),
     GENIE_MODEL: z.string().default("claude-opus-5-5"),
     /** What the model costs us, to meter each agency's budget: US dollars per million tokens, and rupees per dollar. */

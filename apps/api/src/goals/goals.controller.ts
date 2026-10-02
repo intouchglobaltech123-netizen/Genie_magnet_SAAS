@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Post, Pu
 import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { type CascadeInputs, cascadeInputs, type CheckInInput, checkInInput, type GoalInput, goalInput, goalSettingsInput } from "@gm/shared";
-import { Can, Staff } from "../access/access.js";
+import { Can, Staff, Suite } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { cascadeApply, GoalsService } from "./goals.service.js";
 
@@ -10,6 +10,7 @@ const schema = (s: z.ZodType) => z.toJSONSchema(s, { io: "input" }) as Record<st
 
 /** Goals (P5-13): kept by those who may edit goals; everyone sees their own and what they serve. */
 @ApiTags("management")
+@Suite("management")
 @Controller("goals")
 export class GoalsController {
   constructor(private readonly goals: GoalsService) {}

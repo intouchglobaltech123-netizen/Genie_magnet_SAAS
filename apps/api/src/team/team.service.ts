@@ -2,6 +2,7 @@ import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundExce
 import { type InvitationInput, type MemberUpdate, OWNER_ROLE } from "@gm/shared";
 import { AuditService, changes } from "../audit/audit.service.js";
 import { Outbox } from "../auth/outbox.js";
+import { PlanService } from "../billing/plan.service.js";
 import { ENV, type Env } from "../env.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { matrixOf, RolesService } from "./roles.service.js";
@@ -21,6 +22,7 @@ export class TeamService {
     private readonly audit: AuditService,
     private readonly outbox: Outbox,
     @Inject(ENV) private readonly env: Env,
+    private readonly plans: PlanService,
   ) {}
 
   async list() {
@@ -66,6 +68,8 @@ export class TeamService {
     if (!inviterId) throw new UnauthorizedException("Sign in to invite people.");
     const role = await this.roles.find(input.role);
     this.assertMayGive(role.key, matrixOf(role));
+    // The plan's room for people on the team (client people do not count).
+    if (!role.isClient) await this.plans.assertRoom("users");
 
     const existing = await this.tenant.db.user.findFirst({ where: { email: input.email, memberships: { some: { agencyId } } }, select: { id: true } });
     if (existing) throw new ConflictException(`${input.email} is already in this agency.`);
