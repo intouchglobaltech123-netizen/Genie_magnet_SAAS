@@ -62,7 +62,15 @@ export class GoalMetrics {
   }
 
   /** The cascade's inputs from the last twelve months, each with how it was found. */
-  async history(revenueTarget: number | null, today: string): Promise<Pick<CascadeView, "history" | "basis">> {
+  /**
+   * The cascade's figures from the agency's own year; where the app has no history yet, from what the agency
+   * questionnaire says (this year's revenue so far and target, and its customers' average billing).
+   */
+  async history(
+    revenueTarget: number | null,
+    today: string,
+    stated: { target: number | null; current: number | null; avgBilling: number | null } = { target: null, current: null, avgBilling: null },
+  ): Promise<Pick<CascadeView, "history" | "basis">> {
     const db = this.tenant.db;
     const now = utc(today);
     const yearAgo = new Date(now.getTime() - 365 * DAY);
@@ -82,8 +90,12 @@ export class GoalMetrics {
     const basis: CascadeView["basis"] = {};
     const usual = "No history yet — a usual figure; change it";
 
-    const baseBook = running.reduce((s, r) => s + r.monthlyFee, 0) * 12;
+    let baseBook = running.reduce((s, r) => s + r.monthlyFee, 0) * 12;
     basis.baseBook = `${running.length} running ${running.length === 1 ? "agreement" : "agreements"}, for a year`;
+    if (!running.length && stated.current) {
+      baseBook = stated.current;
+      basis.baseBook = "The agency questionnaire: this year's revenue so far, for a year";
+    }
 
     let retention = 0.85;
     if (ended.length) {
@@ -97,6 +109,9 @@ export class GoalMetrics {
     if (newDeals.length) {
       avgDeal = Math.round((newDeals.reduce((s, d) => s + d.monthlyFee, 0) / newDeals.length) * 12);
       basis.avgDeal = `${newDeals.length} new ${newDeals.length === 1 ? "client" : "clients"} in the last year, for a year`;
+    } else if (stated.avgBilling) {
+      avgDeal = stated.avgBilling;
+      basis.avgDeal = "The agency questionnaire: its customers' average billing a year";
     } else basis.avgDeal = usual;
 
     const won = decided.find((d) => d.status === "accepted")?._count._all ?? 0;
@@ -139,9 +154,13 @@ export class GoalMetrics {
     basis.currentLoad = `Videos a month promised across the ${running.length} running agreements`;
     basis.videosPerClient = perClient.length ? "The running agreements' average" : usual;
 
-    basis.revenueTarget = revenueTarget ? "The company's revenue goal" : "No company revenue goal yet — a quarter more than the book";
+    basis.revenueTarget = revenueTarget
+      ? "The company's revenue goal"
+      : stated.target
+        ? "The agency questionnaire: this year's revenue target"
+        : "No company revenue goal yet — a quarter more than the book";
     const history: CascadeInputs = {
-      revenueTarget: revenueTarget ?? Math.round(baseBook * 1.25),
+      revenueTarget: revenueTarget ?? stated.target ?? Math.round(baseBook * 1.25),
       baseBook,
       retention,
       churn: 0.05,

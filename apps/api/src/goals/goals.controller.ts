@@ -46,6 +46,13 @@ export class GoalsController {
     return this.goals.saveCascade(b);
   }
 
+  @Post("from-questionnaire")
+  @Can("reports", "edit")
+  @HttpCode(200)
+  fromQuestionnaire() {
+    return this.goals.fromQuestionnaire();
+  }
+
   @Post("cascade/apply")
   @Can("reports", "edit")
   @HttpCode(200)

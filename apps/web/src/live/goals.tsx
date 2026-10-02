@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Calculator, ChevronRight, Flag, Plus, RotateCcw, Target, Trash2, TrendingDown, TrendingUp } from "lucide-react";
+import { Calculator, ChevronRight, ClipboardList, Flag, Plus, RotateCcw, Target, Trash2, TrendingDown, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import {
   cascade,
@@ -584,6 +584,7 @@ export function LiveGoals({ goalId }: { goalId?: string }) {
   const roots = list.filter((g) => !g.parentId || !ids.has(g.parentId));
   const mine = list.filter((g) => g.owners.some((o) => o.id === me.user.id));
   const current = list.find((g) => g.id === open);
+  const act = useGoalAction();
   return (
     <>
       <PageHeader
@@ -591,10 +592,29 @@ export function LiveGoals({ goalId }: { goalId?: string }) {
         description="The company's goals, each department's serving them, and each person's — with what the app knows filled in, and check-ins."
         actions={
           can("reports", "edit") && (
-            <Button onClick={() => setForm({ goal: null })}>
-              <Plus />
-              New goal
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                disabled={act.isPending}
+                title="The financial year's revenue goal and its quarters, from the agency questionnaire's goals"
+                onClick={() =>
+                  act.mutate(
+                    { step: "fromQuestionnaire" },
+                    {
+                      onSuccess: (made) => toast.success(`${(made as GoalRow[]).length} goals from the agency questionnaire`),
+                      onError: (e) => toast.error(errorMessage(e)),
+                    },
+                  )
+                }
+              >
+                <ClipboardList />
+                From the questionnaire
+              </Button>
+              <Button onClick={() => setForm({ goal: null })}>
+                <Plus />
+                New goal
+              </Button>
+            </>
           )
         }
       />

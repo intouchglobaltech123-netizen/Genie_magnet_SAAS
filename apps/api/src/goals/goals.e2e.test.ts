@@ -191,3 +191,56 @@ describe("goals", () => {
     await zara.get(`/goals/${company.id}`).expect(404);
   });
 });
+
+describe("goals from the agency questionnaire", () => {
+  // The financial year (April to March) today falls in.
+  const fyStart = Number(day(0).slice(0, 4)) - (Number(day(0).slice(5, 7)) < 4 ? 1 : 0);
+  const FY = `${fyStart}–${String(fyStart + 1).slice(2)}`;
+
+  it("make the financial year's revenue goal and a goal for each quarter it gives, updated when taken again", async () => {
+    await ashwin.post("/goals/from-questionnaire").expect(409); // nothing answered yet
+    const o = (await jana.post("/onboarding/agency").expect(201)).body as { id: string };
+    const answer = (key: string, value: unknown) => jana.put(`/onboarding/${o.id}/answers/${key}`).send({ value }).expect(200);
+    await answer("a13", "The go-to video agency in Kongu Nadu, so the founder can step back");
+    await answer("a14b", "72,00,000");
+    await answer("a15", [
+      { row: "Q1 Apr–Jun", revenue: "15,00,000", margin: "18" },
+      { row: "Q2 Jul–Sep", revenue: "17,00,000", margin: "20" },
+      { row: "Q3 Oct–Dec", revenue: "19,00,000" },
+      { row: "Q4 Jan–Mar", revenue: "" },
+    ]);
+    await divya.post("/goals/from-questionnaire").expect(403);
+    const made = (await ashwin.post("/goals/from-questionnaire").expect(200)).body as GoalRow[];
+    const [year, ...quarters] = made;
+    expect(year).toMatchObject({
+      level: "company",
+      title: `Revenue for ${FY}`,
+      type: "financial",
+      unit: "inr",
+      metric: "invoiced",
+      target: 7_200_000,
+      startDate: `${fyStart}-04-01`,
+      dueDate: `${fyStart + 1}-03-31`,
+      smart: expect.objectContaining({ relevant: "The go-to video agency in Kongu Nadu, so the founder can step back" }),
+    });
+    expect(quarters.map((g) => [g.title, g.target, g.parentId, g.startDate, g.dueDate, g.measure])).toEqual([
+      [`Revenue for Q1 Apr–Jun ${FY}`, 1_500_000, year!.id, `${fyStart}-04-01`, `${fyStart}-06-30`, "Invoiced in the quarter, at a net margin of 18%"],
+      [`Revenue for Q2 Jul–Sep ${FY}`, 1_700_000, year!.id, `${fyStart}-07-01`, `${fyStart}-09-30`, "Invoiced in the quarter, at a net margin of 20%"],
+      [`Revenue for Q3 Oct–Dec ${FY}`, 1_900_000, year!.id, `${fyStart}-10-01`, `${fyStart}-12-31`, "Invoiced in the quarter"],
+    ]);
+    // The questionnaire changes at the next strategic review; taking it again moves the targets, adding nothing.
+    await answer("a14b", "80,00,000");
+    const again = (await ashwin.post("/goals/from-questionnaire").expect(200)).body as GoalRow[];
+    expect(again.map((g) => g.id)).toEqual(made.map((g) => g.id));
+    expect(again[0]!.target).toBe(8_000_000);
+  });
+
+  it("start the revenue cascade where the agency has no revenue goal or history of its own", async () => {
+    const zara = await t.signInAs("zara@zenstudio.test");
+    const o = (await zara.post("/onboarding/agency").expect(201)).body as { id: string };
+    await zara.put(`/onboarding/${o.id}/answers/a14b`).send({ value: "36,00,000" }).expect(200);
+    const view = (await zara.get("/goals/cascade").expect(200)).body as CascadeView;
+    expect(view.history.revenueTarget).toBe(3_600_000);
+    expect(view.basis.revenueTarget).toBe("The agency questionnaire: this year's revenue target");
+  });
+});

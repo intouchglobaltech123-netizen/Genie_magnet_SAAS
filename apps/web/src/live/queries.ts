@@ -1629,7 +1629,8 @@ export function useGoalAction() {
         | { step: "checkIn"; id: string; body: CheckInInput }
         | { step: "settings"; body: GoalSettings }
         | { step: "cascade"; body: CascadeInputs }
-        | { step: "apply"; links: { goalId: string; figure: string }[] },
+        | { step: "apply"; links: { goalId: string; figure: string }[] }
+        | { step: "fromQuestionnaire" },
     ) => {
       switch (v.step) {
         case "save":
@@ -1644,6 +1645,8 @@ export function useGoalAction() {
           return api("/goals/cascade", { method: "PUT", body: v.body });
         case "apply":
           return api("/goals/cascade/apply", { body: { links: v.links } });
+        case "fromQuestionnaire":
+          return api<GoalRow[]>("/goals/from-questionnaire", { method: "POST" });
       }
     },
     onSuccess: () => void qc.invalidateQueries({ queryKey: ["goals"] }),

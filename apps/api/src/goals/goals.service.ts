@@ -29,6 +29,28 @@ const IST = 330 * 60_000;
 const todayIST = () => new Date(Date.now() + IST).toISOString().slice(0, 10);
 const day = (d: Date) => d.toISOString().slice(0, 10);
 const utc = (d: string) => new Date(`${d}T00:00:00Z`);
+
+/** A figure from an answer: a number, or one written with commas ("15,00,000"). */
+const amount = (v: unknown) => {
+  const n = typeof v === "number" ? v : typeof v === "string" ? Number(v.replace(/[^0-9.]/g, "")) : NaN;
+  return Number.isFinite(n) && n > 0 ? n : null;
+};
+
+/** The financial year a day falls in (April to March), with its quarters. */
+function financialYear(today: string) {
+  const y = Number(today.slice(0, 4)) - (Number(today.slice(5, 7)) < 4 ? 1 : 0);
+  return {
+    label: `${y}–${String(y + 1).slice(2)}`,
+    start: `${y}-04-01`,
+    end: `${y + 1}-03-31`,
+    quarters: [
+      { label: "Q1 Apr–Jun", start: `${y}-04-01`, end: `${y}-06-30` },
+      { label: "Q2 Jul–Sep", start: `${y}-07-01`, end: `${y}-09-30` },
+      { label: "Q3 Oct–Dec", start: `${y}-10-01`, end: `${y}-12-31` },
+      { label: "Q4 Jan–Mar", start: `${y + 1}-01-01`, end: `${y + 1}-03-31` },
+    ],
+  };
+}
 type Row = Prisma.GoalGetPayload<{ include: { checkIns: true } }>;
 
 /** Which cascade figure becomes which goal's target. */
@@ -211,14 +233,116 @@ export class GoalsService {
     return this.get(id);
   }
 
+  // ─── From the agency questionnaire ──────────────────────────────────
+
+  /** What the agency questionnaire says about the year: its aspiration, revenue so far and target, quarters and customers. */
+  private async questionnaire() {
+    const response = await this.tenant.db.questionnaireResponse.findFirst({
+      where: { clientId: null, template: { kind: "agency" } },
+      include: { answers: { where: { questionKey: { in: ["a5", "a13", "a14", "a14b", "a15"] } } } },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!response) return null;
+    const answer = (k: string) => response.answers.find((a) => a.questionKey === k)?.value;
+    const rows = (k: string) => (Array.isArray(answer(k)) ? (answer(k) as Record<string, unknown>[]) : []);
+    const customers = rows("a5")
+      .map((r) => ({ count: amount(r.count) ?? 0, billing: amount(r.billing) ?? 0 }))
+      .filter((r) => r.count > 0 && r.billing > 0);
+    const clients = customers.reduce((s, r) => s + r.count, 0);
+    return {
+      aspiration: typeof answer("a13") === "string" ? (answer("a13") as string).trim() : "",
+      current: amount(answer("a14")),
+      target: amount(answer("a14b")),
+      avgBilling: clients ? Math.round(customers.reduce((s, r) => s + r.count * r.billing, 0) / clients) : null,
+      quarters: rows("a15").map((r) => ({ row: String(r.row ?? ""), revenue: amount(r.revenue), margin: amount(r.margin) })),
+    };
+  }
+
+  /**
+   * The financial year's revenue goal from the agency questionnaire's target (its aspiration as the reason), and a
+   * goal for each quarter it gives, serving it. Taken again, it updates the targets rather than adding goals.
+   */
+  async fromQuestionnaire() {
+    const q = await this.questionnaire();
+    if (!q?.target) throw new ConflictException("The agency questionnaire has no revenue target for this year yet — fill in its goals first.");
+    const fy = financialYear(todayIST());
+    const me = this.tenant.userId ?? "";
+    const yearly = {
+      level: "company" as const,
+      title: `Revenue for ${fy.label}`,
+      type: "financial" as const,
+      unit: "inr" as const,
+      metric: "invoiced" as const,
+      measure: "Invoiced in the financial year — the agency questionnaire's target",
+      cadence: "strategic" as const,
+    };
+    const ids = await this.tenant.tx(async (tx) => {
+      const existing = await tx.goal.findFirst({ where: { level: "company", parentId: null, unit: "inr", metric: "invoiced", startDate: utc(fy.start) } });
+      const smart = { specific: "", measurable: "", achievable: "", relevant: q.aspiration.slice(0, 1000), timeBound: `By ${fy.end}` };
+      const year = existing
+        ? await tx.goal.update({ where: { id: existing.id }, data: { target: q.target!, smart } })
+        : await tx.goal.create({
+            data: {
+              agencyId: this.tenant.agencyId,
+              ...yearly,
+              ownerIds: me ? [me] : [],
+              target: q.target!,
+              startDate: utc(fy.start),
+              dueDate: utc(fy.end),
+              smart,
+              createdBy: me || null,
+            },
+          });
+      const made = [year.id];
+      for (const [i, quarter] of fy.quarters.entries()) {
+        const given = q.quarters.find((r) => r.row.startsWith(`Q${i + 1}`)) ?? q.quarters[i];
+        if (!given?.revenue) continue;
+        const data = {
+          title: `Revenue for ${quarter.label} ${fy.label}`,
+          target: given.revenue,
+          measure: given.margin !== null ? `Invoiced in the quarter, at a net margin of ${given.margin}%` : "Invoiced in the quarter",
+        };
+        const had = await tx.goal.findFirst({ where: { parentId: year.id, startDate: utc(quarter.start) } });
+        const row = had
+          ? await tx.goal.update({ where: { id: had.id }, data })
+          : await tx.goal.create({
+              data: {
+                agencyId: this.tenant.agencyId,
+                ...yearly,
+                ...data,
+                parentId: year.id,
+                ownerIds: me ? [me] : [],
+                startDate: utc(quarter.start),
+                dueDate: utc(quarter.end),
+                createdBy: me || null,
+              },
+            });
+        made.push(row.id);
+      }
+      await this.audit.record(tx, {
+        action: existing ? "update" : "create",
+        entity: "goal",
+        entityId: year.id,
+        after: { fromQuestionnaire: true, target: q.target },
+      });
+      return made;
+    });
+    return Promise.all(ids.map((id) => this.get(id)));
+  }
+
   // ─── The revenue cascade ────────────────────────────────────────────
 
   async cascadeView(): Promise<CascadeView> {
-    const [s, revenueGoal] = await Promise.all([
+    const [s, revenueGoal, q] = await Promise.all([
       this.tenant.db.goalSettings.findUnique({ where: { agencyId: this.tenant.agencyId } }),
       this.tenant.db.goal.findFirst({ where: { level: "company", unit: "inr" }, orderBy: [{ type: "asc" }, { createdAt: "asc" }], select: { target: true } }),
+      this.questionnaire(),
     ]);
-    const { history, basis } = await this.metrics.history(revenueGoal?.target ?? null, todayIST());
+    const { history, basis } = await this.metrics.history(revenueGoal?.target ?? null, todayIST(), {
+      target: q?.target ?? null,
+      current: q?.current ?? null,
+      avgBilling: q?.avgBilling ?? null,
+    });
     return { history, basis, saved: s?.cascade ? cascadeInputs.parse(s.cascade) : null };
   }
 
