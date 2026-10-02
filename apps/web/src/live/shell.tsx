@@ -48,6 +48,8 @@ import {
   Banknote,
   ReceiptText,
   Briefcase,
+  Gauge,
+  GraduationCap,
   Users,
   X,
 } from "lucide-react";
@@ -111,6 +113,8 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Attendance", href: "/app/attendance", icon: Fingerprint },
       { title: "Leave", href: "/app/leave", icon: CalendarOff },
       { title: "Hiring", href: "/app/hiring", icon: Briefcase, area: "hr" },
+      { title: "Performance", href: "/app/performance", icon: Gauge },
+      { title: "Learning", href: "/app/learning", icon: GraduationCap },
       { title: "Payroll", href: "/app/payroll", icon: Banknote, area: "salaries" },
       { title: "My payslips", href: "/app/payslips", icon: ReceiptText },
       { title: "Import from Excel", href: "/app/import", icon: FileSpreadsheet, area: "clients", level: "edit" },

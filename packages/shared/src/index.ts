@@ -8,6 +8,7 @@ export * from "./genie.js";
 export * from "./finance.js";
 export * from "./hiring.js";
 export * from "./payroll.js";
+export * from "./performance.js";
 export * from "./people.js";
 export * from "./pipeline.js";
 export * from "./gst.js";

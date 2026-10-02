@@ -79,6 +79,10 @@ import { LeaveService } from "./people/leave.service.js";
 import { AttendanceController, LeaveController, PeopleController } from "./people/people.controller.js";
 import { PayrollController, PayslipsController } from "./payroll/payroll.controller.js";
 import { HiringController } from "./hiring/hiring.controller.js";
+import { LearningService } from "./performance/learning.service.js";
+import { PerformanceMetrics } from "./performance/metrics.js";
+import { LearningController, PerformanceController } from "./performance/performance.controller.js";
+import { PerformanceService } from "./performance/performance.service.js";
 import { HiringService } from "./hiring/hiring.service.js";
 import { PayrollLock } from "./payroll/payroll-lock.js";
 import { PayrollService } from "./payroll/payroll.service.js";
@@ -166,6 +170,8 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     PayrollController,
     PayslipsController,
     HiringController,
+    PerformanceController,
+    LearningController,
   ],
   providers: [
     { provide: ENV, useFactory: () => loadEnv() },
@@ -280,6 +286,9 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     PayrollLock,
     PayrollService,
     HiringService,
+    PerformanceMetrics,
+    PerformanceService,
+    LearningService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

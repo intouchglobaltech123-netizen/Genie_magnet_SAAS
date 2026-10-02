@@ -105,6 +105,18 @@ import {
   type LeaveRequestInput,
   type LeaveRequestRow,
   type LeaveTypeRow,
+  type KraTemplateInput,
+  type KraTemplateRow,
+  type LeaderboardRow,
+  type LearningAssignmentRow,
+  type LearningPathInput,
+  type LearningPathRow,
+  type MonthScorecardRow,
+  type PerformanceSettings,
+  type PlayerRatingInput,
+  type PlayerRatingRow,
+  type SkillMatrix,
+  type TeamMemberRow,
   type CandidateInput,
   type CandidateRow,
   type CandidateStage,
@@ -1336,6 +1348,99 @@ export function useLeaveAction() {
       void qc.invalidateQueries({ queryKey: ["leave"] });
       void qc.invalidateQueries({ queryKey: ["attendance"] });
     },
+  });
+}
+
+// ─── Performance and learning ─────────────────────────────────────────
+
+export const usePerformanceSettings = () =>
+  useQuery({ queryKey: ["performance", "settings"], queryFn: () => api<PerformanceSettings>("/performance/settings") });
+export const useKraTemplates = () => useQuery({ queryKey: ["performance", "templates"], queryFn: () => api<KraTemplateRow[]>("/performance/templates") });
+export const usePerformanceTeam = (month: string) =>
+  useQuery({ queryKey: ["performance", "team", month], queryFn: () => api<TeamMemberRow[]>(`/performance/team?month=${month}`) });
+export const useScorecard = (id: string | null) =>
+  useQuery({ queryKey: ["performance", "scorecard", id], queryFn: () => api<MonthScorecardRow>(`/performance/scorecards/${id}`), enabled: !!id });
+export const useMyScorecards = () => useQuery({ queryKey: ["performance", "mine"], queryFn: () => api<MonthScorecardRow[]>("/performance/scorecards/mine") });
+export const useLeaderboard = (month: string) =>
+  useQuery({ queryKey: ["performance", "leaderboard", month], queryFn: () => api<LeaderboardRow[]>(`/performance/leaderboard?month=${month}`), retry: false });
+export const usePlayerRatings = (month: string) =>
+  useQuery({ queryKey: ["performance", "ratings", month], queryFn: () => api<PlayerRatingRow[]>(`/performance/ratings?month=${month}`) });
+
+export function usePerformanceAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "settings"; body: Partial<PerformanceSettings> }
+        | { step: "template"; id?: string; body: KraTemplateInput }
+        | { step: "removeTemplate"; id: string }
+        | { step: "start"; userId: string; month: string }
+        | { step: "update"; id: string; actuals: Record<string, number | null>; note: string }
+        | { step: "refresh" | "share" | "reopen"; id: string }
+        | { step: "reply"; id: string; text: string }
+        | { step: "rate"; userId: string; body: PlayerRatingInput },
+    ) => {
+      switch (v.step) {
+        case "settings":
+          return api("/performance/settings", { method: "PUT", body: v.body });
+        case "template":
+          return api(v.id ? `/performance/templates/${v.id}` : "/performance/templates", { method: v.id ? "PUT" : "POST", body: v.body });
+        case "removeTemplate":
+          return api(`/performance/templates/${v.id}`, { method: "DELETE" });
+        case "start":
+          return api<MonthScorecardRow>("/performance/scorecards", { body: { userId: v.userId, month: v.month } });
+        case "update":
+          return api(`/performance/scorecards/${v.id}`, { method: "PUT", body: { actuals: v.actuals, note: v.note } });
+        case "refresh":
+        case "share":
+        case "reopen":
+          return api(`/performance/scorecards/${v.id}/${v.step}`, { body: {} });
+        case "reply":
+          return api(`/performance/scorecards/${v.id}/reply`, { body: { text: v.text } });
+        case "rate":
+          return api(`/performance/ratings/${v.userId}`, { method: "PUT", body: v.body });
+      }
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["performance"] });
+      void qc.invalidateQueries({ queryKey: ["people"] });
+    },
+  });
+}
+
+export const useLearningPaths = () => useQuery({ queryKey: ["learning", "paths"], queryFn: () => api<LearningPathRow[]>("/learning/paths") });
+export const useLearningAssignments = () =>
+  useQuery({ queryKey: ["learning", "assignments"], queryFn: () => api<LearningAssignmentRow[]>("/learning/assignments") });
+export const useSkillMatrix = () => useQuery({ queryKey: ["learning", "skills"], queryFn: () => api<SkillMatrix>("/learning/skills") });
+
+export function useLearningAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      v:
+        | { step: "path"; id?: string; body: LearningPathInput }
+        | { step: "removePath"; id: string }
+        | { step: "assign"; id: string; userIds: string[] }
+        | { step: "mark"; id: string; key: string; done: boolean }
+        | { step: "skills"; skills: { id?: string; name: string; group: string }[] }
+        | { step: "level"; skillId: string; userId: string; level: number },
+    ) => {
+      switch (v.step) {
+        case "path":
+          return api(v.id ? `/learning/paths/${v.id}` : "/learning/paths", { method: v.id ? "PUT" : "POST", body: v.body });
+        case "removePath":
+          return api(`/learning/paths/${v.id}`, { method: "DELETE" });
+        case "assign":
+          return api(`/learning/paths/${v.id}/assign`, { body: { userIds: v.userIds } });
+        case "mark":
+          return api(`/learning/assignments/${v.id}/modules/${encodeURIComponent(v.key)}`, { method: "PUT", body: { done: v.done } });
+        case "skills":
+          return api("/learning/skills", { method: "PUT", body: { skills: v.skills } });
+        case "level":
+          return api(`/learning/skills/${v.skillId}/levels/${v.userId}`, { method: "PUT", body: { level: v.level } });
+      }
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["learning"] }),
   });
 }
 

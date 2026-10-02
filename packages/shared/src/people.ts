@@ -44,6 +44,10 @@ export const employeeInput = z.object({
   address: optional(500),
   emergencyName: optional(120),
   emergencyPhone: optional(30),
+  /** Who they report to (their manager reviews their month); left as it is when not given. */
+  managerId: z.string().max(64).nullable().optional(),
+  /** The KRAs their month is scored on; left as it is when not given. */
+  kraTemplateId: z.uuid().nullable().optional(),
 });
 export type EmployeeInput = z.input<typeof employeeInput>;
 
@@ -89,6 +93,8 @@ export interface EmployeeRow {
   address: string | null;
   emergencyName: string | null;
   emergencyPhone: string | null;
+  manager: { id: string; name: string } | null;
+  kraTemplateId: string | null;
   /** Only for people who may see payroll (and the person themselves): the last characters. */
   bank: { account: string | null; ifsc: string | null; pan: string | null; uan: string | null; esiNumber: string | null } | null;
 }

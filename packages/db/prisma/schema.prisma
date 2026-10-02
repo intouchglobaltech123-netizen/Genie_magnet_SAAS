@@ -1750,6 +1750,10 @@ model EmployeeProfile {
   panHint        String?   @map("pan_hint")
   uan            String?
   esiNumber      String?   @map("esi_number")
+  /// Who they report to: their manager reviews their month (P5-11).
+  managerId      String?   @map("manager_id")
+  /// The KRAs their month is scored on (P5-11).
+  kraTemplateId  String?   @map("kra_template_id") @db.Uuid
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at")
 
   @@unique([agencyId, userId])
@@ -2062,4 +2066,141 @@ model InterviewScorecard {
 
   @@unique([candidateId, interviewerId])
   @@map("interview_scorecards")
+}
+
+// ───────────────────────────── Performance and learning ─────────────────────────────
+
+/// The agency's performance rule (P5-11): the bar for the A–C rating, and who sees the leaderboard.
+model PerformanceSettings {
+  agencyId  String   @id @map("agency_id") @db.Uuid
+  rule      Json
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("performance_settings")
+}
+
+/// A role's KRAs (P5-11): each with how it is measured, the target and weight, and a quality gate.
+model KraTemplate {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  name      String
+  /// [{ key, name, measure, unit, target, weight, lowerIsBetter, metric }]
+  kras      Json
+  /// { key, threshold, cap }
+  gate      Json?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([agencyId, name])
+  @@map("kra_templates")
+}
+
+/// A person's month (P5-11): the KRAs as they stood, what was achieved, the score, shared with them by their reviewer.
+model MonthScorecard {
+  id           String    @id @default(uuid(7)) @db.Uuid
+  agencyId     String    @map("agency_id") @db.Uuid
+  userId       String    @map("user_id")
+  /// YYYY-MM
+  month        String
+  templateName String    @map("template_name")
+  /// The template's KRAs with { actual, auto } for the month.
+  kras         Json
+  gate         Json?
+  raw          Float
+  score        Float
+  gated        Boolean   @default(false)
+  /// draft · shared
+  status       String    @default("draft")
+  reviewerId   String?   @map("reviewer_id")
+  note         String    @default("")
+  /// What the person said about it.
+  reply        String?
+  sharedAt     DateTime? @map("shared_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([agencyId, userId, month])
+  @@index([agencyId, month])
+  @@map("month_scorecards")
+}
+
+/// A person's A–C rating for a month (P5-11), by competence and commitment.
+model PlayerRating {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  userId    String   @map("user_id")
+  month     String
+  /// { skill, knowledge, selfImage, motive, trait }: 1 to 5.
+  ratings   Json
+  /// A · B_competence · B_commitment · C
+  player    String
+  note      String   @default("")
+  ratedBy   String?  @map("rated_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@unique([agencyId, userId, month])
+  @@map("player_ratings")
+}
+
+/// A learning path (P5-11): modules with their hours and where to find them.
+model LearningPath {
+  id          String               @id @default(uuid(7)) @db.Uuid
+  agencyId    String               @map("agency_id") @db.Uuid
+  title       String
+  forRole     String               @default("") @map("for_role")
+  description String               @default("")
+  ownerId     String?              @map("owner_id")
+  /// [{ key, title, hours, link }]
+  modules     Json
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @default(now()) @updatedAt @map("updated_at")
+  assignments LearningAssignment[]
+
+  @@map("learning_paths")
+}
+
+/// A path given to a person (P5-11), and the modules they have done.
+model LearningAssignment {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  agencyId    String       @map("agency_id") @db.Uuid
+  pathId      String       @map("path_id") @db.Uuid
+  userId      String       @map("user_id")
+  done        String[]
+  assignedBy  String?      @map("assigned_by")
+  assignedAt  DateTime     @default(now()) @map("assigned_at")
+  completedAt DateTime?    @map("completed_at")
+  path        LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+
+  @@unique([pathId, userId])
+  @@index([agencyId, userId])
+  @@map("learning_assignments")
+}
+
+/// A skill on the agency's skill matrix (P5-11).
+model Skill {
+  id       String       @id @default(uuid(7)) @db.Uuid
+  agencyId String       @map("agency_id") @db.Uuid
+  name     String
+  group    String       @default("")
+  position Int          @default(0)
+  levels   SkillLevel[]
+
+  @@unique([agencyId, name])
+  @@map("skills")
+}
+
+/// How far a person has come with a skill (P5-11): 0 not yet … 4 can teach.
+model SkillLevel {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  agencyId  String   @map("agency_id") @db.Uuid
+  skillId   String   @map("skill_id") @db.Uuid
+  userId    String   @map("user_id")
+  level     Int
+  ratedBy   String?  @map("rated_by")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+  skill     Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([skillId, userId])
+  @@map("skill_levels")
 }

@@ -37,6 +37,7 @@ import {
   useCan,
   useCorrections,
   useDepartments,
+  useKraTemplates,
   useLeaveAction,
   useLeaveBalances,
   useLeaveRequests,
@@ -72,7 +73,11 @@ function EmployeeDialog({ p, onClose }: { p: EmployeeRow; onClose: () => void })
     address: p.address ?? "",
     emergencyName: p.emergencyName ?? "",
     emergencyPhone: p.emergencyPhone ?? "",
+    managerId: p.manager?.id ?? "",
+    kraTemplateId: p.kraTemplateId ?? "",
   });
+  const team = usePeople();
+  const templates = useKraTemplates();
   const [bank, setBank] = useState({ bankAccount: "", ifsc: p.bank?.ifsc ?? "", pan: "", uan: p.bank?.uan ?? "", esiNumber: p.bank?.esiNumber ?? "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
@@ -106,6 +111,23 @@ function EmployeeDialog({ p, onClose }: { p: EmployeeRow; onClose: () => void })
                 value={f.employmentType}
                 onValueChange={(v) => setF({ ...f, employmentType: v as typeof f.employmentType })}
                 options={EMPLOYMENT_TYPES.map((x) => ({ value: x, label: EMPLOYMENT_TYPE_LABEL[x] }))}
+              />
+            </Field>
+            <Field label="Reports to" hint="Their manager reviews their month" error={errors.managerId}>
+              <Select
+                value={f.managerId || "_none"}
+                onValueChange={(v) => setF({ ...f, managerId: v === "_none" ? "" : v })}
+                options={[
+                  { value: "_none", label: "No one" },
+                  ...(team.data ?? []).filter((x) => x.user.id !== p.user.id).map((x) => ({ value: x.user.id, label: x.user.name })),
+                ]}
+              />
+            </Field>
+            <Field label="KRAs" hint="What their month is scored on" error={errors.kraTemplateId}>
+              <Select
+                value={f.kraTemplateId || "_none"}
+                onValueChange={(v) => setF({ ...f, kraTemplateId: v === "_none" ? "" : v })}
+                options={[{ value: "_none", label: "None yet" }, ...(templates.data ?? []).map((t) => ({ value: t.id, label: t.name }))]}
               />
             </Field>
             <Field label="Joined" error={errors.joiningDate}>
@@ -197,7 +219,7 @@ function EmployeeDialog({ p, onClose }: { p: EmployeeRow; onClose: () => void })
               disabled={act.isPending}
               onClick={() =>
                 act.mutate(
-                  { step: "update", userId: p.user.id, body: f },
+                  { step: "update", userId: p.user.id, body: { ...f, managerId: f.managerId || null, kraTemplateId: f.kraTemplateId || null } },
                   { onSuccess: () => (toast.success("Saved"), onClose()), onError: issuesOf(setErrors) },
                 )
               }

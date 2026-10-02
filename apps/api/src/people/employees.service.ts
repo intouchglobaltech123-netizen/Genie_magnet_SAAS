@@ -35,6 +35,13 @@ export class EmployeesService {
       this.tenant.db.department.findMany(),
     ]);
     const payroll = allows(this.tenant.permissions, "salaries", "view");
+    const managerIds = [...new Set(profiles.map((p) => p.managerId).filter((x): x is string => !!x))];
+    const names = new Map(
+      (managerIds.length ? await this.tenant.db.user.findMany({ where: { id: { in: managerIds } }, select: { id: true, name: true } }) : []).map((u) => [
+        u.id,
+        u.name,
+      ]),
+    );
     return members
       .map((m) => {
         const p = profiles.find((x) => x.userId === m.user.id);
@@ -55,6 +62,8 @@ export class EmployeesService {
           address: p?.address ?? null,
           emergencyName: p?.emergencyName ?? null,
           emergencyPhone: p?.emergencyPhone ?? null,
+          manager: p?.managerId ? { id: p.managerId, name: names.get(p.managerId) ?? "" } : null,
+          kraTemplateId: p?.kraTemplateId ?? null,
           bank: ownOrPayroll
             ? { account: p?.bankHint ?? null, ifsc: p?.ifsc ?? null, pan: p?.panHint ?? null, uan: p?.uan ?? null, esiNumber: p?.esiNumber ?? null }
             : null,
@@ -81,6 +90,15 @@ export class EmployeesService {
     const input = employeeInput.parse(raw);
     if (input.departmentId && !(await this.tenant.db.department.findFirst({ where: { id: input.departmentId }, select: { id: true } })))
       throw new BadRequestException({ message: "Choose one of your departments.", issues: [{ path: "departmentId", message: "Choose the department" }] });
+    if (input.managerId === userId)
+      throw new BadRequestException({ message: "Someone else is their manager.", issues: [{ path: "managerId", message: "Not themselves" }] });
+    if (
+      input.managerId &&
+      !(await this.tenant.db.membership.findFirst({ where: { agencyId: this.tenant.agencyId, userId: input.managerId }, select: { id: true } }))
+    )
+      throw new BadRequestException({ message: "Choose someone in your team.", issues: [{ path: "managerId", message: "Choose their manager" }] });
+    if (input.kraTemplateId && !(await this.tenant.db.kraTemplate.findFirst({ where: { id: input.kraTemplateId }, select: { id: true } })))
+      throw new BadRequestException({ message: "Choose one of your KRA templates.", issues: [{ path: "kraTemplateId", message: "Choose the KRAs" }] });
     const data = {
       employeeCode: input.employeeCode ?? null,
       departmentId: input.departmentId ?? null,
@@ -94,6 +112,8 @@ export class EmployeesService {
       address: input.address ?? null,
       emergencyName: input.emergencyName ?? null,
       emergencyPhone: input.emergencyPhone ?? null,
+      ...(input.managerId !== undefined && { managerId: input.managerId }),
+      ...(input.kraTemplateId !== undefined && { kraTemplateId: input.kraTemplateId }),
     };
     try {
       await this.tenant.tx(async (tx) => {
