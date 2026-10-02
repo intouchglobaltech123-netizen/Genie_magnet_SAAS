@@ -125,6 +125,20 @@ export interface GenieSettings {
   rules: Record<GenieRuleKey, GenieRuleSetting>;
   /** When the rules last looked at the agency's data. */
   lastRunAt: string | null;
+  ai: {
+    /** Switched on by the agency. */
+    enabled: boolean;
+    /** Rupees a month. */
+    monthlyBudget: number;
+    retentionDays: number;
+    /**
+     * "claude" on a server with our Anthropic key; "stand-in" on development and test servers (drafts are made up, so
+     * screens can be tried); "off" on a real server without the key yet.
+     */
+    source: "claude" | "stand-in" | "off";
+    /** Rupees so far this month. */
+    spentThisMonth: number;
+  };
 }
 
 /** GET /genie/insights (one item) */
@@ -141,4 +155,119 @@ export interface InsightRow {
   firstSeenAt: string;
   lastSeenAt: string;
   resolvedAt: string | null;
+}
+
+// ─── Drafts (P4-05 to P4-07) ─────────────────────────────────────────
+
+/** What Genie Assistant drafts: a WhatsApp nudge to a client, a caption for an approved video, content ideas, a report's summary. */
+export const DRAFT_KINDS = ["nudge", "caption", "ideas", "report_summary"] as const;
+export type DraftKind = (typeof DRAFT_KINDS)[number];
+export const DRAFT_KIND_LABEL: Record<DraftKind, string> = {
+  nudge: "WhatsApp nudge",
+  caption: "Caption",
+  ideas: "Content ideas",
+  report_summary: "Report summary",
+};
+
+/** The shapes the model writes (kept simple for structured output); the app checks lengths when a person approves. */
+export const nudgeDraft = z.object({ message: z.string() });
+export const captionDraft = z.object({ caption: z.string(), hashtags: z.array(z.string()), thumbnailText: z.string() });
+export const ideasDraft = z.object({ ideas: z.array(z.object({ title: z.string(), pillar: z.string(), format: z.string(), why: z.string() })) });
+export const reportSummaryDraft = z.object({ note: z.string() });
+export type NudgeDraft = z.infer<typeof nudgeDraft>;
+export type CaptionDraft = z.infer<typeof captionDraft>;
+export type IdeasDraft = z.infer<typeof ideasDraft>;
+export type ReportSummaryDraft = z.infer<typeof reportSummaryDraft>;
+export type DraftOutput = NudgeDraft | CaptionDraft | IdeasDraft | ReportSummaryDraft;
+
+/** What a person may approve, after their edits. */
+export const DRAFT_FINAL: Record<DraftKind, z.ZodType> = {
+  nudge: z.object({ message: z.string().trim().min(1, "Write the message").max(1000, "Keep it under 1,000 characters") }),
+  caption: z.object({
+    caption: z.string().trim().min(1, "Write the caption").max(2200, "Instagram allows 2,200 characters"),
+    hashtags: z
+      .array(
+        z
+          .string()
+          .trim()
+          .regex(/^#?[\p{L}\p{N}_]+$/u, "One word per hashtag")
+          .max(60),
+      )
+      .max(30, "At most 30 hashtags"),
+    thumbnailText: z.string().trim().max(80, "Keep it under 80 characters"),
+  }),
+  ideas: z.object({
+    ideas: z
+      .array(
+        z.object({
+          title: z.string().trim().min(2).max(160),
+          pillar: z.string().trim().max(60),
+          format: z.string().trim().max(40),
+          why: z.string().trim().max(400),
+        }),
+      )
+      .min(1, "Keep at least one idea")
+      .max(10),
+  }),
+  report_summary: z.object({ note: z.string().trim().min(1, "Write the summary").max(2000, "Keep it under 2,000 characters") }),
+};
+
+const notes = z.string().trim().max(500, "Keep it under 500 characters").optional();
+export const draftRequest = z.discriminatedUnion("kind", [
+  /** About an insight (to whoever should act, or the client when it is about their side), or simply to a client. */
+  z.object({ kind: z.literal("nudge"), insightId: z.uuid().optional(), clientId: z.uuid().optional(), contactId: z.uuid().optional(), notes }),
+  z.object({ kind: z.literal("caption"), videoId: z.uuid(), platform: z.string().max(20).optional(), notes }),
+  z.object({
+    kind: z.literal("ideas"),
+    clientId: z.uuid(),
+    month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, "Pick the month"),
+    count: z.number().int().min(1).max(8).default(5),
+    notes,
+  }),
+  z.object({ kind: z.literal("report_summary"), reportId: z.uuid(), notes }),
+]);
+export type DraftRequest = z.input<typeof draftRequest>;
+
+export const draftDecision = z.object({
+  status: z.enum(["approved", "rejected"]),
+  /** The draft as the person left it; the model's version when not given. */
+  final: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const aiSettingsInput = z.object({
+  aiEnabled: z.boolean().optional(),
+  monthlyBudget: z.number().int("Whole rupees").min(0).max(10_000_000).optional(),
+  retentionDays: z.number().int().min(7, "At least 7 days").max(730, "At most 2 years").optional(),
+});
+export type AiSettingsInput = z.infer<typeof aiSettingsInput>;
+
+/** GET /genie/drafts (one item) and the result of drafting. */
+export interface DraftRow {
+  id: string;
+  kind: DraftKind;
+  status: "draft" | "approved" | "rejected";
+  entity: string;
+  entityId: string;
+  client: { id: string; name: string } | null;
+  output: DraftOutput;
+  final: DraftOutput | null;
+  editedPct: number | null;
+  /** "stand-in" when the model is not switched on for this server. */
+  source: "claude" | "stand-in";
+  createdBy: { id: string; name: string | null } | null;
+  createdAt: string;
+  decidedAt: string | null;
+}
+
+/** GET /genie/usage: this month's AI usage against the agency's budget. */
+export interface AiUsageSummary {
+  month: string;
+  /** Rupees. */
+  spent: number;
+  budget: number;
+  calls: number;
+  byFeature: { feature: string; calls: number; spent: number }[];
+  byPerson: { name: string | null; calls: number; spent: number }[];
+  /** Drafts decided this month: approved as written, approved with edits, rejected. */
+  drafts: { approved: number; edited: number; rejected: number };
 }

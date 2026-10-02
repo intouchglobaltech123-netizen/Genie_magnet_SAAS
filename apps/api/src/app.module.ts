@@ -71,6 +71,8 @@ import { ClientSocialController, SocialController, SocialWebhookController } fro
 import { SocialService } from "./social/social.service.js";
 import { GenieController } from "./genie/genie.controller.js";
 import { GenieService } from "./genie/genie.service.js";
+import { DraftsService } from "./genie/drafts.service.js";
+import { ClaudeModel, GENIE_MODEL, NoModel, StandInModel } from "./genie/model.js";
 import { ContactWhatsAppController, WhatsAppController, WhatsAppWebhookController } from "./whatsapp/whatsapp.controller.js";
 import { WhatsAppService } from "./whatsapp/whatsapp.service.js";
 import { AgencyService } from "./settings/agency.service.js";
@@ -225,7 +227,19 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
           : new OutboxSocialNetworks(),
     },
     SocialService,
+    // Genie Assistant's model: Claude on our own Anthropic account; a stand-in on development and test servers; off on a
+    // real server until the key is set.
+    {
+      provide: GENIE_MODEL,
+      inject: [ENV],
+      useFactory: (env: Env) => {
+        const mode = env.GENIE_AI ?? (env.ANTHROPIC_API_KEY ? "claude" : env.NODE_ENV === "production" ? "off" : "stand-in");
+        if (mode === "claude" && env.ANTHROPIC_API_KEY) return new ClaudeModel(env.ANTHROPIC_API_KEY, env.GENIE_MODEL);
+        return mode === "stand-in" ? new StandInModel() : new NoModel();
+      },
+    },
     GenieService,
+    DraftsService,
     DailyChecks,
     JobRunner,
     // Order matters: rate limit first, then permissions; errors in one shape.

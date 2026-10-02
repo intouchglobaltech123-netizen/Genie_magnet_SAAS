@@ -1,10 +1,11 @@
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from "@nestjs/common";
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
-import { genieRulesInput, insightDecisionInput } from "@gm/shared";
+import { aiSettingsInput, type DraftRequest, draftDecision, draftRequest, genieRulesInput, insightDecisionInput } from "@gm/shared";
 import { Can, Staff } from "../access/access.js";
 import { RateLimit } from "../common/rate-limit.js";
 import { ZodPipe } from "../common/zod.pipe.js";
+import { DraftsService } from "./drafts.service.js";
 import { GenieService } from "./genie.service.js";
 
 const schema = (s: z.ZodType) => z.toJSONSchema(s, { io: "input" }) as Record<string, unknown>;
@@ -13,7 +14,10 @@ const schema = (s: z.ZodType) => z.toJSONSchema(s, { io: "input" }) as Record<st
 @ApiTags("genie")
 @Controller("genie")
 export class GenieController {
-  constructor(private readonly genie: GenieService) {}
+  constructor(
+    private readonly genie: GenieService,
+    private readonly drafts: DraftsService,
+  ) {}
 
   @Get("settings")
   @Staff()
@@ -44,6 +48,54 @@ export class GenieController {
   @ApiBody({ schema: schema(insightDecisionInput) })
   decide(@Param("id", ParseUUIDPipe) id: string, @Body(new ZodPipe(insightDecisionInput)) b: z.output<typeof insightDecisionInput>) {
     return this.genie.decide(id, b.status);
+  }
+
+  /** Drafting on or off, the monthly AI budget, and how long prompts and conversations are kept. */
+  @Put("ai")
+  @Can("settings", "edit")
+  @ApiBody({ schema: schema(aiSettingsInput) })
+  ai(@Body(new ZodPipe(aiSettingsInput)) b: z.output<typeof aiSettingsInput>) {
+    return this.genie.updateAi(b);
+  }
+
+  /** This month's AI usage against the budget (the owner's usage view). */
+  @Get("usage")
+  @Can("settings", "edit")
+  usage() {
+    return this.genie.usage();
+  }
+
+  /** A draft for a person to approve, edit or reject: `kind` nudge, caption, ideas or report_summary. */
+  @Post("drafts")
+  @Staff()
+  @RateLimit({ max: 20, windowSeconds: 60 })
+  @ApiBody({ schema: schema(draftRequest) })
+  draft(@Body(new ZodPipe(draftRequest)) b: DraftRequest) {
+    return this.drafts.create(b);
+  }
+
+  /** Drafts for one record: `?entity=video&entityId=…`. */
+  @Get("drafts")
+  @Staff()
+  @ApiQuery({ name: "entity", required: true })
+  @ApiQuery({ name: "entityId", required: true })
+  draftsFor(@Query("entity") entity = "", @Query("entityId") entityId = "") {
+    return this.drafts.list(entity.slice(0, 40), entityId.slice(0, 64));
+  }
+
+  @Get("drafts/:id")
+  @Staff()
+  getDraft(@Param("id", ParseUUIDPipe) id: string) {
+    return this.drafts.get(id);
+  }
+
+  /** Approved as written or with the person's edits, or rejected. */
+  @Post("drafts/:id/decision")
+  @Staff()
+  @HttpCode(200)
+  @ApiBody({ schema: schema(draftDecision) })
+  decideDraft(@Param("id", ParseUUIDPipe) id: string, @Body(new ZodPipe(draftDecision)) b: z.output<typeof draftDecision>) {
+    return this.drafts.decide(id, b);
   }
 
   /** Looks again now, rather than waiting for the morning. */

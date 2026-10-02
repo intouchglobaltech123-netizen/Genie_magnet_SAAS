@@ -83,6 +83,10 @@ import {
   type Proposal,
   type ProposalInput,
   type WinInput,
+  type AiSettingsInput,
+  type AiUsageSummary,
+  type DraftRequest,
+  type DraftRow,
   type GenieRulesInput,
   type GenieSettings,
   type ImportDetail,
@@ -1049,6 +1053,28 @@ export function useInsightDecision() {
     mutationFn: (v: { id: string; status: "done" | "dismissed" | "open" }) =>
       api<InsightRow | null>(`/genie/insights/${v.id}`, { method: "PUT", body: { status: v.status } }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["genie", "insights"] }),
+  });
+}
+
+export function useSaveAiSettings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: AiSettingsInput) => api<GenieSettings>("/genie/ai", { method: "PUT", body: v }),
+    onSuccess: (data) => qc.setQueryData(["genie", "settings"], data),
+  });
+}
+
+export const useAiUsage = (enabled = true) => useQuery({ queryKey: ["genie", "usage"], queryFn: () => api<AiUsageSummary>("/genie/usage"), enabled });
+
+export const useCreateDraft = () => useMutation({ mutationFn: (v: DraftRequest) => api<DraftRow>("/genie/drafts", { body: v }) });
+
+export function useDecideDraft() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; status: "approved" | "rejected"; final?: Record<string, unknown> }) =>
+      api<{ draft: DraftRow; whatsappLink?: string; postsUpdated?: number }>(`/genie/drafts/${v.id}/decision`, { body: { status: v.status, final: v.final } }),
+    // Approving changes other screens (posts' captions, the idea bank, a report's note).
+    onSuccess: () => qc.invalidateQueries(),
   });
 }
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, FileBarChart, Printer, RefreshCw, Send } from "lucide-react";
+import { ArrowLeft, FileBarChart, Printer, RefreshCw, Send, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { METRIC_KEYS, METRIC_LABEL, type MonthlyReport } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
@@ -17,6 +17,7 @@ import { errorMessage } from "./api";
 import { fmtDate } from "./format";
 import { PLATFORM_LABEL } from "./packages";
 import { MonthSwitcher, monthLabel, thisMonth } from "./production-bits";
+import { DraftDialog } from "./genie-drafts";
 import { useCan, useMakeReport, usePostMetrics, useReport, useReportAction, useReports } from "./queries";
 import { ReportDocument } from "./report-document";
 
@@ -156,6 +157,7 @@ export function LiveReport({ id }: { id: string }) {
   const report = useReport(id);
   const act = useReportAction(id);
   const [note, setNote] = useState<string | null>(null);
+  const [summarising, setSummarising] = useState(false);
   if (report.isPending) return <SkeletonRows rows={8} />;
   if (report.error) return <Alert tone="danger">{errorMessage(report.error)}</Alert>;
   const r = report.data;
@@ -212,6 +214,19 @@ export function LiveReport({ id }: { id: string }) {
               >
                 Save the note
               </Button>
+              <Button size="sm" variant="ghost" className="ml-2 mt-2" onClick={() => setSummarising(true)}>
+                <Sparkles />
+                Draft it with Genie Assistant
+              </Button>
+              {summarising && (
+                <DraftDialog
+                  request={{ kind: "report_summary", reportId: id }}
+                  title="The report's note"
+                  description="Written from this report's own numbers. Approving makes it the note; you can still change it before releasing."
+                  onClose={() => setSummarising(false)}
+                  onApproved={() => setNote(null)}
+                />
+              )}
             </SectionCard>
             {can("publishing", "edit") && <Numbers key={r.updatedAt} r={r} onSaved={() => undefined} />}
           </div>

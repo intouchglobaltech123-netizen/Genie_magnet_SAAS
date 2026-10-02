@@ -35,6 +35,8 @@ export async function startSeededApp(env: Record<string, string> = {}): Promise<
     DATABASE_URL: db.appUrl,
     AUTH_DATABASE_URL: db.authUrl,
     BETTER_AUTH_SECRET: "test-secret-that-is-long-enough-for-hmac-0123456789",
+    // Tests never call the real model, even when a key is in the environment.
+    GENIE_AI: "stand-in",
     BETTER_AUTH_URL: "http://localhost:4000",
     WEB_ORIGIN: ORIGIN,
     TEST_SIGN_IN: "true",

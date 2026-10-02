@@ -2,7 +2,7 @@
   "name": "api",
   "version": "0.0.0",
   "private": true,
-  "description": "Genie Magnet OS API \u2014 NestJS modular monolith",
+  "description": "Genie Magnet OS API — NestJS modular monolith",
   "type": "module",
   "main": "dist/main.js",
   "scripts": {
@@ -13,6 +13,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
     "@gm/db": "*",
     "@gm/shared": "*",
     "@nestjs/common": "^12.1.2",

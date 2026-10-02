@@ -74,6 +74,18 @@ export const envSchema = z
     META_APP_SECRET: z.string().optional(),
     META_GRAPH_URL: z.url().default("https://graph.facebook.com/v21.0"),
     /**
+     * Genie Assistant's model (Phase 4, ADR 0008): Claude on our own Anthropic account. Without a key, development and
+     * test servers use a stand-in that makes drafts up, and real servers have drafting off. `GENIE_AI=stand-in` forces
+     * the stand-in (staging).
+     */
+    ANTHROPIC_API_KEY: z.string().optional(),
+    GENIE_AI: z.enum(["claude", "stand-in", "off"]).optional(),
+    GENIE_MODEL: z.string().default("claude-opus-5-5"),
+    /** What the model costs us, to meter each agency's budget: US dollars per million tokens, and rupees per dollar. */
+    AI_INPUT_USD_PER_MTOK: z.coerce.number().positive().default(5),
+    AI_OUTPUT_USD_PER_MTOK: z.coerce.number().positive().default(25),
+    AI_USD_TO_INR: z.coerce.number().positive().default(85),
+    /**
      * Run background jobs in this process (ADR 0010). On for a single server; off on the API when a separate worker
      * process (`node dist/worker.js`, always on) runs them. Off in tests, which run the jobs themselves.
      */

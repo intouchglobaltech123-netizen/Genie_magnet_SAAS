@@ -1,6 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import type { Prisma, TenantTx } from "@gm/db";
 import {
+  type AiSettingsInput,
+  type AiUsageSummary,
   allows,
   GENIE_RULE_KEYS,
   GENIE_RULES,
@@ -17,6 +19,7 @@ import { AuditService } from "../audit/audit.service.js";
 import { NotificationsService } from "../notifications/notifications.service.js";
 import { ProductionSettingsService } from "../production/production-settings.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
+import { GENIE_MODEL, type GenieModel } from "./model.js";
 import { type Finding, RULES } from "./rules.js";
 
 const SEVERITY_ORDER: Record<InsightSeverity, number> = { critical: 0, warning: 1, info: 2 };
@@ -34,13 +37,92 @@ export class GenieService {
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
     private readonly production: ProductionSettingsService,
+    @Inject(GENIE_MODEL) private readonly model: GenieModel,
   ) {}
 
   // ─── Settings ───────────────────────────────────────────────────────
 
+  private monthStart(now = new Date()) {
+    return new Date(`${now.toISOString().slice(0, 7)}-01T00:00:00Z`);
+  }
+
+  /** Rupees spent on AI so far this month. */
+  async spentThisMonth() {
+    const sum = await this.tenant.db.aiUsage.aggregate({ where: { createdAt: { gte: this.monthStart() } }, _sum: { costPaise: true } });
+    return (sum._sum.costPaise ?? 0) / 100;
+  }
+
   async settings(): Promise<GenieSettings> {
     const row = await this.tenant.db.genieSettings.findUnique({ where: { agencyId: this.tenant.agencyId } });
-    return { rules: genieRuleSettings(row?.rules as never), lastRunAt: row?.lastRunAt?.toISOString() ?? null };
+    return {
+      rules: genieRuleSettings(row?.rules as never),
+      lastRunAt: row?.lastRunAt?.toISOString() ?? null,
+      ai: {
+        enabled: row?.aiEnabled ?? false,
+        monthlyBudget: row?.monthlyBudget ?? 2000,
+        retentionDays: row?.retentionDays ?? 90,
+        source: this.model.kind,
+        spentThisMonth: await this.spentThisMonth(),
+      },
+    };
+  }
+
+  /** Drafting on or off, the monthly budget and how long prompts and conversations are kept (P4-05, P4-09, P4-10). */
+  async updateAi(input: AiSettingsInput) {
+    const before = (await this.settings()).ai;
+    const data = {
+      ...(input.aiEnabled !== undefined && { aiEnabled: input.aiEnabled }),
+      ...(input.monthlyBudget !== undefined && { monthlyBudget: input.monthlyBudget }),
+      ...(input.retentionDays !== undefined && { retentionDays: input.retentionDays }),
+    };
+    await this.tenant.tx(async (tx) => {
+      await tx.genieSettings.upsert({ where: { agencyId: this.tenant.agencyId }, create: { agencyId: this.tenant.agencyId, ...data }, update: data });
+      await this.audit.record(tx, {
+        action: "update",
+        entity: "genie_ai",
+        before: { enabled: before.enabled, monthlyBudget: before.monthlyBudget, retentionDays: before.retentionDays },
+        after: data,
+      });
+    });
+    return this.settings();
+  }
+
+  /** This month's AI usage against the budget, by feature and by person, and how drafts were decided (P4-09, P4-11). */
+  async usage(): Promise<AiUsageSummary> {
+    const since = this.monthStart();
+    const [settings, rows, drafts] = await Promise.all([
+      this.settings(),
+      this.tenant.db.aiUsage.findMany({ where: { createdAt: { gte: since } }, select: { feature: true, userId: true, costPaise: true } }),
+      this.tenant.db.draft.findMany({ where: { decidedAt: { gte: since } }, select: { status: true, editedPct: true } }),
+    ]);
+    const group = <K extends string | null>(key: (r: (typeof rows)[number]) => K) => {
+      const m = new Map<K, { calls: number; paise: number }>();
+      for (const r of rows) {
+        const g = m.get(key(r)) ?? { calls: 0, paise: 0 };
+        g.calls++;
+        g.paise += r.costPaise;
+        m.set(key(r), g);
+      }
+      return [...m.entries()].sort((a, b) => b[1].paise - a[1].paise);
+    };
+    const byPerson = group((r) => r.userId);
+    const people = await this.tenant.db.user.findMany({
+      where: { id: { in: byPerson.map(([id]) => id).filter((x): x is string => !!x) } },
+      select: { id: true, name: true },
+    });
+    return {
+      month: since.toISOString().slice(0, 7),
+      spent: rows.reduce((n, r) => n + r.costPaise, 0) / 100,
+      budget: settings.ai.monthlyBudget,
+      calls: rows.length,
+      byFeature: group((r) => r.feature).map(([feature, g]) => ({ feature, calls: g.calls, spent: g.paise / 100 })),
+      byPerson: byPerson.map(([id, g]) => ({ name: people.find((p) => p.id === id)?.name ?? null, calls: g.calls, spent: g.paise / 100 })),
+      drafts: {
+        approved: drafts.filter((d) => d.status === "approved" && !d.editedPct).length,
+        edited: drafts.filter((d) => d.status === "approved" && !!d.editedPct).length,
+        rejected: drafts.filter((d) => d.status === "rejected").length,
+      },
+    };
   }
 
   async updateRules(input: GenieRulesInput) {
@@ -143,7 +225,10 @@ export class GenieService {
       }
     }
     await tx.genieSettings.upsert({ where: { agencyId }, create: { agencyId, lastRunAt: now }, update: { lastRunAt: now } });
-    return counts;
+    // What was sent to the model is kept only for the agency's retention period (P4-10); the drafts themselves stay.
+    const keepFrom = new Date(now.getTime() - (row?.retentionDays ?? 90) * 86_400_000);
+    const cleared = await tx.draft.updateMany({ where: { createdAt: { lt: keepFrom }, context: { not: null } }, data: { context: null } });
+    return { ...counts, cleared: cleared.count };
   }
 
   /** Runs the rules now, for whoever asked. */
@@ -211,6 +296,13 @@ export class GenieService {
         lastSeenAt: r.lastSeenAt.toISOString(),
         resolvedAt: r.resolvedAt?.toISOString() ?? null,
       }));
+  }
+
+  /** One insight this person may see (to draft from it), or not found. */
+  async find(id: string) {
+    const i = await this.tenant.db.insight.findFirst({ where: { id } });
+    if (!i || !this.visible(i)) throw new NotFoundException("No insight with that id.");
+    return i;
   }
 
   /** Done (acted on), dismissed (not worth acting on), or open again. */

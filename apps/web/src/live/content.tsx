@@ -31,6 +31,7 @@ import {
   useTopicListAction,
   useTopicLists,
 } from "./queries";
+import { DraftDialog } from "./genie-drafts";
 
 const STAGES = ["idea", "topic", "research", "script", "approval", "ready"] as const;
 const SCRIPT_STATUS: Record<ContentItem["scripts"][number]["status"], { label: string; tone: BadgeTone }> = {
@@ -398,6 +399,7 @@ export function LiveContent() {
   const [clientId, setClientId] = useState("");
   const list = useContentList(`month=${month}${clientId ? `&clientId=${clientId}` : ""}`);
   const [adding, setAdding] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
   const items = list.data ?? [];
   const counts = {
     ideas: items.filter((i) => i.stage === "idea").length,
@@ -412,13 +414,29 @@ export function LiveContent() {
         description="Ideas around each client's pillars, the monthly topic list they pick from, research and scripts. An approved script becomes a video in production."
         actions={
           can("content", "edit") && (
-            <Button onClick={() => setAdding(true)}>
-              <Plus />
-              New idea
-            </Button>
+            <>
+              {clientId && (
+                <Button variant="secondary" onClick={() => setSuggesting(true)}>
+                  <Sparkles />
+                  Suggest ideas
+                </Button>
+              )}
+              <Button onClick={() => setAdding(true)}>
+                <Plus />
+                New idea
+              </Button>
+            </>
           )
         }
       />
+      {suggesting && (
+        <DraftDialog
+          request={{ kind: "ideas", clientId, month, count: 5 }}
+          title={`Ideas for ${clients.data?.find((c) => c.id === clientId)?.name ?? "the client"}`}
+          description="Around the client's pillars and voice, leaving out ideas they already have. Tick the ones to keep; they join the idea bank."
+          onClose={() => setSuggesting(false)}
+        />
+      )}
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <MonthSwitcher month={month} onChange={setMonth} />
         <Select

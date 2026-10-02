@@ -14,6 +14,7 @@ import {
   Plus,
   RefreshCw,
   Send,
+  Sparkles,
   Trash2,
   Unplug,
   Upload,
@@ -35,6 +36,7 @@ import { Switch } from "@/components/ui/switch";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { DraftDialog } from "./genie-drafts";
 import { errorMessage } from "./api";
 import { startFor, UploadButton } from "./files";
 import { fmtDate } from "./format";
@@ -194,6 +196,7 @@ function QueueRow({ v }: { v: PublishingItem }) {
   const can = useCan();
   const act = usePublishingAction();
   const [scheduling, setScheduling] = useState(false);
+  const [captioning, setCaptioning] = useState(false);
   const [publishing, setPublishing] = useState<PublishingItem["posts"][number] | null>(null);
   const proofs = useFiles(
     "publishing",
@@ -220,12 +223,26 @@ function QueueRow({ v }: { v: PublishingItem }) {
           </span>
         </span>
         {can("publishing", "edit") && v.stage === "approved" && (
-          <Button size="sm" variant="secondary" onClick={() => setScheduling(true)}>
-            <Plus />
-            Schedule a post
-          </Button>
+          <span className="flex gap-1.5">
+            <Button size="sm" variant="ghost" onClick={() => setCaptioning(true)}>
+              <Sparkles />
+              Draft a caption
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => setScheduling(true)}>
+              <Plus />
+              Schedule a post
+            </Button>
+          </span>
         )}
       </div>
+      {captioning && (
+        <DraftDialog
+          request={{ kind: "caption", videoId: v.id }}
+          title={`A caption for ${v.code}`}
+          description="Written from the approved script and the client's voice. Approving puts it on this video's posts still to go out."
+          onClose={() => setCaptioning(false)}
+        />
+      )}
       {v.posts.length > 0 && (
         <ul className="mt-3 space-y-1.5">
           {v.posts.map((p) => (
