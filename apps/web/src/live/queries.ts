@@ -20,6 +20,7 @@ import {
   type CycleRow,
   type CalendarEvent,
   type JobOverview,
+  type SetupStatus,
   type JobRow,
   type PlatformConnectionRow,
   type PostInput,
@@ -978,3 +979,15 @@ export const useCalendar = (from: string, to: string) =>
 
 export const useTimeEntries = (from: string, to: string, enabled = true) =>
   useQuery({ queryKey: ["time", from, to], queryFn: () => api<TimeEntryRow[]>(`/time?from=${from}&to=${to}`), enabled });
+
+// ─── Set-up guide ─────────────────────────────────────────────────────
+
+export const useSetup = () => useQuery({ queryKey: ["setup"], queryFn: () => api<SetupStatus>("/agency/setup"), staleTime: 30_000 });
+
+export function useHideSetup() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (hidden: boolean) => api<SetupStatus>("/agency/setup", { method: "PUT", body: { hidden } }),
+    onSuccess: (data) => qc.setQueryData(["setup"], data),
+  });
+}

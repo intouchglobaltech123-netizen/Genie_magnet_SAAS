@@ -704,3 +704,25 @@ export interface CalendarEvent {
   /** Done (a published post, a closed shoot) or late (a video past due). */
   state: "open" | "done" | "late";
 }
+
+/** The set-up guide's steps, in order (P1-32). */
+export type SetupStep =
+  | "agency_questionnaire"
+  | "profile"
+  | "packages"
+  | "roles"
+  | "team"
+  | "clients"
+  | "leads"
+  | "invoices"
+  | "onboarding_questions"
+  | "production"
+  | "platforms"
+  | "videos";
+
+export interface SetupStatus {
+  /** Hidden for the whole agency by someone who may change settings. */
+  hidden: boolean;
+  /** Each step, done once the real data exists. */
+  steps: Record<SetupStep, boolean>;
+}

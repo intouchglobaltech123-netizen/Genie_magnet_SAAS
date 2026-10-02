@@ -13,7 +13,7 @@ import { Alert, SkeletonRows } from "@/components/ui/feedback";
 import { Field, Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { ApiError, errorMessage } from "./api";
-import { useAgency, useCan, useUpdateAgency } from "./queries";
+import { useAgency, useCan, useHideSetup, useSetup, useUpdateAgency } from "./queries";
 
 const STAGE_HINT: Record<(typeof BUSINESS_STAGES)[number], string> = {
   Struggle: "Finding steady clients and cash.",
@@ -342,9 +342,27 @@ function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: bool
 export function LiveAgencyProfile() {
   const can = useCan();
   const agency = useAgency();
+  const setup = useSetup();
+  const showSetup = useHideSetup();
   return (
     <>
-      <PageHeader title="Agency profile" description="Your agency's name, look and contact details, and how client onboarding works." />
+      <PageHeader
+        title="Agency profile"
+        description="Your agency's name, look and contact details, and how client onboarding works."
+        actions={
+          setup.data?.hidden &&
+          can("settings", "edit") && (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={showSetup.isPending}
+              onClick={() => showSetup.mutate(false, { onSuccess: () => toast.success("The set-up guide is back on Home") })}
+            >
+              Show the set-up guide again
+            </Button>
+          )
+        }
+      />
       {agency.isPending ? (
         <SkeletonRows rows={8} />
       ) : agency.error ? (

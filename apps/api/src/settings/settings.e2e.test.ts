@@ -110,3 +110,29 @@ describe("packages", () => {
     expect(fee).toMatchObject({ before: { name: "Growth Video Pack", monthlyFee: 85000 }, after: { name: "Growth Video Pack", monthlyFee: 95000 } });
   });
 });
+
+describe("the set-up guide", () => {
+  type Setup = { hidden: boolean; steps: Record<string, boolean> };
+
+  it("ticks each step from the agency's own data", async () => {
+    const zara = await t.signInAs("zara@zenstudio.test");
+    const before = (await zara.get("/agency/setup").expect(200)).body as Setup;
+    expect(before.hidden).toBe(false);
+    expect(before.steps).toMatchObject({ packages: true, clients: true, production: false, videos: false, platforms: false });
+    await zara
+      .put("/production-settings")
+      .send((await zara.get("/production-settings").expect(200)).body)
+      .expect(200);
+    expect(((await zara.get("/agency/setup").expect(200)).body as Setup).steps.production).toBe(true);
+  });
+
+  it("is hidden for the whole agency by someone who may change settings, and shown again", async () => {
+    const divya = await t.signInAs("divya@geniemagnet.test");
+    await divya.put("/agency/setup").send({ hidden: true }).expect(403);
+    expect(((await jana.put("/agency/setup").send({ hidden: true }).expect(200)).body as Setup).hidden).toBe(true);
+    expect(((await divya.get("/agency/setup").expect(200)).body as Setup).hidden).toBe(true);
+    const zara = await t.signInAs("zara@zenstudio.test");
+    expect(((await zara.get("/agency/setup").expect(200)).body as Setup).hidden).toBe(false);
+    expect(((await jana.put("/agency/setup").send({ hidden: false }).expect(200)).body as Setup).hidden).toBe(false);
+  });
+});

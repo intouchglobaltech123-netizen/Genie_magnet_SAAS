@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Put, Query } from "@nestjs/common";
 import { ApiBody, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { z } from "zod";
 import { agencyProfileInput, type AgencyProfileInput, packageInput, type PackageInput } from "@gm/shared";
@@ -6,20 +6,39 @@ import { Can, Staff } from "../access/access.js";
 import { ZodPipe } from "../common/zod.pipe.js";
 import { AgencyService } from "./agency.service.js";
 import { PackagesService } from "./packages.service.js";
+import { SetupService } from "./setup.service.js";
 
 const schema = (s: z.ZodType) => z.toJSONSchema(s, { io: "input" }) as Record<string, unknown>;
 const packageUpdate = packageInput.partial();
+const setupHidden = z.object({ hidden: z.boolean() });
 
 /** Settings → Agency profile. Everyone on the team can read it; changing it needs edit on Agency settings. */
 @ApiTags("settings")
 @Controller("agency")
 export class AgencyController {
-  constructor(private readonly agency: AgencyService) {}
+  constructor(
+    private readonly agency: AgencyService,
+    private readonly setup: SetupService,
+  ) {}
 
   @Get()
   @Staff()
   get() {
     return this.agency.get();
+  }
+
+  /** The set-up guide: which steps are done (each ticks itself from the agency's data), and whether it is hidden. */
+  @Get("setup")
+  @Staff()
+  setupStatus() {
+    return this.setup.status();
+  }
+
+  @Put("setup")
+  @Can("settings", "edit")
+  @ApiBody({ schema: schema(setupHidden) })
+  hideSetup(@Body(new ZodPipe(setupHidden)) body: { hidden: boolean }) {
+    return this.setup.setHidden(body.hidden);
   }
 
   @Patch()

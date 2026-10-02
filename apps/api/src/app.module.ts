@@ -57,6 +57,7 @@ import { JobsService } from "./jobs/jobs.service.js";
 import { PrismaService } from "./prisma/prisma.service.js";
 import { AgencyService } from "./settings/agency.service.js";
 import { PackagesService } from "./settings/packages.service.js";
+import { SetupService } from "./settings/setup.service.js";
 import { AgencyController, PackagesController } from "./settings/settings.controller.js";
 import { RolesService } from "./team/roles.service.js";
 import { RolesController, TeamController } from "./team/team.controller.js";
@@ -129,6 +130,7 @@ import { TenantDb, TenantMiddleware } from "./tenancy/tenant-context.js";
     TeamService,
     AgencyService,
     PackagesService,
+    SetupService,
     ClientsService,
     AgreementsService,
     InvoicesService,

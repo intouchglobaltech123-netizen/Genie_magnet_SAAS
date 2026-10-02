@@ -56,6 +56,8 @@ model Agency {
   discountLimit     Int            @default(10) @map("discount_limit")
   /// Days before an agreement ends that it shows as due for renewal (P1-19).
   renewalNoticeDays Int            @default(45) @map("renewal_notice_days")
+  /// The owner hid the set-up guide on Home (P1-32).
+  setupHiddenAt     DateTime?      @map("setup_hidden_at")
   /// How client onboarding is filled in by default: "link" (the client answers by private link) or "assisted"
   /// (the account manager fills it in with the client on a call). Both are always available (P1-22).
   onboardingMode    String         @default("link") @map("onboarding_mode")

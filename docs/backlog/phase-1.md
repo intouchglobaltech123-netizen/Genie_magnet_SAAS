@@ -178,7 +178,7 @@ As the account manager, I want the client profile and a draft Business Canvas bu
 
 **P1-29 · Genie Magnet sets up its own workspace (S)** — like any new agency, using the in-app guide (P1-32): agency questionnaire, packages, team, roles and permissions, question changes, invoice settings, and their clients and leads imported by themselves (P1-31). We watch where they get stuck and improve the guide and the settings.
 
-**P1-32 · Guided set-up in the app (M)** — **Started 1 Oct 2026:** the checklist on Home (roles, team, clients) with the later steps shown as coming next.
+**P1-32 · Guided set-up in the app (M)** — **Done.** The guide on Home in three parts — your agency (agency questionnaire, profile and branding, packages, roles, team, invoice settings), clients and sales (clients, the sales pipeline, the onboarding questions) and production (production settings, clients' platforms, videos already in progress) — each step opening its screen with why it matters and, where it helps, the Excel import; WhatsApp and the client portal shown as coming next. The server works out which steps are done from the agency's own data (`/agency/setup`); people who may change settings hide it for the whole agency and can bring it back from Settings → Agency profile.
 As the owner of a new agency, I want the app to show me what to set up next, where, and why, so I can get started without help.
 
 - A set-up checklist on the home screen: agency profile, packages, roles, invite the team, import clients and leads, invoice settings; later phases add their own steps (platforms, WhatsApp).
