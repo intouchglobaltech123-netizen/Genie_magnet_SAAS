@@ -144,7 +144,7 @@ export class PermissionGuard implements CanActivate {
     const session = this.auth ? await this.auth.api.getSession({ headers: fromNodeHeaders(req.headers) }) : null;
     if (!session) throw new UnauthorizedException("Sign in first.");
     if (!this.env.PLATFORM_ADMIN_EMAILS.includes(session.user.email.toLowerCase())) throw new ForbiddenException("This is for the platform's own team.");
-    locals(req.res!).platformUser = { id: session.user.id };
+    locals(req.res!).platformUser = { id: session.user.id, name: session.user.name };
     return true;
   }
 }

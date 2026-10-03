@@ -118,6 +118,9 @@ import {
   type SupportGrantInput,
   type DataExportRow,
   type PortalDomain,
+  type TicketDetail,
+  type TicketInput,
+  type TicketRow,
   type SampleData,
   type SampleRemoved,
   type SetupWizard,
@@ -1955,6 +1958,40 @@ export function usePortalDomainAction() {
           ? api<PortalDomain>("/agency/portal-domain/check", { method: "POST" })
           : api<null>("/agency/portal-domain", { method: "DELETE" }),
     onSuccess: (d) => qc.setQueryData(["portal-domain"], d ?? null),
+  });
+}
+
+// ─── Support inbox (P6-15) ─────────────────────────────────────────────
+
+export const useTickets = () => useQuery({ queryKey: ["tickets"], queryFn: () => api<TicketRow[]>("/support/tickets") });
+export const useTicket = (id: string) =>
+  useQuery({ queryKey: ["tickets", id], queryFn: () => api<TicketDetail>(`/support/tickets/${id}`), refetchInterval: 60_000 });
+
+export function useTicketAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { step: "create"; body: TicketInput } | { step: "reply"; id: string; body: string } | { step: "close"; id: string }) =>
+      v.step === "create"
+        ? api<TicketDetail>("/support/tickets", { body: v.body })
+        : v.step === "reply"
+          ? api<TicketDetail>(`/support/tickets/${v.id}/messages`, { body: { body: v.body } })
+          : api<TicketDetail>(`/support/tickets/${v.id}/close`, { method: "POST" }),
+    onSuccess: (t) => (qc.setQueryData(["tickets", t.id], t), qc.invalidateQueries({ queryKey: ["tickets"], exact: true })),
+  });
+}
+
+/** The platform console's support inbox. */
+export const usePlatformTickets = () =>
+  useQuery({ queryKey: ["platform", "tickets"], queryFn: () => api<TicketRow[]>("/platform/support/tickets"), refetchInterval: 60_000 });
+export const usePlatformTicket = (id: string | null) =>
+  useQuery({ queryKey: ["platform", "tickets", id], queryFn: () => api<TicketDetail>(`/platform/support/tickets/${id}`), enabled: !!id });
+
+export function usePlatformReply() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (v: { id: string; body: string; close: boolean }) =>
+      api<TicketDetail>(`/platform/support/tickets/${v.id}/messages`, { body: { body: v.body, close: v.close } }),
+    onSuccess: (t) => (qc.setQueryData(["platform", "tickets", t.id], t), qc.invalidateQueries({ queryKey: ["platform", "tickets"], exact: true })),
   });
 }
 

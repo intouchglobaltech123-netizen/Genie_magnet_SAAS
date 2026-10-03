@@ -12,7 +12,7 @@ export interface RequestLocals {
   requestId: string;
   tenant?: { agencyId: string; userId?: string };
   /** Someone from the platform's own team, on a platform endpoint (ADR 0011). */
-  platformUser?: { id: string };
+  platformUser?: { id: string; name: string };
 }
 
 export function locals(res: Response) {

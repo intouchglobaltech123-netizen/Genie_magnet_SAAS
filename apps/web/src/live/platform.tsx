@@ -14,6 +14,7 @@ import {
   SUBSCRIPTION_STATUSES,
   type SubscriptionStatus,
   SUITES,
+  TICKET_CATEGORY_LABEL,
 } from "@gm/shared";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
@@ -22,7 +23,7 @@ import { Card, SectionCard } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, EmptyState, SkeletonRows } from "@/components/ui/feedback";
-import { Field, Input } from "@/components/ui/input";
+import { Field, Input, Textarea } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -30,7 +31,18 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fmtDate } from "@/lib/utils";
 import { errorMessage } from "./api";
 import { money } from "./plan";
-import { useMe, usePlatformAgencies, usePlatformConsoleAction, usePlatformInvoices, usePlatformSettings, useSupportVisit } from "./queries";
+import {
+  useMe,
+  usePlatformAgencies,
+  usePlatformConsoleAction,
+  usePlatformInvoices,
+  usePlatformReply,
+  usePlatformSettings,
+  usePlatformTicket,
+  usePlatformTickets,
+  useSupportVisit,
+} from "./queries";
+import { Thread, TicketList } from "./support-inbox";
 
 const onError = (e: unknown) => toast.error(errorMessage(e));
 const STATUS_TONE: Record<string, BadgeTone> = { trialing: "info", active: "success", past_due: "warning", expired: "danger", cancelled: "neutral" };
@@ -57,12 +69,15 @@ export function LivePlatform() {
           <TabsTrigger value="invoices">
             <ReceiptText /> Invoices
           </TabsTrigger>
+          <TabsTrigger value="support">
+            <LifeBuoy /> Support
+          </TabsTrigger>
           <TabsTrigger value="settings">
             <Settings2 /> Plans and settings
           </TabsTrigger>
         </TabsList>
       </Tabs>
-      {tab === "agencies" ? <Agencies /> : tab === "invoices" ? <Invoices /> : <PlatformSettingsForm />}
+      {tab === "agencies" ? <Agencies /> : tab === "invoices" ? <Invoices /> : tab === "support" ? <SupportInbox /> : <PlatformSettingsForm />}
     </>
   );
 }
@@ -557,5 +572,60 @@ function FlagsEditor({ s, set }: { s: PlatformSettings; set: SetSettings }) {
         </Button>
       </div>
     </SectionCard>
+  );
+}
+
+/** The support inbox (P6-15): every agency's messages, waiting ones first, and replying — or replying and closing. */
+function SupportInbox() {
+  const list = usePlatformTickets();
+  const [open, setOpen] = useState<string | null>(null);
+  const t = usePlatformTicket(open);
+  const reply = usePlatformReply();
+  const [body, setBody] = useState("");
+  const send = (close: boolean) =>
+    reply.mutate(
+      { id: open!, body, close },
+      { onSuccess: () => (setBody(""), toast.success(close ? "Replied and closed" : "Replied")), onError: (e) => toast.error(errorMessage(e)) },
+    );
+  if (list.isPending) return <SkeletonRows rows={4} />;
+  if (list.error) return <Alert tone="danger">{errorMessage(list.error)}</Alert>;
+  if (!list.data.length) return <Alert tone="info">No agency has written to support yet.</Alert>;
+  return (
+    <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+      <TicketList rows={list.data} onPick={(r) => setOpen(r.id)} />
+      <div>
+        {!open ? (
+          <Alert tone="info">Pick a message to read and answer it.</Alert>
+        ) : t.isPending ? (
+          <SkeletonRows rows={4} />
+        ) : t.error ? (
+          <Alert tone="danger">{errorMessage(t.error)}</Alert>
+        ) : (
+          <Card className="space-y-4 p-4">
+            <div>
+              <div className="text-subheading font-semibold">{t.data.subject}</div>
+              <div className="text-body text-muted-foreground">
+                {t.data.agency?.name} · {TICKET_CATEGORY_LABEL[t.data.category]} · {t.data.ref}
+                {t.data.page ? ` · from ${t.data.page}` : ""}
+              </div>
+            </div>
+            <Thread t={t.data} supportSide />
+            {t.data.status !== "closed" && (
+              <div className="space-y-2">
+                <Textarea rows={4} value={body} onChange={(e) => setBody(e.target.value)} placeholder="Reply to the agency" aria-label="Reply" />
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="accent" size="sm" disabled={reply.isPending || !body.trim()} onClick={() => send(false)}>
+                    Reply
+                  </Button>
+                  <Button variant="outline" size="sm" disabled={reply.isPending || !body.trim()} onClick={() => send(true)}>
+                    Reply and close
+                  </Button>
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
+      </div>
+    </div>
   );
 }

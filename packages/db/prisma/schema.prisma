@@ -2894,3 +2894,43 @@ model SampleData {
 
   @@map("sample_data")
 }
+
+/// A conversation between an agency and the platform's support team (P6-15).
+model SupportTicket {
+  id            String           @id @default(uuid(7)) @db.Uuid
+  agencyId      String           @map("agency_id") @db.Uuid
+  subject       String
+  /// question · problem · billing · idea
+  category      String
+  /// open (waiting for support) · answered (waiting for the agency) · closed
+  status        String           @default("open")
+  /// The page it was written from.
+  page          String?
+  createdBy     String           @map("created_by")
+  /// Kept with it, so the support team sees who wrote without reading the agency's people.
+  createdByName String           @map("created_by_name")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @default(now()) @updatedAt @map("updated_at")
+  closedAt      DateTime?        @map("closed_at")
+  messages      SupportMessage[]
+
+  @@index([agencyId, updatedAt])
+  @@index([status, updatedAt])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id           String        @id @default(uuid(7)) @db.Uuid
+  agencyId     String        @map("agency_id") @db.Uuid
+  ticketId     String        @map("ticket_id") @db.Uuid
+  /// Written by the platform's support team rather than someone in the agency.
+  fromPlatform Boolean       @default(false) @map("from_platform")
+  authorId     String        @map("author_id")
+  authorName   String        @map("author_name")
+  body         String
+  createdAt    DateTime      @default(now()) @map("created_at")
+  ticket       SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+  @@map("support_messages")
+}

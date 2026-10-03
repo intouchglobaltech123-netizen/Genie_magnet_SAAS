@@ -21,6 +21,7 @@ export * from "./support.js";
 export * from "./data.js";
 export * from "./setup.js";
 export * from "./brand.js";
+export * from "./helpdesk.js";
 export * from "./gst.js";
 export * from "./clients.js";
 export * from "./diagnostic.js";

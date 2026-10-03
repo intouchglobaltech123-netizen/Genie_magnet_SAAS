@@ -62,6 +62,7 @@ import {
   Layers,
   LifeBuoy,
   DatabaseBackup,
+  HelpCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -81,6 +82,7 @@ import { Alert, Skeleton } from "@/components/ui/feedback";
 import { BrandMark, BrandWordmark } from "@/components/shell/brand";
 import { cn, fmtDate } from "@/lib/utils";
 import { errorMessage } from "./api";
+import { helpFor } from "./help-articles";
 import { NotificationBell } from "./notifications";
 import { istDay } from "./plan";
 import { useCan, useMe, useSignOut, useSupportVisit, useSwitchAgency } from "./queries";
@@ -176,6 +178,7 @@ const NAV: { title: string; items: NavItem[] }[] = [
       { title: "Background jobs", href: "/app/settings/jobs", icon: Timer, area: "settings" },
       { title: "Support access", href: "/app/settings/support", icon: LifeBuoy, area: "settings" },
       { title: "Your data", href: "/app/settings/data", icon: DatabaseBackup, area: "settings" },
+      { title: "Help and support", href: "/app/help", icon: HelpCircle },
       { title: "Audit log", href: "/app/audit", icon: History, area: "audit" },
     ],
   },
@@ -392,6 +395,33 @@ function SupportBanner() {
   );
 }
 
+/** Help in the top bar (P6-15): the guide for this page, the help centre, and writing to support from here. */
+function HelpMenu() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const guide = helpFor(pathname);
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon-sm" aria-label="Help">
+          <HelpCircle />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-72">
+        {guide && (
+          <>
+            <DropdownMenuLabel>On this page</DropdownMenuLabel>
+            <DropdownMenuItem onSelect={() => router.push(`/app/help/${guide.slug}`)}>{guide.title}</DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        <DropdownMenuItem onSelect={() => router.push("/app/help")}>All guides</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => router.push(`/app/support?page=${encodeURIComponent(pathname)}`)}>Write to support</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 /** The agency's colour across its team's app, when it chose so (P6-07): light and dark sets of the colour tokens. */
 function BrandStyle() {
   const b = useMe().data?.branding;
@@ -584,6 +614,7 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
           <AgencySwitcher />
           <div className="ml-auto flex shrink-0 items-center gap-1">
             {me.permissions && isTeam(me.permissions) && <NotificationBell />}
+            {me.permissions && isTeam(me.permissions) && <HelpMenu />}
             <Button variant="ghost" size="icon-sm" onClick={toggleTheme} aria-label="Toggle dark mode">
               <Sun className="hidden dark:block" />
               <Moon className="dark:hidden" />
