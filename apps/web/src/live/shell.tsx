@@ -63,6 +63,7 @@ import {
   LifeBuoy,
   DatabaseBackup,
   HelpCircle,
+  KeyRound,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -317,6 +318,12 @@ function UserMenu() {
           <DropdownMenuItem onSelect={() => router.push("/app/platform")}>
             <Building className="size-4" />
             Platform console
+          </DropdownMenuItem>
+        )}
+        {!me.support && (
+          <DropdownMenuItem onSelect={() => router.push("/app/account")}>
+            <KeyRound className="size-4" />
+            Change password
           </DropdownMenuItem>
         )}
         <DropdownMenuItem

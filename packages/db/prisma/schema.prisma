@@ -2449,14 +2449,13 @@ model RtAnswer {
 
 // ───────────────────────────── SOPs and checklists ─────────────────────────────
 
-/// An SOP (P5-17): how the agency does one thing, who does it, checks it and approves it, its PSS line and KRA.
+/// An SOP (P5-17): how the agency does one thing, who does it, checks it and approves it, and the KRA it serves.
 model Sop {
   id            String       @id @default(uuid(7)) @db.Uuid
   agencyId      String       @map("agency_id") @db.Uuid
   title         String
   departmentId  String?      @map("department_id") @db.Uuid
   ownerId       String?      @map("owner_id")
-  pssRef        String       @default("") @map("pss_ref")
   kraTemplateId String?      @map("kra_template_id") @db.Uuid
   kraKey        String?      @map("kra_key")
   doerIds       String[]     @map("doer_ids")

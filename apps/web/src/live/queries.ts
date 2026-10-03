@@ -349,6 +349,27 @@ export function useSignUp() {
   });
 }
 
+// ─── Password self-service ───────────────────────────────────────────
+
+/** Asks for a link to choose a new password; the answer is the same whether or not the address has an account. */
+export function useRequestPasswordReset() {
+  return useMutation({
+    mutationFn: (email: string) => api("/auth/request-password-reset", { body: { email, redirectTo: `${window.location.origin}/app/reset-password` } }),
+  });
+}
+
+/** A new password, with the token from the emailed link. */
+export function useResetPassword() {
+  return useMutation({ mutationFn: (v: { token: string; newPassword: string }) => api("/auth/reset-password", { body: v }) });
+}
+
+/** Changing one's own password while signed in; other devices are signed out unless asked not to. */
+export function useChangePassword() {
+  return useMutation({
+    mutationFn: (v: { currentPassword: string; newPassword: string; revokeOtherSessions: boolean }) => api("/auth/change-password", { body: v }),
+  });
+}
+
 export function useSignOut() {
   const fresh = useFresh();
   return useMutation({ mutationFn: () => api("/auth/sign-out", { body: {} }), onSuccess: fresh });

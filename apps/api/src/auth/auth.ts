@@ -77,6 +77,8 @@ export function createAuth(env: Env, prisma: ReturnType<typeof createPrisma>, { 
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 10,
+      // Password self-service: a reset signs out every other device, as changing it may.
+      revokeSessionsOnPasswordReset: true,
       sendResetPassword: async ({ user, url }) => outbox.send({ to: user.email, subject: "Reset your Genie Magnet OS password", text: url, link: url }),
     },
     // Off while building and testing (no email is sent); on before real use — required in production (env.ts).

@@ -72,6 +72,10 @@ export const HELP: HelpArticle[] = [
           "Salaries, payroll and personal financial planners stay with the owner unless you give access on purpose.",
         ],
       },
+      {
+        heading: "Passwords",
+        text: "Each person looks after their own password: change it from the profile menu → Change password, or, if it is forgotten, use “Forgot your password?” on the sign-in page to get a link that sets a new one. Setting a new password signs out the person's other devices.",
+      },
     ],
   },
   {

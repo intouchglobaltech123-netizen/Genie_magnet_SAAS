@@ -1,4 +1,4 @@
-// SOPs and checklists (P5-17): an SOP with its doer, checker and approver, linked to the agency's PSS and a KRA;
+// SOPs and checklists (P5-17): an SOP with its doer, checker and approver, linked to a KRA;
 // versions approved before use; checklist runs checked, failures counted in the reviews; new versions replacing old.
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { KraTemplateRow, MeetingRow, SopRow, SopRunRow } from "@gm/shared";
@@ -36,7 +36,7 @@ afterAll(async () => {
 }, 60_000);
 
 describe("an SOP", () => {
-  it("is set up with who does, checks and approves it, its PSS line and the KRA it serves", async () => {
+  it("is set up with who does, checks and approves it, and the KRA it serves", async () => {
     const kras = (
       await harini
         .post("/performance/templates")
@@ -46,7 +46,6 @@ describe("an SOP", () => {
     const body = {
       title: "Shoot kit check",
       ownerId: KARTHIK,
-      pssRef: "Kit care — before every shoot",
       kraTemplateId: kras.id,
       kraKey: "kit",
       doerIds: [VIGNESH],
@@ -60,7 +59,6 @@ describe("an SOP", () => {
       .expect(400);
     sop = (await karthik.post("/sops").send(body).expect(201)).body as SopRow;
     expect(sop).toMatchObject({
-      pssRef: "Kit care — before every shoot",
       kra: { template: "Camera", name: "Kit ready on time" },
       current: null,
       draft: { number: 1, status: "draft" },

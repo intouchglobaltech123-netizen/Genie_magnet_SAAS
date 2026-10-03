@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { FlaskConical, LogIn, MailCheck } from "lucide-react";
+import { FlaskConical, KeyRound, LogIn, MailCheck } from "lucide-react";
 import { DEFAULT_ROLE_LABELS, type DefaultRole, type TestPerson } from "@gm/shared";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,17 @@ import { Alert, Skeleton } from "@/components/ui/feedback";
 import { Field, Input } from "@/components/ui/input";
 import { BrandMark } from "@/components/shell/brand";
 import { api, ApiError, errorMessage } from "./api";
-import { useAcceptInvitation, useCreateAgency, useMe, useSignIn, useSignUp, useTestPeople, useTestSignIn } from "./queries";
+import {
+  useAcceptInvitation,
+  useCreateAgency,
+  useMe,
+  useRequestPasswordReset,
+  useResetPassword,
+  useSignIn,
+  useSignUp,
+  useTestPeople,
+  useTestSignIn,
+} from "./queries";
 
 export const roleLabel = (key: string) => DEFAULT_ROLE_LABELS[key as DefaultRole] ?? key.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 
@@ -134,6 +144,9 @@ export function SignInPage() {
             <Field label="Password">
               <Input type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
             </Field>
+            <Link href="/app/forgot-password" className="-mt-2 block text-body text-primary hover:underline">
+              Forgot your password?
+            </Link>
             {signIn.error && <Alert tone="danger">{errorMessage(signIn.error)}</Alert>}
             <Button type="submit" className="w-full" disabled={signIn.isPending}>
               <LogIn />
@@ -146,6 +159,120 @@ export function SignInPage() {
               Create an account
             </Link>
           </p>
+        </CardContent>
+      </Card>
+    </AuthFrame>
+  );
+}
+
+// ─── Password self-service ───────────────────────────────────────────
+
+/** Asking for a link to choose a new password. The answer never says whether the address has an account. */
+export function ForgotPasswordPage() {
+  const ask = useRequestPasswordReset();
+  const [email, setEmail] = useState("");
+  return (
+    <AuthFrame title="Forgot your password?" description="Enter the email address you sign in with, and we will send a link to choose a new password.">
+      <Card>
+        <CardContent className="p-5">
+          {ask.isSuccess ? (
+            <Alert tone="success" icon={MailCheck}>
+              If an account uses {email}, a link to choose a new password is on its way. It works for an hour; check spam if it does not arrive.
+            </Alert>
+          ) : (
+            <form
+              className="space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                ask.mutate(email.trim());
+              }}
+            >
+              <Field label="Email">
+                <Input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              </Field>
+              {ask.error && <Alert tone="danger">{errorMessage(ask.error)}</Alert>}
+              <Button type="submit" className="w-full" disabled={ask.isPending}>
+                {ask.isPending ? "Sending…" : "Send the link"}
+              </Button>
+            </form>
+          )}
+          <p className="mt-4 text-body text-muted-foreground">
+            <Link href="/app/sign-in" className="font-medium text-primary hover:underline">
+              Back to sign in
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
+    </AuthFrame>
+  );
+}
+
+/** Choosing a new password from the emailed link (it brings its token, or says the link no longer works). */
+export function ResetPasswordPage() {
+  const params = useSearchParams();
+  const token = params.get("token");
+  const broken = !token || !!params.get("error");
+  const reset = useResetPassword();
+  const [f, setF] = useState({ password: "", again: "" });
+  const mismatch = f.again.length > 0 && f.password !== f.again;
+  return (
+    <AuthFrame title="Choose a new password" description="At least 10 characters. You will sign in with it from now on.">
+      <Card>
+        <CardContent className="p-5">
+          {broken ? (
+            <Alert tone="warning">
+              This link has expired or has already been used.{" "}
+              <Link href="/app/forgot-password" className="font-medium underline underline-offset-2">
+                Ask for a new one
+              </Link>
+              .
+            </Alert>
+          ) : reset.isSuccess ? (
+            <Alert tone="success" icon={KeyRound}>
+              Your password is changed, and any other device signed in to your account is signed out.{" "}
+              <Link href="/app/sign-in" className="font-medium underline underline-offset-2">
+                Sign in
+              </Link>
+              .
+            </Alert>
+          ) : (
+            <form
+              className="space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!mismatch) reset.mutate({ token: token!, newPassword: f.password });
+              }}
+            >
+              <Field label="New password">
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={10}
+                  value={f.password}
+                  onChange={(e) => setF({ ...f, password: e.target.value })}
+                />
+              </Field>
+              <Field label="The same again" error={mismatch ? "The two passwords are not the same" : undefined}>
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  minLength={10}
+                  value={f.again}
+                  onChange={(e) => setF({ ...f, again: e.target.value })}
+                />
+              </Field>
+              {reset.error && (
+                <Alert tone="danger">
+                  {/token/i.test(errorMessage(reset.error)) ? "This link has expired or has already been used. Ask for a new one." : errorMessage(reset.error)}
+                </Alert>
+              )}
+              <Button type="submit" className="w-full" disabled={reset.isPending || mismatch}>
+                {reset.isPending ? "Saving…" : "Save the new password"}
+              </Button>
+            </form>
+          )}
         </CardContent>
       </Card>
     </AuthFrame>

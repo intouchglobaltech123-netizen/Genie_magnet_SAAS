@@ -331,7 +331,6 @@ export class SopsService {
         title: s.title,
         department: deps.find((d) => d.id === s.departmentId) ?? null,
         owner: person(s.ownerId),
-        pssRef: s.pssRef,
         kra: t && kra ? { templateId: t.id, template: t.name, key: kra.key, name: kra.name } : null,
         doers: s.doerIds.map((d) => ({ id: d, name: names.get(d) ?? "" })),
         checker: person(s.checkerId),

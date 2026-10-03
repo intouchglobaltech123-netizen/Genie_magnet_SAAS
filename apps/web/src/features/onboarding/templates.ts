@@ -472,9 +472,9 @@ export const agencyTemplate: QuestionnaireTemplate = {
       title: "Review practice",
       intro: "How the team is reviewed today.",
       when: "7days",
-      builds: "PSS and KRA drafts, STOP review calendar",
+      builds: "KRA drafts, STOP review calendar",
       questions: [
-        { id: "a21", label: "Do roles have clear daily tasks? How is performance reviewed and feedback given?", type: "long", maps: "SOPs & checklists (PSS, KRA)" },
+        { id: "a21", label: "Do roles have clear daily tasks? How is performance reviewed and feedback given?", type: "long", maps: "SOPs & checklists (KRA)" },
         { id: "a22", label: "Which tools are used for appraisals, career growth and training?", type: "long", maps: "Performance & Learning" },
       ],
     },

@@ -34,7 +34,6 @@ function SopForm({ sop, onClose, onSaved }: { sop: SopRow | null; onClose: () =>
     title: s?.title ?? "",
     departmentId: s?.department?.id ?? "",
     ownerId: s?.owner?.id ?? "",
-    pssRef: s?.pssRef ?? "",
     kraTemplateId: s?.kra?.templateId ?? "",
     kraKey: s?.kra?.key ?? "",
     doerIds: s?.doers.map((d) => d.id) ?? [],
@@ -57,7 +56,7 @@ function SopForm({ sop, onClose, onSaved }: { sop: SopRow | null; onClose: () =>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>{s ? `Change “${s.title}”` : "New SOP"}</DialogTitle>
-          <DialogDescription>Who does it, who checks each run and who approves each version; the PSS line and KRA it serves.</DialogDescription>
+          <DialogDescription>Who does it, who checks each run and who approves each version, and the KRA it serves.</DialogDescription>
         </DialogHeader>
         <DialogBody className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -74,9 +73,6 @@ function SopForm({ sop, onClose, onSaved }: { sop: SopRow | null; onClose: () =>
             {person("ownerId", "Owner (keeps it up to date)")}
             {person("checkerId", "Checker (checks each run)")}
             {person("approverId", "Approver (approves each version)")}
-            <Field label="PSS line" hint="As your PSS names it" className="sm:col-span-2">
-              <Input value={f.pssRef} onChange={(e) => setF({ ...f, pssRef: e.target.value })} />
-            </Field>
             <Field label="KRA template">
               <Select
                 value={f.kraTemplateId || "_none"}
@@ -471,11 +467,7 @@ function SopView({ id, onBack }: { id: string; onBack: () => void }) {
               .filter(Boolean)
               .join(" · ")}
           </p>
-          <p className="text-body text-muted-foreground">
-            {s.pssRef && `PSS: ${s.pssRef}`}
-            {s.pssRef && s.kra && " · "}
-            {s.kra && `KRA: ${s.kra.name} (${s.kra.template})`}
-          </p>
+          <p className="text-body text-muted-foreground">{s.kra && `KRA: ${s.kra.name} (${s.kra.template})`}</p>
         </div>
         <span className="flex gap-2">
           {!s.active && <Badge tone="neutral">Not in use</Badge>}

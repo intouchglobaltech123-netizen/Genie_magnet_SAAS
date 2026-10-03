@@ -1,5 +1,5 @@
 // SOPs and checklists (P5-17): how the agency does each thing — its steps and checklist — in versions approved before
-// they are used; who does it, who checks it and who approves it; linked to the agency's PSS and to a KRA; and each run
+// they are used; who does it, who checks it and who approves it; linked to a KRA; and each run
 // of the checklist, checked, with failures counted in the reviews and in the person's KRAs.
 import { z } from "zod";
 
@@ -10,8 +10,6 @@ export const sopInput = z.object({
   departmentId: z.uuid().nullable().default(null),
   /** Who keeps it up to date. */
   ownerId: z.string().max(64).nullable().default(null),
-  /** The PSS line it serves, as the agency's own PSS names it. */
-  pssRef: text(200).default(""),
   /** The KRA it serves: a template and one of its KRAs. */
   kraTemplateId: z.uuid().nullable().default(null),
   kraKey: z.string().max(40).nullable().default(null),
@@ -91,7 +89,6 @@ export interface SopRow {
   title: string;
   department: { id: string; name: string } | null;
   owner: { id: string; name: string } | null;
-  pssRef: string;
   kra: { templateId: string; template: string; key: string; name: string } | null;
   doers: { id: string; name: string }[];
   checker: { id: string; name: string } | null;
