@@ -31,6 +31,8 @@ export const envSchema = z
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     /** Pick a person and sign in without a password (test servers only — never with real data). */
     TEST_SIGN_IN: z.stringbool().default(false),
+    /** The interactive API docs at /docs: on unless the server holds real data, where they are off unless switched on (P6-14). */
+    API_DOCS: z.preprocess((v) => (v === "" ? undefined : v), z.stringbool().optional()),
     /**
      * Confirm email addresses (a link on sign-up; required to accept an invitation). Off while the app is built
      * and tested, switched on in the last step before real use; the API refuses to start without it in production.
@@ -38,6 +40,8 @@ export const envSchema = z
     REQUIRE_EMAIL_VERIFICATION: z.stringbool().default(false),
     /** Requests per minute per person (or per IP when not signed in) on each API route. */
     RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(300),
+    /** Requests a minute for a whole agency, over every route and everyone in it (P6-14). */
+    RATE_LIMIT_AGENCY_PER_MINUTE: z.coerce.number().int().positive().default(6000),
     /** Proxies in front of the API (1 on Railway), so the caller's IP is read from X-Forwarded-For. 0 locally. */
     TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
     /**

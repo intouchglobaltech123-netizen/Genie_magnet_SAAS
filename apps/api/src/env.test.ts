@@ -7,6 +7,14 @@ describe("loadEnv", () => {
     expect(env).toMatchObject({ NODE_ENV: "development", API_PORT: 4000, AUTH_MODE: "dev-header" });
   });
 
+  it("limits each agency as a whole, and leaves the API docs to the server's kind when not chosen (P6-14)", () => {
+    const db = { DATABASE_URL: "postgresql://x" };
+    expect(loadEnv(db).RATE_LIMIT_AGENCY_PER_MINUTE).toBe(6000);
+    expect(loadEnv(db).API_DOCS).toBeUndefined();
+    expect(loadEnv({ ...db, API_DOCS: "" }).API_DOCS).toBeUndefined();
+    expect(loadEnv({ ...db, API_DOCS: "false", RATE_LIMIT_AGENCY_PER_MINUTE: "1200" })).toMatchObject({ API_DOCS: false, RATE_LIMIT_AGENCY_PER_MINUTE: 1200 });
+  });
+
   it("fails fast with a readable message when DATABASE_URL is missing", () => {
     expect(() => loadEnv({})).toThrow(/DATABASE_URL/);
   });
