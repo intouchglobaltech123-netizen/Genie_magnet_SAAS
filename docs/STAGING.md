@@ -4,23 +4,29 @@ Staging runs the real app (`/app`) for testing with **sample data only**: the sa
 
 Three services in one Railway project:
 
-| Service    | What it is                                                                | Config file                |
+| Service    | What it is                                                                | Build and start            |
 | ---------- | ------------------------------------------------------------------------- | -------------------------- |
 | `Postgres` | Railway's PostgreSQL                                                      | —                          |
-| `api`      | The API, with background jobs in the same process, and a volume for files | `apps/api/railway.json`    |
-| `web`      | The web app: the demo at `/`, the real app at `/app`, talking to `api`    | `railway.json` (repo root) |
+| `api`      | The API, with background jobs in the same process, and a volume for files | set on the service (below) |
+| `web`      | The web app: the demo at `/`, the real app at `/app`, talking to `api`    | set on the service (below) |
+
+**The staging project is set up** (project `genie-magnet-staging` in Intouch Global Tech's Railway workspace):
+
+- The app: https://web-production-d1305.up.railway.app/app — pick a sample person to sign in as.
+- The API: https://api-production-64b4f.up.railway.app (health check at `/health`).
+- The platform console: sign in as Janarthanan (`jana@geniemagnet.test`, the staging platform admin).
 
 Every push to `main` redeploys both. Before each API deploy, `npm run db:setup` creates the app's own database roles (no way around row-level security), runs the migrations, and loads the sample agencies (`SEED_SAMPLE_DATA=true`). The API's health check is `/health`.
 
 ## One-time setup (about 20 minutes)
 
 1. **New project** in Railway → **Deploy PostgreSQL**. Rename the service `Postgres` if Railway named it otherwise. In its **Backups** tab, switch on daily backups.
-2. **+ New → GitHub repo** → `Genie_magnet_SAAS`, branch `main`. Rename the service `api`. In **Settings**:
+2. **+ New → GitHub repo** → `Genie_magnet_SAAS`, branch `main`. Rename the service `api`. In **Settings** (new Railway services no longer read `railway.json`, so the commands go on the service itself — the same as in `apps/api/railway.json`):
    - Root directory: leave empty (the repo root — the API needs the shared packages).
-   - **Config file path**: `/apps/api/railway.json`.
+   - **Build command** `npm run build:services`, **Pre-deploy command** `npm run db:setup`, **Start command** `node apps/api/dist/main.js`, **Healthcheck path** `/health`.
    - **Networking → Generate domain** (uploads go straight to the API, so it needs its own address).
    - Right-click the service → **Attach volume**, mount path `/data`.
-3. **+ New → GitHub repo** → the same repo again. Rename it `web`. In **Settings → Networking → Generate domain**. Leave the config file path empty (it uses `railway.json` at the root).
+3. **+ New → GitHub repo** → the same repo again. Rename it `web`. In **Settings → Networking → Generate domain**. **Build command** `npm run build`, **Start command** `npm run start`, **Healthcheck path** `/api/health` (as in the root `railway.json`).
 4. Set the variables below (**Variables → Raw editor** pastes them all at once), replacing the two addresses with the domains from steps 2 and 3. `${{…}}` are Railway references: leave them as written.
 5. Deploy `api`, then `web`. Open `https://<web domain>/app` and pick a sample person to sign in as.
 
@@ -29,6 +35,10 @@ Every push to `main` redeploys both. Before each API deploy, `npm run db:setup` 
 ```env
 NODE_ENV="production"
 APP_ENV="staging"
+PORT="4000"
+RAILPACK_BUILD_CMD="npm run build:services"
+RAILPACK_START_CMD="node apps/api/dist/main.js"
+PLATFORM_ADMIN_EMAILS="jana@geniemagnet.test"
 SEED_SAMPLE_DATA="true"
 DATABASE_OWNER_URL="${{Postgres.DATABASE_URL}}"
 APP_DB_PASSWORD="${{secret(32)}}"
@@ -55,13 +65,15 @@ SOCIAL_PROVIDER="outbox"
 ### `web` variables
 
 ```env
-API_URL="http://${{api.RAILWAY_PRIVATE_DOMAIN}}:${{api.PORT}}"
+PORT="3000"
+API_URL="http://${{api.RAILWAY_PRIVATE_DOMAIN}}:4000"
 ```
 
 The web app forwards `/api/*` to the API over Railway's private network, so sign-in cookies stay on the web app's own address.
 
 ## What each setting does
 
+- `RAILPACK_BUILD_CMD` and `RAILPACK_START_CMD` make Railway's builder build and start the API rather than the web app (it otherwise runs the repository's `npm run build`, whatever the service's build command says).
 - `APP_ENV="staging"` says this server holds sample data only: it runs like production, but may keep test sign-in on and email confirmation off. On a server marked `production` the API refuses to start with either.
 - `DATABASE_OWNER_URL` is used only by `db:setup` (roles and migrations). The API itself connects as `genie_app`, which row-level security always applies to, and sign-in as `genie_auth`, which reaches only the sign-in tables.
 - `RUN_JOBS="true"` runs the background jobs (the morning checks and reminders) inside the API. When the API needs more than one copy, turn it off there and add a `worker` service with the same settings and start command `node apps/api/dist/worker.js`.
