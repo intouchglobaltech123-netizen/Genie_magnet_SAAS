@@ -2,6 +2,8 @@
 
 The repo is ready to deploy: `railway.json` at the root tells Railway to run `npm run build` and `npm run start`. The health check is `/api/health`.
 
+Railway stops reading `railway.json` files on 1 December 2026, so the demo service (project `enchanting-prosperity`) also carries the same settings on the service itself: build command `npm run build`, start command `npm run start`, health check `/api/health`, and the variables `RAILPACK_BUILD_CMD="npm run build"` and `RAILPACK_START_CMD="npm run start"`. A new service needs these set the same way.
+
 ## One-time setup (about 10 minutes)
 
 1. Sign in at https://railway.com with GitHub.

@@ -27,6 +27,7 @@ import { ReportsService } from "../reports/reports.service.js";
 import { TenantDb } from "../tenancy/tenant-context.js";
 import { GenieService } from "./genie.service.js";
 import { type DraftCall, GENIE_MODEL, type GenieModel, ModelError, type ModelUsage } from "./model.js";
+import { aiPrices, costPaise } from "./pricing.js";
 
 type Request = ReturnType<typeof draftRequest.parse>;
 const monthName = (m: string) => new Date(`${m}-01T00:00:00Z`).toLocaleDateString("en-IN", { month: "long", year: "numeric", timeZone: "UTC" });
@@ -109,13 +110,9 @@ export class DraftsService {
     if (!allows(this.tenant.permissions, n.area, n.level)) throw new ForbiddenException("Your role cannot work on this kind of draft.");
   }
 
-  /** What a call cost the agency, in paise. */
+  /** What a call cost the agency, in paise, at the model's prices (genie/pricing.ts). */
   private cost(u: ModelUsage) {
-    const usd =
-      ((u.inputTokens + u.cacheWriteTokens * 1.25 + u.cacheReadTokens * 0.1) * this.env.AI_INPUT_USD_PER_MTOK +
-        u.outputTokens * this.env.AI_OUTPUT_USD_PER_MTOK) /
-      1e6;
-    return Math.round(usd * this.env.AI_USD_TO_INR * 100);
+    return costPaise(u, aiPrices(this.env)!, this.env.AI_USD_TO_INR);
   }
 
   /** The agency switched drafting on, the server has a model, and this month's budget is not used up (drafts and Ask Genie). */

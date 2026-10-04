@@ -1,6 +1,9 @@
 import { z } from "zod";
+import { aiPrices } from "./genie/pricing.js";
 
 /** A server with real data: production, unless it is marked as a staging server (sample data only). */
+/** An optional positive number; an empty value counts as not set. */
+const price = z.preprocess((v) => (v === "" ? undefined : v), z.coerce.number().positive().optional());
 const realData = (e: { NODE_ENV: string; APP_ENV?: string }) => (e.APP_ENV ?? e.NODE_ENV) === "production";
 
 export const envSchema = z
@@ -121,9 +124,14 @@ export const envSchema = z
       ),
     GENIE_AI: z.enum(["claude", "stand-in", "off"]).optional(),
     GENIE_MODEL: z.string().default("claude-opus-5-5"),
-    /** What the model costs us, to meter each agency's budget: US dollars per million tokens, and rupees per dollar. */
-    AI_INPUT_USD_PER_MTOK: z.coerce.number().positive().default(5),
-    AI_OUTPUT_USD_PER_MTOK: z.coerce.number().positive().default(25),
+    /**
+     * What the model costs us, to meter each agency's budget, in US dollars per million tokens: the model's list price
+     * (genie/pricing.ts) unless set here — for a negotiated rate, or a model not listed there. And rupees per dollar.
+     */
+    AI_INPUT_USD_PER_MTOK: price,
+    AI_OUTPUT_USD_PER_MTOK: price,
+    AI_CACHE_READ_USD_PER_MTOK: price,
+    AI_CACHE_WRITE_USD_PER_MTOK: price,
     AI_USD_TO_INR: z.coerce.number().positive().default(85),
     /**
      * Run background jobs in this process (ADR 0010). On for a single server; off on the API when a separate worker
@@ -157,6 +165,10 @@ export const envSchema = z
   .refine((e) => !(e.NODE_ENV === "production" && !e.FILES_SECRET && !e.BETTER_AUTH_SECRET), {
     message: "File links need FILES_SECRET (or BETTER_AUTH_SECRET) in production",
     path: ["FILES_SECRET"],
+  })
+  .refine((e) => aiPrices(e) !== null, {
+    message: "GENIE_MODEL has no list price here: set AI_INPUT_USD_PER_MTOK and AI_OUTPUT_USD_PER_MTOK",
+    path: ["GENIE_MODEL"],
   })
   .refine((e) => e.AUTH_MODE !== "better-auth" || (e.AUTH_DATABASE_URL && e.BETTER_AUTH_SECRET), {
     message: "AUTH_MODE=better-auth needs AUTH_DATABASE_URL and BETTER_AUTH_SECRET",
