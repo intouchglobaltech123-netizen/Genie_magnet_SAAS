@@ -59,7 +59,7 @@ export function VideoDetail({ id }: { id: string }) {
       <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
-            <span className="font-mono text-body font-semibold tracking-wide">{v.code}</span>
+            <span className="tabular-nums text-body font-semibold tracking-wide">{v.code}</span>
             <ClientTag clientId={v.clientId} />
             <StageBadge stage={v.stage} />
             <UrgencyIcon urgency={v.urgency} withLabel />
@@ -243,7 +243,7 @@ function StageStepper({ v }: { v: Video }) {
                   className={cn(
                     "mt-2 px-1 text-center text-body leading-tight",
                     current ? "font-semibold text-text-primary" : done ? "text-text-secondary" : "text-muted-foreground",
-                    skipped && "italic",
+                    skipped && "line-through",
                   )}
                 >
                   {s}
@@ -336,7 +336,7 @@ function DetailSidebar({ v }: { v: Video }) {
     ["Platforms", v.platform.join(", ")],
     ["Cycle", cycle?.label ?? "—"],
     ["Package", ag.packageName],
-    ["Clip No.", <span key="clip" className="font-mono text-body">{v.clipNo}</span>],
+    ["Clip No.", <span key="clip" className="tabular-nums text-body">{v.clipNo}</span>],
     ["Planned edit", hoursLabel(v.plannedMinutes)],
     ["Logged", hoursLabel(v.loggedMinutes)],
   ];

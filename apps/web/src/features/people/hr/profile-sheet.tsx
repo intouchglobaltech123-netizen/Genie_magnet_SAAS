@@ -241,7 +241,7 @@ function DocumentsTab({ person }: { person: Person }) {
                 {d.label}
                 <Lock className="size-3 text-muted-foreground" />
               </div>
-              <div className="font-mono text-body tracking-wide text-muted-foreground tabular">{d.value}</div>
+              <div className="tabular-nums text-body tracking-wide text-muted-foreground tabular">{d.value}</div>
             </div>
             {d.verified ? (
               <Badge tone="success">
@@ -294,7 +294,7 @@ function AssetsTab({ person }: { person: Person }) {
             <div className="min-w-0 flex-1">
               <div className="truncate text-body font-medium">{a.name}</div>
               <div className="text-body text-muted-foreground">
-                <span className="font-mono">{a.tag}</span> · {a.category} · {a.condition}
+                <span className="tabular-nums">{a.tag}</span> · {a.category} · {a.condition}
               </div>
             </div>
             <span className="text-body tabular text-muted-foreground">{inr(a.purchaseValue)}</span>

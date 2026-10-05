@@ -172,7 +172,7 @@ export function VideoCostTable() {
                   <div className="flex items-center gap-2">
                     <span className={cn("h-7 w-0.5 rounded-full", active ? "bg-primary" : "bg-transparent")} />
                     <div className="min-w-0">
-                      <div className="font-mono text-body font-semibold">{v.code}</div>
+                      <div className="tabular-nums text-body font-semibold">{v.code}</div>
                       <div className="max-w-[220px] truncate text-body text-muted-foreground">
                         {clientById(v.clientId).name} · {v.title}
                       </div>

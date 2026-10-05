@@ -128,7 +128,7 @@ export function ExpenseSheet({ expense, onOpenChange, onReject }: { expense: Exp
                 </Badge>
               </div>
               <DialogDescription>
-                <span className="font-mono">{expense.code}</span> · {expense.category} · {fmtDate(expense.date, { day: "numeric", month: "short", year: "numeric" })}
+                <span className="tabular-nums">{expense.code}</span> · {expense.category} · {fmtDate(expense.date, { day: "numeric", month: "short", year: "numeric" })}
               </DialogDescription>
             </DialogHeader>
             <DialogBody className="space-y-5">
@@ -158,7 +158,7 @@ export function ExpenseSheet({ expense, onOpenChange, onReject }: { expense: Exp
                 <Info2 label="Allocation">
                   {expense.clientId ? (
                     <>
-                      {clientById(expense.clientId).name} · <span className="font-mono">{expense.videoCode}</span>
+                      {clientById(expense.clientId).name} · <span className="tabular-nums">{expense.videoCode}</span>
                     </>
                   ) : (
                     <>Overhead · {expense.overheadPool}</>

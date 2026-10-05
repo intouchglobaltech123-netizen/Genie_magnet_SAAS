@@ -172,7 +172,7 @@ export function SignoffRail({
                 </div>
                 {s.done ? (
                   <div className="mt-1.5 rounded-lg border border-dashed border-success/40 bg-success-soft/40 px-3 py-2">
-                    <div className="font-serif text-subheading italic leading-tight text-foreground/90">{s.name}</div>
+                    <div className="text-subheading leading-tight text-foreground/90">{s.name}</div>
                     <div className="mt-0.5 text-body text-muted-foreground tabular">Signed digitally · {stampLabel(s.at)}</div>
                     {s.key === "gm" && sheet?.gmNote && <div className="mt-1 text-body text-muted-foreground">“{sheet.gmNote}”</div>}
                   </div>

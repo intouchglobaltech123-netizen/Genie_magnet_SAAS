@@ -23,7 +23,7 @@ function Copyable({ label, value }: { label: string; value: string }) {
   return (
     <Field label={label}>
       <div className="flex gap-2">
-        <Input readOnly value={value} onFocus={(e) => e.target.select()} className="font-mono" />
+        <Input readOnly value={value} onFocus={(e) => e.target.select()} className="tabular-nums" />
         <Button variant="secondary" size="icon-sm" aria-label={`Copy ${label}`} onClick={() => copy(value)}>
           <Copy />
         </Button>
@@ -188,7 +188,7 @@ function TemplateRow({ purpose, s, canEdit }: { purpose: WhatsAppPurposeKey; s: 
         </Button>
         {canEdit && (
           <>
-            <Input aria-label="Template name" className="w-56 font-mono" value={name} onChange={(e) => setName(e.target.value)} />
+            <Input aria-label="Template name" className="w-56 tabular-nums" value={name} onChange={(e) => setName(e.target.value)} />
             <Input aria-label="Language" className="w-20" value={language} onChange={(e) => setLanguage(e.target.value)} />
             <Button
               size="sm"

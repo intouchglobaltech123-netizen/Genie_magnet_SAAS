@@ -53,7 +53,7 @@ export function PublicQuestionnaire({ token }: { token: string }) {
               // eslint-disable-next-line @next/next/no-img-element -- the agency's logo, a small data URL
               <img src={v.agency.logo} alt="" className="size-10 rounded-lg object-contain" />
             ) : (
-              <span className="inline-flex size-10 items-center justify-center rounded-lg text-subheading font-bold text-white" style={{ background: brand }}>
+              <span className="inline-flex size-10 items-center justify-center rounded-lg text-subheading font-semibold text-white" style={{ background: brand }}>
                 {v.agency.name[0]}
               </span>
             )}

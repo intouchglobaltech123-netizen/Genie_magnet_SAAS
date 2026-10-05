@@ -81,16 +81,20 @@
   --color-chart-5: #a99b8f;
   --color-chart-grid: #ebe4db;
 
-  /* Typography — one family, three sizes */
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  /* Typography — one family (Inter), three sizes, nothing else.
+   * The default Tailwind scale is switched off so no other size can be used; a lint rule also refuses
+   * text-lg/xl…, arbitrary pixel sizes, a second font family and bold (semibold is the heaviest). */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-sans);
+  --font-serif: var(--font-sans);
+  --text-*: initial;
   --text-heading: 24px;
   --text-heading--line-height: 32px;
-  --text-heading--letter-spacing: -0.015em;
+  --text-heading--letter-spacing: -0.02em;
   --text-subheading: 16px;
   --text-subheading--line-height: 24px;
-  --text-subheading--letter-spacing: -0.005em;
-  --text-body: 13px;
+  --text-subheading--letter-spacing: -0.01em;
+  --text-body: 14px;
   --text-body--line-height: 20px;
 
   /* Radius */
@@ -116,13 +120,6 @@
   --spacing-lg: 24px;
   --spacing-xl: 32px;
 
-  /* Font-size scale (aliases of the three type sizes) */
-  --font-size-xs: var(--text-body);
-  --font-size-sm: var(--text-body);
-  --font-size-md: var(--text-body);
-  --font-size-lg: var(--text-subheading);
-  --font-size-xl: var(--text-subheading);
-  --font-size-2xl: var(--text-heading);
 }
 
 .dark {
@@ -192,6 +189,8 @@
 @layer base {
   * {
     border-color: var(--color-border);
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--color-text-muted) 30%, transparent) transparent;
   }
 
   html,
@@ -201,7 +200,7 @@
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
-    font-feature-settings: "cv11", "ss01";
+    text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -225,9 +224,11 @@
   }
 }
 
+/* Thin, quiet scrollbars: the standard properties are set for every element in the base layer (Chrome/Edge 121+,
+ * Firefox, Safari 18+ draw a slim bar with no arrow buttons); these -webkit- rules cover older Safari. */
 .scrollbar-thin::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--color-text-muted) 28%, transparent);
@@ -235,6 +236,25 @@
 }
 .scrollbar-thin::-webkit-scrollbar-track {
   background: transparent;
+}
+/* The side menu's bar shows only while the pointer is over the menu. */
+.scrollbar-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.scrollbar-sidebar:hover,
+.scrollbar-sidebar:focus-within {
+  scrollbar-color: color-mix(in srgb, var(--color-sidebar-foreground) 30%, transparent) transparent;
+}
+.scrollbar-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-sidebar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+}
+.scrollbar-sidebar:hover::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-sidebar-foreground) 30%, transparent);
 }
 
 .tabular {

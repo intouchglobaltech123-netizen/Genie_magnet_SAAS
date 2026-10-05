@@ -79,7 +79,7 @@ export function CostWaterfall() {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 18, right: 4, left: -14, bottom: 0 }}>
               <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
-              <XAxis dataKey="name" {...axisProps} interval={0} tick={{ ...axisProps.tick, fontSize: 11 }} />
+              <XAxis dataKey="name" {...axisProps} interval={0} tick={{ ...axisProps.tick, fontSize: 14 }} />
               <YAxis {...axisProps} tickFormatter={(x: number) => inrCompact(x)} width={52} />
               <Tooltip
                 cursor={{ fill: "var(--color-muted)", opacity: 0.5 }}
@@ -105,7 +105,7 @@ export function CostWaterfall() {
                   dataKey="value"
                   position="top"
                   className="fill-muted-foreground"
-                  style={{ fontSize: 11 }}
+                  style={{ fontSize: 14 }}
                   formatter={(x) => inrCompact(Number(x))}
                 />
               </Bar>
@@ -167,7 +167,7 @@ function Row({ label, formula, value }: { label: string; formula: string; value:
     <div className="flex items-center justify-between gap-2 text-body">
       <span className="truncate text-muted-foreground">{label}</span>
       <span className="flex shrink-0 items-baseline gap-2 tabular">
-        <span className="font-mono text-body text-muted-foreground/80">{formula}</span>
+        <span className="tabular-nums text-body text-muted-foreground/80">{formula}</span>
         <span>{inr(value)}</span>
       </span>
     </div>

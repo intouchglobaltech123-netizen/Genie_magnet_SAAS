@@ -123,7 +123,7 @@ function DayView({ date, person, onTeam }: { date: string; person?: string; onTe
         ].map(([k, v]) => (
           <Card key={k} className="p-3">
             <div className="text-body text-muted-foreground">{k}</div>
-            <div className="text-lg font-semibold tabular-nums">{v}</div>
+            <div className="text-subheading font-semibold tabular-nums">{v}</div>
           </Card>
         ))}
       </div>
@@ -263,7 +263,7 @@ function DayView({ date, person, onTeam }: { date: string; person?: string; onTe
                     onChange={(e) => set({ counters: { ...s.counters, [c.key]: Number(e.target.value) || 0 } })}
                   />
                 ) : (
-                  <div className={cn("text-lg font-semibold", c.bad && (s.counters[c.key] ?? 0) > 0 && "text-danger")}>
+                  <div className={cn("text-subheading font-semibold", c.bad && (s.counters[c.key] ?? 0) > 0 && "text-danger")}>
                     {s.counters[c.key] ?? 0}
                     {c.hours && " h"}
                   </div>

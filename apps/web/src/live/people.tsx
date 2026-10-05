@@ -325,7 +325,7 @@ export function LivePeople() {
                       <div className="font-medium">{p.user.name}</div>
                       <div className="text-muted-foreground">{p.designation ?? p.role?.replace(/_/g, " ")}</div>
                     </TD>
-                    <TD className="font-mono">{p.employeeCode ?? "—"}</TD>
+                    <TD className="tabular-nums">{p.employeeCode ?? "—"}</TD>
                     <TD>{p.department?.name ?? "—"}</TD>
                     <TD>{fmt(p.joiningDate)}</TD>
                   </TR>
@@ -362,7 +362,7 @@ function MonthGrid({ month }: { month: string }) {
   const off = new Map(a.data.offDays.map((d) => [d.date, d.name]));
   return (
     <Card className="overflow-x-auto">
-      <table className="w-full border-collapse text-[12px]">
+      <table className="w-full border-collapse text-body">
         <thead>
           <tr>
             <th className="sticky left-0 bg-card px-3 py-2 text-left font-medium">Person</th>

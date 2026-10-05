@@ -116,7 +116,7 @@ export function PortalHome() {
                       <div className={cn("flex items-start justify-between gap-3 p-5", awaiting.length === 1 && "md:flex-col md:justify-center md:p-7")}>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-x-2 text-body text-muted-foreground">
-                            <span className="font-mono">{v.code}</span>·<span>{v.format}</span>·<span>{ver?.duration}</span>
+                            <span className="tabular-nums">{v.code}</span>·<span>{v.format}</span>·<span>{ver?.duration}</span>
                           </div>
                           <div className="mt-1 truncate text-subheading font-semibold tracking-tight">{v.title}</div>
                           <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -405,7 +405,7 @@ function InvoiceRow({ title, no, amount, badge, onOpen }: { title: string; no: s
       </span>
       <div className="min-w-0 flex-1">
         <div className="text-body font-medium">{title}</div>
-        <div className="truncate font-mono text-body text-muted-foreground">{no}</div>
+        <div className="truncate tabular-nums text-body text-muted-foreground">{no}</div>
       </div>
       <div className="shrink-0 text-right">
         <div className="text-body font-semibold tabular">{inr(amount)}</div>

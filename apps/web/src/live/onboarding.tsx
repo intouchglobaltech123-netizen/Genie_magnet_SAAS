@@ -227,7 +227,7 @@ export function LiveOnboardingList() {
             {notStarted.map((c) => (
               <li key={c.id} className="flex items-center justify-between gap-2 py-2">
                 <span className="text-body">
-                  <span className="font-medium">{c.name}</span> <span className="font-mono text-muted-foreground">{c.code}</span>
+                  <span className="font-medium">{c.name}</span> <span className="tabular-nums text-muted-foreground">{c.code}</span>
                 </span>
                 <Button
                   size="xs"
@@ -290,7 +290,7 @@ function ShareDialog({ o, open, onOpenChange }: { o: OnboardingDetail; open: boo
           ) : (
             <>
               <div className="flex gap-2">
-                <Input readOnly value={url} aria-label="Link" className="font-mono" onFocus={(e) => e.target.select()} />
+                <Input readOnly value={url} aria-label="Link" className="tabular-nums" onFocus={(e) => e.target.select()} />
                 <Button
                   variant="secondary"
                   onClick={() => navigator.clipboard.writeText(url).then(() => toast.success("Link copied"))}

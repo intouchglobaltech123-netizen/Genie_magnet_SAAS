@@ -125,7 +125,7 @@ export const tooltipStyle: { contentStyle: CSSProperties; labelStyle: CSSPropert
     border: "1px solid var(--color-border)",
     borderRadius: 10,
     boxShadow: "var(--shadow-md)",
-    fontSize: 13,
+    fontSize: 14,
     padding: "8px 10px",
   },
   labelStyle: { color: "var(--color-text-muted)", marginBottom: 4, fontWeight: 500 },
@@ -135,7 +135,7 @@ export const tooltipStyle: { contentStyle: CSSProperties; labelStyle: CSSPropert
 export const axisProps = {
   tickLine: false,
   axisLine: false,
-  tick: { fill: "var(--color-text-muted)", fontSize: 12 },
+  tick: { fill: "var(--color-text-muted)", fontSize: 14 },
 } as const;
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {

@@ -515,7 +515,7 @@ export function LiveClient({ id }: { id: string }) {
       <PageHeader
         eyebrow={
           <>
-            <Badge tone="outline" className="font-mono">
+            <Badge tone="outline" className="tabular-nums">
               {c.code}
             </Badge>
             {c.archivedAt && <Badge tone="neutral">Archived</Badge>}
@@ -656,7 +656,7 @@ export function LiveClient({ id }: { id: string }) {
           <SectionCard title="Billing" description="Used on invoices.">
             <dl>
               <Row label="Name on invoices">{c.legalName ?? c.name}</Row>
-              <Row label="GSTIN">{c.gstin && <span className="font-mono">{c.gstin}</span>}</Row>
+              <Row label="GSTIN">{c.gstin && <span className="tabular-nums">{c.gstin}</span>}</Row>
               <Row label="State">{stateName(c.state)}</Row>
               <Row label="Address">{c.billingAddress && <span className="whitespace-pre-line">{c.billingAddress}</span>}</Row>
             </dl>

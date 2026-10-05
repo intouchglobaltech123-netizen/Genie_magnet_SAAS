@@ -17,15 +17,15 @@ All tokens live in `apps/web/src/app/globals.css` (`@theme static`). Every token
 
 Charts: `chart-1` Royal (dominant) · `chart-2` Sapphire · `chart-3` gold (one accent series) · `chart-4/5` neutrals · `chart-grid` gridlines.
 
-## Typography — one family (Geist), three sizes
+## Typography — one family (Inter), three sizes
 
 | Class | Size / line | Use |
 |---|---|---|
 | `text-heading` | 24 / 32 | Page titles, KPI numbers |
 | `text-subheading` | 16 / 24 | Section and card titles, dialog titles |
-| `text-body` | 13 / 20 | Everything else: body, tables, labels, helper text, metadata, badges |
+| `text-body` | 14 / 20 | Everything else: body, tables, labels, helper text, metadata, badges, chart labels |
 
-Hierarchy inside body text comes from weight (400/500/600) and colour, not from extra sizes.
+Hierarchy inside body text comes from weight (400/500/600) and colour, not from extra sizes. Codes and amounts use `tabular-nums` (same font, even-width digits), never a second family. Tailwind's default size scale is switched off in `globals.css`, and the lint refuses `text-xs…9xl`, pixel sizes, `font-mono`/`font-serif`, bold and italic in class names. The only marked exceptions are the printed A4 documents (invoice, payslip, monthly report) and the public website's headline.
 
 ## Shape & spacing
 
@@ -49,6 +49,9 @@ Hierarchy inside body text comes from weight (400/500/600) and colour, not from 
 
 ## Layout
 
-- Sidebar: Royal background, Sapphire active item, 3px Quicksand indicator; collapsible on desktop (icon rail), drawer below `lg`.
-- Top bar: breadcrumbs, search (Ctrl K), theme, notifications, profile/role menu.
+- Pages use the full width of the screen beside the menu (no centred cap); forms keep their own narrow widths.
+- Side menu: Royal background, Sapphire active item, 3px Quicksand indicator. Home and Genie Assistant on top; then sections that fold open (Sales and clients, Delivery, Money, People, Management) — the one holding the current page opens by itself and the open ones are remembered; Settings and Help at the foot. Its scrollbar is thin and shows only while the pointer is over the menu. Drawer below `lg`.
+- Settings is one page (`/app/settings`) listing its sections; every settings page (and import, audit log) shows the section list on the left on wide screens.
+- Top bar: agency switcher, where-you-are trail (section › page), search (Ctrl K — pages, clients, videos), notifications, help, theme, profile menu.
+- Page header: title and actions; a page's explanation longer than 100 characters sits behind an ⓘ beside the title.
 - Responsive grids always declare a base column (`grid grid-cols-1 md:grid-cols-…`) so wide tables scroll inside their card instead of stretching the page.

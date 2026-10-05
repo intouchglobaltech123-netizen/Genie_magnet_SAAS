@@ -19,7 +19,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <MobileSidebar />
       <div className={cn("transition-[padding] duration-200", collapsed ? "lg:pl-[72px]" : "lg:pl-[256px]")}>
         <Topbar />
-        <main className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</main>
+        <main className="w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-8 2xl:px-10">{children}</main>
       </div>
     </div>
   );

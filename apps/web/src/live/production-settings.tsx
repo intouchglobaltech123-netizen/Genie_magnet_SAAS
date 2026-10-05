@@ -67,7 +67,7 @@ function Form({ initial, canEdit }: { initial: ProductionSettings; canEdit: bool
       <fieldset disabled={!canEdit} className="space-y-4">
         <SectionCard title="Video codes" description="{CLIENT} the client's code, {MM} {YY} {YYYY} the month it is due, {00} the running number.">
           <Field label="Code format" error={errors.videoCodeFormat} hint={preview ? `The 5th video for KVR this month: ${preview}` : undefined}>
-            <Input className="max-w-xs font-mono" value={f.videoCodeFormat} onChange={(e) => setF({ ...f, videoCodeFormat: e.target.value })} />
+            <Input className="max-w-xs tabular-nums" value={f.videoCodeFormat} onChange={(e) => setF({ ...f, videoCodeFormat: e.target.value })} />
           </Field>
         </SectionCard>
 

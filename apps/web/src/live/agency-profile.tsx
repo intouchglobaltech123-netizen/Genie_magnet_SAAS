@@ -150,7 +150,7 @@ function ProfileForm({ agency, canEdit }: { agency: AgencyProfile; canEdit: bool
                     onChange={(e) => setF({ ...f, brandColor: e.target.value.toUpperCase() })}
                     className="h-9 w-12 cursor-pointer rounded-lg border border-input bg-surface p-1"
                   />
-                  <Input value={f.brandColor} onChange={set("brandColor")} placeholder="#1E3A8A" className="w-32 font-mono" />
+                  <Input value={f.brandColor} onChange={set("brandColor")} placeholder="#1E3A8A" className="w-32 tabular-nums" />
                   {f.brandColor && (
                     <Button type="button" variant="ghost" size="sm" onClick={() => setF({ ...f, brandColor: "" })}>
                       Clear
@@ -433,9 +433,9 @@ function PortalAddress({ canEdit }: { canEdit: boolean }) {
                 <Badge tone="outline" className="w-fit">
                   {r.type}
                 </Badge>
-                <code className="break-all font-mono">{r.name}</code>
+                <code className="break-all tabular-nums">{r.name}</code>
                 <span className="flex items-center gap-1">
-                  <code className="min-w-0 flex-1 break-all font-mono">{r.value}</code>
+                  <code className="min-w-0 flex-1 break-all tabular-nums">{r.value}</code>
                   <Button size="xs" variant="ghost" aria-label={`Copy the ${r.type} value`} onClick={() => copy(r.value)}>
                     <Copy />
                   </Button>

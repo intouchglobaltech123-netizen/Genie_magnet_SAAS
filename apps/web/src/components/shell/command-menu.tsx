@@ -61,7 +61,7 @@ export function CommandMenu({ open, onOpenChange }: { open: boolean; onOpenChang
                 {videos.map((v) => (
                   <Command.Item key={v.id} value={`video ${v.code} ${v.title}`} onSelect={() => go(`/production/${v.id}`)} className={itemCls}>
                     <Film />
-                    <span className="font-mono text-body text-muted-foreground">{v.code}</span>
+                    <span className="tabular-nums text-body text-muted-foreground">{v.code}</span>
                     <span className="truncate">{v.title}</span>
                   </Command.Item>
                 ))}

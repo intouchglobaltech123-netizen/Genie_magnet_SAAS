@@ -1311,7 +1311,8 @@ export function useExpenseAction() {
   });
 }
 
-export const useFinanceMonths = () => useQuery({ queryKey: ["finance", "months"], queryFn: () => api<FinanceMonthRow[]>("/finance/months") });
+export const useFinanceMonths = (enabled = true) =>
+  useQuery({ queryKey: ["finance", "months"], queryFn: () => api<FinanceMonthRow[]>("/finance/months"), enabled });
 
 export function useFinanceMonthAction() {
   const qc = useQueryClient();

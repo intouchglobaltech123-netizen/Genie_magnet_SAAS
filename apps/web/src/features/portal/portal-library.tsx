@@ -60,7 +60,7 @@ export function PortalLibrary() {
                 <div className="space-y-3 p-4">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-body text-muted-foreground">{v.code}</span>
+                      <span className="tabular-nums text-body text-muted-foreground">{v.code}</span>
                       {v.stage === "Published" ? (
                         <Badge tone="success" dot>
                           Live

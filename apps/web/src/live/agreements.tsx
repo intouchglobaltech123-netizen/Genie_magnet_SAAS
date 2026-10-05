@@ -572,7 +572,7 @@ export function LiveAgreements({ view: initial }: { view?: string }) {
                     <Link href={`/app/clients/${a.clientId}`} className="font-medium hover:underline" onClick={(e) => e.stopPropagation()}>
                       {a.client.name}
                     </Link>
-                    <div className="font-mono text-muted-foreground">{a.client.code}</div>
+                    <div className="tabular-nums text-muted-foreground">{a.client.code}</div>
                   </TD>
                   <TD>
                     <div>{a.title}</div>

@@ -204,7 +204,7 @@ export function CalendarView({ videos, clientFilter, onNew }: { videos: Video[];
             ) : (
               <Link key={it.v.id} href={`/production/${it.v.id}`} className="block rounded-xl border border-border p-3 transition hover:border-primary/50 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-body font-medium text-muted-foreground">{it.v.code}</span>
+                  <span className="tabular-nums text-body font-medium text-muted-foreground">{it.v.code}</span>
                   <div className="flex items-center gap-1">
                     <UrgencyIcon urgency={it.v.urgency} />
                     <VPBadge on={it.v.videoProtection} />

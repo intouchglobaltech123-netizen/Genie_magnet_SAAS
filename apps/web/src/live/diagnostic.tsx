@@ -90,12 +90,12 @@ function Bfa() {
       <div className="grid gap-3 sm:grid-cols-2">
         <Card className="p-4">
           <div className="text-body text-muted-foreground">BFA score</div>
-          <div className="text-3xl font-semibold">{scores.overall === null ? "—" : `${scores.overall}%`}</div>
+          <div className="text-heading font-semibold">{scores.overall === null ? "—" : `${scores.overall}%`}</div>
           <Progress value={scores.overall ?? 0} tone={scores.overall !== null && scores.overall < 50 ? "danger" : "success"} />
         </Card>
         <Card className="p-4">
           <div className="text-body text-muted-foreground">Founder dependency</div>
-          <div className="text-3xl font-semibold">{scores.founderDependency === null ? "—" : `${scores.founderDependency}%`}</div>
+          <div className="text-heading font-semibold">{scores.founderDependency === null ? "—" : `${scores.founderDependency}%`}</div>
           <Progress value={scores.founderDependency ?? 0} tone={scores.founderDependency !== null && scores.founderDependency > 50 ? "danger" : "warning"} />
           <div className="mt-1 text-body text-muted-foreground">How much of the business runs only through the owner.</div>
         </Card>
@@ -630,7 +630,7 @@ function Scenarios() {
           ].map(([k, v]) => (
             <Card key={k} className="p-3">
               <div className="text-body text-muted-foreground">{k}</div>
-              <div className={cn("text-xl font-semibold", k === "Profit" && p.profit < 0 && "text-danger")}>{v}</div>
+              <div className={cn("text-subheading font-semibold", k === "Profit" && p.profit < 0 && "text-danger")}>{v}</div>
             </Card>
           ))}
         </div>

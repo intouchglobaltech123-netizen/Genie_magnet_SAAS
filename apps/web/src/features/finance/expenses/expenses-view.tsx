@@ -195,7 +195,7 @@ function ExpenseRow({ e, onOpen, onApprove, onReject, onSettle }: { e: Expense; 
             <div className="truncate font-medium">{e.vendor}</div>
             <div className="truncate text-body text-muted-foreground">{e.description}</div>
             <div className="text-body text-muted-foreground">
-              <span className="font-mono">{e.code}</span> · {fmtDate(e.date)}
+              <span className="tabular-nums">{e.code}</span> · {fmtDate(e.date)}
             </div>
           </div>
         </div>
@@ -219,7 +219,7 @@ function ExpenseRow({ e, onOpen, onApprove, onReject, onSettle }: { e: Expense; 
         {e.clientId ? (
           <div>
             <div className="text-body">{clientById(e.clientId).name}</div>
-            <div className="font-mono text-body text-muted-foreground">{e.videoCode}</div>
+            <div className="tabular-nums text-body text-muted-foreground">{e.videoCode}</div>
           </div>
         ) : (
           <div>

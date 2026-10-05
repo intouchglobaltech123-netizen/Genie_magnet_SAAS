@@ -364,7 +364,7 @@ export function TimeView() {
                       </td>
                       <td className="px-3">
                         {e.videoCode ? (
-                          <span className="tabular inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-border px-1.5 py-0.5 font-mono text-body">
+                          <span className="tabular inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-border px-1.5 py-0.5 tabular-nums text-body">
                             <Film className="size-3 text-muted-foreground" />
                             {e.videoCode}
                           </span>

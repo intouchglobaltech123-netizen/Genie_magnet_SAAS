@@ -20,7 +20,7 @@ export function ClientChip({ clientId, short, className }: { clientId: string; s
 export function ClientTag({ clientId }: { clientId: string }) {
   const c = clientById(clientId);
   return (
-    <span className="inline-flex items-center rounded-md px-1.5 py-0.5 font-mono text-body font-semibold tracking-wide" style={clientTint(clientId, 14)}>
+    <span className="inline-flex items-center rounded-md px-1.5 py-0.5 tabular-nums text-body font-semibold tracking-wide" style={clientTint(clientId, 14)}>
       {c.code}
     </span>
   );
@@ -89,7 +89,7 @@ export function GateNotice({ gate, className }: { gate: Gate; className?: string
 export function VideoLink({ v, className }: { v: Video; className?: string }) {
   return (
     <Link href={`/production/${v.id}`} className={cn("group min-w-0", className)}>
-      <div className="font-mono text-body font-medium tracking-wide text-muted-foreground">{v.code}</div>
+      <div className="tabular-nums text-body font-medium tracking-wide text-muted-foreground">{v.code}</div>
       <div className="truncate text-body font-medium text-text-primary group-hover:text-primary">{v.title}</div>
     </Link>
   );

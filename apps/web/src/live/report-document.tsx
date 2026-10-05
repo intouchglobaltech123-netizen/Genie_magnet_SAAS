@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable no-restricted-syntax -- a printed A4 document keeps its own type sizes (see eslint.config.mjs) */
 import { ExternalLink } from "lucide-react";
 import { METRIC_KEYS, METRIC_LABEL, type MonthlyReport, type MonthlyReportData } from "@gm/shared";
 import { PLATFORM_LABEL } from "./packages";
@@ -11,7 +12,7 @@ function Tile({ label, value, sub }: { label: string; value: string; sub?: strin
   return (
     <div className="rounded-lg border border-neutral-200 p-3">
       <div className="text-[12px] uppercase tracking-wide text-neutral-500">{label}</div>
-      <div className="text-xl font-semibold">{value}</div>
+      <div className="text-[20px] leading-7 font-semibold">{value}</div>
       {sub && <div className="text-[12px] text-neutral-500">{sub}</div>}
     </div>
   );
@@ -38,18 +39,18 @@ export function ReportDocument({ report }: { report: Pick<MonthlyReport, "month"
             // eslint-disable-next-line @next/next/no-img-element -- the agency's logo, a small data URL
             <img src={data.agency.logo} alt="" className="size-12 object-contain" />
           ) : (
-            <span className="inline-flex size-12 items-center justify-center rounded-lg text-xl font-bold text-white" style={{ background: brand }}>
+            <span className="inline-flex size-12 items-center justify-center rounded-lg text-[20px] leading-7 font-bold text-white" style={{ background: brand }}>
               {data.agency.name[0]}
             </span>
           )}
           <div>
             <div className="text-neutral-500">{data.agency.name}</div>
-            <h1 className="text-xl font-semibold">{data.client.name}</h1>
+            <h1 className="text-[20px] leading-7 font-semibold">{data.client.name}</h1>
           </div>
         </div>
         <div className="text-right">
           <div className="text-[12px] uppercase tracking-wide text-neutral-500">Monthly report</div>
-          <div className="text-lg font-semibold">{monthName(data.month)}</div>
+          <div className="text-[18px] leading-7 font-semibold">{monthName(data.month)}</div>
         </div>
       </header>
 

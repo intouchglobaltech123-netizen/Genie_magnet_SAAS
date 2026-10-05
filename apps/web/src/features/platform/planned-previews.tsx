@@ -441,7 +441,7 @@ export function AuditPreview() {
                 </TD>
                 <TD className="whitespace-nowrap text-muted-foreground tabular">{a.at}</TD>
                 <TD className="whitespace-nowrap">{a.action}</TD>
-                <TD className="whitespace-nowrap font-mono">{a.record}</TD>
+                <TD className="whitespace-nowrap tabular-nums">{a.record}</TD>
                 <TD className="whitespace-nowrap">
                   <span className="text-muted-foreground line-through decoration-muted-foreground/40">{a.from}</span> <ArrowRight className="inline size-3 text-muted-foreground" />{" "}
                   <span className="font-medium">{a.to}</span>

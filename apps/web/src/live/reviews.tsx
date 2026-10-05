@@ -141,7 +141,7 @@ function MeetingView({ id, onBack }: { id: string; onBack: () => void }) {
       </Button>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold">{m.title}</h2>
+          <h2 className="text-subheading font-semibold">{m.title}</h2>
           <p className="text-body text-muted-foreground">
             {when(m.startsAt)}
             {m.venue && ` · ${m.venue}`}
@@ -515,7 +515,7 @@ function Rhythms({ onOpen }: { onOpen: (id: string) => void }) {
             <Card key={c.cadence} className="p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft font-bold text-primary">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-soft font-semibold text-primary">
                     {LETTER[c.cadence]}
                   </span>
                   <div>

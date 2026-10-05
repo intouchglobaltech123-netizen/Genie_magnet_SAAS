@@ -405,7 +405,7 @@ function GoalLine({ g, depth, childrenOf, onOpen }: { g: GoalRow; depth: number;
             value={Math.max(0, Math.min(100, g.progress * 100))}
             tone={g.status === "off_track" ? "danger" : g.status === "at_risk" ? "warning" : "success"}
           />
-          <div className="mt-0.5 text-right text-[12px] text-muted-foreground">
+          <div className="mt-0.5 text-right text-body text-muted-foreground">
             {valueOf(g.actual, g.unit)} / {valueOf(g.target, g.unit)}
           </div>
         </div>

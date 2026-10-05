@@ -132,7 +132,7 @@ export function AgingTab({ invoices }: { invoices: InvoiceView[] }) {
                 ))}
                 <TD numeric className="font-semibold">{inr(r.total)}</TD>
                 <TD className="text-body text-muted-foreground">
-                  <span className="font-mono">{r.oldest.number.slice(-3)}</span> · {r.oldest.daysOverdue ? `${r.oldest.daysOverdue}d late` : `due ${fmtDate(r.oldest.dueDate)}`}
+                  <span className="tabular-nums">{r.oldest.number.slice(-3)}</span> · {r.oldest.daysOverdue ? `${r.oldest.daysOverdue}d late` : `due ${fmtDate(r.oldest.dueDate)}`}
                 </TD>
                 <TD numeric className="pr-5">
                   <Button size="xs" variant="outline" onClick={() => remind(r.oldest)}>
@@ -196,7 +196,7 @@ export function AdvancesTab() {
         <TBody>
           {rows.map((r) => (
             <TR key={r.id}>
-              <TD className="pl-5 font-mono text-body">{r.number}</TD>
+              <TD className="pl-5 tabular-nums text-body">{r.number}</TD>
               <TD>
                 <div className="font-medium">{r.party.name}</div>
                 <div className="text-body text-muted-foreground">{r.purpose}</div>
@@ -204,7 +204,7 @@ export function AdvancesTab() {
               <TD>
                 <div className="tabular">{fmtDate(r.receivedOn)}</div>
                 <div className="text-body text-muted-foreground">
-                  {r.mode} · <span className="font-mono">{r.ref}</span>
+                  {r.mode} · <span className="tabular-nums">{r.ref}</span>
                 </div>
               </TD>
               <TD numeric>{inr(r.amount)}</TD>
@@ -213,7 +213,7 @@ export function AdvancesTab() {
                   <div className="space-y-0.5">
                     {r.adjustments.map((a) => (
                       <div key={a.invoiceNo + a.date} className="text-body">
-                        <span className="font-mono">{a.invoiceNo}</span> <span className="text-muted-foreground tabular">· {inr(a.amount)}</span>
+                        <span className="tabular-nums">{a.invoiceNo}</span> <span className="text-muted-foreground tabular">· {inr(a.amount)}</span>
                       </div>
                     ))}
                   </div>
@@ -289,12 +289,12 @@ export function CreditNotesTab() {
             return (
               <TR key={n.id} className={cn(n.status === "draft" && "bg-warning-soft/40")}>
                 <TD className="pl-5">
-                  <div className="font-mono text-body">{n.number}</div>
+                  <div className="tabular-nums text-body">{n.number}</div>
                   <div className="text-body text-muted-foreground">{fmtDate(n.date)}</div>
                 </TD>
                 <TD>
                   <div className="font-medium">{party.name}</div>
-                  <div className="font-mono text-body text-muted-foreground">{n.invoiceNo}</div>
+                  <div className="tabular-nums text-body text-muted-foreground">{n.invoiceNo}</div>
                 </TD>
                 <TD className="max-w-[340px]">
                   <div className="text-body">{n.reason}</div>

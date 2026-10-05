@@ -92,7 +92,7 @@ export function PublishingPage() {
                 <Poster video={v} className="aspect-video w-full shrink-0 rounded-lg md:w-40" size="sm" showMeta={false} />
                 <div className="min-w-0 flex-1">
                   <div className="flex min-w-0 items-center gap-2 text-body text-muted-foreground">
-                    <span className="shrink-0 font-mono">{v.code}</span>·<span className="truncate">{client.name}</span>
+                    <span className="shrink-0 tabular-nums">{v.code}</span>·<span className="truncate">{client.name}</span>
                   </div>
                   <div className="mt-0.5 truncate text-subheading font-semibold">{v.title}</div>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -159,7 +159,7 @@ export function PublishingPage() {
                   </div>
                   <div className="space-y-2.5 p-4">
                     <div>
-                      <div className="truncate font-mono text-body text-muted-foreground">
+                      <div className="truncate tabular-nums text-body text-muted-foreground">
                         {v.code} · {clientById(v.clientId).name}
                       </div>
                       <div className="mt-0.5 truncate text-body font-semibold">{v.title}</div>

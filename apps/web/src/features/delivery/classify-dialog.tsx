@@ -129,7 +129,7 @@ export function ClassifyDialog({ open, onOpenChange }: { open: boolean; onOpenCh
                       c.id === commentId ? "border-primary bg-primary-soft" : "border-border hover:bg-muted/60",
                     )}
                   >
-                    <span className="shrink-0 font-mono text-body text-primary">{c.timestamp ?? "—"}</span>
+                    <span className="shrink-0 tabular-nums text-body text-primary">{c.timestamp ?? "—"}</span>
                     <span className="min-w-0 flex-1">
                       {c.text}
                       <span className="mt-0.5 block text-body text-muted-foreground">

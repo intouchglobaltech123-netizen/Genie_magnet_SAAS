@@ -106,8 +106,8 @@ function Matrix() {
               <CartesianGrid stroke="var(--color-chart-grid)" />
               <ReferenceLine x={50} stroke="var(--color-border-strong)" strokeWidth={1.5} />
               <ReferenceLine y={50} stroke="var(--color-border-strong)" strokeWidth={1.5} />
-              <XAxis type="number" dataKey="effort" domain={[0, 100]} {...axisProps} label={{ value: "Effort to serve →", position: "insideBottom", offset: -12, fill: "var(--color-text-muted)", fontSize: 12 }} />
-              <YAxis type="number" dataKey="return" domain={[0, 100]} {...axisProps} width={40} label={{ value: "Return →", angle: -90, position: "insideLeft", offset: 14, fill: "var(--color-text-muted)", fontSize: 12 }} />
+              <XAxis type="number" dataKey="effort" domain={[0, 100]} {...axisProps} label={{ value: "Effort to serve →", position: "insideBottom", offset: -12, fill: "var(--color-text-muted)", fontSize: 14 }} />
+              <YAxis type="number" dataKey="return" domain={[0, 100]} {...axisProps} width={40} label={{ value: "Return →", angle: -90, position: "insideLeft", offset: 14, fill: "var(--color-text-muted)", fontSize: 14 }} />
               <ZAxis type="number" dataKey="value" range={[260, 900]} />
               <Tooltip
                 {...tooltipStyle}
@@ -133,7 +133,7 @@ function Matrix() {
                   return (
                     <g>
                       <circle cx={cx} cy={cy} r={r} fill={catColor[payload.category]} fillOpacity={0.22} stroke={catColor[payload.category]} strokeWidth={1.5} />
-                      <text x={cx} y={cy + 4} textAnchor="middle" fontSize={11} fontWeight={600} fill="var(--color-text-primary)">
+                      <text x={cx} y={cy + 4} textAnchor="middle" fontSize={14} fontWeight={600} fill="var(--color-text-primary)">
                         {payload.code}
                       </text>
                     </g>

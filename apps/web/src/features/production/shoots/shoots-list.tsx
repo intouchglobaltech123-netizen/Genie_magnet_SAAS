@@ -105,7 +105,7 @@ export function ShootsList() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <ClientTag clientId={s.clientId} />
-                      <span className="font-mono text-body text-muted-foreground">{s.batchNo}</span>
+                      <span className="tabular-nums text-body text-muted-foreground">{s.batchNo}</span>
                       <Badge tone={shootStatusMeta[st].tone} dot className="ml-auto">
                         {shootStatusMeta[st].label}
                       </Badge>

@@ -147,7 +147,7 @@ function ScorecardDialog({ id, onClose }: { id: string; onClose: () => void }) {
                           ) : (
                             `${k.actual}${k.unit}`
                           )}
-                          {k.auto && <div className="text-[11px] text-muted-foreground">from the app</div>}
+                          {k.auto && <div className="text-body text-muted-foreground">from the app</div>}
                         </TD>
                         <TD numeric>{k.weight}</TD>
                         <TD numeric>{k.achieved === null ? "—" : Math.round(k.achieved * k.weight * 10) / 10}</TD>

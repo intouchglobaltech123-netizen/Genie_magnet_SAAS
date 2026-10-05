@@ -90,7 +90,7 @@ export function CostingSettings() {
             <div key={r.version} className="flex items-start gap-3 rounded-xl border border-border p-3.5">
               <span
                 className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-lg font-mono text-body font-semibold",
+                  "flex size-8 shrink-0 items-center justify-center rounded-lg tabular-nums text-body font-semibold",
                   r.status === "current" ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground",
                 )}
               >

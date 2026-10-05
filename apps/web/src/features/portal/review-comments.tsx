@@ -132,7 +132,7 @@ export function ReviewComments({
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span className="text-body font-medium">{c.author}</span>
                   {c.timestamp && (
-                    <span className="rounded-md bg-muted px-1.5 font-mono text-body text-primary">{c.timestamp}</span>
+                    <span className="rounded-md bg-muted px-1.5 tabular-nums text-body text-primary">{c.timestamp}</span>
                   )}
                   <span className="ml-auto text-body text-muted-foreground">{fmtDate(c.at)}</span>
                 </div>
@@ -160,7 +160,7 @@ export function ReviewComments({
                 aria-label={pinTime ? "Unpin from current frame" : "Pin to current frame"}
                 onClick={() => setPinTime((p) => !p)}
                 className={cn(
-                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 font-mono text-body transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
+                  "inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 tabular-nums text-body transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35",
                   pinTime ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground line-through",
                 )}
               >
@@ -175,7 +175,7 @@ export function ReviewComments({
                   <span className="absolute inline-flex size-full animate-ping rounded-full bg-danger opacity-60" />
                   <span className="relative inline-flex size-3 rounded-full bg-danger" />
                 </span>
-                <span className="font-mono text-body text-danger">0:0{recording}</span>
+                <span className="tabular-nums text-body text-danger">0:0{recording}</span>
                 <Bars active className="text-danger" />
                 <Button size="xs" variant="ghost" className="ml-auto" onClick={cancelRecording}>
                   <Square /> Cancel
@@ -286,7 +286,7 @@ function VoiceNote({ text }: { text: string }) {
           {playing ? <Pause className="size-3 fill-current" /> : <Play className="ml-0.5 size-3 fill-current" />}
         </span>
         <Bars active={playing} />
-        <span className="font-mono text-body text-muted-foreground">{duration}</span>
+        <span className="tabular-nums text-body text-muted-foreground">{duration}</span>
       </span>
       {rest && <p className="text-body leading-relaxed text-muted-foreground">{rest}</p>}
     </div>

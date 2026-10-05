@@ -336,7 +336,7 @@ function DeliverablesTab({ a }: { a: LiveAgreement }) {
               <TD className="pl-5">
                 <div className="flex items-center gap-2">
                   <UrgencyIcon urgency={v.urgency} />
-                  <span className="font-mono text-body">{v.code}</span>
+                  <span className="tabular-nums text-body">{v.code}</span>
                 </div>
               </TD>
               <TD>
@@ -412,7 +412,7 @@ function BillingTab({ a }: { a: LiveAgreement }) {
           <TBody>
             {invoices.map((i) => (
               <TR key={i.no}>
-                <TD className="pl-5 font-mono text-body">{i.no}</TD>
+                <TD className="pl-5 tabular-nums text-body">{i.no}</TD>
                 <TD>{i.period}</TD>
                 <TD className="tabular text-muted-foreground">{fmtDate(i.issued)}</TD>
                 <TD className="tabular text-muted-foreground">{fmtDate(i.due)}</TD>

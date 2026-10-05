@@ -157,7 +157,7 @@ export function CashFlowCard({ months }: { months: string[] }) {
               <YAxis yAxisId="flow" {...axisProps} tickFormatter={(v: number) => inrCompact(v)} width={60} />
               <YAxis yAxisId="bal" orientation="right" {...axisProps} tickFormatter={(v: number) => inrCompact(v)} width={56} />
               <RTooltip {...tooltipStyle} formatter={fmtTip} />
-              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: "var(--color-text-muted)" }} />
+              <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 14, color: "var(--color-text-muted)" }} />
               <Bar yAxisId="flow" dataKey="inflow" name="Inflows" fill="var(--color-chart-2)" radius={[4, 4, 0, 0]} maxBarSize={24} />
               <Bar yAxisId="flow" dataKey="outflow" name="Outflows" fill="var(--color-chart-4)" radius={[4, 4, 0, 0]} maxBarSize={24} />
               <Line yAxisId="bal" type="monotone" dataKey="closing" name="Closing balance" stroke="var(--color-chart-1)" strokeWidth={2.5} dot={{ r: 3, fill: "var(--color-chart-1)" }} />

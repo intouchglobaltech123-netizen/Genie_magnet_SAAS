@@ -181,7 +181,7 @@ export function SetupTab() {
                     labelFormatter={(v) => `Age ${v}`}
                     formatter={(v, n) => [inr(Number(v)), n === "withLeakStopped" ? "Leak stopped → invested" : "Current SIP"]}
                   />
-                  <ReferenceLine y={c.corpus} stroke="var(--color-chart-3)" strokeDasharray="5 4" label={{ value: `Target ${inrCompact(c.corpus)}`, fill: "var(--color-accent-strong)", fontSize: 12, position: "insideTopLeft" }} />
+                  <ReferenceLine y={c.corpus} stroke="var(--color-chart-3)" strokeDasharray="5 4" label={{ value: `Target ${inrCompact(c.corpus)}`, fill: "var(--color-accent-strong)", fontSize: 14, position: "insideTopLeft" }} />
                   <Area type="monotone" dataKey="withLeakStopped" stroke="var(--color-chart-2)" strokeWidth={2} fill="var(--color-chart-2)" fillOpacity={0.08} />
                   <Area type="monotone" dataKey="invested" stroke="var(--color-chart-1)" strokeWidth={2} fill="var(--color-chart-1)" fillOpacity={0.08} />
                 </AreaChart>

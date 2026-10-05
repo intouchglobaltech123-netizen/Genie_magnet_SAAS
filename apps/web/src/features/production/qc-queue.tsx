@@ -92,7 +92,7 @@ export function QcQueue() {
           {passed.map((v) => (
             <Link key={v.id} href={`/production/${v.id}`} className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/35 sm:gap-4 sm:px-5">
               <CheckCheck className="size-4 shrink-0 text-success" />
-              <span className="hidden w-28 shrink-0 font-mono text-body text-muted-foreground sm:inline">{v.code}</span>
+              <span className="hidden w-28 shrink-0 tabular-nums text-body text-muted-foreground sm:inline">{v.code}</span>
               <span className="min-w-0 flex-1 truncate text-body font-medium">{v.title}</span>
               <span className="hidden text-body text-muted-foreground md:inline">QC by Karthik S.</span>
               <StageBadge stage={v.stage} />
@@ -131,7 +131,7 @@ function QueueRow({ v, open, onToggle }: { v: Video; open: boolean; onToggle: ()
       <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full cursor-pointer items-center gap-3 px-4 py-3.5 text-left transition hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring/35 sm:gap-4 sm:px-5">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-body font-medium text-muted-foreground">{v.code}</span>
+            <span className="tabular-nums text-body font-medium text-muted-foreground">{v.code}</span>
             <UrgencyIcon urgency={v.urgency} />
             {q.fail > 0 && (
               <Badge tone="danger">

@@ -213,7 +213,7 @@ function QueueRow({ v }: { v: PublishingItem }) {
     <li className="rounded-xl border border-border bg-card p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
         <span>
-          <Link href={`/app/production/${v.id}`} className="font-mono font-semibold hover:underline">
+          <Link href={`/app/production/${v.id}`} className="tabular-nums font-semibold hover:underline">
             {v.code}
           </Link>{" "}
           <span className="text-body">{v.title}</span>

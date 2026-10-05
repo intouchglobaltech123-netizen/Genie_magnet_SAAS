@@ -48,7 +48,7 @@ export function Poster({
       {showMeta && (
         <div className={cn("absolute left-3 top-3 flex gap-1.5", size === "sm" && "hidden")}>
           <span className="rounded-md bg-black/45 px-1.5 py-0.5 text-body font-medium text-white/90 backdrop-blur">{video.format}</span>
-          <span className="rounded-md bg-black/45 px-1.5 py-0.5 font-mono text-body text-white/80 backdrop-blur">{video.aspect}</span>
+          <span className="rounded-md bg-black/45 px-1.5 py-0.5 tabular-nums text-body text-white/80 backdrop-blur">{video.aspect}</span>
         </div>
       )}
       {showPlay && (

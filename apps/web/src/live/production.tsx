@@ -173,7 +173,7 @@ function VideoCard({ v, draggable }: { v: VideoSummary; draggable: boolean }) {
       className="block rounded-lg border border-border bg-surface p-3 shadow-sm transition-colors hover:border-secondary/40"
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-body font-semibold">{v.code}</span>
+        <span className="tabular-nums text-body font-semibold">{v.code}</span>
         <UrgencyBadge urgency={v.urgency} />
       </div>
       <div className="mt-0.5 truncate text-body">{v.title}</div>
@@ -251,7 +251,7 @@ function SheetRow({ v, i, editable }: { v: VideoSummary; i: number; editable: bo
     <TR>
       <TD className="tabular text-muted-foreground">{i + 1}</TD>
       <TD>
-        <Link href={`/app/production/${v.id}`} className="font-mono font-medium hover:underline">
+        <Link href={`/app/production/${v.id}`} className="tabular-nums font-medium hover:underline">
           {v.code}
         </Link>
       </TD>
@@ -336,7 +336,7 @@ function QcQueue({ videos }: { videos: VideoSummary[] }) {
             className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-card p-3 hover:border-secondary/40"
           >
             <span>
-              <span className="font-mono font-semibold">{v.code}</span> <span className="text-body">{v.title}</span>
+              <span className="tabular-nums font-semibold">{v.code}</span> <span className="text-body">{v.title}</span>
               <span className="block text-body text-muted-foreground">
                 {v.client.name} · {v.editor?.name ?? "no editor"} · due {v.dueDate ? fmtDate(v.dueDate) : "—"}
               </span>
@@ -408,7 +408,7 @@ function Revisions() {
             <TR key={r.id}>
               <TD>
                 {r.video ? (
-                  <Link href={`/app/production/${r.video.id}`} className="font-mono font-medium hover:underline">
+                  <Link href={`/app/production/${r.video.id}`} className="tabular-nums font-medium hover:underline">
                     {r.video.code}
                   </Link>
                 ) : (
@@ -658,7 +658,7 @@ export function ClientVideos({ clientId }: { clientId: string }) {
             {videos.data.slice(0, 12).map((v) => (
               <TR key={v.id}>
                 <TD>
-                  <Link href={`/app/production/${v.id}`} className="font-mono font-medium hover:underline">
+                  <Link href={`/app/production/${v.id}`} className="tabular-nums font-medium hover:underline">
                     {v.code}
                   </Link>
                 </TD>

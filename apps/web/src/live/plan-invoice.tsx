@@ -32,6 +32,7 @@ export function LivePlanInvoice({ id }: { id: string }) {
   );
 }
 
+/* eslint-disable no-restricted-syntax -- a printed A4 document keeps its own type sizes (see eslint.config.mjs) */
 function PlanInvoiceDocument({ inv }: { inv: PlatformInvoiceRow }) {
   const gst = inv.cgst + inv.sgst + inv.igst > 0;
   const date = (d: string) => fmtDate(d, { day: "numeric", month: "short", year: "numeric" });
@@ -78,7 +79,7 @@ function PlanInvoiceDocument({ inv }: { inv: PlatformInvoiceRow }) {
             <td className="py-2 pr-2">
               {inv.plan.name} plan, {date(inv.periodStart)} to {date(inv.periodEnd)}
             </td>
-            {inv.sac && <td className="py-2 pr-2 font-mono text-[12px]">{inv.sac}</td>}
+            {inv.sac && <td className="py-2 pr-2 tabular-nums text-[12px]">{inv.sac}</td>}
             <td className="py-2 text-right">{money(inv.amount, inv.currency)}</td>
           </tr>
         </tbody>
@@ -112,3 +113,4 @@ function PlanInvoiceDocument({ inv }: { inv: PlatformInvoiceRow }) {
     </article>
   );
 }
+/* eslint-enable no-restricted-syntax */

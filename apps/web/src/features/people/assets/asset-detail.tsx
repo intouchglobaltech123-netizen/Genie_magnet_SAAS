@@ -30,7 +30,7 @@ const tooltipStyle = {
   background: "var(--color-popover)",
   border: "1px solid var(--color-border)",
   borderRadius: 10,
-  fontSize: 13,
+  fontSize: 14,
   padding: "8px 10px",
 };
 
@@ -130,12 +130,12 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={series} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                     <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
-                    <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} minTickGap={24} />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "var(--color-text-muted)", fontSize: 14 }} minTickGap={24} />
                     <YAxis
                       tickLine={false}
                       axisLine={false}
                       width={56}
-                      tick={{ fill: "var(--color-text-muted)", fontSize: 12 }}
+                      tick={{ fill: "var(--color-text-muted)", fontSize: 14 }}
                       tickFormatter={(v: number) => inrCompact(v)}
                     />
                     <RTooltip
@@ -144,7 +144,7 @@ function Body({ asset: a, reservations, onReserve }: { asset: Asset; reservation
                       itemStyle={{ color: "var(--color-foreground)" }}
                       formatter={(v) => [inr(Number(v)), "Book value"]}
                     />
-                    {todayInSeries && <ReferenceLine x={todayLabel} stroke="var(--color-primary)" strokeDasharray="4 4" label={{ value: "Today", fill: "var(--color-primary)", fontSize: 12, position: "top" }} />}
+                    {todayInSeries && <ReferenceLine x={todayLabel} stroke="var(--color-primary)" strokeDasharray="4 4" label={{ value: "Today", fill: "var(--color-primary)", fontSize: 14, position: "top" }} />}
                     <Area type="linear" dataKey="value" stroke="var(--color-chart-1)" strokeWidth={2} fill="var(--color-chart-1)" fillOpacity={0.08} />
                   </AreaChart>
                 </ResponsiveContainer>

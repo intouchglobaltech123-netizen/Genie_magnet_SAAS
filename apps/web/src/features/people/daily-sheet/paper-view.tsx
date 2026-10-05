@@ -53,10 +53,10 @@ export function PaperView({
               </div>
               <div className="text-right text-body leading-5">
                 <div>
-                  Name: <span className="font-serif text-body italic">{person.name}</span>
+                  Name: <span className="text-body">{person.name}</span>
                 </div>
                 <div>
-                  Date: <span className="font-serif text-body italic">{dayLabel(date, { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
+                  Date: <span className="text-body">{dayLabel(date, { day: "2-digit", month: "2-digit", year: "numeric" })}</span>
                 </div>
               </div>
             </div>
@@ -88,19 +88,19 @@ export function PaperView({
                   )}
                 </tr>
               </thead>
-              <tbody className="font-serif italic">
+              <tbody>
                 {rows.map((r, i) => {
                   const v = r.videoId ? videos.find((x) => x.id === r.videoId) : undefined;
                   const m = spanMinutes(r.start, r.end);
                   return (
                     <tr key={r.id} className="[&>td]:border [&>td]:border-foreground/30 [&>td]:px-2 [&>td]:py-1.5">
-                      <td className="not-italic font-sans">{i + 1}</td>
+                      <td>{i + 1}</td>
                       {isEditor ? (
                         <>
                           <td>
                             {v?.code ?? r.task}
                             {v && (
-                              <div className="mt-0.5 flex flex-wrap gap-x-2 font-sans text-body not-italic text-muted-foreground">
+                              <div className="mt-0.5 flex flex-wrap gap-x-2 text-body text-muted-foreground">
                                 {EDIT_STEPS.map((s) => (
                                   <span key={s}>
                                     {v.editSteps[s] ? "☑" : "☐"} {s}
@@ -138,7 +138,7 @@ export function PaperView({
                 {template.counters.map((c) => (
                   <div key={c.key} className="flex items-baseline justify-between border-b border-dotted border-foreground/40 py-0.5">
                     <span>Total No. of {c.label}</span>
-                    <span className="font-serif text-body italic">
+                    <span className="text-body">
                       {sheet?.counters[c.key] ?? 0}
                       {c.unit}
                     </span>
@@ -146,14 +146,14 @@ export function PaperView({
                 ))}
                 <div className="flex items-baseline sm:col-span-2 gap-2 border-b border-dotted border-foreground/40 py-0.5">
                   <span>Other works:</span>
-                  <span className="font-serif text-body italic">{sheet?.otherWorks}</span>
+                  <span className="text-body">{sheet?.otherWorks}</span>
                 </div>
               </div>
             )}
 
             <div className="mt-4 text-body">
               <div className="font-semibold">{isEditor ? "Delay / Extra Time Reason" : "Reason for the delay"}:</div>
-              <div className="min-h-10 border-b border-dotted border-foreground/40 font-serif text-body italic">
+              <div className="min-h-10 border-b border-dotted border-foreground/40 text-body">
                 {[sheet?.dayReason, ...rows.filter((r) => r.delayReason).map((r, i) => `(${i + 1}) ${r.delayReason}`)].filter(Boolean).join(" · ")}
               </div>
             </div>
@@ -163,7 +163,7 @@ export function PaperView({
                 const sig = sigFor(label);
                 return (
                   <div key={label} className="text-center">
-                    <div className="flex h-10 items-end justify-center font-serif text-subheading italic">{sig.at ? sig.name : ""}</div>
+                    <div className="flex h-10 items-end justify-center text-subheading">{sig.at ? sig.name : ""}</div>
                     <div className="border-t border-foreground/60 pt-1 text-body font-semibold">{label} Sign</div>
                     <div className="text-body text-muted-foreground">{sig.at ? stampLabel(sig.at) : "—"}</div>
                   </div>

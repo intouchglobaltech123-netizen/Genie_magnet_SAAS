@@ -46,7 +46,7 @@ function MyVideos() {
               <div className="min-w-0 flex-1">
                 <div className="truncate text-body font-medium">{v.title}</div>
                 <div className="text-body text-muted-foreground">
-                  <span className="font-mono">{v.code}</span> · {clientById(v.clientId).name}
+                  <span className="tabular-nums">{v.code}</span> · {clientById(v.clientId).name}
                 </div>
               </div>
               <div className="hidden w-32 sm:block">

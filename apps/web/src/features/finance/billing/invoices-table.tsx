@@ -104,7 +104,7 @@ export function InvoicesTable({
                 className={cn("cursor-pointer", critical && "bg-danger-soft/70 hover:bg-danger-soft", i.status === "draft" && "bg-primary-soft/40")}
               >
                 <TD className={cn("pl-5", critical && "border-l-2 border-l-danger")}>
-                  <div className="font-mono text-body font-medium">{i.number}</div>
+                  <div className="tabular-nums text-body font-medium">{i.number}</div>
                   <div className="text-body text-muted-foreground">{fmtDate(i.issueDate)}</div>
                 </TD>
                 <TD className="max-w-[260px]">

@@ -187,6 +187,7 @@ export function LandingPage({ site }: { site: PublicSite }) {
       <main>
         <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <p className="text-body font-medium text-accent-strong">For content and video agencies</p>
+          {/* eslint-disable-next-line no-restricted-syntax -- the public website's headline is larger than the app's sizes */}
           <h1 className="mt-3 max-w-3xl text-[2.25rem] font-semibold leading-tight tracking-tight text-primary sm:text-[3rem]">
             Run your agency from the first call to the last invoice.
           </h1>

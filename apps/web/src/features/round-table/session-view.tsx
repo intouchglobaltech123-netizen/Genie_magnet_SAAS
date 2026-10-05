@@ -185,7 +185,7 @@ function Lobby({ session, isManager }: { session: RTSession; isManager: boolean 
           <CardContent className="space-y-2">
             {session.questions.map((q, i) => (
               <div key={i} className="flex gap-2 rounded-lg bg-muted/60 p-2.5 text-body">
-                <span className="font-mono text-muted-foreground">Q{i + 1}</span>
+                <span className="tabular-nums text-muted-foreground">Q{i + 1}</span>
                 {q.replaceAll("{name}", "…")}
               </div>
             ))}
@@ -202,7 +202,7 @@ function Lobby({ session, isManager }: { session: RTSession; isManager: boolean 
             <ol className="space-y-1.5">
               {session.participantIds.map((pid, i) => (
                 <li key={pid} className="flex items-center gap-2 text-body">
-                  <span className="w-5 text-right font-mono text-body text-muted-foreground">{i + 1}</span>
+                  <span className="w-5 text-right tabular-nums text-body text-muted-foreground">{i + 1}</span>
                   <Avatar name={personById(pid).name} size="xs" />
                   {personById(pid).name}
                 </li>
@@ -398,7 +398,7 @@ function LiveRound({
           {session.questions.map((q, i) => (
             <div key={i} className="space-y-1.5">
               <label className="flex items-baseline gap-2 text-body font-medium">
-                <span className="font-mono text-body text-muted-foreground">Q{i + 1}</span>
+                <span className="tabular-nums text-body text-muted-foreground">Q{i + 1}</span>
                 {isSelf ? q.replaceAll("{name}", "you") : fillName(q, subjectId)}
               </label>
               <Textarea
@@ -723,7 +723,7 @@ function Moderation({ session }: { session: RTSession }) {
                   </Tooltip>
                 </div>
                 {a.missed ? (
-                  <p className="text-body italic text-muted-foreground">No answer before the buzzer.</p>
+                  <p className="text-body text-muted-foreground">No answer before the buzzer.</p>
                 ) : (
                   <dl className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     {a.answers.map((t, i) => (

@@ -204,7 +204,7 @@ function PayslipDialog({
           )}
           <div className="flex items-baseline justify-between rounded-xl bg-muted px-4 py-3">
             <span className="font-medium">Net pay</span>
-            <span className="text-lg font-semibold tabular-nums">{inr(slip.net)}</span>
+            <span className="text-subheading font-semibold tabular-nums">{inr(slip.net)}</span>
           </div>
         </DialogBody>
         <DialogFooter>
@@ -590,7 +590,7 @@ function Salaries() {
             {rows.data.map((r) => (
               <TR key={r.user.id} className={cn(can("salaries", "edit") && "cursor-pointer")} onClick={() => can("salaries", "edit") && setOpen(r)}>
                 <TD className="font-medium">{r.user.name}</TD>
-                <TD className="font-mono">{r.employeeCode ?? "—"}</TD>
+                <TD className="tabular-nums">{r.employeeCode ?? "—"}</TD>
                 <TD numeric>{r.current ? inr(r.current.total) : <span className="text-muted-foreground">Not set</span>}</TD>
                 <TD>{r.current ? fmt(r.current.from) : "—"}</TD>
               </TR>
@@ -863,6 +863,7 @@ export function LivePayslips() {
   );
 }
 
+/* eslint-disable no-restricted-syntax -- a printed A4 document keeps its own type sizes (see eslint.config.mjs) */
 function PayslipDocument({ p }: { p: PayslipRow }) {
   const brand = p.employer?.brandColor ?? "#1E3A8A";
   const rows = Math.max(p.earnings.length, p.deductions.length);
@@ -973,6 +974,7 @@ function PayslipDocument({ p }: { p: PayslipRow }) {
     </article>
   );
 }
+/* eslint-enable no-restricted-syntax */
 
 /** /app/payslips/[id]: one payslip, to read and print. */
 export function LivePayslip({ id }: { id: string }) {

@@ -5,69 +5,23 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
-  Building2,
-  CalendarDays,
-  Camera,
-  Check,
-  CreditCard,
-  FileBarChart,
-  Clapperboard,
-  ChevronDown,
-  ClipboardList,
-  ListChecks,
-  FileSpreadsheet,
-  FileSignature,
-  Filter,
-  FlaskConical,
-  History,
-  Inbox,
-  Home,
-  Landmark,
-  Lightbulb,
-  ListOrdered,
-  LogOut,
-  Megaphone,
-  MessageCircle,
-  Menu,
-  Moon,
-  Package,
-  Plus,
-  Receipt,
-  Repeat,
-  ReceiptIndianRupee,
-  ShieldCheck,
-  SlidersHorizontal,
-  Sun,
-  Sparkles,
-  Timer,
-  Wallet,
-  Calculator,
-  Contact,
-  Fingerprint,
-  CalendarOff,
-  Banknote,
-  ReceiptText,
-  Briefcase,
-  Gauge,
-  GraduationCap,
-  Target,
-  CalendarCheck,
-  Stethoscope,
-  Boxes,
-  FolderKanban,
-  PiggyBank,
-  Users,
-  X,
   Building,
-  Layers,
-  LifeBuoy,
-  DatabaseBackup,
+  Building2,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  FlaskConical,
   HelpCircle,
   KeyRound,
+  LogOut,
+  Menu,
+  Moon,
+  Plus,
+  Sun,
+  X,
 } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
-import { type AreaKey, brandPalette, type SuiteKey } from "@gm/shared";
+import { brandPalette } from "@gm/shared";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -84,158 +38,152 @@ import { BrandMark, BrandWordmark } from "@/components/shell/brand";
 import { cn, fmtDate } from "@/lib/utils";
 import { errorMessage } from "./api";
 import { helpFor } from "./help-articles";
+import { HELP, inSettings, isActive, NAV_GROUPS, NAV_TOP, type NavItem, pageFor, SETTINGS, useNavVisible } from "./nav";
 import { NotificationBell } from "./notifications";
 import { istDay } from "./plan";
-import { useCan, useMe, useSignOut, useSupportVisit, useSwitchAgency } from "./queries";
+import { useMe, useSignOut, useSupportVisit, useSwitchAgency } from "./queries";
+import { SearchButton } from "./search";
 
 /** On the team (not a client's person, whose role reaches only the client portal). */
 const isTeam = (p: Record<string, unknown>) => Object.keys(p).some((area) => area !== "portal");
 
-interface NavItem {
-  title: string;
-  href: string;
-  icon: LucideIcon;
-  /** Shown only to people whose role has at least this access (view unless said) to this area. */
-  area?: AreaKey;
-  level?: "view" | "edit";
-  /** The add-on suite it is part of: hidden when the agency's plan does not have it (ADR 0011). */
-  suite?: SuiteKey;
+const OPEN_KEY = "gm-nav-open";
+
+function NavLink({ item, active, onNavigate, nested }: { item: NavItem; active: boolean; onNavigate?: () => void; nested?: boolean }) {
+  const Icon = item.icon;
+  return (
+    <Link
+      href={item.href}
+      onClick={onNavigate}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "group relative flex h-9 items-center gap-2.5 rounded-lg pr-2.5 text-body transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60",
+        nested ? "pl-9" : "pl-2.5",
+        active ? "bg-sidebar-active font-medium text-white" : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-white",
+      )}
+    >
+      {active && <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-accent" aria-hidden />}
+      {!nested && <Icon className={cn("size-4 shrink-0", active ? "text-accent" : "text-sidebar-muted group-hover:text-white")} />}
+      <span className="truncate">{item.title}</span>
+    </Link>
+  );
 }
 
-const NAV: { title: string; items: NavItem[] }[] = [
-  {
-    title: "Workspace",
-    items: [
-      { title: "Home", href: "/app", icon: Home },
-      { title: "Genie Assistant", href: "/app/genie", icon: Sparkles, suite: "genie" },
-      { title: "Sales pipeline", href: "/app/sales", icon: Filter, area: "crm" },
-      { title: "Clients", href: "/app/clients", icon: Building2, area: "clients" },
-      { title: "Client requests", href: "/app/requests", icon: Inbox, area: "clients" },
-      { title: "WhatsApp messages", href: "/app/messages", icon: MessageCircle, area: "clients" },
-      { title: "Onboarding", href: "/app/onboarding", icon: ClipboardList, area: "onboarding" },
-      { title: "Content", href: "/app/content", icon: Lightbulb, area: "content" },
-      { title: "Production", href: "/app/production", icon: Clapperboard, area: "production" },
-      { title: "Shoots", href: "/app/shoots", icon: Camera, area: "production" },
-      { title: "Equipment", href: "/app/assets", icon: Boxes, area: "equipment", suite: "operations" },
-      { title: "Calendar", href: "/app/calendar", icon: CalendarDays, area: "production" },
-      { title: "Projects and tasks", href: "/app/projects", icon: FolderKanban, suite: "operations" },
-      { title: "Publishing", href: "/app/publishing", icon: Megaphone, area: "publishing" },
-      { title: "Monthly delivery", href: "/app/cycles", icon: Repeat, area: "production" },
-      { title: "Monthly reports", href: "/app/reports", icon: FileBarChart, area: "reports" },
-      { title: "Agreements", href: "/app/agreements", icon: FileSignature, area: "agreements" },
-      { title: "Import from Excel", href: "/app/import", icon: FileSpreadsheet, area: "clients", level: "edit" },
-    ],
-  },
-  {
-    title: "Money",
-    items: [
-      { title: "Invoices", href: "/app/invoices", icon: ReceiptIndianRupee, area: "invoices" },
-      { title: "Expenses", href: "/app/expenses", icon: Wallet, suite: "finance" },
-      { title: "Costing", href: "/app/costing", icon: Calculator, area: "finance", suite: "finance" },
-      { title: "Finance", href: "/app/finance", icon: Landmark, area: "finance", suite: "finance" },
-    ],
-  },
-  {
-    title: "People",
-    items: [
-      { title: "People", href: "/app/people", icon: Contact, suite: "people" },
-      { title: "Attendance", href: "/app/attendance", icon: Fingerprint, suite: "people" },
-      { title: "Leave", href: "/app/leave", icon: CalendarOff, suite: "people" },
-      { title: "Daily sheet", href: "/app/daily-sheet", icon: ClipboardList, suite: "people" },
-      { title: "Hiring", href: "/app/hiring", icon: Briefcase, area: "hr", suite: "people" },
-      { title: "Performance", href: "/app/performance", icon: Gauge, suite: "people" },
-      { title: "Learning", href: "/app/learning", icon: GraduationCap, suite: "people" },
-      { title: "Payroll", href: "/app/payroll", icon: Banknote, area: "salaries", suite: "people" },
-      { title: "My payslips", href: "/app/payslips", icon: ReceiptText, suite: "people" },
-      { title: "My financial planner", href: "/app/planner", icon: PiggyBank, area: "personal_finance", suite: "people" },
-    ],
-  },
-  {
-    title: "Management",
-    items: [
-      { title: "Goals", href: "/app/goals", icon: Target, suite: "management" },
-      { title: "Reviews", href: "/app/reviews", icon: CalendarCheck, suite: "management" },
-      { title: "Round Table", href: "/app/round-table", icon: Users, suite: "management" },
-      { title: "SOPs and checklists", href: "/app/sops", icon: ListChecks, suite: "management" },
-      { title: "Business diagnostic", href: "/app/diagnostic", icon: Stethoscope, area: "reports", suite: "management" },
-    ],
-  },
-  {
-    title: "Settings",
-    items: [
-      { title: "Plan", href: "/app/settings/plan", icon: Layers },
-      { title: "Agency profile", href: "/app/settings/agency", icon: Landmark, area: "settings" },
-      { title: "Packages", href: "/app/settings/packages", icon: Package },
-      { title: "Pipeline stages", href: "/app/settings/pipeline", icon: ListOrdered, area: "settings" },
-      { title: "Invoice settings", href: "/app/settings/invoices", icon: Receipt, area: "invoices" },
-      { title: "Costing", href: "/app/settings/costing", icon: Calculator, area: "finance", suite: "finance" },
-      { title: "Onboarding questions", href: "/app/settings/onboarding", icon: ListChecks, area: "onboarding" },
-      { title: "Production", href: "/app/settings/production", icon: SlidersHorizontal, area: "production" },
-      { title: "Team", href: "/app/settings/team", icon: Users, area: "team" },
-      { title: "Roles and permissions", href: "/app/settings/roles", icon: ShieldCheck, area: "team" },
-      { title: "WhatsApp", href: "/app/settings/whatsapp", icon: MessageCircle, area: "settings" },
-      { title: "Payments", href: "/app/settings/payments", icon: CreditCard, area: "settings" },
-      { title: "Genie Assistant", href: "/app/settings/genie", icon: Sparkles, area: "settings", suite: "genie" },
-      { title: "Background jobs", href: "/app/settings/jobs", icon: Timer, area: "settings" },
-      { title: "Support access", href: "/app/settings/support", icon: LifeBuoy, area: "settings" },
-      { title: "Your data", href: "/app/settings/data", icon: DatabaseBackup, area: "settings" },
-      { title: "Help and support", href: "/app/help", icon: HelpCircle },
-      { title: "Audit log", href: "/app/audit", icon: History, area: "audit" },
-    ],
-  },
-];
-
+/** The side menu: Home and Genie on top, then sections that fold open (the one you are in opens by itself). */
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
-  const can = useCan();
-  const plan = useMe().data?.entitlements;
-  const has = (suite?: SuiteKey) => !suite || !plan || plan.suites.includes(suite);
+  const visible = useNavVisible();
+  const groups = NAV_GROUPS.map((g) => ({ ...g, items: g.items.filter(visible) })).filter((g) => g.items.length);
+  const current = groups.find((g) => g.items.some((i) => isActive(pathname, i.href)))?.key;
+  const [open, setOpen] = useState<string[]>(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(OPEN_KEY) ?? "null") as string[] | null;
+      if (saved) return saved;
+    } catch {}
+    return [];
+  });
+  const shown = current && !open.includes(current) ? [...open, current] : open;
+  const toggle = (key: string) => {
+    const next = shown.includes(key) ? shown.filter((k) => k !== key) : [...shown, key];
+    setOpen(next);
+    try {
+      localStorage.setItem(OPEN_KEY, JSON.stringify(next));
+    } catch {}
+  };
   return (
-    <nav className="scrollbar-thin flex-1 space-y-5 overflow-y-auto px-3 pb-6 pt-2" aria-label="Main">
-      {NAV.map((section) => {
-        const items = section.items.filter((i) => (!i.area || can(i.area, i.level ?? "view")) && has(i.suite));
-        if (!items.length) return null;
-        return (
-          <div key={section.title}>
-            <div className="mb-1.5 px-2.5 text-body font-medium text-sidebar-muted">{section.title}</div>
-            <ul className="space-y-0.5">
-              {items.map((item) => {
-                const active = item.href === "/app" ? pathname === "/app" : pathname === item.href || pathname.startsWith(item.href + "/");
-                const Icon = item.icon;
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      onClick={onNavigate}
-                      aria-current={active ? "page" : undefined}
-                      className={cn(
-                        "group relative flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-body transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60",
-                        active ? "bg-sidebar-active font-medium text-white" : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-white",
-                      )}
-                    >
-                      {active && <span className="absolute inset-y-2 left-0 w-[3px] rounded-r-full bg-accent" aria-hidden />}
-                      <Icon className={cn("size-4 shrink-0", active ? "text-accent" : "text-sidebar-muted group-hover:text-white")} />
-                      <span className="truncate">{item.title}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        );
-      })}
+    <nav className="scrollbar-sidebar flex-1 overflow-y-auto px-3 pb-4 pt-1" aria-label="Main">
+      <ul className="space-y-0.5">
+        {NAV_TOP.filter(visible).map((item) => (
+          <li key={item.href}>
+            <NavLink item={item} active={isActive(pathname, item.href)} onNavigate={onNavigate} />
+          </li>
+        ))}
+      </ul>
+      <div className="mt-4 space-y-0.5">
+        {groups.map((g) => {
+          const expanded = shown.includes(g.key);
+          const here = g.key === current;
+          const Icon = g.icon;
+          return (
+            <div key={g.key}>
+              <button
+                type="button"
+                onClick={() => toggle(g.key)}
+                aria-expanded={expanded}
+                className={cn(
+                  "group flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 text-body transition-colors hover:bg-sidebar-hover hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60",
+                  here ? "font-medium text-white" : "text-sidebar-foreground",
+                )}
+              >
+                <Icon className={cn("size-4 shrink-0", here ? "text-accent" : "text-sidebar-muted group-hover:text-white")} />
+                <span className="truncate">{g.title}</span>
+                <ChevronRight className={cn("ml-auto size-4 shrink-0 text-sidebar-muted transition-transform duration-200", expanded && "rotate-90")} />
+              </button>
+              {expanded && (
+                <ul className="relative mb-1 mt-0.5 space-y-0.5 before:absolute before:inset-y-1 before:left-[17px] before:w-px before:bg-sidebar-border">
+                  {g.items.map((item) => (
+                    <li key={item.href}>
+                      <NavLink item={item} nested active={isActive(pathname, item.href)} onNavigate={onNavigate} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </nav>
   );
 }
 
-function SidebarFooter() {
+/** Settings and help, always at the foot of the side menu. */
+function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = usePathname();
   return (
-    <div className="border-t border-sidebar-border px-5 py-3">
-      <Link href="/" className="flex items-center gap-2 text-body text-sidebar-muted hover:text-white">
-        <FlaskConical className="size-4" />
-        Open the clickable demo
-      </Link>
-    </div>
+    <ul className="space-y-0.5 border-t border-sidebar-border px-3 py-3">
+      <li>
+        <NavLink item={SETTINGS} active={inSettings(pathname)} onNavigate={onNavigate} />
+      </li>
+      <li>
+        <NavLink item={HELP} active={isActive(pathname, HELP.href) || isActive(pathname, "/app/support")} onNavigate={onNavigate} />
+      </li>
+    </ul>
+  );
+}
+
+/** Where you are, after the agency's name: section › page (› details on a record's own page). */
+function Trail() {
+  const pathname = usePathname();
+  const page = pageFor(pathname);
+  if (!page || page.item.href === "/app") return null;
+  const deeper = pathname !== page.item.href;
+  return (
+    <nav aria-label="You are here" className="hidden min-w-0 items-center gap-1.5 text-body text-muted-foreground lg:flex">
+      <span className="text-border-strong" aria-hidden>
+        /
+      </span>
+      {page.section && (
+        <>
+          <span className="truncate">{page.section}</span>
+          <ChevronRight className="size-3.5 shrink-0 opacity-60" aria-hidden />
+        </>
+      )}
+      {deeper ? (
+        <>
+          <Link href={page.item.href} className="truncate hover:text-primary">
+            {page.item.title}
+          </Link>
+          <ChevronRight className="size-3.5 shrink-0 opacity-60" aria-hidden />
+          <span className="truncate font-medium text-text-primary" aria-current="page">
+            Details
+          </span>
+        </>
+      ) : (
+        <span className="truncate font-medium text-text-primary" aria-current="page">
+          {page.item.title}
+        </span>
+      )}
+    </nav>
   );
 }
 
@@ -248,7 +196,7 @@ function AgencySwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="min-w-0 max-w-[60vw] justify-start gap-2 px-2">
+        <Button variant="ghost" className="min-w-0 max-w-[45vw] shrink justify-start gap-2 px-2 md:max-w-64">
           {active?.logo ? (
             // eslint-disable-next-line @next/next/no-img-element -- the agency's logo, a small data URL
             <img src={active.logo} alt="" className="size-6 shrink-0 rounded object-contain" />
@@ -326,6 +274,17 @@ function UserMenu() {
             Change password
           </DropdownMenuItem>
         )}
+        <DropdownMenuItem onSelect={() => router.push("/")}>
+          <FlaskConical className="size-4" />
+          Open the clickable demo
+        </DropdownMenuItem>
+        <DropdownMenuItem className="sm:hidden" onSelect={toggleTheme}>
+          <Moon className="size-4 dark:hidden" />
+          <Sun className="hidden size-4 dark:block" />
+          <span className="dark:hidden">Dark mode</span>
+          <span className="hidden dark:inline">Light mode</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={() =>
             signOut.mutate(undefined, {
@@ -569,10 +528,22 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
   }
 
   if (isPending || !me || needsAgency) {
+    // The frame's own shape while the session loads, so the page does not jump when it arrives.
     return (
-      <div className="space-y-4 p-8">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-40 w-full" />
+      <div className="min-h-screen bg-background" aria-busy="true">
+        <div className="fixed inset-y-0 left-0 hidden w-[248px] border-r border-sidebar-border bg-sidebar lg:block" />
+        <div className="lg:pl-[248px]">
+          <div className="h-14 border-b border-border" />
+          <div className="space-y-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-7">
+            <Skeleton className="h-8 w-72" />
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {[0, 1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-28 rounded-2xl" />
+              ))}
+            </div>
+            <Skeleton className="h-72 rounded-2xl" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -580,8 +551,8 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       <BrandStyle />
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[256px] flex-col border-r border-sidebar-border bg-sidebar lg:flex print:hidden">
-        <Link href="/app" className="flex h-16 shrink-0 items-center gap-3 px-5">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col border-r border-sidebar-border bg-sidebar lg:flex print:hidden">
+        <Link href="/app" className="flex h-14 shrink-0 items-center gap-3 px-5">
           <SidebarBrand />
         </Link>
         <NavList />
@@ -596,7 +567,7 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
             className="fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[85vw] flex-col bg-sidebar shadow-lg focus:outline-none lg:hidden"
           >
             <DialogPrimitive.Title className="sr-only">Navigation</DialogPrimitive.Title>
-            <div className="flex h-16 shrink-0 items-center justify-between px-5">
+            <div className="flex h-14 shrink-0 items-center justify-between px-5">
               <Link href="/app" onClick={() => setMobileOpen(false)} className="flex min-w-0 items-center gap-3">
                 <SidebarBrand />
               </Link>
@@ -608,28 +579,30 @@ export function LiveShell({ children }: { children: React.ReactNode }) {
               </DialogPrimitive.Close>
             </div>
             <NavList onNavigate={() => setMobileOpen(false)} />
-            <SidebarFooter />
+            <SidebarFooter onNavigate={() => setMobileOpen(false)} />
           </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>
 
-      <div className="lg:pl-[256px] print:pl-0">
-        <header className="sticky top-0 z-20 flex h-16 items-center gap-2 border-b border-border bg-background/90 px-4 backdrop-blur-md lg:px-8 print:hidden">
+      <div className="lg:pl-[248px] print:pl-0">
+        <header className="sticky top-0 z-20 flex h-14 items-center gap-2 border-b border-border bg-background/85 px-4 backdrop-blur-md sm:px-6 lg:px-8 print:hidden">
           <Button variant="ghost" size="icon-sm" className="lg:hidden" onClick={() => setMobileOpen(true)} aria-label="Open navigation">
             <Menu />
           </Button>
           <AgencySwitcher />
+          <Trail />
           <div className="ml-auto flex shrink-0 items-center gap-1">
+            {me.permissions && isTeam(me.permissions) && <SearchButton className="mr-2 w-9 justify-center px-0 sm:w-64 sm:justify-start sm:px-3 xl:w-80" />}
             {me.permissions && isTeam(me.permissions) && <NotificationBell />}
             {me.permissions && isTeam(me.permissions) && <HelpMenu />}
-            <Button variant="ghost" size="icon-sm" onClick={toggleTheme} aria-label="Toggle dark mode">
+            <Button variant="ghost" size="icon-sm" className="hidden sm:inline-flex" onClick={toggleTheme} aria-label="Toggle dark mode">
               <Sun className="hidden dark:block" />
               <Moon className="dark:hidden" />
             </Button>
             <UserMenu />
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 print:max-w-none print:p-0">
+        <main className="w-full px-4 py-6 sm:px-6 lg:px-8 lg:py-7 2xl:px-10 print:p-0">
           <SupportBanner />
           <DeletionBanner />
           <PlanBanner />

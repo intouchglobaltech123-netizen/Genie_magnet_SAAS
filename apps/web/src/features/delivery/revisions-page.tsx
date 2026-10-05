@@ -209,7 +209,7 @@ export function RevisionsPage() {
                 return (
                   <TR key={cr.id}>
                     <TD className="pl-5">
-                      <div className="font-mono text-body text-muted-foreground">{video?.code ?? "New request"}</div>
+                      <div className="tabular-nums text-body text-muted-foreground">{video?.code ?? "New request"}</div>
                       <div className="max-w-[200px] truncate font-medium" title={video?.title}>{video?.title ?? "Client portal request"}</div>
                       <div className="text-body text-muted-foreground">{client?.name}</div>
                     </TD>
@@ -304,7 +304,7 @@ export function RevisionsPage() {
                       ))}
                     </Pie>
                     <RTooltip
-                      contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 10, fontSize: 13 }}
+                      contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 10, fontSize: 14 }}
                       itemStyle={{ color: "var(--color-text-primary)" }}
                     />
                   </PieChart>
@@ -353,7 +353,7 @@ export function RevisionsPage() {
                 return (
                   <div key={v.id} className="rounded-xl border border-border p-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono text-body text-muted-foreground">{v.code}</span>
+                      <span className="tabular-nums text-body text-muted-foreground">{v.code}</span>
                       <StageBadge stage={v.stage} />
                     </div>
                     <div className="mt-1 truncate text-body font-medium">{v.title}</div>

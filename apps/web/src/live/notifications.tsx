@@ -60,15 +60,16 @@ export function NotificationBell() {
         <Button variant="ghost" size="icon-sm" className="relative" aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}>
           <Bell />
           {unread > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-danger px-1 text-[10px] font-semibold leading-4 text-white">
-              {unread > 99 ? "99+" : unread}
-            </span>
+            <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-danger ring-2 ring-background" aria-hidden />
           )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-96 max-w-[90vw] p-1.5">
         <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notifications</span>
+          <span>
+            Notifications
+            {unread > 0 && <span className="ml-1.5 font-normal text-muted-foreground">{unread > 99 ? "99+" : unread} unread</span>}
+          </span>
           {unread > 0 && (
             <button type="button" className="cursor-pointer text-body font-normal text-primary hover:underline" onClick={() => read.mutate(undefined)}>
               Mark all read

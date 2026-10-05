@@ -213,7 +213,7 @@ function NewInvoiceForm({ onDone }: { onDone: () => void }) {
       <DialogHeader>
         <DialogTitle>New invoice</DialogTitle>
         <DialogDescription>
-          Next number <span className="font-mono text-foreground">{number}</span> · GST is calculated from the client&apos;s state
+          Next number <span className="tabular-nums text-foreground">{number}</span> · GST is calculated from the client&apos;s state
         </DialogDescription>
       </DialogHeader>
       <DialogBody className="space-y-4">
@@ -300,7 +300,7 @@ export function InvoiceSheet({
           <>
             <DialogHeader>
               <div className="flex items-center gap-2">
-                <DialogTitle className="font-mono">{invoice.number}</DialogTitle>
+                <DialogTitle className="tabular-nums">{invoice.number}</DialogTitle>
                 <Badge tone={statusMeta[invoice.status].tone} dot>
                   {statusMeta[invoice.status].label}
                 </Badge>
@@ -319,13 +319,13 @@ export function InvoiceSheet({
                   <div className="text-muted-foreground">
                     {party.city}, {party.state}
                   </div>
-                  <div className="mt-1 font-mono text-body text-muted-foreground">GSTIN {party.gstin}</div>
+                  <div className="mt-1 tabular-nums text-body text-muted-foreground">GSTIN {party.gstin}</div>
                 </div>
                 <div>
                   <div className="text-body text-muted-foreground">From</div>
                   <div className="mt-0.5 font-medium">Genie Magnet</div>
                   <div className="text-muted-foreground">Appakudal, Erode, Tamil Nadu</div>
-                  <div className="mt-1 font-mono text-body text-muted-foreground">GSTIN 33AAQFG7120K1Z4</div>
+                  <div className="mt-1 tabular-nums text-body text-muted-foreground">GSTIN 33AAQFG7120K1Z4</div>
                 </div>
                 {invoice.category && (
                   <div className="flex items-center gap-2 border-t sm:col-span-2 border-border pt-3 text-body text-muted-foreground">
@@ -370,7 +370,7 @@ export function InvoiceSheet({
                           <CheckCircle2 className="size-4 shrink-0 text-success" />
                           <span>{fmtDate(p.date)}</span>
                           <Badge tone="neutral">{p.mode}</Badge>
-                          <span className="truncate font-mono text-body text-muted-foreground">{p.ref}</span>
+                          <span className="truncate tabular-nums text-body text-muted-foreground">{p.ref}</span>
                         </div>
                         <div className="shrink-0 text-right tabular">
                           {inr(p.amount)}

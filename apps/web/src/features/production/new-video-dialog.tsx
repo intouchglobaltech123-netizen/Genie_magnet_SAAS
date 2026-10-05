@@ -88,7 +88,7 @@ export function NewVideoDialog({ open, onOpenChange, defaultDue }: { open: boole
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-border bg-surface-secondary px-4 py-3">
             <div>
               <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">Video code (auto)</div>
-              <div className="mt-0.5 font-mono text-subheading font-semibold tracking-wide">{code}</div>
+              <div className="mt-0.5 tabular-nums text-subheading font-semibold tracking-wide">{code}</div>
             </div>
             <div className="text-body text-muted-foreground sm:text-right">
               <div className="inline-flex items-center gap-1">

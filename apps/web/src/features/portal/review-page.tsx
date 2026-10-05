@@ -141,7 +141,7 @@ export function ReviewPage() {
           </Link>
           <h1 className="mt-2 truncate text-heading font-semibold tracking-tight">{video.title}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-body text-muted-foreground">
-            <span className="font-mono">{video.code}</span>·<span>{video.format}</span>·<span>{video.aspect}</span>·
+            <span className="tabular-nums">{video.code}</span>·<span>{video.format}</span>·<span>{video.aspect}</span>·
             <span>{video.platform.join(", ")}</span>
           </div>
         </div>
@@ -328,7 +328,7 @@ export function ReviewPage() {
             <ul className="max-h-48 space-y-1.5 overflow-y-auto rounded-xl border border-border p-3 text-body scrollbar-thin">
               {openNotes.map((c) => (
                 <li key={c.id} className="flex gap-2">
-                  <span className="shrink-0 font-mono text-body text-primary">{c.timestamp ?? "—"}</span>
+                  <span className="shrink-0 tabular-nums text-body text-primary">{c.timestamp ?? "—"}</span>
                   <span className="text-muted-foreground">{c.text}</span>
                 </li>
               ))}

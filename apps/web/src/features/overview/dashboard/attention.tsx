@@ -52,7 +52,7 @@ export function AttentionCard() {
       tone: "danger",
       title: (
         <>
-          <span className="font-mono text-body text-muted-foreground">{v.code}</span> {v.title}
+          <span className="tabular-nums text-body text-muted-foreground">{v.code}</span> {v.title}
         </>
       ),
       detail: (

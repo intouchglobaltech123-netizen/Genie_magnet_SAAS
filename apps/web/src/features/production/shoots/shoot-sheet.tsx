@@ -104,7 +104,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
         <div className="min-w-0">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <ClientTag clientId={shoot.clientId} />
-            <span className="font-mono text-body font-semibold">{shoot.batchNo}</span>
+            <span className="tabular-nums text-body font-semibold">{shoot.batchNo}</span>
             <Badge tone={shootStatusMeta[status].tone} dot>
               {shootStatusMeta[status].label}
             </Badge>
@@ -164,14 +164,14 @@ function Sheet({ shoot }: { shoot: Shoot }) {
           <Card className="overflow-hidden">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-surface-secondary px-5 py-2.5">
               <span className="text-body font-semibold uppercase tracking-[0.18em] text-muted-foreground">Genie Magnet · Shoot sheet</span>
-              <span className="font-mono text-body text-muted-foreground">{shoot.id.toUpperCase()}</span>
+              <span className="tabular-nums text-body text-muted-foreground">{shoot.id.toUpperCase()}</span>
             </div>
             <div className="grid grid-cols-2 gap-px bg-border md:grid-cols-4">
               {(
                 [
                   ["Project name", shoot.projectName],
                   ["Shooting date", `${fmt(shoot.date, "EEE, d MMM yyyy")}`],
-                  ["Batch no.", <span key="b" className="font-mono">{shoot.batchNo}</span>],
+                  ["Batch no.", <span key="b" className="tabular-nums">{shoot.batchNo}</span>],
                   ["Call time", shoot.callTime],
                   ["Camera man", <span key="cm" className="inline-flex items-center gap-1.5"><Avatar name={personById(shoot.cameraId).name} size="xs" />{personById(shoot.cameraId).name}</span>],
                   ["Content director", <span key="cd" className="inline-flex items-center gap-1.5"><Avatar name={personById(shoot.directorId).name} size="xs" />{personById(shoot.directorId).name}</span>],
@@ -209,7 +209,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
               <TBody>
                 {videos.map((v) => (
                   <TR key={v.id}>
-                    <TD className="font-mono text-body font-medium">
+                    <TD className="tabular-nums text-body font-medium">
                       <Link href={`/production/${v.id}`} className="whitespace-nowrap hover:text-primary">
                         {v.code}
                       </Link>
@@ -219,7 +219,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                     </TD>
                     <TD className="max-w-[260px] truncate font-medium">{v.title}</TD>
                     <TD>
-                      <Input aria-label={`Clip numbers for ${v.code}`} value={v.clipNo} onChange={(e) => updateVideo(v.id, { clipNo: e.target.value })} className="h-8 w-40 font-mono" />
+                      <Input aria-label={`Clip numbers for ${v.code}`} value={v.clipNo} onChange={(e) => updateVideo(v.id, { clipNo: e.target.value })} className="h-8 w-40 tabular-nums" />
                     </TD>
                     <TD className="text-center">
                       <Checkbox
@@ -461,7 +461,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={sign.client.dataUrl} alt="Client signature" className="h-20 w-full object-contain" />
                   ) : (
-                    <div className="flex h-20 items-center justify-center font-[cursive] text-heading italic text-text-secondary">{sign.client.by}</div>
+                    <div className="flex h-20 items-center justify-center text-heading font-medium text-text-secondary">{sign.client.by}</div>
                   )}
                   <div className="mt-1 flex items-center gap-1.5 border-t border-border pt-2 text-body text-success">
                     <Check className="size-3.5" /> Signed by {sign.client.by} · {format(parseISO(sign.client.at), "d MMM, HH:mm")}
@@ -483,7 +483,7 @@ function Sheet({ shoot }: { shoot: Shoot }) {
       </div>
 
       <div className="mt-10 flex flex-col items-center gap-1 border-t border-border pt-6 text-center">
-        <div className="text-body font-medium italic tracking-tight text-text-secondary">Shoot with purpose. Edit with precision. Deliver excellence.</div>
+        <div className="text-body font-medium tracking-tight text-text-secondary">Shoot with purpose. Edit with precision. Deliver excellence.</div>
         <div className="text-body uppercase tracking-[0.2em] text-muted-foreground">Genie Magnet</div>
       </div>
 

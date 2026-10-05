@@ -209,7 +209,7 @@ export function LiveClients() {
                   return (
                     <TR key={c.id} className="cursor-pointer" onClick={() => router.push(`/app/clients/${c.id}`)}>
                       <TD>
-                        <Badge tone="outline" className="font-mono">
+                        <Badge tone="outline" className="tabular-nums">
                           {c.code}
                         </Badge>
                       </TD>

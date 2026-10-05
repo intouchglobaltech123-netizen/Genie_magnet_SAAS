@@ -171,7 +171,7 @@ export function SopsView() {
                   }}
                 >
                   <TD className="max-w-[320px]">
-                    <div className="font-mono text-body text-muted-foreground">{s.code}</div>
+                    <div className="tabular-nums text-body text-muted-foreground">{s.code}</div>
                     <div className="truncate font-medium">{s.title}</div>
                   </TD>
                   <TD>
@@ -184,7 +184,7 @@ export function SopsView() {
                     </div>
                   </TD>
                   <TD>
-                    <Badge tone="outline" className="font-mono">
+                    <Badge tone="outline" className="tabular-nums">
                       {s.version}
                     </Badge>
                   </TD>
@@ -336,8 +336,8 @@ function SopSheet({
         <DialogContent side="right" className="max-w-2xl">
           <DialogHeader>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-body text-muted-foreground">{sop.code}</span>
-              <Badge tone="outline" className="font-mono">
+              <span className="tabular-nums text-body text-muted-foreground">{sop.code}</span>
+              <Badge tone="outline" className="tabular-nums">
                 {sop.version}
               </Badge>
               <Badge tone={statusMeta[sop.status].tone} dot>
@@ -437,7 +437,7 @@ function SopSheet({
                       </span>
                       <div className="text-body">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-medium">{h.version}</span>
+                          <span className="tabular-nums font-medium">{h.version}</span>
                           {i === 0 && <Badge tone="accent">Current</Badge>}
                           <span className="text-body text-muted-foreground">
                             {fmtDate(h.date, { day: "numeric", month: "short", year: "numeric" })} · {h.by}

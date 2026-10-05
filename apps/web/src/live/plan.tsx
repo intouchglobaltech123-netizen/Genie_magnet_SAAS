@@ -176,7 +176,7 @@ function Invoices({ rows }: { rows: PlatformInvoiceRow[] }) {
         <TBody>
           {rows.map((i) => (
             <TR key={i.id}>
-              <TD className="pl-5 font-mono">{i.number}</TD>
+              <TD className="pl-5 tabular-nums">{i.number}</TD>
               <TD>{fmtDate(i.issuedOn, { day: "numeric", month: "short", year: "numeric" })}</TD>
               <TD>{i.plan.name}</TD>
               <TD className="text-muted-foreground">

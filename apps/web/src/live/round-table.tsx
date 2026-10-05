@@ -95,7 +95,7 @@ function Countdown({ endsAt }: { endsAt: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-lg px-3 py-1 text-2xl font-bold tabular-nums",
+        "inline-flex items-center gap-1.5 rounded-lg px-3 py-1 text-heading font-semibold tabular-nums",
         left <= 10 ? "bg-danger-soft text-danger" : "bg-muted",
       )}
     >
@@ -122,7 +122,7 @@ function LiveRound({ s }: { s: RtSessionRow }) {
           <div className="text-body text-muted-foreground">
             Round {c.index + 1} of {s.participants.length}
           </div>
-          <div className="text-2xl font-semibold">{self ? "About you" : c.subject.name}</div>
+          <div className="text-heading font-semibold">{self ? "About you" : c.subject.name}</div>
         </div>
         <Countdown endsAt={c.endsAt} />
       </div>
@@ -282,7 +282,7 @@ function SessionView({ id, onBack }: { id: string; onBack: () => void }) {
       </Button>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-xl font-semibold">{s.name}</h2>
+          <h2 className="text-subheading font-semibold">{s.name}</h2>
           <p className="text-body text-muted-foreground">
             {s.participants.length} people · {Math.round(s.secondsPerPerson / 60) || 1} min each{s.facilitator && ` · facilitated by ${s.facilitator.name}`}
           </p>

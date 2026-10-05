@@ -47,7 +47,7 @@ export function BriefTab({ v }: { v: Video }) {
                 <li key={s.t} className="relative pb-4 last:pb-0">
                   <span className="absolute -left-[25px] top-1 size-2 rounded-full bg-primary ring-4 ring-card" />
                   <div className="flex items-baseline gap-3">
-                    <span className="font-mono text-body text-muted-foreground">{s.t}</span>
+                    <span className="tabular-nums text-body text-muted-foreground">{s.t}</span>
                     <span className="text-body font-medium">{s.line}</span>
                   </div>
                   <div className="mt-0.5 pl-[52px] text-body text-muted-foreground">
@@ -183,7 +183,7 @@ export function ShootTab({ v }: { v: Video }) {
               value={v.clipNo}
               onChange={(e) => updateVideo(v.id, { clipNo: e.target.value })}
               onBlur={() => toast.success("Clip range saved", { description: v.clipNo })}
-              className="font-mono"
+              className="tabular-nums"
             />
           </div>
           {shoot.notes && <div className="rounded-lg bg-muted px-3 py-2 text-body text-muted-foreground">Note: {shoot.notes}</div>}

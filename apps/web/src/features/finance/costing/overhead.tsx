@@ -167,7 +167,7 @@ function EquipmentRates() {
               <TR key={a.id} className={cn(hero && "bg-accent-soft/50 hover:bg-accent-soft/60")}>
                 <TD className="pl-5">
                   <div className="font-medium">{a.name}</div>
-                  <div className="font-mono text-body text-muted-foreground">
+                  <div className="tabular-nums text-body text-muted-foreground">
                     {a.tag} · {a.category}
                     {hero && <span className="ml-1.5 font-sans text-accent-strong">worked example</span>}
                   </div>

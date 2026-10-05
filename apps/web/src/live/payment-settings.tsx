@@ -71,7 +71,7 @@ function Keys({ s, canEdit }: { s: PaymentSettings; canEdit: boolean }) {
       )}
       <fieldset disabled={!canEdit} className="grid gap-3 sm:grid-cols-2">
         <Field label="Key ID" error={errors.keyId}>
-          <Input className="font-mono" value={f.keyId} onChange={(e) => setF({ ...f, keyId: e.target.value })} placeholder="rzp_live_…" />
+          <Input className="tabular-nums" value={f.keyId} onChange={(e) => setF({ ...f, keyId: e.target.value })} placeholder="rzp_live_…" />
         </Field>
         <Field label="Key secret" error={errors.keySecret} hint={c ? `Saved (${c.secretHint}) — paste a new one to replace it` : undefined}>
           <Input type="password" autoComplete="off" value={f.keySecret} onChange={(e) => setF({ ...f, keySecret: e.target.value })} />
@@ -132,7 +132,7 @@ export function LivePaymentSettings() {
                 ).map(([label, value]) => (
                   <Field key={label} label={label}>
                     <div className="flex gap-2">
-                      <Input readOnly value={value} onFocus={(e) => e.target.select()} className="font-mono" />
+                      <Input readOnly value={value} onFocus={(e) => e.target.select()} className="tabular-nums" />
                       <Button variant="secondary" size="icon-sm" aria-label={`Copy ${label}`} onClick={() => copy(value)}>
                         <Copy />
                       </Button>

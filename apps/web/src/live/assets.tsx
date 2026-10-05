@@ -254,7 +254,7 @@ function Register({ rows, onOpen, onAdd }: { rows: AssetRow[]; onOpen: (id: stri
         <TBody>
           {shown.map((a) => (
             <TR key={a.id} className="cursor-pointer" onClick={() => onOpen(a.id)}>
-              <TD className="pl-5 font-mono text-body text-muted-foreground">{a.tag}</TD>
+              <TD className="pl-5 tabular-nums text-body text-muted-foreground">{a.tag}</TD>
               <TD>
                 <div className="font-medium">{a.name}</div>
                 <div className="text-body text-muted-foreground">{a.category}</div>
@@ -338,7 +338,7 @@ function Reservations({ onOpen }: { onOpen: (id: string) => void }) {
           <DateBlock date={r.date} />
           <button type="button" className="min-w-0 flex-1 cursor-pointer text-left" onClick={() => onOpen(r.asset.id)}>
             <div className="text-body font-medium">
-              <span className="font-mono text-muted-foreground">{r.asset.tag}</span> {r.asset.name}
+              <span className="tabular-nums text-muted-foreground">{r.asset.tag}</span> {r.asset.name}
             </div>
             <div className="text-body text-muted-foreground">
               {r.shoot ? `${r.shoot.client} · ${r.shoot.title}` : r.purpose}
@@ -577,12 +577,12 @@ function AssetBody({ a, onAction }: { a: AssetDetail; onAction: (x: Action) => v
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={bookValueSeries(a)} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                     <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
-                    <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} minTickGap={24} />
+                    <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "var(--color-text-muted)", fontSize: 14 }} minTickGap={24} />
                     <YAxis
                       tickLine={false}
                       axisLine={false}
                       width={56}
-                      tick={{ fill: "var(--color-text-muted)", fontSize: 12 }}
+                      tick={{ fill: "var(--color-text-muted)", fontSize: 14 }}
                       tickFormatter={(v: number) => inrCompact(v)}
                     />
                     <RTooltip
@@ -590,7 +590,7 @@ function AssetBody({ a, onAction }: { a: AssetDetail; onAction: (x: Action) => v
                         background: "var(--color-popover)",
                         border: "1px solid var(--color-border)",
                         borderRadius: 10,
-                        fontSize: 13,
+                        fontSize: 14,
                         padding: "8px 10px",
                       }}
                       formatter={(v) => [inr(Number(v)), "Worth"]}

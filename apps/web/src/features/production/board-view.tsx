@@ -121,7 +121,7 @@ function BoardCard({ v, onDragStart, onDragEnd }: { v: Video; onDragStart: () =>
     >
       <GripVertical className="absolute right-1.5 top-3 size-3.5 text-muted-foreground/0 transition group-hover:text-muted-foreground/60" />
       <div className="flex items-center justify-between gap-2 pr-3">
-        <span className="font-mono text-body font-medium tracking-wide text-muted-foreground">{v.code}</span>
+        <span className="tabular-nums text-body font-medium tracking-wide text-muted-foreground">{v.code}</span>
         <div className="flex items-center gap-1">
           <UrgencyIcon urgency={v.urgency} />
           <VPBadge on={v.videoProtection} />

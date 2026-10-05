@@ -128,7 +128,7 @@ export function RoundTableList() {
                 <ol className="space-y-1 rounded-xl bg-muted/60 p-3 text-body">
                   {s.questions.map((q, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="font-mono text-muted-foreground">Q{i + 1}</span>
+                      <span className="tabular-nums text-muted-foreground">Q{i + 1}</span>
                       {q.replaceAll("{name}", "…")}
                     </li>
                   ))}
@@ -215,7 +215,7 @@ function SetupDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: 
             <span className="block text-body font-medium text-text-secondary">The three questions</span>
             {questions.map((q, i) => (
               <div key={i} className="flex items-center gap-2">
-                <span className="w-6 font-mono text-body text-muted-foreground">Q{i + 1}</span>
+                <span className="w-6 tabular-nums text-body text-muted-foreground">Q{i + 1}</span>
                 <Input
                   value={q}
                   aria-label={`Question ${i + 1}`}

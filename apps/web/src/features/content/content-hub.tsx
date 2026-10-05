@@ -146,7 +146,7 @@ function ItemCard({ item }: { item: ContentItem }) {
       className="block rounded-xl border border-border bg-card p-3 shadow-card transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
     >
       <div className="flex items-center justify-between gap-2 text-body text-muted-foreground">
-        <span className="font-mono">{c.code}</span>
+        <span className="tabular-nums">{c.code}</span>
         <span className="truncate">{item.format}</span>
       </div>
       <div className="mt-1 line-clamp-2 text-body font-medium text-text-primary">{item.title}</div>

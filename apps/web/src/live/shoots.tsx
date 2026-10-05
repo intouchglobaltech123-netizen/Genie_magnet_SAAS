@@ -145,7 +145,7 @@ function NewShootDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
                             checked={f.videoIds.includes(v.id)}
                             onCheckedChange={(on) => setF({ ...f, videoIds: on ? [...f.videoIds, v.id] : f.videoIds.filter((x) => x !== v.id) })}
                           />
-                          <span className="font-mono">{v.code}</span> {v.title}
+                          <span className="tabular-nums">{v.code}</span> {v.title}
                         </label>
                       </li>
                     ))}
@@ -417,7 +417,7 @@ export function LiveShoot({ id }: { id: string }) {
                   {s.videos.map((v) => (
                     <TR key={v.id}>
                       <TD>
-                        <Link href={`/app/production/${v.id}`} className="font-mono font-medium hover:underline">
+                        <Link href={`/app/production/${v.id}`} className="tabular-nums font-medium hover:underline">
                           {v.code}
                         </Link>
                         <div>

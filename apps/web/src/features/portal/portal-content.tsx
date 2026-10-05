@@ -165,7 +165,7 @@ function ScriptRow({ item }: { item: ContentItem }) {
             <p className="mt-1.5 text-text-secondary">
               <span className="font-medium text-text-primary">Ends with:</span> {v.cta}
             </p>
-            {v.onScreen && <p className="mt-1.5 font-mono text-muted-foreground">On screen: {v.onScreen}</p>}
+            {v.onScreen && <p className="mt-1.5 tabular-nums text-muted-foreground">On screen: {v.onScreen}</p>}
           </div>
           {changing ? (
             <div className="space-y-2">

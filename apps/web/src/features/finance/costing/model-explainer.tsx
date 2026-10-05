@@ -80,7 +80,7 @@ export function ModelExplainer() {
                   <span className="text-body font-semibold">{b.name}</span>
                 </div>
                 <div className="mt-2 text-body leading-snug text-muted-foreground">{b.formula}</div>
-                <div className="mt-1.5 truncate font-mono text-body text-text-secondary" title={b.example}>{b.example}</div>
+                <div className="mt-1.5 truncate tabular-nums text-body text-text-secondary" title={b.example}>{b.example}</div>
               </div>
             </Tooltip>
             {i < blocks.length - 1 ? (

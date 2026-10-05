@@ -112,7 +112,7 @@ export function Topbar() {
       >
         <Search className="size-4 shrink-0" />
         <span className="truncate">Search modules, clients, videos…</span>
-        <kbd className="ml-auto hidden rounded border border-border bg-muted px-1.5 font-mono text-body sm:inline">Ctrl K</kbd>
+        <kbd className="ml-auto hidden rounded border border-border bg-muted px-1.5 tabular-nums text-body sm:inline">Ctrl K</kbd>
       </button>
 
       <div className="flex shrink-0 items-center gap-1">

@@ -59,7 +59,7 @@ export function ReceiptPreview({ expense }: { expense: Expense }) {
   const billNo = `${expense.vendor.replace(/[^A-Z]/g, "").slice(0, 3) || "INV"}/${expense.code.slice(-3)}${expense.date.slice(8, 10)}`;
   return (
     <div className="flex justify-center rounded-xl bg-surface-secondary p-5">
-      <div style={tornEdge} className="w-64 bg-gradient-to-b from-card to-card/90 pb-5 font-mono text-body text-foreground shadow-card ring-1 ring-border">
+      <div style={tornEdge} className="w-64 bg-gradient-to-b from-card to-card/90 pb-5 tabular-nums text-body text-foreground shadow-card ring-1 ring-border">
         <div className={cn("h-1.5 w-full", style.strip)} />
         <div className="px-4 pt-3 text-center">
           <div className="text-body font-semibold uppercase tracking-wide">{expense.vendor}</div>

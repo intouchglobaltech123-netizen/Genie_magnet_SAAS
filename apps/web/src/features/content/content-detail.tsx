@@ -385,7 +385,7 @@ function ReadOnly({ v, onBack }: { v: ScriptVersion; onBack?: () => void }) {
           </div>
           <div>
             <div className="text-body font-medium uppercase tracking-wider text-muted-foreground">On-screen text</div>
-            <p className="mt-0.5 font-mono text-body">{v.onScreen || "—"}</p>
+            <p className="mt-0.5 tabular-nums text-body">{v.onScreen || "—"}</p>
           </div>
         </div>
       </div>

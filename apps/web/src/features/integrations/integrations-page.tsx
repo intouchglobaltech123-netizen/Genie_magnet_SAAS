@@ -170,7 +170,7 @@ function WhatsAppTab() {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="text-body font-medium">{x.purpose}</div>
-                    <div className="font-mono text-body text-muted-foreground">{x.name}</div>
+                    <div className="tabular-nums text-body text-muted-foreground">{x.name}</div>
                   </div>
                   <Badge tone="outline">{x.category}</Badge>
                   <StatusBadge status={x.status} tone={x.status === "Approved" ? "success" : x.status === "In review" ? "warning" : "neutral"} />
@@ -199,7 +199,7 @@ function WhatsAppTab() {
               <TR key={m.at + m.to}>
                 <TD className="whitespace-nowrap">{m.at}</TD>
                 <TD>{m.to}</TD>
-                <TD className="font-mono">{m.template}</TD>
+                <TD className="tabular-nums">{m.template}</TD>
                 <TD>
                   {m.status === "Replied" ? (
                     <Badge tone="success">

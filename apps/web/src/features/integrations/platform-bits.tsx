@@ -13,12 +13,12 @@ import { cn, fmtDate } from "@/lib/utils";
 import { PLATFORMS, platformById, POSTS_OWN_CHANNELS, useIntegrations, type PlatformDef, type PlatformId } from "./platforms";
 
 export function PlatformTile({ p, size = "md", className }: { p: PlatformDef; size?: "sm" | "md" | "lg"; className?: string }) {
-  const s = { sm: "size-5 text-[10px] rounded-md", md: "size-8 text-body rounded-lg", lg: "size-10 text-body rounded-xl" }[size];
+  const s = { sm: "size-6 text-body rounded-md", md: "size-8 text-body rounded-lg", lg: "size-10 text-body rounded-xl" }[size];
   return (
     <span
       title={p.name}
       aria-label={p.name}
-      className={cn("inline-flex shrink-0 items-center justify-center font-bold text-white", s, className)}
+      className={cn("inline-flex shrink-0 items-center justify-center font-semibold text-white", s, className)}
       style={{ backgroundColor: p.color }}
     >
       {p.abbr}

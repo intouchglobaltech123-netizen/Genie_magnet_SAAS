@@ -153,7 +153,7 @@ export function AssetsView() {
               const cust = a.custodianId ? personById(a.custodianId) : null;
               return (
                 <TR key={a.id} className="cursor-pointer" onClick={() => setOpenTag(a.tag)}>
-                  <TD className="pl-5 font-mono text-body text-muted-foreground">{a.tag}</TD>
+                  <TD className="pl-5 tabular-nums text-body text-muted-foreground">{a.tag}</TD>
                   <TD>
                     <div className="font-medium">{a.name}</div>
                     <div className="text-body text-muted-foreground">{a.category}</div>

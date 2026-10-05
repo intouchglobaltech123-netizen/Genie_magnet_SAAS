@@ -82,7 +82,7 @@ export function EditingTab({ v }: { v: Video }) {
         <CardContent>
           <div className="mb-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border text-body sm:grid-cols-4">
             {[
-              ["Video ID", <span key="c" className="font-mono">{v.code}</span>],
+              ["Video ID", <span key="c" className="tabular-nums">{v.code}</span>],
               ["Client", clientById(v.clientId).name],
               ["Start", logs[0] ? `${fmt(logs[0].date)} · ${logs[0].start}` : "—"],
               ["End", logs.at(-1) && complete ? `${fmt(logs.at(-1)!.date)} · ${logs.at(-1)!.end}` : "—"],
@@ -168,8 +168,8 @@ export function EditingTab({ v }: { v: Video }) {
                 {logs.map((l) => (
                   <TR key={l.id}>
                     <TD className="tabular">{fmt(l.date, "EEE, d MMM")}</TD>
-                    <TD className="font-mono text-body">{l.start}</TD>
-                    <TD className="font-mono text-body">{l.end}</TD>
+                    <TD className="tabular-nums text-body">{l.start}</TD>
+                    <TD className="tabular-nums text-body">{l.end}</TD>
                     <TD numeric className="font-medium">{hoursLabel(minutesBetween(l.start, l.end))}</TD>
                     <TD className="text-muted-foreground">{l.note}</TD>
                   </TR>
@@ -256,7 +256,7 @@ export function EditingTab({ v }: { v: Video }) {
                     <div className="text-body font-semibold uppercase tracking-wider text-muted-foreground">{label}</div>
                     {s ? (
                       <>
-                        <div className="mt-1.5 font-[cursive] text-subheading italic leading-none text-text-primary">{s.by === "Editor" ? who : s.by}</div>
+                        <div className="mt-1.5 text-subheading font-medium leading-none text-text-primary">{s.by === "Editor" ? who : s.by}</div>
                         <div className="mt-1.5 inline-flex items-center gap-1 text-body text-success">
                           <Check className="size-3" /> {format(parseISO(s.at), "d MMM · HH:mm")}
                         </div>

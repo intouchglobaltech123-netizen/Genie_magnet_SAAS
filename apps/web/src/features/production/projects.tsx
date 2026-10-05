@@ -164,7 +164,7 @@ export function ProjectsView() {
                     <TD className="font-medium">{t.name}</TD>
                     <TD>
                       <Link href={`/production/${v.id}`} className="whitespace-nowrap hover:text-primary">
-                        <span className="font-mono text-body text-muted-foreground">{v.code}</span> {v.title}
+                        <span className="tabular-nums text-body text-muted-foreground">{v.code}</span> {v.title}
                       </Link>
                     </TD>
                     <TD className="text-muted-foreground">{t.dependsOn ?? "—"}</TD>
@@ -268,7 +268,7 @@ export function ProjectsView() {
                             </TD>
                             <TD>
                               <div className="flex items-center gap-2">
-                                <span className="font-mono text-body text-muted-foreground">{v.code}</span>
+                                <span className="tabular-nums text-body text-muted-foreground">{v.code}</span>
                                 <span className="whitespace-nowrap font-medium">{v.title}</span>
                                 <UrgencyIcon urgency={v.urgency} />
                               </div>

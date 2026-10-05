@@ -113,7 +113,7 @@ export function VendorsTab() {
                   <Badge tone="neutral">{v.category}</Badge>
                 </TD>
                 <TD>
-                  <div className={cn("text-body", validGstin ? "font-mono" : "text-muted-foreground")}>{v.gstin}</div>
+                  <div className={cn("text-body", validGstin ? "tabular-nums" : "text-muted-foreground")}>{v.gstin}</div>
                   {validGstin && <div className="text-body text-muted-foreground">{STATE_CODES[v.gstin.slice(0, 2)] ?? "Other state"}</div>}
                 </TD>
                 <TD className="text-body text-muted-foreground">{v.terms}</TD>
@@ -204,7 +204,7 @@ function AddVendorDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
             <Input value={city} onChange={(e) => setCity(e.target.value)} />
           </Field>
           <Field label="GSTIN" hint={g ? (valid ? `✓ Valid format · ${STATE_CODES[g.slice(0, 2)] ?? "Other state"}` : "Format: 33ABCDE1234F1Z5") : "Leave blank if unregistered"}>
-            <Input value={gstin} onChange={(e) => setGstin(e.target.value)} className={cn("font-mono uppercase", g && !valid && "border-danger")} />
+            <Input value={gstin} onChange={(e) => setGstin(e.target.value)} className={cn("tabular-nums uppercase", g && !valid && "border-danger")} />
           </Field>
           <Field label="Payment terms">
             <Select value={terms} onValueChange={setTerms} options={["Advance", "Net 7", "Net 15", "Net 30"].map((t) => ({ value: t, label: t }))} />

@@ -271,7 +271,7 @@ function VideoReview({ token, v, refresh }: { token: string; v: PortalVideo; ref
           <ul className="space-y-1.5 text-body">
             {version.comments.map((c) => (
               <li key={c.id} className="rounded-lg bg-surface-secondary px-3 py-2">
-                {c.at !== null && <span className="mr-2 font-mono text-primary">{videoTime(c.at)}</span>}
+                {c.at !== null && <span className="mr-2 tabular-nums text-primary">{videoTime(c.at)}</span>}
                 {c.text}
                 <span className="ml-2 text-muted-foreground">— {c.author}</span>
               </li>
@@ -397,7 +397,7 @@ function Invoices({ token }: { token: string }) {
         {rows.data.map((r) => (
           <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-body">
             <span>
-              <span className="font-mono font-medium">{r.number}</span>
+              <span className="tabular-nums font-medium">{r.number}</span>
               <span className="block text-muted-foreground">{r.issueDate ? fmtDate(r.issueDate) : ""}</span>
             </span>
             <span className="flex items-center gap-3">
@@ -632,7 +632,7 @@ export function ClientPortal({ token }: { token: string }) {
             // eslint-disable-next-line @next/next/no-img-element -- the agency's logo, a small data URL
             <img src={h.agency.logo} alt="" className="size-10 rounded-lg object-contain" />
           ) : (
-            <span className="inline-flex size-10 items-center justify-center rounded-lg text-subheading font-bold text-white" style={{ background: brand }}>
+            <span className="inline-flex size-10 items-center justify-center rounded-lg text-subheading font-semibold text-white" style={{ background: brand }}>
               {h.agency.name[0]}
             </span>
           )}

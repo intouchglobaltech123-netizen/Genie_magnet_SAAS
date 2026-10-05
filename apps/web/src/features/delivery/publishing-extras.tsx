@@ -86,7 +86,7 @@ function SlotCard({ v, slot }: { v: Video; slot?: string }) {
   return (
     <div className={cn("rounded-lg border p-2 text-body", approved ? "border-success/35 bg-card" : "border-dashed border-border-strong bg-card/60")}>
       <div className="flex items-center justify-between gap-1">
-        <span className="font-mono text-muted-foreground">{v.code}</span>
+        <span className="tabular-nums text-muted-foreground">{v.code}</span>
         <Platforms labels={v.platform} clientId={v.clientId} />
       </div>
       <div className="mt-0.5 line-clamp-2 font-medium">{v.title}</div>

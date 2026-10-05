@@ -108,7 +108,7 @@ export function TaskTable({
                         {locked ? (
                           <div className="truncate px-1 text-body font-medium">
                             {video ? (
-                              <span className="font-mono text-body">{video.code}</span>
+                              <span className="tabular-nums text-body">{video.code}</span>
                             ) : (
                               row.task || "—"
                             )}

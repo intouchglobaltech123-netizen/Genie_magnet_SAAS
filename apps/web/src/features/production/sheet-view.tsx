@@ -81,7 +81,7 @@ export function SheetView({ videos }: { videos: Video[] }) {
             return (
               <TR key={v.id}>
                 <TD className="text-center text-body tabular text-muted-foreground">{cur * PER_SHEET + i + 1}</TD>
-                <TD className="font-mono text-body font-medium">{v.code}</TD>
+                <TD className="tabular-nums text-body font-medium">{v.code}</TD>
                 <TD>
                   <div className="flex justify-center gap-1.5">
                     {URGENCIES.map((u) => {
@@ -122,7 +122,7 @@ export function SheetView({ videos }: { videos: Video[] }) {
                     value={v.clipNo}
                     onChange={(e) => updateVideo(v.id, { clipNo: e.target.value })}
                     aria-label={`Clip numbers for ${v.code}`}
-                    className="w-36 rounded-md border border-transparent bg-transparent px-1.5 py-1 font-mono text-body outline-none transition hover:border-border focus-visible:border-primary focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary/15"
+                    className="w-36 rounded-md border border-transparent bg-transparent px-1.5 py-1 tabular-nums text-body outline-none transition hover:border-border focus-visible:border-primary focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary/15"
                   />
                 </TD>
                 <TD className="text-center">

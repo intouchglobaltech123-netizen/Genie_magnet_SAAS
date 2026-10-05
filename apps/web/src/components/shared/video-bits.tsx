@@ -73,7 +73,7 @@ export function CategoryBadge({ category }: { category: CustomerCategory }) {
     <Tooltip content={m.desc}>
       <span>
         <Badge tone={m.tone}>
-          <span className="font-bold">{m.letter}</span> {category}
+          <span className="font-semibold">{m.letter}</span> {category}
         </Badge>
       </span>
     </Tooltip>

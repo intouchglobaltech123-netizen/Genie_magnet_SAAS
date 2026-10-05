@@ -51,7 +51,7 @@ function Chip({ e }: { e: CalendarEvent }) {
         e.state === "late" && "border-l-danger bg-danger-soft/50 text-danger",
       )}
     >
-      {e.time && <span className="mr-1 font-mono text-muted-foreground">{e.time}</span>}
+      {e.time && <span className="mr-1 tabular-nums text-muted-foreground">{e.time}</span>}
       {e.title}
       {e.client && <span className="text-muted-foreground"> · {e.client.code}</span>}
     </Link>

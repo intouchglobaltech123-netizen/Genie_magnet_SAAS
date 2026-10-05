@@ -201,7 +201,7 @@ function SettingsForm({ settings, agency, canEdit }: { settings: InvoiceSettings
               error={errors.numberFormat}
               hint={`Use ${NUMBER_TOKENS.join(" ")} — {FY} restarts numbering each April.`}
             >
-              <Input value={f.numberFormat} onChange={set("numberFormat")} className="font-mono" />
+              <Input value={f.numberFormat} onChange={set("numberFormat")} className="tabular-nums" />
             </Field>
             <Field label="Next invoice number" error={errors.nextNumber} hint={preview ? `The next invoice will be ${preview}` : undefined}>
               <Input type="number" min={1} value={f.nextNumber} onChange={set("nextNumber")} />

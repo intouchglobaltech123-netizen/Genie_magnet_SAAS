@@ -157,7 +157,7 @@ function UrbanNestCallout({
               </Badge>
             </div>
             <p className="mt-1 text-body text-muted-foreground">
-              <button className="cursor-pointer rounded font-mono text-foreground underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30" onClick={() => onOpen(inv)}>
+              <button className="cursor-pointer rounded tabular-nums text-foreground underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30" onClick={() => onOpen(inv)}>
                 {inv.number}
               </button>{" "}
               · {inv.period} walkthroughs · due {fmtDate(inv.dueDate, { day: "numeric", month: "short" })} · last reminder{" "}

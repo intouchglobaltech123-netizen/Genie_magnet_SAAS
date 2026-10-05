@@ -301,7 +301,7 @@ function Comments({ v, version }: { v: VideoDetail; version: VideoDetail["versio
           <MessageSquare className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
           <span className="min-w-0 flex-1">
             <span className="font-medium">{c.author}</span>
-            {c.at !== null && <span className="ml-1 font-mono text-muted-foreground">{mmss(c.at)}</span>} —{" "}
+            {c.at !== null && <span className="ml-1 tabular-nums text-muted-foreground">{mmss(c.at)}</span>} —{" "}
             <span className={cn(c.resolved && "line-through")}>{c.text}</span>
           </span>
           <Button size="xs" variant="ghost" onClick={() => act.mutate({ path: `/comments/${c.id}`, method: "PUT", body: { resolved: !c.resolved } }, toast$())}>
@@ -699,7 +699,7 @@ export function LiveVideo({ id, tab }: { id: string; tab?: string }) {
       <PageHeader
         eyebrow={
           <>
-            <Badge tone="outline" className="font-mono">
+            <Badge tone="outline" className="tabular-nums">
               {v.code}
             </Badge>
             <StageBadge stage={v.stage} />

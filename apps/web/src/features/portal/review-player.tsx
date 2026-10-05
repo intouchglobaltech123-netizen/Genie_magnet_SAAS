@@ -80,7 +80,7 @@ export function ReviewPlayer({
         </div>
 
         {/* Review watermark */}
-        <div className="pointer-events-none absolute right-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-md bg-black/40 px-2 py-1 font-mono text-body tracking-wide text-white/70">
+        <div className="pointer-events-none absolute right-3 top-3 max-w-[calc(100%-1.5rem)] truncate rounded-md bg-black/40 px-2 py-1 tabular-nums text-body tracking-wide text-white/70">
           {video.code} · {version.label} · REVIEW COPY
         </div>
 
@@ -107,7 +107,7 @@ export function ReviewPlayer({
         <button type="button" onClick={onToggle} className="shrink-0 cursor-pointer rounded-md p-1 text-white/90 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80" aria-label={playing ? "Pause" : "Play"}>
           {playing ? <Pause className="size-4 fill-current" /> : <Play className="size-4 fill-current" />}
         </button>
-        <span className="shrink-0 whitespace-nowrap font-mono text-body tabular-nums text-white/80">
+        <span className="shrink-0 whitespace-nowrap tabular-nums text-body text-white/80">
           {fmtTs(time)} <span className="text-white/40">/ {fmtTs(duration)}</span>
         </span>
 
@@ -127,7 +127,7 @@ export function ReviewPlayer({
           />
           {hoverX !== null && (
             <div
-              className="pointer-events-none absolute -top-7 -translate-x-1/2 rounded-md bg-white px-1.5 py-0.5 font-mono text-body leading-4 text-black"
+              className="pointer-events-none absolute -top-7 -translate-x-1/2 rounded-md bg-white px-1.5 py-0.5 tabular-nums text-body leading-4 text-black"
               style={{ left: `${hoverX * 100}%` }}
             >
               {fmtTs(hoverX * duration)}
@@ -149,7 +149,7 @@ export function ReviewPlayer({
                   }}
                   title={`${c.timestamp} · ${c.author}`}
                   className={cn(
-                    "absolute -bottom-1.5 flex size-4 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full text-body font-bold leading-none ring-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80",
+                    "absolute -bottom-1.5 flex size-4 -translate-x-1/2 cursor-pointer items-center justify-center rounded-full text-body font-semibold leading-none ring-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80",
                     active ? "z-10 scale-125 bg-primary text-white ring-white" : c.resolved ? "bg-white/30 text-black ring-black/60" : "bg-warning text-black ring-black/60 hover:scale-110",
                   )}
                   style={{ left: `${left}%` }}
@@ -160,7 +160,7 @@ export function ReviewPlayer({
             })}
         </div>
 
-        <button type="button" onClick={onSpeed} aria-label={`Playback speed ${speed}×`} className="shrink-0 cursor-pointer rounded-md px-1.5 py-0.5 font-mono text-body text-white/80 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80">
+        <button type="button" onClick={onSpeed} aria-label={`Playback speed ${speed}×`} className="shrink-0 cursor-pointer rounded-md px-1.5 py-0.5 tabular-nums text-body text-white/80 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80">
           {speed}×
         </button>
         <Volume2 className="hidden size-4 shrink-0 text-white/60 sm:block" aria-hidden />

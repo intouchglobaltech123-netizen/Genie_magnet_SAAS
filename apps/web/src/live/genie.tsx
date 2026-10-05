@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { ApiError, errorMessage } from "./api";
 import { AskGenie } from "./ask-genie";
@@ -59,7 +60,7 @@ function InsightCard({ i, compact = false }: { i: InsightRow; compact?: boolean 
     decide.mutate({ id: i.id, status }, { onSuccess: () => toast.success(message), onError: (e) => toast.error(errorMessage(e)) });
   const s = SEVERITY[i.severity];
   return (
-    <li className={cn("rounded-xl border border-l-4 border-border bg-card p-4", s.bar)}>
+    <li className={cn("rounded-xl border border-l-[3px] border-border bg-card px-4 py-3", s.bar)}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -73,7 +74,7 @@ function InsightCard({ i, compact = false }: { i: InsightRow; compact?: boolean 
             {i.status === "resolved" && i.resolvedAt && ` · cleared ${ago(i.resolvedAt)}`}
           </p>
         </div>
-        <span className="flex flex-wrap gap-1.5">
+        <span className="flex flex-wrap items-center gap-1">
           {i.link && (
             <Button size="xs" variant="secondary" asChild>
               <Link href={i.link}>
@@ -90,14 +91,22 @@ function InsightCard({ i, compact = false }: { i: InsightRow; compact?: boolean 
           )}
           {i.status === "open" ? (
             <>
-              <Button size="xs" variant="ghost" disabled={decide.isPending} onClick={() => act("done", "Marked done")}>
-                <Check />
-                Done
-              </Button>
-              <Button size="xs" variant="ghost" disabled={decide.isPending} onClick={() => act("dismissed", "Dismissed — it stays hidden while it lasts")}>
-                <EyeOff />
-                Dismiss
-              </Button>
+              <Tooltip content="Done">
+                <Button size="icon-sm" variant="ghost" aria-label="Done" disabled={decide.isPending} onClick={() => act("done", "Marked done")}>
+                  <Check />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Dismiss">
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  aria-label="Dismiss"
+                  disabled={decide.isPending}
+                  onClick={() => act("dismissed", "Dismissed — it stays hidden while it lasts")}
+                >
+                  <EyeOff />
+                </Button>
+              </Tooltip>
             </>
           ) : (
             i.status !== "resolved" && (
@@ -330,7 +339,7 @@ function AiCard({ s, canEdit }: { s: GenieSettings; canEdit: boolean }) {
       <div className="grid gap-4 sm:grid-cols-3">
         <div>
           <div className="text-body text-muted-foreground">Used this month</div>
-          <div className="text-lg font-semibold">
+          <div className="text-subheading font-semibold">
             {inr(s.ai.spentThisMonth)} <span className="text-body font-normal text-muted-foreground">of {inr(s.ai.monthlyBudget)}</span>
           </div>
           <div className="mt-1 h-1.5 rounded-full bg-muted">

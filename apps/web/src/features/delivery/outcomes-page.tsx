@@ -20,7 +20,7 @@ const nf = new Intl.NumberFormat("en-IN");
 const compact = (n: number) => (n >= 100000 ? `${(n / 100000).toFixed(1)}L` : n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n));
 
 const tooltipStyle = {
-  contentStyle: { background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 10, fontSize: 13 },
+  contentStyle: { background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 10, fontSize: 14 },
   labelStyle: { color: "var(--color-text-muted)" },
 };
 
@@ -123,8 +123,8 @@ export function OutcomesPage() {
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.weekly} margin={{ left: -12, right: 8, top: 8 }}>
                 <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
-                <XAxis dataKey="week" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-muted)" }} />
-                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-muted)" }} tickFormatter={compact} />
+                <XAxis dataKey="week" tickLine={false} axisLine={false} tick={{ fontSize: 14, fill: "var(--color-text-muted)" }} />
+                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 14, fill: "var(--color-text-muted)" }} tickFormatter={compact} />
                 <RTooltip {...tooltipStyle} formatter={(v) => nf.format(Number(v))} />
                 <Area type="monotone" dataKey="views" name="Views" stroke="var(--color-chart-1)" strokeWidth={2} fill="var(--color-chart-1)" fillOpacity={0.08} />
                 <Area type="monotone" dataKey="reach" name="Reach" stroke="var(--color-chart-2)" strokeWidth={2} fill="var(--color-chart-2)" fillOpacity={0.06} />
@@ -144,8 +144,8 @@ export function OutcomesPage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.monthlyLeads} margin={{ left: -20, right: 4, top: 8 }} barGap={2}>
                 <CartesianGrid vertical={false} stroke="var(--color-chart-grid)" />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-muted)" }} />
-                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 12, fill: "var(--color-text-muted)" }} />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fontSize: 14, fill: "var(--color-text-muted)" }} />
+                <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 14, fill: "var(--color-text-muted)" }} />
                 <RTooltip {...tooltipStyle} cursor={{ fill: "var(--color-muted)" }} />
                 <Bar dataKey="leads" name="Leads" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]} maxBarSize={18} />
                 <Bar dataKey="enquiries" name="Enquiries" fill="var(--color-chart-3)" radius={[4, 4, 0, 0]} maxBarSize={18} />
@@ -182,7 +182,7 @@ export function OutcomesPage() {
                     <span className="w-4 shrink-0 text-body text-muted-foreground tabular">{i + 1}</span>
                     <div className="min-w-[180px]">
                       <div className="font-medium">{v.title}</div>
-                      <div className="font-mono text-body text-muted-foreground">{v.code}</div>
+                      <div className="tabular-nums text-body text-muted-foreground">{v.code}</div>
                     </div>
                   </div>
                 </TD>

@@ -60,7 +60,7 @@ export function ClientProfitability() {
                 <XAxis dataKey="short" {...axisProps} />
                 <YAxis {...axisProps} tickFormatter={(x: number) => inrCompact(x)} width={56} />
                 <Tooltip {...tooltipStyle} cursor={{ fill: "var(--color-muted)", opacity: 0.5 }} formatter={(x) => inr(Number(x))} />
-                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12, color: "var(--color-text-muted)" }} />
+                <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 14, color: "var(--color-text-muted)" }} />
                 <Bar dataKey="revenue" name="Revenue" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]} maxBarSize={34} />
                 <Bar dataKey="cost" name="True cost" fill="var(--color-chart-3)" radius={[4, 4, 0, 0]} maxBarSize={34} />
               </BarChart>

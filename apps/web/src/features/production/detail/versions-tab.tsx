@@ -120,7 +120,7 @@ export function VersionsTab({ v }: { v: Video }) {
               }}
             >
               <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 p-3 text-body text-white/70">
-                <span className="truncate rounded-md bg-black/40 px-1.5 py-0.5 font-mono backdrop-blur">{v.code} · {sel?.label}</span>
+                <span className="truncate rounded-md bg-black/40 px-1.5 py-0.5 tabular-nums backdrop-blur">{v.code} · {sel?.label}</span>
                 <span className="shrink-0 rounded-md bg-black/40 px-1.5 py-0.5 backdrop-blur">{v.aspect}</span>
               </div>
               <button
@@ -152,7 +152,7 @@ export function VersionsTab({ v }: { v: Video }) {
               >
                 {active ? <Pause /> : <Play />}
               </Button>
-              <span className="shrink-0 whitespace-nowrap font-mono text-body tabular text-muted-foreground">
+              <span className="shrink-0 whitespace-nowrap tabular-nums text-body tabular text-muted-foreground">
                 {toMmss(pos)} / {toMmss(duration)}
               </span>
               <div
@@ -221,7 +221,7 @@ export function VersionsTab({ v }: { v: Video }) {
                   sel?.id === ver.id ? "border-primary/50 bg-primary-soft/40" : "border-border hover:bg-muted/50",
                 )}
               >
-                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted font-mono text-body font-semibold">{ver.label}</span>
+                <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted tabular-nums text-body font-semibold">{ver.label}</span>
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-body font-medium">{ver.notes}</div>
                   <div className="text-body text-muted-foreground">
@@ -289,7 +289,7 @@ export function VersionsTab({ v }: { v: Video }) {
                     type="button"
                     onClick={() => seek(toSec(cm.timestamp), cm.id)}
                     aria-label={`Jump to ${cm.timestamp}`}
-                    className="ml-auto cursor-pointer rounded-md bg-warning-soft px-1.5 py-0.5 font-mono text-body font-medium text-warning hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
+                    className="ml-auto cursor-pointer rounded-md bg-warning-soft px-1.5 py-0.5 tabular-nums text-body font-medium text-warning hover:brightness-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/35"
                   >
                     {cm.timestamp}
                   </button>
@@ -305,7 +305,7 @@ export function VersionsTab({ v }: { v: Video }) {
                       <span key={i} className="w-[3px] shrink-0 rounded-full bg-primary/60" style={{ height: `${25 + Math.abs(Math.sin(i * 1.7) * 75)}%` }} />
                     ))}
                   </div>
-                  <span className="font-mono text-body text-muted-foreground">0:18</span>
+                  <span className="tabular-nums text-body text-muted-foreground">0:18</span>
                 </div>
               ) : null}
               <p className="mt-2 text-body leading-relaxed text-text-primary">{cm.kind === "voice" ? <span className="text-muted-foreground">Transcript: </span> : null}{cm.text.replace(/^Voice note: /, "")}</p>

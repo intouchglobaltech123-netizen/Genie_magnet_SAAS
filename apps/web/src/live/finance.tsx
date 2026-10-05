@@ -422,7 +422,7 @@ function VideoCosts({ rows }: { rows: VideoCostRow[] }) {
           {rows.map((v) => (
             <TR key={v.id}>
               <TD>
-                <Link href={`/app/production/${v.id}`} className="font-mono font-medium hover:underline">
+                <Link href={`/app/production/${v.id}`} className="tabular-nums font-medium hover:underline">
                   {v.code}
                 </Link>{" "}
                 {v.title}

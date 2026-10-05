@@ -352,6 +352,7 @@ function EditDraftDialog({ inv, open, onOpenChange }: { inv: Invoice; open: bool
   );
 }
 
+/* eslint-disable no-restricted-syntax -- a printed A4 document keeps its own type sizes (see eslint.config.mjs) */
 // ─── The invoice document ─────────────────────────────────────────────
 
 /** Rates shown next to a tax when every line has the same rate. */
@@ -447,7 +448,7 @@ export function InvoiceDocument({ inv }: { inv: Invoice }) {
               <tr key={i} className="border-b border-neutral-200 align-top">
                 <td className="py-2 pr-2 text-neutral-500">{i + 1}</td>
                 <td className="py-2 pr-2">{l.description}</td>
-                <td className="py-2 pr-2 font-mono text-[12px]">{l.sac}</td>
+                <td className="py-2 pr-2 tabular-nums text-[12px]">{l.sac}</td>
                 <td className="py-2 pr-2 text-right">{l.quantity}</td>
                 <td className="py-2 pr-2 text-right">{inr(l.rate)}</td>
                 {inv.registered && rate === null && <td className="py-2 pr-2 text-right">{l.taxRate}%</td>}
@@ -502,19 +503,19 @@ export function InvoiceDocument({ inv }: { inv: Invoice }) {
               {s.accountNumber && (
                 <>
                   <dt className="text-neutral-600">Account number</dt>
-                  <dd className="font-mono">{s.accountNumber}</dd>
+                  <dd className="tabular-nums">{s.accountNumber}</dd>
                 </>
               )}
               {s.ifsc && (
                 <>
                   <dt className="text-neutral-600">IFSC</dt>
-                  <dd className="font-mono">{s.ifsc}</dd>
+                  <dd className="tabular-nums">{s.ifsc}</dd>
                 </>
               )}
               {s.upiId && (
                 <>
                   <dt className="text-neutral-600">UPI</dt>
-                  <dd className="font-mono">{s.upiId}</dd>
+                  <dd className="tabular-nums">{s.upiId}</dd>
                 </>
               )}
             </dl>
@@ -526,6 +527,7 @@ export function InvoiceDocument({ inv }: { inv: Invoice }) {
     </article>
   );
 }
+/* eslint-enable no-restricted-syntax */
 
 // ─── One invoice ──────────────────────────────────────────────────────
 
@@ -661,7 +663,7 @@ function InvoicePayment({ inv, canEdit }: { inv: Invoice; canEdit: boolean }) {
         </div>
         {link?.url && link.status === "created" && (
           <div className="flex flex-wrap items-center gap-2">
-            <a href={link.url} target="_blank" rel="noreferrer" className="font-mono text-primary hover:underline">
+            <a href={link.url} target="_blank" rel="noreferrer" className="tabular-nums text-primary hover:underline">
               {link.url}
             </a>
             <Button size="xs" variant="ghost" onClick={() => navigator.clipboard.writeText(link.url!).then(() => toast.success("Copied"))}>
@@ -845,7 +847,7 @@ export function InvoiceTable({ invoices, showClient = true }: { invoices: Invoic
         {invoices.map((i) => (
           <TR key={i.id} className="cursor-pointer" onClick={() => router.push(`/app/invoices/${i.id}`)}>
             <TD className="whitespace-nowrap">
-              <Link href={`/app/invoices/${i.id}`} className="font-mono font-medium hover:underline" onClick={(e) => e.stopPropagation()}>
+              <Link href={`/app/invoices/${i.id}`} className="tabular-nums font-medium hover:underline" onClick={(e) => e.stopPropagation()}>
                 {i.number ?? "Draft"}
               </Link>
             </TD>
