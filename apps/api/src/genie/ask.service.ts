@@ -259,12 +259,16 @@ export class AskService {
         : `No videos you can see are waiting on ${who}.`;
     }
     if (/invoice|payment|paid|money/.test(q)) {
-      const r = (await tool("list_invoices").run({ client: client?.code, status: /overdue|late/.test(q) ? "overdue" : "unpaid" })) as {
+      // Name what was asked: "any overdue invoices?" is answered about overdue ones, not all unpaid ones.
+      const which = /overdue|late/.test(q) ? "overdue" : "unpaid";
+      const r = (await tool("list_invoices").run({ client: client?.code, status: which })) as {
         invoices?: { label: string; href: string; total: string }[];
         error?: string;
       };
       if (r.error) return r.error;
-      return r.invoices!.length ? `Unpaid invoices:\n${bullets(r.invoices!.map((v) => ({ ...v, extra: v.total })))}` : "No unpaid invoices you can see.";
+      return r.invoices!.length
+        ? `${which === "overdue" ? "Overdue" : "Unpaid"} invoices:\n${bullets(r.invoices!.map((v) => ({ ...v, extra: v.total })))}`
+        : `No ${which} invoices you can see.`;
     }
     if (/late|overdue|due/.test(q)) {
       const r = (await tool("list_videos").run({ client: client?.code, overdue: true })) as {

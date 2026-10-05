@@ -95,6 +95,8 @@ describe("Ask Genie", () => {
   it("carries a conversation on, kept for the person who asked", async () => {
     const next = await ask(ashwin, "Any overdue invoices for Kaveri?", conversation.id);
     expect(next.id).toBe(conversation.id);
+    // Answered about overdue invoices, as asked — not about every unpaid one.
+    expect(answer(next).content).toMatch(/^(Overdue invoices:|No overdue invoices you can see\.)/);
     expect(next.messages.map((m) => m.role)).toEqual(["user", "assistant", "user", "assistant"]);
     expect(model.questions.at(-1)!.map((m) => m.role)).toEqual(["user", "assistant", "user"]); // the earlier turns went with it
     expect(((await ashwin.get("/genie/conversations").expect(200)).body as { id: string }[]).map((c) => c.id)).toContain(conversation.id);
