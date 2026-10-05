@@ -730,7 +730,15 @@ export function useSaveInvoiceSettings() {
 export const useInvoices = (query = "", enabled = true) =>
   useQuery({ queryKey: [...keys.invoices, query], queryFn: () => api<Invoice[]>(`/invoices${query ? `?${query}` : ""}`), enabled });
 
-export const useInvoice = (id: string) => useQuery({ queryKey: [...keys.invoices, "one", id], queryFn: () => api<Invoice>(`/invoices/${id}`) });
+/** One invoice. Until `waitForLinkUntil` (a time), an issued invoice without its payment link looks again every 2 seconds:
+ * the link is made in the background a moment after issuing, and shows by itself. */
+export const useInvoice = (id: string, waitForLinkUntil = 0) =>
+  useQuery({
+    queryKey: [...keys.invoices, "one", id],
+    queryFn: () => api<Invoice>(`/invoices/${id}`),
+    refetchInterval: (q) => (q.state.data?.status === "sent" && !q.state.data.payLink && Date.now() < waitForLinkUntil ? 2000 : false),
+    refetchIntervalInBackground: true,
+  });
 
 export function useSaveInvoice() {
   const refresh = useRefresh(keys.invoices);

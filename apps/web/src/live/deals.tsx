@@ -305,7 +305,7 @@ export function WinDialog({ lead, open, onOpenChange }: { lead: LeadDetail | nul
                 {chosen
                   ? `The ${chosen.packageName} agreement starts on ${new Date(`${f.startDate}T00:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}.`
                   : "No agreement was made — add one from the client's page when it is signed."}{" "}
-                Onboarding starts from the client once the onboarding screens arrive.
+                Their onboarding has started: open the client to send them the questionnaire link.
               </DialogDescription>
             </DialogHeader>
             <DialogBody>

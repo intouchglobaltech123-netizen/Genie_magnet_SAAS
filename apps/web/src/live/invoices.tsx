@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Ban, CheckCircle2, Copy, FileText, Pencil, Plus, Printer, ReceiptIndianRupee, Send, Settings, Trash2, X } from "lucide-react";
@@ -531,7 +531,7 @@ export function InvoiceDocument({ inv }: { inv: Invoice }) {
 
 // ─── One invoice ──────────────────────────────────────────────────────
 
-function IssueDialog({ inv, open, onOpenChange }: { inv: Invoice; open: boolean; onOpenChange: (o: boolean) => void }) {
+function IssueDialog({ inv, open, onOpenChange, onIssued }: { inv: Invoice; open: boolean; onOpenChange: (o: boolean) => void; onIssued: () => void }) {
   const step = useInvoiceStep();
   const settings = useInvoiceSettings();
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -546,6 +546,7 @@ function IssueDialog({ inv, open, onOpenChange }: { inv: Invoice; open: boolean;
               {
                 onSuccess: (r) => {
                   toast.success(`Issued as ${r!.number}`, { description: "Download the PDF to send it to the client." });
+                  onIssued();
                   onOpenChange(false);
                 },
               },
@@ -641,7 +642,7 @@ function PaidDialog({ inv, open, onOpenChange }: { inv: Invoice; open: boolean; 
 }
 
 /** The online payment link (P3-10) and payments received, when the agency takes payments through its Razorpay. */
-function InvoicePayment({ inv, canEdit }: { inv: Invoice; canEdit: boolean }) {
+function InvoicePayment({ inv, canEdit, waiting, onRequested }: { inv: Invoice; canEdit: boolean; waiting: boolean; onRequested: () => void }) {
   const request = useRequestPayLink();
   const link = inv.payLink;
   if (!link && !inv.payments.length && inv.status !== "sent") return null;
@@ -674,21 +675,28 @@ function InvoicePayment({ inv, canEdit }: { inv: Invoice; canEdit: boolean }) {
         )}
         {link?.error && <p className="text-danger">{link.error}</p>}
         {!link && inv.status === "sent" && (
-          <p className="text-muted-foreground">No payment link — connect Razorpay in Settings → Payments to add one to every invoice.</p>
+          <p className="text-muted-foreground">
+            {waiting
+              ? "Making the payment link — it shows here in a moment."
+              : "No payment link. When your Razorpay account is connected in Settings → Payments, every issued invoice gets one."}
+          </p>
         )}
         {inv.payments.map((p) => (
           <p key={p.reference} className="text-muted-foreground">
             Received {inr(p.amount)} by {p.method ?? "Razorpay"} on {fmtDate(p.paidAt)} ({p.reference})
           </p>
         ))}
-        {canEdit && inv.status === "sent" && (!link || link.status === "failed" || link.status === "expired") && (
+        {canEdit && inv.status === "sent" && !waiting && (!link || link.status === "failed" || link.status === "expired") && (
           <Button
             size="sm"
             variant="secondary"
             disabled={request.isPending}
             onClick={() =>
               request.mutate(inv.id, {
-                onSuccess: () => toast.success("Making the link — it shows here in a moment"),
+                onSuccess: () => {
+                  toast.success("Making the link — it shows here in a moment");
+                  onRequested();
+                },
                 onError: (e) => toast.error(errorMessage(e)),
               })
             }
@@ -704,9 +712,21 @@ function InvoicePayment({ inv, canEdit }: { inv: Invoice; canEdit: boolean }) {
 export function LiveInvoice({ id }: { id: string }) {
   const router = useRouter();
   const can = useCan();
-  const inv = useInvoice(id);
+  // After issuing or asking for a link: look for the payment link for a while, as it is made in the background.
+  const [waitForLinkUntil, setWaitForLinkUntil] = useState(0);
+  const [waiting, setWaiting] = useState(false);
+  const inv = useInvoice(id, waitForLinkUntil);
   const step = useInvoiceStep();
   const [dialog, setDialog] = useState<"edit" | "issue" | "paid" | "cancel" | null>(null);
+  const waitForLink = () => {
+    setWaitForLinkUntil(Date.now() + 20_000);
+    setWaiting(true);
+  };
+  useEffect(() => {
+    if (!waiting) return;
+    const t = setTimeout(() => setWaiting(false), 20_000);
+    return () => clearTimeout(t);
+  }, [waiting]);
 
   if (inv.isPending) return <SkeletonRows rows={8} />;
   if (inv.error) return <Alert tone="danger">{errorMessage(inv.error)}</Alert>;
@@ -794,12 +814,14 @@ export function LiveInvoice({ id }: { id: string }) {
             Someone who may approve invoices (finance or the owner) issues it.
           </Alert>
         )}
-        {i.status !== "draft" && <InvoicePayment inv={i} canEdit={canEdit} />}
+        {i.status !== "draft" && (
+          <InvoicePayment inv={i} canEdit={canEdit} waiting={waiting && !i.payLink} onRequested={waitForLink} />
+        )}
         <p className="mb-3 text-body text-muted-foreground">To save it as a PDF, choose “Save as PDF” in the print window.</p>
       </div>
       <InvoiceDocument inv={i} />
       {dialog === "edit" && <EditDraftDialog inv={i} open onOpenChange={(o) => !o && setDialog(null)} />}
-      {dialog === "issue" && <IssueDialog inv={i} open onOpenChange={(o) => !o && setDialog(null)} />}
+      {dialog === "issue" && <IssueDialog inv={i} open onOpenChange={(o) => !o && setDialog(null)} onIssued={waitForLink} />}
       {dialog === "paid" && <PaidDialog inv={i} open onOpenChange={(o) => !o && setDialog(null)} />}
       <NoteDialog
         open={dialog === "cancel"}

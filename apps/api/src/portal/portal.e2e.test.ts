@@ -134,7 +134,8 @@ describe("portal links", () => {
       agency: { name: "Genie Magnet" },
       client: { name: "Kovai Crunch" },
       contact: { name: "Kovai Crunch Owner" },
-      todo: { topics: 3, scripts: 1, videos: 1, invoices: 1 },
+      // Three topics offered, two asked for: two picks still owed.
+      todo: { topics: 2, scripts: 1, videos: 1, invoices: 1 },
     });
   });
 });
@@ -155,6 +156,8 @@ describe("in the portal, the client", () => {
         .expect(200)
     ).body;
     expect(lists[0]!.items.map((i) => i.pick)).toEqual(["picked", "picked", null]);
+    // Two of two picked: nothing left to pick, though one topic is neither picked nor skipped.
+    expect(((await anon().get(portal()).expect(200)).body as PortalHome).todo.topics).toBe(0);
     expect(
       (
         await anon()

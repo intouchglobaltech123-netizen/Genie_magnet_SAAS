@@ -209,7 +209,7 @@ export class PortalService {
       const [agency, client, topics, scripts, videos, invoices] = await Promise.all([
         this.tenant.db.agency.findUniqueOrThrow({ where: { id: this.tenant.agencyId }, select: { name: true, logo: true, brandColor: true } }),
         this.tenant.db.client.findUniqueOrThrow({ where: { id: p.clientId }, select: { name: true } }),
-        this.tenant.db.contentItem.count({ where: { clientId: p.clientId, stage: "topic", pick: null } }),
+        this.topicsStillToPick(p.clientId),
         this.tenant.db.contentItem.count({ where: { clientId: p.clientId, stage: "approval" } }),
         this.tenant.db.video.count({ where: { clientId: p.clientId, stage: "client_review", versions: { some: { status: "sent" } } } }),
         this.tenant.db.invoice.count({ where: { clientId: p.clientId, status: "sent" } }),
@@ -228,6 +228,18 @@ export class PortalService {
 
   async topics(token: string): Promise<PortalTopicList[]> {
     return this.as(token, (p) => this.topicListsFor(p));
+  }
+
+  /** Picks the client still owes: on each list waiting for them, how many it asks for less how many are picked. */
+  private async topicsStillToPick(clientId: string) {
+    const lists = await this.tenant.db.topicList.findMany({ where: { clientId, status: "sent" }, select: { month: true, needed: true } });
+    const owed = await Promise.all(
+      lists.map(async (l) => {
+        const picked = await this.tenant.db.contentItem.count({ where: { clientId, month: l.month, stage: "topic", pick: "picked" } });
+        return Math.max(0, l.needed - picked);
+      }),
+    );
+    return owed.reduce((n, x) => n + x, 0);
   }
 
   private async topicListsFor(p: PortalPerson): Promise<PortalTopicList[]> {
